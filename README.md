@@ -1,5 +1,5 @@
 # Athena
-Athena is the PegaSys component for doing private transactions (New Constellation)
+Athena is the PegaSys component for doing private transactions.
 
 [![Build Status](https://travis-ci.com/ConsenSys/athena.svg?token=2Yxbwhz1bCkWTaWcjCFS&branch=master)](https://travis-ci.com/ConsenSys/athena)
 
