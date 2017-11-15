@@ -1,0 +1,22 @@
+plugins {
+  id "com.diffplug.gradle.spotless" version "3.6.0"
+}
+
+apply plugin: 'java-library'
+
+repositories {
+  jcenter()
+}
+
+dependencies {
+  testImplementation 'junit:junit:4.12'
+}
+
+spotless {
+  java {
+    removeUnusedImports()
+    googleJavaFormat()
+    importOrder 'net.consensys', 'java', ''
+  }
+}
+
