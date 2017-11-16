@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# To enable this hook, create a symbolic link from this file to .git/hooks
+# ln -s $(pwd)/pre-commit .git/hooks/
+
+set -e
+# Redirect output to stderr.
+exec 1>&2
+
+# do a spotlessCheck, don't apply automatically just now.
+exec gradle spotlessCheck
