@@ -14,6 +14,7 @@ cache:
     - $HOME/.gradle/wrapper/
 install: true
 script:
+  - sudo apt-get install -y autoconf automake libtool make tar gcc-multilib libaio-dev
   - gradle build
   - gradle test
 notifications:
