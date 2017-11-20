@@ -3,8 +3,11 @@ package net.consensys.athena.api.cmd;
 import static org.junit.Assert.*;
 
 import net.consensys.athena.impl.http.controllers.DeleteController;
+import net.consensys.athena.impl.http.controllers.PartyInfoController;
+import net.consensys.athena.impl.http.controllers.PushController;
 import net.consensys.athena.impl.http.controllers.ReceiveController;
 import net.consensys.athena.impl.http.controllers.ReceiveRawController;
+import net.consensys.athena.impl.http.controllers.ResendController;
 import net.consensys.athena.impl.http.controllers.SendController;
 import net.consensys.athena.impl.http.controllers.SendRawController;
 import net.consensys.athena.impl.http.controllers.UpcheckController;
@@ -39,6 +42,9 @@ public class AthenaRouterTest {
           {"Send", "/send", SendController.class},
           {"Receive", "/receive", ReceiveController.class},
           {"Delete", "/delete", DeleteController.class},
+          {"Resend", "/resend", ResendController.class},
+          {"PartyInfo", "/partyinfo", PartyInfoController.class},
+          {"Push", "/push", PushController.class},
         });
   }
 
