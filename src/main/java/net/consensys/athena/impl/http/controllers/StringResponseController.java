@@ -9,12 +9,12 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
 
-public abstract class HandleStringController implements Controller {
+public abstract class StringResponseController implements Controller {
 
   public FullHttpResponse handle(HttpRequest request, FullHttpResponse response) {
-    ByteBuf content = Unpooled.copiedBuffer(handleString().getBytes(Charset.forName("utf8")));
+    ByteBuf content = Unpooled.copiedBuffer(stringResponse().getBytes(Charset.forName("utf8")));
     return response.replace(content);
   }
 
-  protected abstract String handleString();
+  protected abstract String stringResponse();
 }

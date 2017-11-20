@@ -13,7 +13,7 @@ public class UpcheckControllerTest {
 
   @Test
   public void TestHandleStringReturnsAString() throws Exception {
-    assertEquals("I'm up!\n", controller.handleString());
+    assertEquals("I'm up!\n", controller.stringResponse());
   }
 
   @Test

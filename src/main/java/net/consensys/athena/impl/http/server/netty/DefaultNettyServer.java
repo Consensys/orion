@@ -44,7 +44,6 @@ public class DefaultNettyServer implements NettyServer {
 
   @Override
   public void start() {
-
     bossLoop = createEventLoop(settings.bossThreads(), "Boss");
     int workerThreads = settings.workerThreads();
     if (workerThreads > 0) {
@@ -94,7 +93,6 @@ public class DefaultNettyServer implements NettyServer {
   }
 
   private EventLoopGroup createEventLoop(int threads, String name) {
-    //    log.debug("netty.threads.{}({})", name, threads);
     if (settings.isKQueue()) {
       return new KQueueEventLoopGroup(threads, new DefaultThreadFactory("kqueue-" + name, false));
     } else if (settings.isEpoll()) {

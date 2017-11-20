@@ -8,9 +8,12 @@ import io.netty.channel.epoll.Epoll;
 import io.netty.channel.kqueue.KQueue;
 
 public class NettySettings {
-  public Optional<Integer> httpPort;
-  public Optional<String> domainSocketPath;
-  public Optional<Integer> httpsPort;
+
+  private static final int DEFAULT_BOSS_THREAD_COUNT = 1;
+  private static final int DEFAULT_WORKER_THREAD_COUNT = 4;
+  private Optional<Integer> httpPort;
+  private Optional<String> domainSocketPath;
+  private Optional<Integer> httpsPort;
   private Router router;
 
   public NettySettings(
@@ -57,11 +60,11 @@ public class NettySettings {
   }
 
   public int bossThreads() {
-    return 1;
+    return DEFAULT_BOSS_THREAD_COUNT;
   }
 
   public int workerThreads() {
-    return 4;
+    return DEFAULT_WORKER_THREAD_COUNT;
   }
 
   public Router getRouter() {
