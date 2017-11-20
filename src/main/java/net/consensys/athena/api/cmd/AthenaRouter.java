@@ -11,33 +11,36 @@ import net.consensys.athena.impl.http.server.Router;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
+import java.util.Optional;
 
 import io.netty.handler.codec.http.HttpRequest;
 
 public class AthenaRouter implements Router {
+  private static final LinkedHashMap<String, Controller> ROUTES = new LinkedHashMap();
+
+  static {
+    ROUTES.put("/upcheck", UpcheckController.INSTANCE);
+    ROUTES.put("/sendraw", SendRawController.INSTANCE);
+    ROUTES.put("/receiveraw", ReceiveRawController.INSTANCE);
+    ROUTES.put("/send", SendController.INSTANCE);
+    ROUTES.put("/receive", ReceiveController.INSTANCE);
+    ROUTES.put("/delete", DeleteController.INSTANCE);
+  }
 
   @Override
   public Controller lookup(HttpRequest request) {
     try {
       URI uri = new URI(request.uri());
-      //TODO make the following use an ordered map (LinkedHashMap).
-      if (uri.getPath().startsWith("/upcheck")) {
-        return new UpcheckController();
-      }
-      if (uri.getPath().startsWith("/sendraw")) {
-        return new SendRawController();
-      }
-      if (uri.getPath().startsWith("/receiveraw")) {
-        return new ReceiveRawController();
-      }
-      if (uri.getPath().startsWith("/send")) {
-        return new SendController();
-      }
-      if (uri.getPath().startsWith("/receive")) {
-        return new ReceiveController();
-      }
-      if (uri.getPath().startsWith("/delete")) {
-        return new DeleteController();
+      Optional<Entry<String, Controller>> route =
+          ROUTES
+              .entrySet()
+              .stream()
+              .filter(entry -> uri.getPath().startsWith(entry.getKey()))
+              .findFirst();
+      if (route.isPresent()) {
+        return route.get().getValue();
       }
       throw new RuntimeException("Unsupported uri: " + uri);
     } catch (URISyntaxException e) {

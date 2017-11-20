@@ -7,6 +7,8 @@ import io.netty.handler.codec.http.HttpRequest;
 
 public class DeleteController implements Controller {
 
+  public static final Controller INSTANCE = new DeleteController();
+
   @Override
   public FullHttpResponse handle(HttpRequest request, FullHttpResponse response) {
     return response;

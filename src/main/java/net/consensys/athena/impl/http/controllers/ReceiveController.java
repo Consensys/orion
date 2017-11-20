@@ -7,6 +7,8 @@ import io.netty.handler.codec.http.HttpRequest;
 
 public class ReceiveController implements Controller {
 
+  public static final Controller INSTANCE = new ReceiveController();
+
   @Override
   public FullHttpResponse handle(HttpRequest request, FullHttpResponse response) {
 

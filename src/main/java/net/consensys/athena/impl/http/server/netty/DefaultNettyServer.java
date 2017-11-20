@@ -131,7 +131,7 @@ public class DefaultNettyServer implements NettyServer {
       bootstrap = initChannel(NioServerSocketChannel.class);
     }
 
-    return bootstrap.bind(settings.httpPort.get());
+    return bootstrap.bind(settings.getHttpPort().get());
   }
 
   @Override

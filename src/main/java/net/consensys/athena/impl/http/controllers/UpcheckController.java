@@ -8,4 +8,6 @@ public class UpcheckController extends StringResponseController implements Contr
   protected String stringResponse() {
     return "I'm up!\n";
   }
+
+  public static final Controller INSTANCE = new UpcheckController();
 }
