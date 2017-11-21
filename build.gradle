@@ -13,6 +13,7 @@ dependencies {
   compile 'io.netty:netty-handler:4.1.17.Final'
   compile 'io.netty:netty-transport-native-epoll:4.1.17.Final:linux-x86_64'
   compile 'io.netty:netty-transport-native-kqueue:4.1.17.Final:osx-x86_64'
+  compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.58'
 
   testImplementation 'junit:junit:4.12'
 }
