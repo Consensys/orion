@@ -1,4 +1,4 @@
-package net.consensys.athena.api.enclave.bouncycastle;
+package net.consensys.athena.impl.enclave.bouncycastle;
 
 import net.consensys.athena.api.enclave.HashAlgorithm;
 
