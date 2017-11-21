@@ -20,7 +20,7 @@ Perhaps you might like using the ssh protocol to clone... in which case do `git 
 In order to make sure the http related communications are as optimised as possible, we use native transports with the
 Java Netty library.  You'll need to build some good things on your OS to help make this sing.
 
-###Linux
+### Linux
 
 ```
 # RHEL/CentOS/Fedora:
@@ -32,6 +32,10 @@ sudo apt-get install autoconf automake libtool make tar \
                      gcc-multilib libaio-dev
 ```
 
-###Mac OS/BSD
+### Mac OS/BSD
 
 `brew install autoconf automake libtool`
+
+## Running Athena
+
+Kick start the Athena http server after getting everything setup with `gradle run`
