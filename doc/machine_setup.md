@@ -11,10 +11,22 @@ brew tap caskroom/versions
 brew cask install java8
 ```
 
+According to the "brew way" that should work.
+
+But you might want to fall back to:
+`
+brew install caskroom/versions/java8
+`
+
 Install gradle
 
 `
 brew install gradle
+`
+
+You'll also want to setup a JAVA_HOME so gradle will play nicely and compile using java 8.
+`
+export JAVA_HOME="$(/usr/libexec/java_home -v 1.8)"
 `
 
 Install IntelliJ community edition
