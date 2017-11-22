@@ -1,7 +1,9 @@
-package net.consensys.athena.api.enclave;
+package net.consensys.athena.impl.enclave;
 
 import static net.consensys.athena.api.enclave.HashAlgorithm.SHA_512_256;
 import static org.junit.Assert.*;
+
+import net.consensys.athena.api.enclave.HashAlgorithm;
 
 import java.util.Arrays;
 import java.util.Collection;
