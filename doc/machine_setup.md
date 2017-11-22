@@ -44,7 +44,7 @@ https://stackoverflow.com/a/31420120
 
 Then outside of intellij checkout athena as per the project readme using git directly.  Then open this folder in intellij.
 
-You'll be presented with an import project screen, and series of steps to complete as per the linked to doc.  Set the path to Gradle will be something like: /usr/local/Cellar/gradle/4.3.1/ 
+You'll be presented with an import project screen, and series of steps to complete as per the linked to doc.  Set the path to Gradle will be something like: /usr/local/Cellar/gradle/4.3.1/libexec/
 (based on your brew config and setup)
 
 
