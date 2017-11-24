@@ -5,10 +5,13 @@ import net.consensys.athena.impl.http.server.Controller;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
 
-/** Used by a client to retrieve a payload (without base64 encoding) */
-public class ReceiveRawController implements Controller {
+/**
+ * Used as a part of the network discovery process. Look up the binary list of constellation nodes
+ * that a node has knowledge of.
+ */
+public class PartyInfoController implements Controller {
 
-  public static final Controller INSTANCE = new ReceiveRawController();
+  public static final Controller INSTANCE = new PartyInfoController();
 
   @Override
   public FullHttpResponse handle(HttpRequest request, FullHttpResponse response) {

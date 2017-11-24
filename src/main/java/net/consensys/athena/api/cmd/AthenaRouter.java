@@ -1,8 +1,11 @@
 package net.consensys.athena.api.cmd;
 
 import net.consensys.athena.impl.http.controllers.DeleteController;
+import net.consensys.athena.impl.http.controllers.PartyInfoController;
+import net.consensys.athena.impl.http.controllers.PushController;
 import net.consensys.athena.impl.http.controllers.ReceiveController;
 import net.consensys.athena.impl.http.controllers.ReceiveRawController;
+import net.consensys.athena.impl.http.controllers.ResendController;
 import net.consensys.athena.impl.http.controllers.SendController;
 import net.consensys.athena.impl.http.controllers.SendRawController;
 import net.consensys.athena.impl.http.controllers.UpcheckController;
@@ -27,6 +30,9 @@ public class AthenaRouter implements Router {
     ROUTES.put("/send", SendController.INSTANCE);
     ROUTES.put("/receive", ReceiveController.INSTANCE);
     ROUTES.put("/delete", DeleteController.INSTANCE);
+    ROUTES.put("/resend", ResendController.INSTANCE);
+    ROUTES.put("/partyinfo", PartyInfoController.INSTANCE);
+    ROUTES.put("/push", PushController.INSTANCE);
   }
 
   @Override
