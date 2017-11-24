@@ -25,12 +25,12 @@ public class BouncyCastleEnclave implements Enclave {
   public void generateKeyPair(String name) {}
 
   @Override
-  public byte[] decrypt(EncryptedPayload payload, PrivateKey privateKey) {
+  public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, PrivateKey privateKey) {
     return new byte[0];
   }
 
   @Override
-  public EncryptedPayload encrypt(byte[] payload, PublicKey senderKey, PublicKey[] recipients) {
+  public EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients) {
     return null;
   }
 }

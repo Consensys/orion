@@ -10,7 +10,7 @@ public interface Enclave {
   // suffix for the public key, and a .key suffix for the private key.
   void generateKeyPair(String name);
 
-  EncryptedPayload encrypt(byte[] payload, PublicKey senderKey, PublicKey[] recipients);
+  EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients);
 
-  byte[] decrypt(EncryptedPayload payload, PrivateKey privateKey);
+  byte[] decrypt(EncryptedPayload ciphertextAndMetadata, PrivateKey privateKey);
 }
