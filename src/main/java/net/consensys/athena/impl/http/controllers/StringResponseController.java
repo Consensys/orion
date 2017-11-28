@@ -6,12 +6,12 @@ import java.nio.charset.Charset;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpRequest;
 
 public abstract class StringResponseController implements Controller {
 
-  public FullHttpResponse handle(HttpRequest request, FullHttpResponse response) {
+  public FullHttpResponse handle(FullHttpRequest request, FullHttpResponse response) {
     ByteBuf content = Unpooled.copiedBuffer(stringResponse().getBytes(Charset.forName("utf8")));
     return response.replace(content);
   }
