@@ -11,9 +11,10 @@ import java.util.Optional;
 
 public class Athena {
 
-  public static final int DEFAULT_HTTP_PORT = 8080;
+  private static final int DEFAULT_HTTP_PORT = 8080;
 
   public static void main(String[] args) throws InterruptedException {
+    // start http server
     Optional<String> socketPath = empty();
     NettySettings settings =
         new NettySettings(socketPath, of(DEFAULT_HTTP_PORT), empty(), new AthenaRouter());
