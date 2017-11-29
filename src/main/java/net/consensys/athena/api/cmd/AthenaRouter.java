@@ -27,7 +27,7 @@ public class AthenaRouter implements Router {
 
   public static final Enclave ENCLAVE = new BouncyCastleEnclave();
   public static final StorageKeyBuilder KEY_BUILDER = new Sha512_256StorageKeyBuilder(ENCLAVE);
-  public static final Storage STORAGE = new MapDbStorage("db", KEY_BUILDER);
+  public static final Storage STORAGE = new MapDbStorage("routerdb", KEY_BUILDER);
 
   @Override
   public Controller lookup(HttpRequest request) {
