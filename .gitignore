@@ -14,3 +14,4 @@ routerdb
 /keys.test
 /tests
 /out
+*.db.test
