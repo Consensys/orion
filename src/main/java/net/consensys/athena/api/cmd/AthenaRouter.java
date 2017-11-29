@@ -1,5 +1,9 @@
 package net.consensys.athena.api.cmd;
 
+import net.consensys.athena.api.enclave.Enclave;
+import net.consensys.athena.api.storage.Storage;
+import net.consensys.athena.api.storage.StorageKeyBuilder;
+import net.consensys.athena.impl.enclave.BouncyCastleEnclave;
 import net.consensys.athena.impl.http.controllers.DeleteController;
 import net.consensys.athena.impl.http.controllers.PartyInfoController;
 import net.consensys.athena.impl.http.controllers.PushController;
@@ -11,43 +15,53 @@ import net.consensys.athena.impl.http.controllers.SendRawController;
 import net.consensys.athena.impl.http.controllers.UpcheckController;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Router;
+import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
+import net.consensys.athena.impl.storage.file.MapDbStorage;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.LinkedHashMap;
-import java.util.Map.Entry;
-import java.util.Optional;
 
 import io.netty.handler.codec.http.HttpRequest;
 
 public class AthenaRouter implements Router {
-  private static final LinkedHashMap<String, Controller> ROUTES = new LinkedHashMap();
 
-  static {
-    ROUTES.put("/upcheck", UpcheckController.INSTANCE);
-    ROUTES.put("/sendraw", SendRawController.INSTANCE);
-    ROUTES.put("/receiveraw", ReceiveRawController.INSTANCE);
-    ROUTES.put("/send", SendController.INSTANCE);
-    ROUTES.put("/receive", ReceiveController.INSTANCE);
-    ROUTES.put("/delete", DeleteController.INSTANCE);
-    ROUTES.put("/resend", ResendController.INSTANCE);
-    ROUTES.put("/partyinfo", PartyInfoController.INSTANCE);
-    ROUTES.put("/push", PushController.INSTANCE);
-  }
+  public static final Enclave ENCLAVE = new BouncyCastleEnclave();
+  public static final StorageKeyBuilder KEY_BUILDER = new Sha512_256StorageKeyBuilder(ENCLAVE);
+  public static final Storage STORAGE = new MapDbStorage("db", KEY_BUILDER);
 
   @Override
   public Controller lookup(HttpRequest request) {
     try {
       URI uri = new URI(request.uri());
-      Optional<Entry<String, Controller>> route =
-          ROUTES
-              .entrySet()
-              .stream()
-              .filter(entry -> uri.getPath().startsWith(entry.getKey()))
-              .findFirst();
-      if (route.isPresent()) {
-        return route.get().getValue();
+      if (uri.getPath().startsWith("/upcheck")) {
+        return new UpcheckController();
       }
+      if (uri.getPath().startsWith("/sendraw")) {
+        return new SendRawController(ENCLAVE, STORAGE);
+      }
+      if (uri.getPath().startsWith("/receiveraw")) {
+        return new ReceiveRawController(ENCLAVE, STORAGE);
+      }
+      if (uri.getPath().startsWith("/send")) {
+        return new SendController(ENCLAVE, STORAGE);
+      }
+      if (uri.getPath().startsWith("/receive")) {
+        return new ReceiveController(ENCLAVE, STORAGE);
+      }
+      if (uri.getPath().startsWith("/delete")) {
+        return new DeleteController(STORAGE);
+      }
+      if (uri.getPath().startsWith("/resend")) {
+        return new ResendController(ENCLAVE, STORAGE);
+      }
+      if (uri.getPath().startsWith("/partyinfo")) {
+        //probably need to inject something that stores the party info state.
+        return new PartyInfoController();
+      }
+      if (uri.getPath().startsWith("/push")) {
+        return new PushController(STORAGE);
+      }
+
       throw new RuntimeException("Unsupported uri: " + uri);
     } catch (URISyntaxException e) {
       throw new RuntimeException("Unable to handle request.", e);
