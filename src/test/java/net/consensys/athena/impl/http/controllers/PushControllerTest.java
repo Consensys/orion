@@ -29,12 +29,12 @@ import io.netty.handler.codec.http.HttpVersion;
 import org.junit.Test;
 
 public class PushControllerTest {
-  private static final Enclave enclave = new BouncyCastleEnclave();
-  private static final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
-  private static final String DB_PATH = "push.db.test";
-  private static final Storage storage = new MapDbStorage(DB_PATH, keyBuilder);
+  private final Enclave enclave = new BouncyCastleEnclave();
+  private final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
+  private final String DB_PATH = "push.db.test";
+  private final Storage storage = new MapDbStorage(DB_PATH, keyBuilder);
 
-  private static final PushController controller = new PushController(storage);
+  private final PushController controller = new PushController(storage);
 
   @Test
   public void testPayloadIsStored() throws Exception {
