@@ -14,6 +14,10 @@ public class SimpleStorage implements StorageKey, StorageData {
     this.key = bytes;
   }
 
+  public SimpleStorage(String b64) {
+    this.key = Base64.getDecoder().decode(b64);
+  }
+
   @Override
   public String getBase64Encoded() {
     return Base64.getEncoder().encodeToString(key);

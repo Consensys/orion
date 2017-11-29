@@ -2,7 +2,9 @@ package net.consensys.athena.impl.http.controllers;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
+import java.util.Base64;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageData;
@@ -35,7 +37,7 @@ public class PushControllerTest {
   private static final PushController controller = new PushController(storage);
 
   @Test
-  public void testPayloadIsStored() {
+  public void testPayloadIsStored() throws Exception {
     // generate random byte content
     byte[] toCheck = new byte[342];
     new Random().nextBytes(toCheck);
@@ -53,9 +55,15 @@ public class PushControllerTest {
     // ensure we got a 200 OK back
     assertEquals(response.status().code(), HttpResponseStatus.OK.code());
 
-    // get the key / digest from response
-    StorageKey key = new SimpleStorage(content.array());
+    // get the key / digest from response, and build our key object
+    String b64 = new String(response.content().array(), "UTF-8");
+    StorageKey key = new SimpleStorage(b64);
+
+    // retrieve stored value
     StorageData data = storage.retrieve(key);
+
+    // ensure we fetched something
+    assertNotNull(data);
 
     // ensure what was stored is what we sent
     assertArrayEquals(data.getRaw(), toCheck);
