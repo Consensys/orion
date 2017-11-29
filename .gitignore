@@ -1,4 +1,6 @@
 .idea
+db
+routerdb
 *.iml
 .gradle
 /.classpath

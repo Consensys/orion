@@ -11,8 +11,6 @@ import io.netty.handler.codec.http.FullHttpResponse;
  */
 public class PartyInfoController implements Controller {
 
-  public static final Controller INSTANCE = new PartyInfoController();
-
   @Override
   public FullHttpResponse handle(FullHttpRequest request, FullHttpResponse response) {
     return response;
