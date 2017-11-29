@@ -1,7 +1,5 @@
 package net.consensys.athena.impl.http.controllers;
 
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageData;
 import net.consensys.athena.api.storage.StorageKey;
@@ -14,6 +12,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 /** used to push a payload to a node. */
 public class PushController implements Controller {

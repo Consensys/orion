@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Base64;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageData;
