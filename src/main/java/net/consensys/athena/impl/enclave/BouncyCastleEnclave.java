@@ -5,7 +5,6 @@ import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.HashAlgorithm;
 import net.consensys.athena.impl.enclave.bouncycastle.Hasher;
 
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
 
@@ -22,15 +21,12 @@ public class BouncyCastleEnclave implements Enclave {
   }
 
   @Override
-  public void generateKeyPair(String name) {}
-
-  @Override
-  public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, PrivateKey privateKey) {
-    return new byte[0];
+  public EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients) {
+    return null;
   }
 
   @Override
-  public EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients) {
-    return null;
+  public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, PublicKey identity) {
+    return new byte[0];
   }
 }
