@@ -11,30 +11,26 @@ import net.consensys.athena.api.storage.StorageData;
 import net.consensys.athena.api.storage.StorageKey;
 import net.consensys.athena.api.storage.StorageKeyBuilder;
 import net.consensys.athena.impl.enclave.BouncyCastleEnclave;
+import net.consensys.athena.impl.http.helpers.HttpTester;
+import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.SimpleStorage;
-import net.consensys.athena.impl.storage.file.MapDbStorage;
+import net.consensys.athena.impl.storage.memory.MemoryStorage;
 
 import java.util.Random;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
 import org.junit.Test;
 
 public class PushControllerTest {
+
   private final Enclave enclave = new BouncyCastleEnclave();
   private final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
-  private final String DB_PATH = "push.db.test";
-  private final Storage storage = new MapDbStorage(DB_PATH, keyBuilder);
+  private final Storage storage = new MemoryStorage(keyBuilder);
 
-  private final PushController controller = new PushController(storage);
+  private final Controller controller = new PushController(storage);
 
   @Test
   public void testPayloadIsStored() throws Exception {
@@ -42,15 +38,13 @@ public class PushControllerTest {
     byte[] toCheck = new byte[342];
     new Random().nextBytes(toCheck);
 
-    // create Netty content and http request object
-    ByteBuf content = Unpooled.copiedBuffer(toCheck);
-    FullHttpRequest req =
-        new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/push", content);
-
-    // call the controller with fake request / response
-    FullHttpResponse defaultResponse =
-        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-    FullHttpResponse response = controller.handle(req, defaultResponse);
+    // perform fake http request
+    FullHttpResponse response =
+        new HttpTester(controller)
+            .uri("/push")
+            .method(HttpMethod.POST)
+            .payload(toCheck)
+            .sendRequest();
 
     // ensure we got a 200 OK back
     assertEquals(response.status().code(), HttpResponseStatus.OK.code());
@@ -70,27 +64,30 @@ public class PushControllerTest {
   }
 
   @Test
-  public void testValidRequest() throws Exception {
+  public void testRequestHasPayload() throws Exception {
+    // perform fake http request
+    FullHttpResponse response =
+        new HttpTester(controller).uri("/push").method(HttpMethod.POST).sendRequest();
+
+    // ensure we didn't get a 200 OK : we provided an empty payload
+    assertNotEquals(response.status().code(), HttpResponseStatus.OK.code());
+  }
+
+  @Test
+  public void testRequestHasHttpPostMethod() throws Exception {
     // generate random byte content
     byte[] toCheck = new byte[342];
     new Random().nextBytes(toCheck);
 
-    // create Netty content and http request object
-    ByteBuf content = Unpooled.copiedBuffer(toCheck);
-    FullHttpRequest req =
-        new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/push", content);
-
-    // call the controller with fake request / response
-    FullHttpResponse defaultResponse =
-        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-    FullHttpResponse response = controller.handle(req, defaultResponse);
+    // perform fake http request
+    FullHttpResponse response =
+        new HttpTester(controller)
+            .uri("/push")
+            .method(HttpMethod.GET)
+            .payload(toCheck)
+            .sendRequest();
 
     // ensure we didn't get a 200 OK : we provided GET HTTP METHOD instead of POST
-    assertNotEquals(response.status().code(), HttpResponseStatus.OK.code());
-
-    req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/push");
-    response = controller.handle(req, defaultResponse);
-    // ensure we didn't get a 200 OK : we provided an empty payload
     assertNotEquals(response.status().code(), HttpResponseStatus.OK.code());
   }
 }
