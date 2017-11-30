@@ -18,7 +18,7 @@ public class MapDbStorage implements Storage {
   private StorageKeyBuilder keyBuilder;
 
   public MapDbStorage(String path, StorageKeyBuilder keyBuilder) {
-    db = DBMaker.fileDB(path).make();
+    db = DBMaker.fileDB(path).transactionEnable().make();
     this.keyBuilder = keyBuilder;
     storageData =
         db.hashMap("storageData", Serializer.BYTE_ARRAY, Serializer.BYTE_ARRAY).createOrOpen();
