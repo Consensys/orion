@@ -9,43 +9,37 @@ import java.util.List;
 public class TomlConfigBuilder {
 
     Config build(File config) {
+
+        MemoryConfig memoryConfig = new MemoryConfig();
+
         Toml toml = new Toml().read(config);
 
-        String url = toml.getString("url");
-        long port = toml.getLong("port");
-        File workDir = new File (toml.getString("workDir"));
-        File socket  = new File (toml.getString("socket"));
-        File[] otherNodes = convertListToFileArray(toml.getList("otherNodes"));
-        File[] publicKeys = convertListToFileArray(toml.getList("publicKeys"));
-        File[] privateKeys = convertListToFileArray(toml.getList("privateKeys"));
-        File[] alwaysSendTo = convertListToFileArray(toml.getList("alwaysSendTo"));
-        File passwords  = new File (toml.getString("passwords"));;
-        String storage = toml.getString("storage");
+        memoryConfig.setPort(toml.getLong("port"));
+        memoryConfig.setWorkDir(new memoryConfig.set(toml.getString("workDir")));
+        memoryConfig.setSocket (new memoryConfig.set(toml.getString("socket")));
+        memoryConfig.setOtherNodes(convertListToFileArray(toml.getList("otherNodes")));
+        memoryConfig.setPublicKeys(convertListToFileArray(toml.getList("publicKeys")));
+        memoryConfig.setPrivateKeys(convertListToFileArray(toml.getList("privateKeys")));
+        memoryConfig.setAlwaysSendTo(convertListToFileArray(toml.getList("alwaysSendTo")));
+        memoryConfig.setPasswords (new memoryConfig.set(toml.getString("passwords"))););
+        memoryConfig.setStorage(toml.getString("storage"));
+        memoryConfig.setIpWhitelist(convertListToStringArray(toml.getList("ipWhitelist")));
+        memoryConfig.setTls(toml.getString("tls"));
+        memoryConfig.setTlsServerCert (new memoryConfig.set(toml.getString("tlsServerCert")));
+        memoryConfig.setTlsServerChain(convertListToFileArray(toml.getList("tlsServerChain")));
+        memoryConfig.setTlsServerKey (new memoryConfig.set(toml.getString("tlsServerKey")));
+        memoryConfig.setTlsServerTrust(toml.getString("tlsServerTrust"));
+        memoryConfig.setTlsKnownClients (new memoryConfig.set(toml.getString("tlsKnownClients")));
+        memoryConfig.setTlsClientCert (new memoryConfig.set(toml.getString("tlsClientCert")));
+        memoryConfig.setTlsClientChain(convertListToFileArray(toml.getList("tlsClientChain")));
+        memoryConfig.setTlsClientKey (new memoryConfig.set(toml.getString("tlsClientKey")));
+        memoryConfig.setTlsClientTrust(toml.getString("tlsClientTrust"));
+        memoryConfig.setTlsKnownServers (new memoryConfig.set(toml.getString("tlsKnownServers")));
+        memoryConfig.setJustGenerateKeys(convertListToStringArray(toml.getList("justGenerateKeys")));
+        memoryConfig.setJustShowVersion(toml.getBoolean("justShowVersion"));
+        memoryConfig.setVerbosity(toml.getLong("verbosity"));
 
-        String[] ipWhitelist = convertListToStringArray(toml.getList("ipWhitelist"));
-
-        String tls = toml.getString("tls");
-        File tlsServerCert  = new File (toml.getString("tlsServerCert"));
-        File[] tlsServerChain = convertListToFileArray(toml.getList("tlsServerChain"));
-        File tlsServerKey  = new File (toml.getString("tlsServerKey"));
-        String tlsServerTrust = toml.getString("tlsServerTrust");
-        File tlsKnownClients  = new File (toml.getString("tlsKnownClients"));
-        File tlsClientCert  = new File (toml.getString("tlsClientCert"));
-        File[] tlsClientChain = convertListToFileArray(toml.getList("tlsClientChain"));
-        File tlsClientKey  = new File (toml.getString("tlsClientKey"));
-        String tlsClientTrust = toml.getString("tlsClientTrust");
-        File tlsKnownServers  = new File (toml.getString("tlsKnownServers"));
-
-        String[] justGenerateKeys = convertListToStringArray(toml.getList("justGenerateKeys"));
-
-        boolean justShowVersion = toml.getBoolean("justShowVersion");
-        long verbosity = toml.getLong("verbosity");
-
-        return new MemoryConfig(url, port, workDir, socket, otherNodes, publicKeys, privateKeys,
-                alwaysSendTo, passwords, storage, ipWhitelist, tls, tlsServerCert, tlsServerChain, tlsServerKey,
-                tlsServerTrust, tlsKnownClients, tlsClientCert, tlsClientChain, tlsClientKey, tlsClientTrust,
-                tlsKnownServers, justGenerateKeys, justShowVersion, verbosity);
-
+        return memoryConfig;
     }
 
     private File[] convertListToFileArray(List<String> paths) {

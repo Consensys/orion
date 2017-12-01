@@ -33,36 +33,103 @@ public class MemoryConfig implements Config{
     private boolean justShowVersion;
     private long verbosity;
 
-    public MemoryConfig(String url, long port, File workDir, File socket, File[] otherNodes, File[] publicKeys,
-                        File[] privateKeys, File[] alwaysSendTo, File passwords, String storage, String[] ipWhitelist,
-                        String tls, File tlsServerCert, File[] tlsServerChain, File tlsServerKey, String tlsServerTrust,
-                        File tlsKnownClients, File tlsClientCert, File[] tlsClientChain, File tlsClientKey,
-                        String tlsClientTrust, File tlsKnownServers, String[] justGenerateKeys,
-                        boolean justShowVersion, long verbosity) {
+    public void setUrl(String url) {
         this.url = url;
+    }
+
+    public void setPort(long port) {
         this.port = port;
+    }
+
+    public void setWorkDir(File workDir) {
         this.workDir = workDir;
+    }
+
+    public void setSocket(File socket) {
         this.socket = socket;
+    }
+
+    public void setOtherNodes(File[] otherNodes) {
         this.otherNodes = otherNodes;
+    }
+
+    public void setPublicKeys(File[] publicKeys) {
         this.publicKeys = publicKeys;
+    }
+
+    public void setPrivateKeys(File[] privateKeys) {
         this.privateKeys = privateKeys;
+    }
+
+    public void setAlwaysSendTo(File[] alwaysSendTo) {
         this.alwaysSendTo = alwaysSendTo;
+    }
+
+    public void setPasswords(File passwords) {
         this.passwords = passwords;
+    }
+
+    public void setStorage(String storage) {
         this.storage = storage;
+    }
+
+    public void setIpWhitelist(String[] ipWhitelist) {
         this.ipWhitelist = ipWhitelist;
+    }
+
+    public void setTls(String tls) {
         this.tls = tls;
+    }
+
+    public void setTlsServerCert(File tlsServerCert) {
         this.tlsServerCert = tlsServerCert;
+    }
+
+    public void setTlsServerChain(File[] tlsServerChain) {
         this.tlsServerChain = tlsServerChain;
+    }
+
+    public void setTlsServerKey(File tlsServerKey) {
         this.tlsServerKey = tlsServerKey;
+    }
+
+    public void setTlsServerTrust(String tlsServerTrust) {
         this.tlsServerTrust = tlsServerTrust;
+    }
+
+    public void setTlsKnownClients(File tlsKnownClients) {
         this.tlsKnownClients = tlsKnownClients;
+    }
+
+    public void setTlsClientCert(File tlsClientCert) {
         this.tlsClientCert = tlsClientCert;
+    }
+
+    public void setTlsClientChain(File[] tlsClientChain) {
         this.tlsClientChain = tlsClientChain;
+    }
+
+    public void setTlsClientKey(File tlsClientKey) {
         this.tlsClientKey = tlsClientKey;
+    }
+
+    public void setTlsClientTrust(String tlsClientTrust) {
         this.tlsClientTrust = tlsClientTrust;
+    }
+
+    public void setTlsKnownServers(File tlsKnownServers) {
         this.tlsKnownServers = tlsKnownServers;
+    }
+
+    public void setJustGenerateKeys(String[] justGenerateKeys) {
         this.justGenerateKeys = justGenerateKeys;
+    }
+
+    public void setJustShowVersion(boolean justShowVersion) {
         this.justShowVersion = justShowVersion;
+    }
+
+    public void setVerbosity(long verbosity) {
         this.verbosity = verbosity;
     }
 
