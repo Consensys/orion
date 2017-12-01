@@ -50,7 +50,7 @@ public class TomlConfigBuilder {
             fileArray[i] = new File(paths.get(i));
         }
 
-        return fileArray
+        return fileArray;
     }
 
     private String[] convertListToStringArray(List<String> path) {
