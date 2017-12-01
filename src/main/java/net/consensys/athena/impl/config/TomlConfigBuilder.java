@@ -43,14 +43,7 @@ public class TomlConfigBuilder {
     }
 
     private File[] convertListToFileArray(List<String> paths) {
-
-        File[] fileArray = new File[paths.size()];
-
-        for (int i = 0; i < paths.size(); i++) {
-            fileArray[i] = new File(paths.get(i));
-        }
-
-        return fileArray;
+        return paths.stream().map(File::new).toArray(File[]::new);
     }
 
     private String[] convertListToStringArray(List<String> path) {
