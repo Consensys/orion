@@ -3,7 +3,6 @@ package net.consensys.athena.impl.http.controllers;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
 
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.storage.Storage;
@@ -17,6 +16,7 @@ import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.SimpleStorage;
 import net.consensys.athena.impl.storage.memory.MemoryStorage;
 
+import java.util.Optional;
 import java.util.Random;
 
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -54,13 +54,13 @@ public class PushControllerTest {
     StorageKey key = new SimpleStorage(b64);
 
     // retrieve stored value
-    StorageData data = storage.retrieve(key);
+    Optional<StorageData> data = storage.retrieve(key);
 
     // ensure we fetched something
-    assertNotNull(data);
+    assert (data.isPresent());
 
     // ensure what was stored is what we sent
-    assertArrayEquals(data.getRaw(), toCheck);
+    assertArrayEquals(data.get().getRaw(), toCheck);
   }
 
   @Test

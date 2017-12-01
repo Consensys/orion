@@ -6,6 +6,8 @@ import net.consensys.athena.api.storage.StorageKey;
 import net.consensys.athena.api.storage.StorageKeyBuilder;
 import net.consensys.athena.impl.storage.SimpleStorage;
 
+import java.util.Optional;
+
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.HTreeMap;
@@ -33,12 +35,12 @@ public class MapDbStorage implements Storage {
   }
 
   @Override
-  public StorageData retrieve(StorageKey key) {
+  public Optional<StorageData> retrieve(StorageKey key) {
     byte[] rawData = storageData.get(key.getRaw());
     if (rawData == null) {
-      return null;
+      return Optional.empty();
     }
-    return new SimpleStorage(rawData);
+    return Optional.of(new SimpleStorage(rawData));
   }
 
   @Override

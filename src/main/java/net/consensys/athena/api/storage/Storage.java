@@ -1,10 +1,12 @@
 package net.consensys.athena.api.storage;
 
+import java.util.Optional;
+
 public interface Storage {
 
   StorageKey store(StorageData data);
 
-  StorageData retrieve(StorageKey key);
+  Optional<StorageData> retrieve(StorageKey key);
 
   default boolean isOpen() {
     return true;

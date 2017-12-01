@@ -7,6 +7,7 @@ import net.consensys.athena.api.storage.StorageKeyBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class MemoryStorage implements Storage {
   private final StorageKeyBuilder storageKeyBuilder;
@@ -24,7 +25,7 @@ public class MemoryStorage implements Storage {
   }
 
   @Override
-  public StorageData retrieve(StorageKey key) {
-    return store.get(key);
+  public Optional<StorageData> retrieve(StorageKey key) {
+    return Optional.ofNullable(store.get(key));
   }
 }
