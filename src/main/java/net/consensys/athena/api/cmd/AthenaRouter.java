@@ -8,11 +8,10 @@ import net.consensys.athena.impl.http.controllers.DeleteController;
 import net.consensys.athena.impl.http.controllers.PartyInfoController;
 import net.consensys.athena.impl.http.controllers.PushController;
 import net.consensys.athena.impl.http.controllers.ReceiveController;
-import net.consensys.athena.impl.http.controllers.ReceiveRawController;
 import net.consensys.athena.impl.http.controllers.ResendController;
 import net.consensys.athena.impl.http.controllers.SendController;
-import net.consensys.athena.impl.http.controllers.SendRawController;
 import net.consensys.athena.impl.http.controllers.UpcheckController;
+import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Router;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
@@ -37,16 +36,16 @@ public class AthenaRouter implements Router {
         return new UpcheckController();
       }
       if (uri.getPath().startsWith("/sendraw")) {
-        return new SendRawController(ENCLAVE, STORAGE);
+        return new SendController(ENCLAVE, STORAGE, ContentType.RAW);
       }
       if (uri.getPath().startsWith("/receiveraw")) {
-        return new ReceiveRawController(ENCLAVE, STORAGE);
+        return new ReceiveController(ENCLAVE, STORAGE, ContentType.RAW);
       }
       if (uri.getPath().startsWith("/send")) {
-        return new SendController(ENCLAVE, STORAGE);
+        return new SendController(ENCLAVE, STORAGE, ContentType.JSON);
       }
       if (uri.getPath().startsWith("/receive")) {
-        return new ReceiveController(ENCLAVE, STORAGE);
+        return new ReceiveController(ENCLAVE, STORAGE, ContentType.JSON);
       }
       if (uri.getPath().startsWith("/delete")) {
         return new DeleteController(STORAGE);

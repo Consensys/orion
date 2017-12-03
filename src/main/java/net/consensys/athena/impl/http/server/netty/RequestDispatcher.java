@@ -1,10 +1,15 @@
 package net.consensys.athena.impl.http.server.netty;
 
+import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.http.server.Responder;
 import net.consensys.athena.impl.http.server.Router;
 
+import java.nio.charset.Charset;
 import java.util.function.BiConsumer;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -34,9 +39,28 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     response.headers().add(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
 
     Controller controller = router.lookup(fullHttpRequest);
-    response = controller.handle(fullHttpRequest, response);
-
+    Responder responder = controller.handle(fullHttpRequest, response);
+    response = outputResponse(fullHttpRequest, responder);
     ctx.writeAndFlush(response);
     fullHttpRequest.release();
+  }
+
+  private FullHttpResponse outputResponse(FullHttpRequest request, Responder responder) {
+    //TODO lookup content type from the request
+    ContentType contentType = responder.defaultContentType();
+    byte[] bytes = new byte[] {};
+    switch (contentType) {
+      case HASKELL_ENCODED:
+        bytes = responder.getHaskellEncoded();
+        break;
+      case JSON:
+        bytes = responder.getJson().getBytes(Charset.defaultCharset());
+        break;
+      case RAW:
+        bytes = responder.getRaw();
+        break;
+    }
+    ByteBuf content = Unpooled.copiedBuffer(bytes);
+    return responder.getResponse().replace(content);
   }
 }

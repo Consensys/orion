@@ -1,6 +1,8 @@
 package net.consensys.athena.impl.http.controllers;
 
+import net.consensys.athena.impl.http.responders.PartyInfoResponder;
 import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.http.server.Responder;
 
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
@@ -12,7 +14,7 @@ import io.netty.handler.codec.http.HttpRequest;
 public class PartyInfoController implements Controller {
 
   @Override
-  public FullHttpResponse handle(HttpRequest request, FullHttpResponse response) {
-    return response;
+  public Responder handle(HttpRequest request, FullHttpResponse response) {
+    return new PartyInfoResponder(response);
   }
 }
