@@ -1,27 +1,19 @@
 package net.consensys.athena.impl.storage.memory;
 
-import net.consensys.athena.api.storage.Storage;
+import net.consensys.athena.api.storage.KeyValueStore;
 import net.consensys.athena.api.storage.StorageData;
 import net.consensys.athena.api.storage.StorageKey;
-import net.consensys.athena.api.storage.StorageKeyBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class MemoryStorage implements Storage {
-  private final StorageKeyBuilder storageKeyBuilder;
+public class MemoryStorage implements KeyValueStore {
   private final Map<StorageKey, StorageData> store = new HashMap<>();
 
-  public MemoryStorage(StorageKeyBuilder storageKeyBuilder) {
-    this.storageKeyBuilder = storageKeyBuilder;
-  }
-
   @Override
-  public StorageKey store(StorageData data) {
-    StorageKey key = storageKeyBuilder.build(data);
+  public void store(StorageKey key, StorageData data) {
     store.put(key, data);
-    return key;
   }
 
   @Override
