@@ -7,7 +7,7 @@ import net.consensys.athena.impl.http.server.Controller;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
 
-/** used for a client(quorum) to send a raw payload to store in athena */
+/** used for a client(quorum) to send a raw payload to put in athena */
 public class SendRawController implements Controller {
   private final Enclave enclave;
   private final Storage storage;

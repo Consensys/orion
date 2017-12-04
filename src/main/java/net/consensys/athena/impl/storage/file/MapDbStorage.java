@@ -2,7 +2,7 @@ package net.consensys.athena.impl.storage.file;
 
 import net.consensys.athena.api.storage.KeyValueStore;
 import net.consensys.athena.api.storage.StorageData;
-import net.consensys.athena.api.storage.StorageKey;
+import net.consensys.athena.api.storage.StorageId;
 import net.consensys.athena.impl.storage.SimpleStorage;
 
 import java.util.Optional;
@@ -24,13 +24,13 @@ public class MapDbStorage implements KeyValueStore {
   }
 
   @Override
-  public void store(StorageKey key, StorageData data) {
+  public void put(StorageId key, StorageData data) {
     storageData.put(key.getRaw(), data.getRaw());
     db.commit();
   }
 
   @Override
-  public Optional<StorageData> retrieve(StorageKey key) {
+  public Optional<StorageData> get(StorageId key) {
     byte[] rawData = storageData.get(key.getRaw());
     if (rawData == null) {
       return Optional.empty();

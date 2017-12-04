@@ -7,7 +7,7 @@ import net.consensys.athena.impl.http.server.Controller;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
 
-/** Used by a client to retrieve a payload (without base64 encoding) */
+/** Used by a client to get a payload (without base64 encoding) */
 public class ReceiveRawController implements Controller {
   private final Enclave enclave;
   private final Storage storage;

@@ -4,9 +4,9 @@ import java.util.Optional;
 
 public interface KeyValueStore {
 
-  void store(StorageKey key, StorageData data);
+  void put(StorageId key, StorageData data);
 
-  Optional<StorageData> retrieve(StorageKey key);
+  Optional<StorageData> get(StorageId key);
 
   default boolean isOpen() {
     return true;
