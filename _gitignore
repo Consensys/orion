@@ -1,0 +1,16 @@
+.idea
+db
+routerdb
+*.iml
+.gradle
+/.classpath
+/.gradle
+/.project
+/.settings/*
+/bin/
+/build/*
+/gradlew
+/gradlew.bat
+/keys.test
+/tests
+/out
