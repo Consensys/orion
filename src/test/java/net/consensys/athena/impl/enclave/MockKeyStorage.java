@@ -8,11 +8,13 @@ import net.consensys.athena.impl.storage.SimpleStorage;
 public class MockKeyStorage implements Storage {
     @Override
     public StorageKey store(StorageData data) {
+
         return null;
     }
 
     @Override
     public StorageData retrieve(StorageKey key) {
+
         return new MockStorageData();
     }
 }

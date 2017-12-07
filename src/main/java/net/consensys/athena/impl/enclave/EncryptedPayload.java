@@ -8,6 +8,8 @@ import static java.lang.System.*;
 public class EncryptedPayload implements net.consensys.athena.api.enclave.EncryptedPayload {
 
     private final long nonce;
+    //private final PublicKey publicKey;
+    private final byte[] cipherText;
 
     @Override
     public PublicKey getSender() {
@@ -16,7 +18,7 @@ public class EncryptedPayload implements net.consensys.athena.api.enclave.Encryp
 
     @Override
     public byte[] getCipherText() {
-        return new byte[0];
+        return cipherText;
     }
 
     @Override
@@ -35,19 +37,11 @@ public class EncryptedPayload implements net.consensys.athena.api.enclave.Encryp
         return 0;
     }
 
-    public EncryptedPayload() {
+    public EncryptedPayload(byte[] senderKey, byte[] cipherText) {
+        //TODO: CONSTRUCT KEY
+        //this.publicKey = senderKey;
+        this.cipherText = cipherText;
 
         this.nonce = currentTimeMillis();
-    }
-
-    public EncryptedPayload(long nonce) {
-
-        this.nonce = nonce;
-
-
-    }
-
-    public void AddCombinedKey(byte[] c) {
-
     }
 }
