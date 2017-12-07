@@ -1,9 +1,11 @@
 package net.consensys.athena.impl.http.controllers;
 
 import net.consensys.athena.api.enclave.Enclave;
+import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageData;
 import net.consensys.athena.api.storage.StorageKey;
+import net.consensys.athena.impl.enclave.EncryptedPayloadBuilder;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.storage.SimpleStorage;
 
@@ -43,7 +45,9 @@ public class ReceiveController implements Controller {
       }
 
       // first, let's build a EncryptedPayload from data
-      //      EncryptedPayload encPayload = new EncryptedPayloadBuilder(data.get().getRaw()).build();
+      EncryptedPayload encPayload = new EncryptedPayloadBuilder(data.get().getRaw()).build();
+      //      if (encPayload.getSender() == )
+
       // let's check if receipients is set = it's a payload that we sent.
       // if not, it's a payload sent to us
       // call enclave.decrypt(encPayload, receiveRequest.key)
