@@ -6,6 +6,7 @@ import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.http.server.Router;
 
 import java.nio.charset.Charset;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -19,6 +20,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.stream.ChunkedWriteHandler;
@@ -40,22 +42,21 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     if (pipeline.get("chunker") == null) {
       pipeline.addAfter("codec", "chunker", new ChunkedWriteHandler());
     }
-    FullHttpResponse response =
-        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
-    response.headers().add(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
 
     Controller controller = router.lookup(fullHttpRequest);
-    Result result = controller.handle(fullHttpRequest, response);
-    response = outputResponse(fullHttpRequest, result);
+    Result result = controller.handle(fullHttpRequest);
+    FullHttpResponse response = outputResponse(fullHttpRequest, result);
     ctx.writeAndFlush(response);
     fullHttpRequest.release();
   }
 
   private FullHttpResponse outputResponse(FullHttpRequest request, Result result) {
     // TODO lookup content type from the request
+    FullHttpResponse response =
+        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+    response.headers().add(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
     ContentType contentType = result.defaultContentType();
     byte[] bytes = new byte[] {};
-    FullHttpResponse response = result.getResponse();
     switch (contentType) {
       case HASKELL_ENCODED:
         // TODO implement or remove
@@ -78,6 +79,11 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
             .headers()
             .add(HttpHeaderNames.CONTENT_ENCODING, HttpHeaderValues.APPLICATION_OCTET_STREAM);
         break;
+    }
+    Optional<HttpHeaders> extraHeaders = result.getExtraHeaders();
+    if (extraHeaders.isPresent()) {
+      HttpHeaders headers = extraHeaders.get();
+      response.headers().add(headers);
     }
     response = response.setStatus(result.getStatus());
     ByteBuf content = Unpooled.copiedBuffer(bytes);

@@ -8,7 +8,6 @@ import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
 
-import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
 
 /** Send a base64 encoded payload to encrypt. */
@@ -24,7 +23,7 @@ public class SendController implements Controller {
   }
 
   @Override
-  public Result handle(HttpRequest request, FullHttpResponse response) {
-    return notImplemented(contentType, response);
+  public Result handle(HttpRequest request) {
+    return notImplemented(contentType);
   }
 }

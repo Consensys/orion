@@ -7,7 +7,6 @@ import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
 
-import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
 
 /** Delete a payload from storage. */
@@ -19,7 +18,7 @@ public class DeleteController implements Controller {
   }
 
   @Override
-  public Result handle(HttpRequest request, FullHttpResponse response) {
-    return notImplemented(ContentType.JSON, response);
+  public Result handle(HttpRequest request) {
+    return notImplemented(ContentType.JSON);
   }
 }

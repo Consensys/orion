@@ -1,38 +1,34 @@
 package net.consensys.athena.impl.http.server;
 
+import static java.util.Optional.*;
+
 import java.util.Optional;
 
-import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.jetbrains.annotations.NotNull;
 
 public interface Result<T> {
 
   @NotNull
-  static <U> Result<U> ok(ContentType defaultContentType, FullHttpResponse response, U payload) {
-    return new ResultImpl<>(
-        defaultContentType, response, Optional.of(payload), HttpResponseStatus.OK);
+  static <U> Result<U> ok(ContentType defaultContentType, U payload) {
+    return new ResultImpl<>(defaultContentType, of(payload), HttpResponseStatus.OK);
   }
 
   @NotNull
-  static Result badRequest(ContentType defaultContentType, FullHttpResponse response) {
-    return new ResultImpl<>(
-        defaultContentType, response, Optional.empty(), HttpResponseStatus.BAD_REQUEST);
+  static Result badRequest(ContentType defaultContentType) {
+    return new ResultImpl<>(defaultContentType, empty(), HttpResponseStatus.BAD_REQUEST);
   }
 
   @NotNull
-  static Result notImplemented(ContentType defaultContentType, FullHttpResponse response) {
-    return new ResultImpl<>(
-        defaultContentType, response, Optional.empty(), HttpResponseStatus.NOT_IMPLEMENTED);
+  static Result notImplemented(ContentType defaultContentType) {
+    return new ResultImpl<>(defaultContentType, empty(), HttpResponseStatus.NOT_IMPLEMENTED);
   }
 
   @NotNull
-  static Result internalServerError(ContentType defaultContentType, FullHttpResponse response) {
-    return new ResultImpl<>(
-        defaultContentType, response, Optional.empty(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
+  static Result internalServerError(ContentType defaultContentType) {
+    return new ResultImpl<>(defaultContentType, empty(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
   }
-
-  FullHttpResponse getResponse();
 
   Optional<T> getPayload();
 
@@ -40,5 +36,9 @@ public interface Result<T> {
 
   default HttpResponseStatus getStatus() {
     return HttpResponseStatus.OK;
+  }
+
+  default Optional<HttpHeaders> getExtraHeaders() {
+    return empty();
   }
 }

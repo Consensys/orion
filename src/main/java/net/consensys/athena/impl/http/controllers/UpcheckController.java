@@ -4,7 +4,6 @@ import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
 
-import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
 
 /**
@@ -14,7 +13,7 @@ import io.netty.handler.codec.http.HttpRequest;
 public class UpcheckController implements Controller {
 
   @Override
-  public Result handle(HttpRequest request, FullHttpResponse response) {
-    return Result.ok(ContentType.RAW, response, "I'm up!");
+  public Result handle(HttpRequest request) {
+    return Result.ok(ContentType.RAW, "I'm up!");
   }
 }
