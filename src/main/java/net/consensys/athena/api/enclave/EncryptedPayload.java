@@ -7,9 +7,9 @@ public interface EncryptedPayload {
 
   byte[] getCipherText();
 
-  long getNonce();
+  byte[] getNonce();
 
   CombinedKey[] getCombinedKeys();
 
-  long getCombinedKeyNonce();
+  byte[] getCombinedKeyNonce();
 }
