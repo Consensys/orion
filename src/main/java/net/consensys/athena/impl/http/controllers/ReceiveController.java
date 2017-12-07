@@ -11,6 +11,7 @@ import net.consensys.athena.impl.storage.SimpleStorage;
 
 import java.io.IOException;
 import java.security.PublicKey;
+import java.util.Base64;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,14 +47,14 @@ public class ReceiveController implements Controller {
 
       // first, let's build a EncryptedPayload from data
       EncryptedPayload encPayload = new EncryptedPayloadBuilder(data.get().getRaw()).build();
-      //      if (encPayload.getSender() == )
-
-      // let's check if receipients is set = it's a payload that we sent.
+      // Haskell doc: let's check if receipients is set = it's a payload that we sent.
       // if not, it's a payload sent to us
-      // call enclave.decrypt(encPayload, receiveRequest.key)
+      byte[] decryptedPayload = enclave.decrypt(encPayload, receiveRequest.publicKey);
 
       // encode in base64 the decryptedPayload
       // build a ReceiveResponse
+      ReceiveResponse toReturn =
+          new ReceiveResponse(Base64.getEncoder().encodeToString(decryptedPayload));
       // convert it to JSON
       // write it to the response
 
@@ -71,5 +72,9 @@ public class ReceiveController implements Controller {
 
   private static class ReceiveResponse {
     public String payload;
+
+    ReceiveResponse(String payload) {
+      this.payload = payload;
+    }
   }
 }
