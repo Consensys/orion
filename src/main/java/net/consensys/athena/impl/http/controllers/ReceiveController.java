@@ -1,11 +1,12 @@
 package net.consensys.athena.impl.http.controllers;
 
+import static net.consensys.athena.impl.http.server.Result.notImplemented;
+
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.storage.Storage;
-import net.consensys.athena.impl.http.responders.ReceiveResponder;
 import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
-import net.consensys.athena.impl.http.server.Responder;
+import net.consensys.athena.impl.http.server.Result;
 
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
@@ -23,7 +24,7 @@ public class ReceiveController implements Controller {
   }
 
   @Override
-  public Responder handle(HttpRequest request, FullHttpResponse response) {
-    return new ReceiveResponder(response, contentType);
+  public Result handle(HttpRequest request, FullHttpResponse response) {
+    return notImplemented(contentType, response);
   }
 }
