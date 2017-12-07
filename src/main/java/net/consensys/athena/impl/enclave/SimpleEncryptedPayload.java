@@ -3,9 +3,10 @@ package net.consensys.athena.impl.enclave;
 import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 
+import java.io.Serializable;
 import java.security.PublicKey;
 
-public class SimpleEncryptedPayload implements EncryptedPayload {
+public class SimpleEncryptedPayload implements EncryptedPayload, Serializable {
 
   private byte[] combinedKeyNonce;
   private PublicKey sender;
