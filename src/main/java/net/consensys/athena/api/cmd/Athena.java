@@ -9,6 +9,8 @@ import net.consensys.athena.impl.http.server.netty.NettySettings;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class Athena {
 
   public static final int DEFAULT_HTTP_PORT = 8080;
@@ -16,7 +18,8 @@ public class Athena {
   public static void main(String[] args) throws InterruptedException {
     Optional<String> socketPath = empty();
     NettySettings settings =
-        new NettySettings(socketPath, of(DEFAULT_HTTP_PORT), empty(), new AthenaRouter());
+        new NettySettings(
+            socketPath, of(DEFAULT_HTTP_PORT), empty(), new AthenaRouter(), new ObjectMapper());
     NettyServer server = new DefaultNettyServer(settings);
     server.start();
     server.join();
