@@ -145,12 +145,12 @@ public class MemoryConfig implements Config {
 
   @Override
   public Optional<File> workDir() {
-    return workDir;
+    return Optional.ofNullable(workDir);
   }
 
   @Override
   public Optional<File> socket() {
-    return socket;
+    return Optional.ofNullable(socket);
   }
 
   @Override
@@ -175,7 +175,7 @@ public class MemoryConfig implements Config {
 
   @Override
   public Optional<File> passwords() {
-    return passwords;
+    return Optional.ofNullable(passwords);
   }
 
   @Override
