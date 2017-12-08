@@ -16,7 +16,6 @@ import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.http.server.Serializer;
-import net.consensys.athena.impl.http.server.Serializer.Protocol;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.SimpleStorage;
 import net.consensys.athena.impl.storage.memory.MemoryStorage;
@@ -46,7 +45,7 @@ public class ReceiveControllerTest {
     EncryptedPayload encryptedPayload = enclave.encrypt(toCheck, null, null);
 
     // serialize it
-    byte[] serialized = Serializer.serialize(encryptedPayload, Protocol.JAVA);
+    byte[] serialized = Serializer.serialize(encryptedPayload, ContentType.JAVA_ENCODED);
 
     // store it
     StorageKey key = storage.store(new SimpleStorage(serialized));
@@ -59,7 +58,7 @@ public class ReceiveControllerTest {
         new HttpTester(receiveController)
             .uri("/receive")
             .method(HttpMethod.POST)
-            .payload(Serializer.serialize(req, Protocol.JSON))
+            .payload(Serializer.serialize(req, ContentType.JSON))
             .sendRequest();
 
     // ensure we got a 200 OK back
