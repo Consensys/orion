@@ -4,7 +4,7 @@ import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
 
-import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.FullHttpRequest;
 
 /**
  * Simple upcheck/hello check to see if the server is up and running. Returns a 200 response with
@@ -13,7 +13,7 @@ import io.netty.handler.codec.http.HttpRequest;
 public class UpcheckController implements Controller {
 
   @Override
-  public Result handle(HttpRequest request) {
+  public Result handle(FullHttpRequest request) {
     return Result.ok(ContentType.RAW, "I'm up!");
   }
 }
