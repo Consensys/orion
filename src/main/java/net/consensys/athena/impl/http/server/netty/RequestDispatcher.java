@@ -4,13 +4,13 @@ import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.http.server.Router;
+import net.consensys.athena.impl.http.server.Serializer;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -29,11 +29,9 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
 
   public static final Charset UTF_8 = Charset.forName("UTF-8");
   private Router router;
-  private ObjectMapper objectMapper;
 
-  public RequestDispatcher(Router router, ObjectMapper objectMapper) {
+  public RequestDispatcher(Router router) {
     this.router = router;
-    this.objectMapper = objectMapper;
   }
 
   @Override
@@ -55,18 +53,14 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     FullHttpResponse response =
         new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
     response.headers().add(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
+    // TODO check result.getPayload().isPresent();
     ContentType contentType = result.defaultContentType();
-    byte[] bytes = new byte[] {};
+    byte[] bytes;
     switch (contentType) {
-      case HASKELL_ENCODED:
-        // TODO implement or remove
-        bytes = new byte[0];
-        response.headers().add(HttpHeaderNames.CONTENT_ENCODING, "application/haskell");
-        break;
       case JSON:
         try {
-          bytes = objectMapper.writeValueAsString(result.getPayload().get()).getBytes(UTF_8);
-        } catch (JsonProcessingException e) {
+          bytes = Serializer.serialize(result.getPayload().get(), contentType);
+        } catch (IOException e) {
           e.printStackTrace();
           throw new RuntimeException(e);
         }
@@ -79,6 +73,8 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
             .headers()
             .add(HttpHeaderNames.CONTENT_ENCODING, HttpHeaderValues.APPLICATION_OCTET_STREAM);
         break;
+      default:
+        throw new RuntimeException("specified contentType is not implemented");
     }
     Optional<HttpHeaders> extraHeaders = result.getExtraHeaders();
     if (extraHeaders.isPresent()) {

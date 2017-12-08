@@ -11,18 +11,11 @@ import java.nio.charset.Charset;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Serializer {
-  static final ObjectMapper jsonObjectMapper = new ObjectMapper();
+  private static final ObjectMapper jsonObjectMapper = new ObjectMapper();
 
-  public enum Protocol {
-    JAVA,
-    JSON,
-    HASKELL,
-    RLPX
-  }
-
-  public static byte[] serialize(Object obj, Protocol protocol) throws IOException {
-    switch (protocol) {
-      case JAVA:
+  public static byte[] serialize(Object obj, ContentType contentType) throws IOException {
+    switch (contentType) {
+      case JAVA_ENCODED:
         ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream outputStream = new ObjectOutputStream(byteOutputStream);
         outputStream.writeObject(obj);
@@ -35,10 +28,10 @@ public class Serializer {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> T deserialize(byte[] bytes, Protocol protocol, Class<T> valueType)
+  public static <T> T deserialize(byte[] bytes, ContentType contentType, Class<T> valueType)
       throws IOException, ClassNotFoundException, ClassCastException {
-    switch (protocol) {
-      case JAVA:
+    switch (contentType) {
+      case JAVA_ENCODED:
         return (T) new ObjectInputStream(new ByteArrayInputStream(bytes)).readObject();
       case JSON:
         return jsonObjectMapper.readValue(bytes, valueType);
