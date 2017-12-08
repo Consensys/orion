@@ -6,24 +6,27 @@ import net.consensys.athena.impl.http.server.Serializer;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 public class SerializerTest {
 
+  Serializer serializer = new Serializer(new ObjectMapper());
+
   @Test
   public void testJavaSerialization() throws Exception {
     DummyObject dummyObjectOriginal = new DummyObject();
-    byte[] bytes = Serializer.serialize(dummyObjectOriginal, ContentType.JAVA_ENCODED);
+    byte[] bytes = serializer.serialize(dummyObjectOriginal, ContentType.JAVA_ENCODED);
     DummyObject dummyObject =
-        Serializer.deserialize(bytes, ContentType.JAVA_ENCODED, DummyObject.class);
+        serializer.deserialize(bytes, ContentType.JAVA_ENCODED, DummyObject.class);
     assert (dummyObject.equals(dummyObjectOriginal));
   }
 
   @Test
   public void testJsonSerialization() throws Exception {
     DummyObject dummyObjectOriginal = new DummyObject();
-    byte[] bytes = Serializer.serialize(dummyObjectOriginal, ContentType.JSON);
-    DummyObject dummyObject = Serializer.deserialize(bytes, ContentType.JSON, DummyObject.class);
+    byte[] bytes = serializer.serialize(dummyObjectOriginal, ContentType.JSON);
+    DummyObject dummyObject = serializer.deserialize(bytes, ContentType.JSON, DummyObject.class);
     assert (dummyObject.equals(dummyObjectOriginal));
   }
 }

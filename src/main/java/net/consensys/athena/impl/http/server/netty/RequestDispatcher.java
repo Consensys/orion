@@ -29,9 +29,11 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
 
   public static final Charset UTF_8 = Charset.forName("UTF-8");
   private Router router;
+  private Serializer serializer;
 
-  public RequestDispatcher(Router router) {
+  public RequestDispatcher(Router router, Serializer serializer) {
     this.router = router;
+    this.serializer = serializer;
   }
 
   @Override
@@ -59,7 +61,7 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     switch (contentType) {
       case JSON:
         try {
-          bytes = Serializer.serialize(result.getPayload().get(), contentType);
+          bytes = serializer.serialize(result.getPayload().get(), contentType);
         } catch (IOException e) {
           e.printStackTrace();
           throw new RuntimeException(e);
