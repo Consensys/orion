@@ -28,7 +28,7 @@ public class ReceiveController implements Controller {
   private final Enclave enclave;
   private final Storage storage;
   private final ContentType contentType;
-  private Serializer serializer;
+  private final Serializer serializer;
 
   public ReceiveController(
       Enclave enclave, Storage storage, ContentType contentType, Serializer serializer) {
