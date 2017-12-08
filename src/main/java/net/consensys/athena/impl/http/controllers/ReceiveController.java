@@ -12,16 +12,15 @@ import net.consensys.athena.impl.enclave.EncryptedPayloadBuilder;
 import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
+import net.consensys.athena.impl.http.server.Serializer;
 import net.consensys.athena.impl.storage.SimpleStorage;
 
-import java.io.IOException;
 import java.security.PublicKey;
 import java.util.Base64;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.FullHttpRequest;
 
 /** Retrieve a base 64 encoded payload. */
@@ -39,12 +38,10 @@ public class ReceiveController implements Controller {
   @Override
   public Result handle(FullHttpRequest request) {
     // TODO @gbotrel: validate request
-    ObjectMapper mapper = new ObjectMapper();
-
     try {
       // retrieves the encrypted payload from DB, using provided key
       ReceiveRequest receiveRequest =
-          mapper.readValue(request.content().array(), ReceiveRequest.class);
+          Serializer.deserialize(request.content().array(), ContentType.JSON, ReceiveRequest.class);
       StorageKey key = new SimpleStorage(receiveRequest.key);
       Optional<StorageData> data = storage.retrieve(key);
       if (!data.isPresent()) {
@@ -64,7 +61,7 @@ public class ReceiveController implements Controller {
           new ReceiveResponse(Base64.getEncoder().encodeToString(decryptedPayload));
       return ok(contentType, toReturn);
 
-    } catch (IOException e) {
+    } catch (Exception e) {
       e.printStackTrace();
       return internalServerError(contentType);
     }
