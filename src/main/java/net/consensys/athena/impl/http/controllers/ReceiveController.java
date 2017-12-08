@@ -1,13 +1,5 @@
 package net.consensys.athena.impl.http.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import java.io.IOException;
-import java.security.PublicKey;
-import java.util.Base64;
-import java.util.Optional;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
@@ -18,6 +10,14 @@ import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.storage.SimpleStorage;
+
+import java.io.IOException;
+import java.security.PublicKey;
+import java.util.Base64;
+import java.util.Optional;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.netty.handler.codec.http.FullHttpRequest;
 
 /** Retrieve a base 64 encoded payload. */
 public class ReceiveController implements Controller {
@@ -65,7 +65,6 @@ public class ReceiveController implements Controller {
     }
 
     return Result.ok(ContentType.JSON, null);
-
   }
 
   private static class ReceiveRequest {
