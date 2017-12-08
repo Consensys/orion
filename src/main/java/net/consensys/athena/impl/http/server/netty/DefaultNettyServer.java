@@ -140,7 +140,7 @@ public class DefaultNettyServer implements NettyServer {
   private ServerBootstrap initChannel(Class<? extends ServerChannel> channelClass) {
     ServerBootstrap bootstrap = new ServerBootstrap();
     final RequestDispatcher requestDispatcher =
-        new RequestDispatcher(settings.getRouter(), settings.getObjectMapper());
+        new RequestDispatcher(settings.getRouter(), settings.getSerializer());
     ChannelInitializer<SocketChannel> childHandler =
         new ChannelInitializer<SocketChannel>() {
           @Override

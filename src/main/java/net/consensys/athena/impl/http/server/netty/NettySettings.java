@@ -1,10 +1,10 @@
 package net.consensys.athena.impl.http.server.netty;
 
 import net.consensys.athena.impl.http.server.Router;
+import net.consensys.athena.impl.http.server.Serializer;
 
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.kqueue.KQueue;
 
@@ -16,19 +16,18 @@ public class NettySettings {
   private Optional<String> domainSocketPath;
   private Optional<Integer> httpsPort;
   private Router router;
-  private ObjectMapper objectMapper;
+  private Serializer serializer;
 
   public NettySettings(
       Optional<String> domainSocketPath,
       Optional<Integer> httpPort,
       Optional<Integer> httpsPort,
       Router router,
-      ObjectMapper objectMapper) {
+      Serializer serializer) {
     this.httpPort = httpPort;
     this.domainSocketPath = domainSocketPath;
     this.httpsPort = httpsPort;
     this.router = router;
-    this.objectMapper = objectMapper;
   }
 
   public boolean isHttp() {
@@ -75,7 +74,7 @@ public class NettySettings {
     return router;
   }
 
-  public ObjectMapper getObjectMapper() {
-    return objectMapper;
+  public Serializer getSerializer() {
+    return serializer;
   }
 }
