@@ -1,5 +1,8 @@
 package net.consensys.athena.impl.http.controllers;
 
+import static net.consensys.athena.impl.http.server.Result.internalServerError;
+import static net.consensys.athena.impl.http.server.Result.ok;
+
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
@@ -16,6 +19,8 @@ import java.security.PublicKey;
 import java.util.Base64;
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.FullHttpRequest;
 
@@ -23,7 +28,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 public class ReceiveController implements Controller {
   private final Enclave enclave;
   private final Storage storage;
-  private ContentType contentType;
+  private final ContentType contentType;
 
   public ReceiveController(Enclave enclave, Storage storage, ContentType contentType) {
     this.enclave = enclave;
@@ -44,7 +49,7 @@ public class ReceiveController implements Controller {
       Optional<StorageData> data = storage.retrieve(key);
       if (!data.isPresent()) {
         // TODO log error
-        return Result.internalServerError(ContentType.JSON);
+        return internalServerError(contentType);
       }
 
       // first, let's build a EncryptedPayload from data
@@ -57,22 +62,27 @@ public class ReceiveController implements Controller {
       // build a ReceiveResponse
       ReceiveResponse toReturn =
           new ReceiveResponse(Base64.getEncoder().encodeToString(decryptedPayload));
-      // convert it to JSON
-      // write it to the response
+      return ok(contentType, toReturn);
 
     } catch (IOException e) {
-      return Result.internalServerError(ContentType.JSON);
+      e.printStackTrace();
+      return internalServerError(contentType);
     }
-
-    return Result.ok(ContentType.JSON, null);
   }
 
-  private static class ReceiveRequest {
+  static class ReceiveRequest {
     public String key;
     public PublicKey publicKey;
+
+    @JsonCreator
+    public ReceiveRequest(
+        @JsonProperty("key") String key, @JsonProperty("publicKey") PublicKey publicKey) {
+      this.key = key;
+      this.publicKey = publicKey;
+    }
   }
 
-  private static class ReceiveResponse {
+  static class ReceiveResponse {
     public String payload;
 
     ReceiveResponse(String payload) {
