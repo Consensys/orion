@@ -3,6 +3,7 @@ package net.consensys.athena.api.cmd;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
+import net.consensys.athena.impl.http.server.Serializer;
 import net.consensys.athena.impl.http.server.netty.DefaultNettyServer;
 import net.consensys.athena.impl.http.server.netty.NettyServer;
 import net.consensys.athena.impl.http.server.netty.NettySettings;
@@ -20,7 +21,11 @@ public class Athena {
     Optional<String> socketPath = empty();
     NettySettings settings =
         new NettySettings(
-            socketPath, of(DEFAULT_HTTP_PORT), empty(), new AthenaRouter(), new ObjectMapper());
+            socketPath,
+            of(DEFAULT_HTTP_PORT),
+            empty(),
+            new AthenaRouter(),
+            new Serializer(new ObjectMapper()));
     NettyServer server = new DefaultNettyServer(settings);
     server.start();
     server.join();
