@@ -1,11 +1,12 @@
 package net.consensys.athena.impl.http;
 
-import java.io.Serializable;
-import java.util.Objects;
 import net.consensys.athena.impl.http.server.Serializer;
 import net.consensys.athena.impl.http.server.Serializer.Protocol;
-import org.junit.Test;
 
+import java.io.Serializable;
+import java.util.Objects;
+
+import org.junit.Test;
 
 public class SerializerTest {
 
@@ -14,7 +15,7 @@ public class SerializerTest {
     DummyObject dummyObjectOriginal = new DummyObject();
     byte[] bytes = Serializer.serialize(dummyObjectOriginal, Protocol.JAVA);
     DummyObject dummyObject = Serializer.deserialize(bytes, Protocol.JAVA, DummyObject.class);
-    assert(dummyObject.equals(dummyObjectOriginal));
+    assert (dummyObject.equals(dummyObjectOriginal));
   }
 
   @Test
@@ -22,10 +23,9 @@ public class SerializerTest {
     DummyObject dummyObjectOriginal = new DummyObject();
     byte[] bytes = Serializer.serialize(dummyObjectOriginal, Protocol.JSON);
     DummyObject dummyObject = Serializer.deserialize(bytes, Protocol.JSON, DummyObject.class);
-    assert(dummyObject.equals(dummyObjectOriginal));
+    assert (dummyObject.equals(dummyObjectOriginal));
   }
 }
-
 
 class DummyObject implements Serializable {
   public String name;
@@ -45,8 +45,6 @@ class DummyObject implements Serializable {
       return false;
     }
     DummyObject that = (DummyObject) o;
-    return age == that.age &&
-        Objects.equals(name, that.name);
+    return age == that.age && Objects.equals(name, that.name);
   }
-
 }

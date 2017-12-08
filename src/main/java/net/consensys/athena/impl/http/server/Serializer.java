@@ -1,6 +1,5 @@
 package net.consensys.athena.impl.http.server;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -8,6 +7,8 @@ import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Serializer {
   static final ObjectMapper jsonObjectMapper = new ObjectMapper();
@@ -34,15 +35,15 @@ public class Serializer {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> T deserialize(byte[] bytes, Protocol protocol, Class<T> valueType) throws IOException, ClassNotFoundException, ClassCastException {
+  public static <T> T deserialize(byte[] bytes, Protocol protocol, Class<T> valueType)
+      throws IOException, ClassNotFoundException, ClassCastException {
     switch (protocol) {
       case JAVA:
-          return (T)new ObjectInputStream(new ByteArrayInputStream(bytes)).readObject();
+        return (T) new ObjectInputStream(new ByteArrayInputStream(bytes)).readObject();
       case JSON:
         return jsonObjectMapper.readValue(bytes, valueType);
       default:
         throw new NotSerializableException();
     }
   }
-
 }
