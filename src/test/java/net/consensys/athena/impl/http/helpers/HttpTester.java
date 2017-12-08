@@ -1,15 +1,13 @@
 package net.consensys.athena.impl.http.helpers;
 
 import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.http.server.Result;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
 /** Helper class to test Http endpoints (Netty controllers ) * */
@@ -23,7 +21,7 @@ public class HttpTester {
     this.controller = controller;
   }
 
-  public FullHttpResponse sendRequest() {
+  public Result sendRequest() {
     // create Netty payload buffer
     ByteBuf buffPayload;
     if (payload != null && payload.length > 0) {
@@ -36,11 +34,7 @@ public class HttpTester {
     FullHttpRequest req =
         new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, method, uri, buffPayload);
 
-    // call the controller with fake request / response
-    FullHttpResponse defaultResponse =
-        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-
-    return controller.handle(req, defaultResponse);
+    return controller.handle(req);
   }
 
   public HttpTester uri(String uri) {
