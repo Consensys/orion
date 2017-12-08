@@ -5,7 +5,6 @@ import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.http.server.Router;
 import net.consensys.athena.impl.http.server.Serializer;
-import net.consensys.athena.impl.http.server.Serializer.Protocol;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -60,7 +59,7 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     switch (contentType) {
       case JSON:
         try {
-          bytes = Serializer.serialize(result.getPayload().get(), Protocol.JSON);
+          bytes = Serializer.serialize(result.getPayload().get(), contentType);
         } catch (IOException e) {
           e.printStackTrace();
           throw new RuntimeException(e);
