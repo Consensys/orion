@@ -87,10 +87,10 @@ public interface Config {
   File tlsKnownServers();
 
   /** @return Array of key pair names to generate */
-  String[] justGenerateKeys();
+  Optional<String[]> generateKeys();
 
   /** @return Output current version information flag */
-  boolean justShowVersion();
+  Optional<Boolean> showVersion();
 
   /** @return Level of verbosity, that is print more detailed information */
   long verbosity();

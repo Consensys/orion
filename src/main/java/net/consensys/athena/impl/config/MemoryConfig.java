@@ -29,8 +29,8 @@ public class MemoryConfig implements Config {
   private File tlsClientKey;
   private String tlsClientTrust;
   private File tlsKnownServers;
-  private String[] justGenerateKeys;
-  private boolean justShowVersion;
+  private String[] generateKeys;
+  private Boolean showVersion;
   private long verbosity;
 
   public void setUrl(String url) {
@@ -121,12 +121,12 @@ public class MemoryConfig implements Config {
     this.tlsKnownServers = tlsKnownServers;
   }
 
-  public void setJustGenerateKeys(String[] justGenerateKeys) {
-    this.justGenerateKeys = justGenerateKeys;
+  public void setGenerateKeys(String[] generateKeys) {
+    this.generateKeys = generateKeys;
   }
 
-  public void setJustShowVersion(boolean justShowVersion) {
-    this.justShowVersion = justShowVersion;
+  public void setShowVersion(boolean showVersion) {
+    this.showVersion = showVersion;
   }
 
   public void setVerbosity(long verbosity) {
@@ -244,13 +244,13 @@ public class MemoryConfig implements Config {
   }
 
   @Override
-  public String[] justGenerateKeys() {
-    return justGenerateKeys;
+  public Optional<String[]> generateKeys() {
+    return Optional.ofNullable(generateKeys);
   }
 
   @Override
-  public boolean justShowVersion() {
-    return justShowVersion;
+  public Optional<Boolean> showVersion() {
+    return Optional.ofNullable(showVersion);
   }
 
   @Override

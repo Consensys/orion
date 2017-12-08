@@ -14,32 +14,30 @@ public class TomlConfigBuilder {
 
     MemoryConfig memoryConfig = new MemoryConfig();
 
-    //Toml toml = new Toml().read(config);
-      Toml toml = new Toml().read(config);
+    Toml toml = new Toml().read(config);
 
+    memoryConfig.setUrl(toml.getString("url"));
     memoryConfig.setPort(toml.getLong("port"));
-   // memoryConfig.setWorkDir(new File(toml.getString("workDir")));
-   // memoryConfig.setSocket(new File(toml.getString("socket")));
-   // memoryConfig.setOtherNodes(convertListToFileArray(toml.getList("otherNodes")));
-   // memoryConfig.setPublicKeys(convertListToFileArray(toml.getList("publicKeys")));
-   // memoryConfig.setPrivateKeys(convertListToFileArray(toml.getList("privateKeys")));
-   // memoryConfig.setAlwaysSendTo(convertListToFileArray(toml.getList("alwaysSendTo")));
-   // memoryConfig.setPasswords(new File(toml.getString("passwords")));
+    memoryConfig.setWorkDir(new File(toml.getString("workdir")));
+    memoryConfig.setSocket(new File(toml.getString("socket")));
+    memoryConfig.setOtherNodes(convertListToFileArray(toml.getList("othernodes")));
+    memoryConfig.setPublicKeys(convertListToFileArray(toml.getList("publickeys")));
+    memoryConfig.setPrivateKeys(convertListToFileArray(toml.getList("privatekeys")));
+    memoryConfig.setAlwaysSendTo(convertListToFileArray(toml.getList("alwayssendto")));
+    memoryConfig.setPasswords(new File(toml.getString("passwords")));
     memoryConfig.setStorage(toml.getString("storage"));
-   // memoryConfig.setIpWhitelist(convertListToStringArray(toml.getList("ipWhitelist")));
+    memoryConfig.setIpWhitelist(convertListToStringArray(toml.getList("ipwhitelist")));
     memoryConfig.setTls(toml.getString("tls"));
-   // memoryConfig.setTlsServerCert(new File(toml.getString("tlsServerCert")));
-  //  memoryConfig.setTlsServerChain(convertListToFileArray(toml.getList("tlsServerChain")));
-   // memoryConfig.setTlsServerKey(new File(toml.getString("tlsServerKey")));
-   // memoryConfig.setTlsServerTrust(toml.getString("tlsServerTrust"));
-   // memoryConfig.setTlsKnownClients(new File(toml.getString("tlsKnownClients")));
-   // memoryConfig.setTlsClientCert(new File(toml.getString("tlsClientCert")));
-   // memoryConfig.setTlsClientChain(convertListToFileArray(toml.getList("tlsClientChain")));
-   // memoryConfig.setTlsClientKey(new File(toml.getString("tlsClientKey")));
-    memoryConfig.setTlsClientTrust(toml.getString("tlsClientTrust"));
-   // memoryConfig.setTlsKnownServers(new File(toml.getString("tlsKnownServers")));
-   // memoryConfig.setJustGenerateKeys(convertListToStringArray(toml.getList("justGenerateKeys")));
-   // memoryConfig.setJustShowVersion(toml.getBoolean("justShowVersion"));
+    memoryConfig.setTlsServerCert(new File(toml.getString("tlsservercert")));
+    memoryConfig.setTlsServerChain(convertListToFileArray(toml.getList("tlsserverchain")));
+    memoryConfig.setTlsServerKey(new File(toml.getString("tlsserverkey")));
+    memoryConfig.setTlsServerTrust(toml.getString("tlsservertrust"));
+    memoryConfig.setTlsKnownClients(new File(toml.getString("tlsknownclients")));
+    memoryConfig.setTlsClientCert(new File(toml.getString("tlsclientcert")));
+    memoryConfig.setTlsClientChain(convertListToFileArray(toml.getList("tlsclientchain")));
+    memoryConfig.setTlsClientKey(new File(toml.getString("tlsclientkey")));
+    memoryConfig.setTlsClientTrust(toml.getString("tlsclienttrust"));
+    memoryConfig.setTlsKnownServers(new File(toml.getString("tlsknownservers")));
     memoryConfig.setVerbosity(toml.getLong("verbosity"));
 
     return memoryConfig;
