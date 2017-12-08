@@ -28,11 +28,14 @@ public class ReceiveController implements Controller {
   private final Enclave enclave;
   private final Storage storage;
   private final ContentType contentType;
+  private Serializer serializer;
 
-  public ReceiveController(Enclave enclave, Storage storage, ContentType contentType) {
+  public ReceiveController(
+      Enclave enclave, Storage storage, ContentType contentType, Serializer serializer) {
     this.enclave = enclave;
     this.storage = storage;
     this.contentType = contentType;
+    this.serializer = serializer;
   }
 
   @Override
@@ -41,7 +44,7 @@ public class ReceiveController implements Controller {
     try {
       // retrieves the encrypted payload from DB, using provided key
       ReceiveRequest receiveRequest =
-          Serializer.deserialize(request.content().array(), ContentType.JSON, ReceiveRequest.class);
+          serializer.deserialize(request.content().array(), ContentType.JSON, ReceiveRequest.class);
       StorageKey key = new SimpleStorage(receiveRequest.key);
       Optional<StorageData> data = storage.retrieve(key);
       if (!data.isPresent()) {

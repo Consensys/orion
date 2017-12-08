@@ -23,6 +23,7 @@ import net.consensys.athena.impl.storage.memory.MemoryStorage;
 import java.util.Base64;
 import java.util.Random;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Test;
@@ -31,9 +32,9 @@ public class ReceiveControllerTest {
   private final Enclave enclave = new CesarEnclave();
   private final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
   private final Storage storage = new MemoryStorage(keyBuilder);
-
+  private final Serializer serializer = new Serializer(new ObjectMapper());
   private final Controller receiveController =
-      new ReceiveController(enclave, storage, ContentType.JSON);
+      new ReceiveController(enclave, storage, ContentType.JSON, serializer);
 
   @Test
   public void testPayloadIsRetrieved() throws Exception {
@@ -45,7 +46,7 @@ public class ReceiveControllerTest {
     EncryptedPayload encryptedPayload = enclave.encrypt(toCheck, null, null);
 
     // serialize it
-    byte[] serialized = Serializer.serialize(encryptedPayload, ContentType.JAVA_ENCODED);
+    byte[] serialized = serializer.serialize(encryptedPayload, ContentType.JAVA_ENCODED);
 
     // store it
     StorageKey key = storage.store(new SimpleStorage(serialized));
@@ -58,7 +59,7 @@ public class ReceiveControllerTest {
         new HttpTester(receiveController)
             .uri("/receive")
             .method(HttpMethod.POST)
-            .payload(Serializer.serialize(req, ContentType.JSON))
+            .payload(serializer.serialize(req, ContentType.JSON))
             .sendRequest();
 
     // ensure we got a 200 OK back

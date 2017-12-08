@@ -14,12 +14,14 @@ import net.consensys.athena.impl.http.controllers.UpcheckController;
 import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Router;
+import net.consensys.athena.impl.http.server.Serializer;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.file.MapDbStorage;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.HttpRequest;
 
 public class AthenaRouter implements Router {
@@ -27,6 +29,7 @@ public class AthenaRouter implements Router {
   public static final Enclave ENCLAVE = new BouncyCastleEnclave();
   public static final StorageKeyBuilder KEY_BUILDER = new Sha512_256StorageKeyBuilder(ENCLAVE);
   public static final Storage STORAGE = new MapDbStorage("routerdb", KEY_BUILDER);
+  public static final Serializer SERIALIZER = new Serializer(new ObjectMapper());
 
   @Override
   public Controller lookup(HttpRequest request) {
@@ -39,13 +42,13 @@ public class AthenaRouter implements Router {
         return new SendController(ENCLAVE, STORAGE, ContentType.RAW);
       }
       if (uri.getPath().startsWith("/receiveraw")) {
-        return new ReceiveController(ENCLAVE, STORAGE, ContentType.RAW);
+        return new ReceiveController(ENCLAVE, STORAGE, ContentType.RAW, SERIALIZER);
       }
       if (uri.getPath().startsWith("/send")) {
         return new SendController(ENCLAVE, STORAGE, ContentType.JSON);
       }
       if (uri.getPath().startsWith("/receive")) {
-        return new ReceiveController(ENCLAVE, STORAGE, ContentType.JSON);
+        return new ReceiveController(ENCLAVE, STORAGE, ContentType.JSON, SERIALIZER);
       }
       if (uri.getPath().startsWith("/delete")) {
         return new DeleteController(STORAGE);
