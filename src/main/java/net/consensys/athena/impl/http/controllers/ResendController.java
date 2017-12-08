@@ -8,7 +8,7 @@ import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
 
-import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.FullHttpRequest;
 
 /**
  * ask to resend a single transaction or all transactions. Useful in situations where a
@@ -24,7 +24,7 @@ public class ResendController implements Controller {
   }
 
   @Override
-  public Result handle(HttpRequest request) {
+  public Result handle(FullHttpRequest request) {
     return notImplemented(ContentType.HASKELL_ENCODED);
   }
 }

@@ -7,7 +7,7 @@ import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
 
-import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.FullHttpRequest;
 
 /** used to push a payload to a node. */
 public class PushController implements Controller {
@@ -18,7 +18,7 @@ public class PushController implements Controller {
   }
 
   @Override
-  public Result handle(HttpRequest request) {
+  public Result handle(FullHttpRequest request) {
     return notImplemented(ContentType.HASKELL_ENCODED);
   }
 }
