@@ -4,6 +4,7 @@ import net.consensys.athena.impl.http.server.Router;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.kqueue.KQueue;
 
@@ -15,16 +16,19 @@ public class NettySettings {
   private Optional<String> domainSocketPath;
   private Optional<Integer> httpsPort;
   private Router router;
+  private ObjectMapper objectMapper;
 
   public NettySettings(
       Optional<String> domainSocketPath,
       Optional<Integer> httpPort,
       Optional<Integer> httpsPort,
-      Router router) {
+      Router router,
+      ObjectMapper objectMapper) {
     this.httpPort = httpPort;
     this.domainSocketPath = domainSocketPath;
     this.httpsPort = httpsPort;
     this.router = router;
+    this.objectMapper = objectMapper;
   }
 
   public boolean isHttp() {
@@ -69,5 +73,9 @@ public class NettySettings {
 
   public Router getRouter() {
     return router;
+  }
+
+  public ObjectMapper getObjectMapper() {
+    return objectMapper;
   }
 }
