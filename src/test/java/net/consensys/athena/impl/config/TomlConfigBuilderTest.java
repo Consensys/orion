@@ -1,10 +1,9 @@
 package net.consensys.athena.impl.config;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import net.consensys.athena.api.config.Config;
+import net.consensys.athena.api.config.ConfigException;
 
 import java.io.File;
 import java.io.InputStream;
@@ -31,7 +30,7 @@ public class TomlConfigBuilderTest {
     assertEquals("off", testConf.tls());
     assertEquals("ca-or-tofu", testConf.tlsServerTrust());
     assertEquals("ca", testConf.tlsClientTrust());
-    assertEquals(4, testConf.verbosity());
+    assertEquals(3, testConf.verbosity());
 
     // Optionals
     expectedFile = new File("data");
@@ -59,7 +58,8 @@ public class TomlConfigBuilderTest {
     expectedFilesArray[0] = new File("foo.key");
     assertArrayEquals(expectedFilesArray, testConf.privateKeys());
 
-    expectedFilesArray = new File[0];
+    expectedFilesArray = new File[1];
+    expectedFilesArray[0] = new File("http://127.0.0.1:9000/");
     assertArrayEquals(expectedFilesArray, testConf.alwaysSendTo());
 
     expectedFilesArray = new File[0];
@@ -136,5 +136,125 @@ public class TomlConfigBuilderTest {
 
     expectedFile = new File("tls-known-servers");
     assertEquals(expectedFile, testConf.tlsKnownServers());
+  }
+
+  @Test
+  public void testInvalidConfigsThrowException() throws Exception {
+
+    InputStream configAsStream =
+        this.getClass().getClassLoader().getResourceAsStream("invalidConfigTest.toml");
+    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
+
+    try {
+      Config testConf = configBuilder.build(configAsStream);
+    } catch (ConfigException e) {
+      String message =
+          "Invalid Configuration Options\n"
+              + "Invalid Storage type.\n"
+              + "Invalid TLS Status.\n"
+              + "Invalid TLS Server Trust mode.\n"
+              + "Invalid TLS Client Trust mode.\n"
+              + "Invalid verbosity.\n";
+      assertEquals(message, e.getMessage());
+    }
+  }
+
+  @Test
+  public void testMissingMandatoryConfigsThrowException() throws Exception {
+
+    InputStream configAsStream =
+        this.getClass().getClassLoader().getResourceAsStream("missingMandatoryConfigTest.toml");
+    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
+
+    try {
+      Config testConf = configBuilder.build(configAsStream);
+    } catch (ConfigException e) {
+      String message =
+          "Invalid Configuration Options\n"
+              + "URL must be specified.\n"
+              + "Port must be specified.\n";
+      assertEquals(message, e.getMessage());
+    }
+  }
+
+  @Test
+  public void testMissingStoragePathThrowException() throws Exception {
+
+    InputStream configAsStream =
+        this.getClass()
+            .getClassLoader()
+            .getResourceAsStream("fullConfigMissingStoragePathTest.toml");
+    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
+
+    try {
+      Config testConf = configBuilder.build(configAsStream);
+    } catch (ConfigException e) {
+      String message = "Invalid Configuration Options\n" + "Path must exist for Storage type.\n";
+      assertEquals(message, e.getMessage());
+    }
+  }
+
+  @Test
+  public void testTrustModeValidation() throws Exception {
+    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
+
+    assertTrue(configBuilder.validateTrustMode("whitelist"));
+    assertTrue(configBuilder.validateTrustMode("tofu"));
+    assertTrue(configBuilder.validateTrustMode("ca"));
+    assertTrue(configBuilder.validateTrustMode("ca-or-tofu"));
+    assertTrue(configBuilder.validateTrustMode("insecure-no-validation"));
+
+    assertFalse(configBuilder.validateTrustMode("invalid-trust-mode"));
+    assertFalse(configBuilder.validateTrustMode("ca-or"));
+    assertFalse(configBuilder.validateTrustMode("or-tofu"));
+  }
+
+  @Test
+  public void testVerbosityValidation() throws Exception {
+    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
+
+    assertTrue(configBuilder.validateVerbosity(0));
+    assertTrue(configBuilder.validateVerbosity(3));
+
+    assertFalse(configBuilder.validateVerbosity(-1));
+    assertFalse(configBuilder.validateVerbosity(4));
+  }
+
+  @Test
+  public void testTLSValidation() throws Exception {
+    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
+
+    assertTrue(configBuilder.validateTLS("strict"));
+    assertTrue(configBuilder.validateTLS("off"));
+
+    assertFalse(configBuilder.validateTLS("notValid"));
+  }
+
+  @Test
+  public void testStorageValidationTypes() throws Exception {
+    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
+    assertTrue(configBuilder.validateStorageTypes("bdp:path"));
+    assertTrue(configBuilder.validateStorageTypes("dir:path"));
+    assertTrue(configBuilder.validateStorageTypes("leveldb:path"));
+    assertTrue(configBuilder.validateStorageTypes("memory"));
+    assertTrue(configBuilder.validateStorageTypes("sqlite:path"));
+
+    assertFalse(configBuilder.validateStorageTypes("memoryX"));
+    assertFalse(configBuilder.validateStorageTypes("invalidStorage"));
+  }
+
+  @Test
+  public void testStorageValidationPathsExist() throws Exception {
+    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
+    assertTrue(configBuilder.validateStoragePathsExist("bdp:path"));
+    assertTrue(configBuilder.validateStoragePathsExist("dir:path"));
+    assertTrue(configBuilder.validateStoragePathsExist("leveldb:path"));
+    assertTrue(configBuilder.validateStoragePathsExist("memory"));
+    assertTrue(configBuilder.validateStoragePathsExist("sqlite:path"));
+
+    assertFalse(configBuilder.validateStoragePathsExist("bdp:"));
+    assertFalse(configBuilder.validateStoragePathsExist("dir:"));
+    assertFalse(configBuilder.validateStoragePathsExist("leveldb:"));
+    assertFalse(configBuilder.validateStoragePathsExist("sqlite:"));
   }
 }
