@@ -1,14 +1,29 @@
 package net.consensys.athena.impl.http.controllers;
 
+import static net.consensys.athena.impl.http.server.Result.notImplemented;
+
+import net.consensys.athena.api.enclave.Enclave;
+import net.consensys.athena.api.storage.Storage;
+import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.http.server.Result;
+
+import io.netty.handler.codec.http.FullHttpRequest;
 
 /** Send a base64 encoded payload to encrypt. */
-public class SendController extends StringResponseController {
+public class SendController implements Controller {
+  private final Enclave enclave;
+  private final Storage storage;
+  private ContentType contentType;
 
-  public static final Controller INSTANCE = new SendController();
+  public SendController(Enclave enclave, Storage storage, ContentType contentType) {
+    this.enclave = enclave;
+    this.storage = storage;
+    this.contentType = contentType;
+  }
 
   @Override
-  protected String stringResponse() {
-    return "{\"key\":\"abcd\"}";
+  public Result handle(FullHttpRequest request) {
+    return notImplemented(contentType);
   }
 }

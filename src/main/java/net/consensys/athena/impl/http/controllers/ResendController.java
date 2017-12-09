@@ -1,20 +1,30 @@
 package net.consensys.athena.impl.http.controllers;
 
-import net.consensys.athena.impl.http.server.Controller;
+import static net.consensys.athena.impl.http.server.Result.notImplemented;
 
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpRequest;
+import net.consensys.athena.api.enclave.Enclave;
+import net.consensys.athena.api.storage.Storage;
+import net.consensys.athena.impl.http.server.ContentType;
+import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.http.server.Result;
+
+import io.netty.handler.codec.http.FullHttpRequest;
 
 /**
  * ask to resend a single transaction or all transactions. Useful in situations where a
  * constellation node has lost it's database and wants to recover lost transactions.
  */
 public class ResendController implements Controller {
+  private final Enclave enclave;
+  private final Storage storage;
 
-  public static final Controller INSTANCE = new ResendController();
+  public ResendController(Enclave enclave, Storage storage) {
+    this.enclave = enclave;
+    this.storage = storage;
+  }
 
   @Override
-  public FullHttpResponse handle(HttpRequest request, FullHttpResponse response) {
-    return response;
+  public Result handle(FullHttpRequest request) {
+    return notImplemented(ContentType.HASKELL_ENCODED);
   }
 }

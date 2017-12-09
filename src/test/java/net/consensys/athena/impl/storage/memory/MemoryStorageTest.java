@@ -10,6 +10,8 @@ import net.consensys.athena.impl.enclave.BouncyCastleEnclave;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.SimpleStorage;
 
+import java.util.Optional;
+
 import org.junit.Test;
 
 public class MemoryStorageTest {
@@ -21,12 +23,12 @@ public class MemoryStorageTest {
   public void testStoreAndRetrieve() throws Exception {
     StorageData data = new SimpleStorage("hello".getBytes());
     StorageKey key = storage.store(data);
-    assertEquals(data, storage.retrieve(key));
+    assertEquals(data, storage.retrieve(key).get());
   }
 
   @Test
   public void testRetrieveWithoutStore() throws Exception {
     StorageKey key = new SimpleStorage("missing".getBytes());
-    assertNull(storage.retrieve(key));
+    assertEquals(Optional.empty(), storage.retrieve(key));
   }
 }

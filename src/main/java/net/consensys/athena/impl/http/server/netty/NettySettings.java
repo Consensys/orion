@@ -1,6 +1,7 @@
 package net.consensys.athena.impl.http.server.netty;
 
 import net.consensys.athena.impl.http.server.Router;
+import net.consensys.athena.impl.http.server.Serializer;
 
 import java.util.Optional;
 
@@ -15,12 +16,14 @@ public class NettySettings {
   private Optional<String> domainSocketPath;
   private Optional<Integer> httpsPort;
   private Router router;
+  private Serializer serializer;
 
   public NettySettings(
       Optional<String> domainSocketPath,
       Optional<Integer> httpPort,
       Optional<Integer> httpsPort,
-      Router router) {
+      Router router,
+      Serializer serializer) {
     this.httpPort = httpPort;
     this.domainSocketPath = domainSocketPath;
     this.httpsPort = httpsPort;
@@ -69,5 +72,9 @@ public class NettySettings {
 
   public Router getRouter() {
     return router;
+  }
+
+  public Serializer getSerializer() {
+    return serializer;
   }
 }
