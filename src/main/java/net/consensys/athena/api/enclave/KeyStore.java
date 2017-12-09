@@ -4,8 +4,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 
 /**
- * Interface for key store. Provides a mechanism for generating keys, and looking up a private key
- * for a given public key. Typically used internally by an enclave to look up private keys.
+ * Interface for key put. Provides a mechanism for generating keys, and looking up a private key for
+ * a given public key. Typically used internally by an enclave to look up private keys.
  */
 public interface KeyStore {
 
@@ -18,7 +18,7 @@ public interface KeyStore {
   PrivateKey getPrivateKey(PublicKey publicKey);
 
   /**
-   * Generate and store a new keypair, returning the public key for external use.
+   * Generate and put a new keypair, returning the public key for external use.
    *
    * @return Return the public key part of the key pair.
    */

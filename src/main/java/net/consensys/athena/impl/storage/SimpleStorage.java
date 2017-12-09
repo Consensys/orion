@@ -1,17 +1,21 @@
 package net.consensys.athena.impl.storage;
 
 import net.consensys.athena.api.storage.StorageData;
-import net.consensys.athena.api.storage.StorageKey;
+import net.consensys.athena.api.storage.StorageId;
 
 import java.util.Arrays;
 import java.util.Base64;
 
-public class SimpleStorage implements StorageKey, StorageData {
+public class SimpleStorage implements StorageId, StorageData {
 
   private byte[] key;
 
   public SimpleStorage(byte[] bytes) {
     this.key = bytes;
+  }
+
+  public SimpleStorage(String b64) {
+    this.key = Base64.getDecoder().decode(b64);
   }
 
   @Override

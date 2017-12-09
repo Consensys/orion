@@ -1,8 +1,9 @@
 package net.consensys.athena.api.cmd;
 
 import net.consensys.athena.api.enclave.Enclave;
+import net.consensys.athena.api.storage.KeyValueStore;
 import net.consensys.athena.api.storage.Storage;
-import net.consensys.athena.api.storage.StorageKeyBuilder;
+import net.consensys.athena.api.storage.StorageIdBuilder;
 import net.consensys.athena.impl.enclave.BouncyCastleEnclave;
 import net.consensys.athena.impl.http.controllers.DeleteController;
 import net.consensys.athena.impl.http.controllers.PartyInfoController;
@@ -14,19 +15,25 @@ import net.consensys.athena.impl.http.controllers.UpcheckController;
 import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Router;
-import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
+import net.consensys.athena.impl.http.server.Serializer;
+import net.consensys.athena.impl.storage.Sha512_256StorageIdBuilder;
+import net.consensys.athena.impl.storage.StorageKeyValueStorageDelegate;
 import net.consensys.athena.impl.storage.file.MapDbStorage;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.HttpRequest;
 
 public class AthenaRouter implements Router {
 
-  public static final Enclave ENCLAVE = new BouncyCastleEnclave();
-  public static final StorageKeyBuilder KEY_BUILDER = new Sha512_256StorageKeyBuilder(ENCLAVE);
-  public static final Storage STORAGE = new MapDbStorage("routerdb", KEY_BUILDER);
+  private static final Enclave ENCLAVE = new BouncyCastleEnclave();
+  private static final StorageIdBuilder KEY_BUILDER = new Sha512_256StorageIdBuilder(ENCLAVE);
+  private static final KeyValueStore KEY_VALUE_STORE = new MapDbStorage("routerdb");
+  private static final Storage STORAGE =
+      new StorageKeyValueStorageDelegate(KEY_VALUE_STORE, KEY_BUILDER);
+  private static final Serializer SERIALIZER = new Serializer(new ObjectMapper());
 
   @Override
   public Controller lookup(HttpRequest request) {
@@ -39,13 +46,13 @@ public class AthenaRouter implements Router {
         return new SendController(ENCLAVE, STORAGE, ContentType.RAW);
       }
       if (uri.getPath().startsWith("/receiveraw")) {
-        return new ReceiveController(ENCLAVE, STORAGE, ContentType.RAW);
+        return new ReceiveController(ENCLAVE, STORAGE, ContentType.RAW, SERIALIZER);
       }
       if (uri.getPath().startsWith("/send")) {
         return new SendController(ENCLAVE, STORAGE, ContentType.JSON);
       }
       if (uri.getPath().startsWith("/receive")) {
-        return new ReceiveController(ENCLAVE, STORAGE, ContentType.JSON);
+        return new ReceiveController(ENCLAVE, STORAGE, ContentType.JSON, SERIALIZER);
       }
       if (uri.getPath().startsWith("/delete")) {
         return new DeleteController(STORAGE);

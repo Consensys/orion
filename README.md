@@ -39,3 +39,15 @@ sudo apt-get install autoconf automake libtool make tar \
 ## Running Athena
 
 Kick start the Athena http server after getting everything setup with `gradle run`
+
+## Code coverage report
+
+We use the jacoco test coverage plugin, which will generate coverage data whenever tests are run.
+
+To run the report do:
+
+```gradle test jacocoTestReport```
+
+Then view it at:
+
+```build/reports/jacoco/test/html/index.html```
