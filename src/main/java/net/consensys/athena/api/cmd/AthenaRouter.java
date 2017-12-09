@@ -1,8 +1,9 @@
 package net.consensys.athena.api.cmd;
 
 import net.consensys.athena.api.enclave.Enclave;
+import net.consensys.athena.api.storage.KeyValueStore;
 import net.consensys.athena.api.storage.Storage;
-import net.consensys.athena.api.storage.StorageKeyBuilder;
+import net.consensys.athena.api.storage.StorageIdBuilder;
 import net.consensys.athena.impl.enclave.BouncyCastleEnclave;
 import net.consensys.athena.impl.http.controllers.DeleteController;
 import net.consensys.athena.impl.http.controllers.PartyInfoController;
@@ -14,7 +15,8 @@ import net.consensys.athena.impl.http.controllers.UpcheckController;
 import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Router;
-import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
+import net.consensys.athena.impl.storage.Sha512_256StorageIdBuilder;
+import net.consensys.athena.impl.storage.StorageKeyValueStorageDelegate;
 import net.consensys.athena.impl.storage.file.MapDbStorage;
 
 import java.net.URI;
@@ -25,8 +27,10 @@ import io.netty.handler.codec.http.HttpRequest;
 public class AthenaRouter implements Router {
 
   public static final Enclave ENCLAVE = new BouncyCastleEnclave();
-  public static final StorageKeyBuilder KEY_BUILDER = new Sha512_256StorageKeyBuilder(ENCLAVE);
-  public static final Storage STORAGE = new MapDbStorage("routerdb", KEY_BUILDER);
+  public static final StorageIdBuilder KEY_BUILDER = new Sha512_256StorageIdBuilder(ENCLAVE);
+  public static final KeyValueStore KEY_VALUE_STORE = new MapDbStorage("routerdb");
+  public static final Storage STORAGE =
+      new StorageKeyValueStorageDelegate(KEY_VALUE_STORE, KEY_BUILDER);
 
   @Override
   public Controller lookup(HttpRequest request) {
