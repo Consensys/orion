@@ -7,14 +7,15 @@ import static org.junit.Assert.assertNotEquals;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageData;
-import net.consensys.athena.api.storage.StorageKey;
-import net.consensys.athena.api.storage.StorageKeyBuilder;
+import net.consensys.athena.api.storage.StorageId;
+import net.consensys.athena.api.storage.StorageIdBuilder;
 import net.consensys.athena.impl.enclave.BouncyCastleEnclave;
 import net.consensys.athena.impl.http.helpers.HttpTester;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
-import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
+import net.consensys.athena.impl.storage.Sha512_256StorageIdBuilder;
 import net.consensys.athena.impl.storage.SimpleStorage;
+import net.consensys.athena.impl.storage.StorageKeyValueStorageDelegate;
 import net.consensys.athena.impl.storage.memory.MemoryStorage;
 
 import java.util.Optional;
@@ -27,8 +28,9 @@ import org.junit.Test;
 public class PushControllerTest {
 
   private final Enclave enclave = new BouncyCastleEnclave();
-  private final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
-  private final Storage storage = new MemoryStorage(keyBuilder);
+  private final StorageIdBuilder keyBuilder = new Sha512_256StorageIdBuilder(enclave);
+  private final Storage storage =
+      new StorageKeyValueStorageDelegate(new MemoryStorage(), keyBuilder);
 
   private final Controller controller = new PushController(storage);
 
@@ -52,11 +54,11 @@ public class PushControllerTest {
     // ensure result has a payload
     assert (result.getPayload().isPresent());
 
-    // get the key / digest from response, and build our key object
-    StorageKey key = new SimpleStorage(result.getPayload().get().toString());
+    // get the id / digest from response, and build our id object
+    StorageId id = new SimpleStorage(result.getPayload().get().toString());
 
     // retrieve stored value
-    Optional<StorageData> data = storage.retrieve(key);
+    Optional<StorageData> data = storage.get(id);
 
     // ensure we fetched something
     assert (data.isPresent());
