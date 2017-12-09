@@ -6,8 +6,8 @@ import static org.junit.Assert.assertEquals;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
-import net.consensys.athena.api.storage.StorageKey;
-import net.consensys.athena.api.storage.StorageKeyBuilder;
+import net.consensys.athena.api.storage.StorageId;
+import net.consensys.athena.api.storage.StorageIdBuilder;
 import net.consensys.athena.impl.enclave.CesarEnclave;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveRequest;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveResponse;
@@ -16,8 +16,9 @@ import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.http.server.Serializer;
-import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
+import net.consensys.athena.impl.storage.Sha512_256StorageIdBuilder;
 import net.consensys.athena.impl.storage.SimpleStorage;
+import net.consensys.athena.impl.storage.StorageKeyValueStorageDelegate;
 import net.consensys.athena.impl.storage.memory.MemoryStorage;
 
 import java.util.Base64;
@@ -30,8 +31,9 @@ import org.junit.Test;
 
 public class ReceiveControllerTest {
   private final Enclave enclave = new CesarEnclave();
-  private final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
-  private final Storage storage = new MemoryStorage(keyBuilder);
+  private final StorageIdBuilder keyBuilder = new Sha512_256StorageIdBuilder(enclave);
+  private final Storage storage =
+      new StorageKeyValueStorageDelegate(new MemoryStorage(), keyBuilder);
   private final Serializer serializer = new Serializer(new ObjectMapper());
   private final Controller receiveController =
       new ReceiveController(enclave, storage, ContentType.JSON, serializer);
@@ -49,10 +51,10 @@ public class ReceiveControllerTest {
     byte[] serialized = serializer.serialize(encryptedPayload, ContentType.JAVA_ENCODED);
 
     // store it
-    StorageKey key = storage.store(new SimpleStorage(serialized));
+    StorageId id = storage.put(new SimpleStorage(serialized));
 
     // and try to retrieve it with the receiveController
-    ReceiveRequest req = new ReceiveRequest(key.getBase64Encoded(), null);
+    ReceiveRequest req = new ReceiveRequest(id.getBase64Encoded(), null);
 
     // perform fake http request
     Result result =

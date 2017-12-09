@@ -7,7 +7,7 @@ import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageData;
-import net.consensys.athena.api.storage.StorageKey;
+import net.consensys.athena.api.storage.StorageId;
 import net.consensys.athena.impl.enclave.EncryptedPayloadBuilder;
 import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
@@ -45,8 +45,8 @@ public class ReceiveController implements Controller {
       // retrieves the encrypted payload from DB, using provided key
       ReceiveRequest receiveRequest =
           serializer.deserialize(request.content().array(), ContentType.JSON, ReceiveRequest.class);
-      StorageKey key = new SimpleStorage(receiveRequest.key);
-      Optional<StorageData> data = storage.retrieve(key);
+      StorageId key = new SimpleStorage(receiveRequest.key);
+      Optional<StorageData> data = storage.get(key);
       if (!data.isPresent()) {
         // TODO log error
         return internalServerError(contentType);

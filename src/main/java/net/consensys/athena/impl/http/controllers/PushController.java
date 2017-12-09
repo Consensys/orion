@@ -1,10 +1,11 @@
 package net.consensys.athena.impl.http.controllers;
 
-import static net.consensys.athena.impl.http.server.Result.*;
+import static net.consensys.athena.impl.http.server.Result.badRequest;
+import static net.consensys.athena.impl.http.server.Result.ok;
 
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageData;
-import net.consensys.athena.api.storage.StorageKey;
+import net.consensys.athena.api.storage.StorageId;
 import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
@@ -44,7 +45,7 @@ public class PushController implements Controller {
 
     // we receive a encrypted payload (binary content) and store it into storage system
     StorageData toStore = new SimpleStorage(requestPayload);
-    StorageKey digest = storage.store(toStore);
+    StorageId digest = storage.put(toStore);
 
     // return the digest (key)
     //    ByteBuf content =
