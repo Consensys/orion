@@ -9,13 +9,13 @@ public class MemoryConfig implements Config {
 
   private String url;
   private long port;
-  private File workDir;
-  private File socket;
+  private Optional<File> workDir;
+  private Optional<File> socket;
   private File[] otherNodes;
   private File[] publicKeys;
   private File[] privateKeys;
   private File[] alwaysSendTo;
-  private File passwords;
+  private Optional<File> passwords;
   private String storage;
   private String[] ipWhitelist;
   private String tls;
@@ -29,8 +29,8 @@ public class MemoryConfig implements Config {
   private File tlsClientKey;
   private String tlsClientTrust;
   private File tlsKnownServers;
-  private String[] generateKeys;
-  private Boolean showVersion;
+  private Optional<String[]> generateKeys;
+  private Optional<Boolean> showVersion;
   private long verbosity;
 
   public void setUrl(String url) {
@@ -42,11 +42,11 @@ public class MemoryConfig implements Config {
   }
 
   public void setWorkDir(File workDir) {
-    this.workDir = workDir;
+    this.workDir = Optional.ofNullable(workDir);
   }
 
   public void setSocket(File socket) {
-    this.socket = socket;
+    this.socket = Optional.ofNullable(socket);
   }
 
   public void setOtherNodes(File[] otherNodes) {
@@ -66,7 +66,7 @@ public class MemoryConfig implements Config {
   }
 
   public void setPasswords(File passwords) {
-    this.passwords = passwords;
+    this.passwords = Optional.ofNullable(passwords);
   }
 
   public void setStorage(String storage) {
@@ -122,11 +122,11 @@ public class MemoryConfig implements Config {
   }
 
   public void setGenerateKeys(String[] generateKeys) {
-    this.generateKeys = generateKeys;
+    this.generateKeys = Optional.ofNullable(generateKeys);
   }
 
   public void setShowVersion(boolean showVersion) {
-    this.showVersion = showVersion;
+    this.showVersion = Optional.ofNullable(showVersion);
   }
 
   public void setVerbosity(long verbosity) {
@@ -145,12 +145,12 @@ public class MemoryConfig implements Config {
 
   @Override
   public Optional<File> workDir() {
-    return Optional.ofNullable(workDir);
+    return workDir;
   }
 
   @Override
   public Optional<File> socket() {
-    return Optional.ofNullable(socket);
+    return socket;
   }
 
   @Override
@@ -175,7 +175,7 @@ public class MemoryConfig implements Config {
 
   @Override
   public Optional<File> passwords() {
-    return Optional.ofNullable(passwords);
+    return passwords;
   }
 
   @Override
@@ -245,12 +245,12 @@ public class MemoryConfig implements Config {
 
   @Override
   public Optional<String[]> generateKeys() {
-    return Optional.ofNullable(generateKeys);
+    return generateKeys;
   }
 
   @Override
   public Optional<Boolean> showVersion() {
-    return Optional.ofNullable(showVersion);
+    return showVersion;
   }
 
   @Override
