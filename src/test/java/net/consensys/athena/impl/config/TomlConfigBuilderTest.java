@@ -150,11 +150,11 @@ public class TomlConfigBuilderTest {
     } catch (ConfigException e) {
       String message =
           "Invalid Configuration Options\n"
-              + "Invalid Storage type.\n"
-              + "Invalid TLS Status.\n"
-              + "Invalid TLS Server Trust mode.\n"
-              + "Invalid TLS Client Trust mode.\n"
-              + "Invalid verbosity.\n";
+              + "Error: value for key 'storage' type must start with: ['bdp:', 'dir:', 'leveldb:', 'sqllite:'] or be 'memory'\n"
+              + "Error: value for key 'tls' status must be 'strict' or 'off'\n"
+              + "Error: value for key 'tlsservertrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n"
+              + "Error: value for key 'tlsclienttrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n"
+              + "Error: value for key 'verbosity' must be within range 0 to 3\n";
       assertEquals(message, e.getMessage());
     }
   }
@@ -171,8 +171,8 @@ public class TomlConfigBuilderTest {
     } catch (ConfigException e) {
       String message =
           "Invalid Configuration Options\n"
-              + "URL must be specified.\n"
-              + "Port must be specified.\n";
+              + "Error: value for key 'url' in config must be specified\n"
+              + "Error: value for key 'port' in config must be specified\n";
       assertEquals(message, e.getMessage());
     }
   }
@@ -189,7 +189,9 @@ public class TomlConfigBuilderTest {
     try {
       Config testConf = configBuilder.build(configAsStream);
     } catch (ConfigException e) {
-      String message = "Invalid Configuration Options\n" + "Path must exist for Storage type.\n";
+      String message =
+          "Invalid Configuration Options\n"
+              + "Error: value for key 'storage' of types ['bdp:', 'dir:', 'leveldb:', 'sqllite:'] must specify a path\n";
       assertEquals(message, e.getMessage());
     }
   }
