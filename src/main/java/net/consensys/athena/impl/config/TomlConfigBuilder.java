@@ -13,7 +13,7 @@ import com.moandjiezana.toml.Toml;
 public class TomlConfigBuilder {
 
   Config build(InputStream config) throws ConfigException {
-    String errorMsg = "";
+    StringBuilder errorMsg = new StringBuilder();
     MemoryConfig memoryConfig = new MemoryConfig();
 
     Toml toml = new Toml().read(config);
@@ -21,13 +21,13 @@ public class TomlConfigBuilder {
     if (toml.getString("url") != null) {
       memoryConfig.setUrl(toml.getString("url"));
     } else {
-      errorMsg += "Error: value for key 'url' in config must be specified\n";
+      errorMsg.append("Error: value for key 'url' in config must be specified\n");
     }
 
     if (toml.getLong("port") != null) {
       memoryConfig.setPort(toml.getLong("port"));
     } else {
-      errorMsg += "Error: value for key 'port' in config must be specified\n";
+      errorMsg.append("Error: value for key 'port' in config must be specified\n");
     }
 
     if (toml.getString("workdir") != null) {
@@ -49,20 +49,20 @@ public class TomlConfigBuilder {
 
     memoryConfig.setStorage(toml.getString("storage", "dir:storage"));
     if (!validateStorageTypes(memoryConfig.storage())) {
-      errorMsg +=
-          "Error: value for key 'storage' type must start with: ['bdp:', 'dir:', 'leveldb:', 'sqllite:'] or be 'memory'\n";
+      errorMsg.append(
+          "Error: value for key 'storage' type must start with: ['bdp:', 'dir:', 'leveldb:', 'sqllite:'] or be 'memory'\n");
     }
 
     if (!validateStoragePathsExist(memoryConfig.storage())) {
-      errorMsg +=
-          "Error: value for key 'storage' of types ['bdp:', 'dir:', 'leveldb:', 'sqllite:'] must specify a path\n";
+      errorMsg.append(
+          "Error: value for key 'storage' of types ['bdp:', 'dir:', 'leveldb:', 'sqllite:'] must specify a path\n");
     }
 
     memoryConfig.setIpWhitelist(convertListToStringArray(toml.getList("ipwhitelist")));
 
     memoryConfig.setTls(toml.getString("tls", "strict"));
     if (!validateTLS(memoryConfig.tls())) {
-      errorMsg += "Error: value for key 'tls' status must be 'strict' or 'off'\n";
+      errorMsg.append("Error: value for key 'tls' status must be 'strict' or 'off'\n");
     }
 
     memoryConfig.setTlsServerCert(new File(toml.getString("tlsservercert", "tls-server-cert.pem")));
@@ -71,8 +71,8 @@ public class TomlConfigBuilder {
 
     memoryConfig.setTlsServerTrust(toml.getString("tlsservertrust", "tofu"));
     if (!validateTrustMode(memoryConfig.tlsServerTrust())) {
-      errorMsg +=
-          "Error: value for key 'tlsservertrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n";
+      errorMsg.append(
+          "Error: value for key 'tlsservertrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n");
     }
 
     memoryConfig.setTlsKnownClients(
@@ -83,8 +83,8 @@ public class TomlConfigBuilder {
 
     memoryConfig.setTlsClientTrust(toml.getString("tlsclienttrust", "ca-or-tofu"));
     if (!validateTrustMode(memoryConfig.tlsClientTrust())) {
-      errorMsg +=
-          "Error: value for key 'tlsclienttrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n";
+      errorMsg.append(
+          "Error: value for key 'tlsclienttrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n");
     }
 
     memoryConfig.setTlsKnownServers(
@@ -92,11 +92,12 @@ public class TomlConfigBuilder {
 
     memoryConfig.setVerbosity(toml.getLong("verbosity", (long) 1));
     if (!validateVerbosity(memoryConfig.verbosity())) {
-      errorMsg += "Error: value for key 'verbosity' must be within range 0 to 3\n";
+      errorMsg.append("Error: value for key 'verbosity' must be within range 0 to 3\n");
     }
 
-    if (!errorMsg.equals("")) {
-      throw new ConfigException("Invalid Configuration Options\n" + errorMsg);
+    if (errorMsg.length() != 0) {
+      errorMsg.insert(0, "Invalid Configuration Options\n");
+      throw new ConfigException(errorMsg.toString());
     }
 
     return memoryConfig;
