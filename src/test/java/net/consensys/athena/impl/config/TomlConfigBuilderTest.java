@@ -37,7 +37,7 @@ public class TomlConfigBuilderTest {
     assertTrue(testConf.workDir().isPresent());
     assertEquals(expectedFile, testConf.workDir().get());
 
-    expectedFile = new File("constellation.ipc");
+    expectedFile = new File("athena.ipc");
     assertTrue(testConf.socket().isPresent());
     assertEquals(expectedFile, testConf.socket().get());
 

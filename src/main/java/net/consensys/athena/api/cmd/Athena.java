@@ -21,8 +21,10 @@ public class Athena {
   private static final int DEFAULT_HTTP_PORT = 8080;
 
   public static void main(String[] args) throws InterruptedException {
+    String configFileName = args.length > 0 ? args[0] : "default.conf";
+
     // start http server
-    NettyServer server = startServer();
+    NettyServer server = startServer(configFileName);
     joinServer(server);
   }
 
@@ -32,28 +34,16 @@ public class Athena {
   }
 
   @NotNull
-  static NettyServer startServer() throws InterruptedException {
-    //Test this
-    Optional<String> socketPath = empty();
-
+  static NettyServer startServer(String configFile) throws InterruptedException {
     InputStream configAsStream =
-        MethodHandles.lookup().lookupClass().getResourceAsStream("sample.conf");
+        MethodHandles.lookup().lookupClass().getResourceAsStream(configFile);
     TomlConfigBuilder configBuilder = new TomlConfigBuilder();
 
     Config config = configBuilder.build(configAsStream);
 
-    /*
-     Optional<String> domainSocketPath,
-     Optional<Integer> httpPort,
-     Optional<Integer> httpsPort,
-
-     of(DEFAULT_HTTP_PORT),
-
-    */
-
     NettySettings settings =
         new NettySettings(
-            socketPath,
+            config.socket(),
             Optional.of((int) config.port()),
             empty(),
             new AthenaRouter(),
