@@ -12,7 +12,7 @@ import com.moandjiezana.toml.Toml;
 
 public class TomlConfigBuilder {
 
-  Config build(InputStream config) throws ConfigException {
+  public Config build(InputStream config) throws ConfigException {
     StringBuilder errorMsg = new StringBuilder();
     MemoryConfig memoryConfig = new MemoryConfig();
 
