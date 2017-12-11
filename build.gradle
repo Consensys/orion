@@ -20,6 +20,10 @@ dependencies {
   implementation 'org.mapdb:mapdb:3.0.5'
 
   testImplementation 'junit:junit:4.12'
+
+  // logger
+  compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.10.0'
+  compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
 }
 
 apply plugin:'application'
