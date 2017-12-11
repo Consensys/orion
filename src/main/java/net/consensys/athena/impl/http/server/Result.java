@@ -16,8 +16,8 @@ public interface Result<T> {
   }
 
   @NotNull
-  static Result badRequest(ContentType defaultContentType) {
-    return new ResultImpl<>(defaultContentType, empty(), HttpResponseStatus.BAD_REQUEST);
+  static <U> Result<U> badRequest(ContentType defaultContentType, U payload) {
+    return new ResultImpl<>(defaultContentType, of(payload), HttpResponseStatus.BAD_REQUEST);
   }
 
   @NotNull
@@ -26,8 +26,9 @@ public interface Result<T> {
   }
 
   @NotNull
-  static Result internalServerError(ContentType defaultContentType) {
-    return new ResultImpl<>(defaultContentType, empty(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
+  static <U> Result<U> internalServerError(ContentType defaultContentType, U payload) {
+    return new ResultImpl<>(
+        defaultContentType, of(payload), HttpResponseStatus.INTERNAL_SERVER_ERROR);
   }
 
   Optional<T> getPayload();
