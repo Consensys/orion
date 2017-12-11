@@ -14,6 +14,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jetbrains.annotations.NotNull;
 
 public class Athena {
 
@@ -21,6 +22,18 @@ public class Athena {
 
   public static void main(String[] args) throws InterruptedException {
     // start http server
+    NettyServer server = startServer();
+    joinServer(server);
+  }
+
+  private static void joinServer(NettyServer server) throws InterruptedException {
+    //Don't expect this method to be tested.
+    server.join();
+  }
+
+  @NotNull
+  static NettyServer startServer() throws InterruptedException {
+    //Test this
     Optional<String> socketPath = empty();
 
     InputStream configAsStream =
@@ -47,6 +60,6 @@ public class Athena {
             new Serializer(new ObjectMapper()));
     NettyServer server = new DefaultNettyServer(settings);
     server.start();
-    server.join();
+    return server;
   }
 }
