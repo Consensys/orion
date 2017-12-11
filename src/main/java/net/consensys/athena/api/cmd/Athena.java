@@ -22,12 +22,19 @@ public class Athena {
 
   public static void main(String[] args) throws InterruptedException {
     String configFileName = args.length > 0 ? args[0] : "default.conf";
+
+    Config config = loadConfig(configFileName);
+    // start http server
+    NettyServer server = startServer(config);
+    joinServer(server);
+  }
+
+  private static Config loadConfig(String configFileName) {
     InputStream configAsStream =
         MethodHandles.lookup().lookupClass().getResourceAsStream(configFileName);
+    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
 
-    // start http server
-    NettyServer server = startServer(configAsStream);
-    joinServer(server);
+    return configBuilder.build(configAsStream);
   }
 
   private static void joinServer(NettyServer server) throws InterruptedException {
@@ -36,12 +43,7 @@ public class Athena {
   }
 
   @NotNull
-  static NettyServer startServer(InputStream configFile) throws InterruptedException {
-
-    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
-
-    Config config = configBuilder.build(configFile);
-
+  static NettyServer startServer(Config config) throws InterruptedException {
     NettySettings settings =
         new NettySettings(
             config.socket(),
