@@ -3,6 +3,7 @@ plugins {
 }
 
 apply plugin: 'java-library'
+apply plugin: "jacoco"
 
 repositories {
   jcenter()
@@ -14,6 +15,8 @@ dependencies {
   compile 'io.netty:netty-transport-native-epoll:4.1.17.Final:linux-x86_64'
   compile 'io.netty:netty-transport-native-kqueue:4.1.17.Final:osx-x86_64'
   compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.58'
+  compile 'com.moandjiezana.toml:toml4j:0.7.2'
+  implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
   implementation 'org.mapdb:mapdb:3.0.5'
 
   testImplementation 'junit:junit:4.12'

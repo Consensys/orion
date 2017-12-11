@@ -2,9 +2,9 @@ package net.consensys.athena.api.storage;
 
 import java.util.Optional;
 
-public interface Storage {
+public interface KeyValueStore {
 
-  StorageId put(StorageData data);
+  void put(StorageId key, StorageData data);
 
   Optional<StorageData> get(StorageId key);
 

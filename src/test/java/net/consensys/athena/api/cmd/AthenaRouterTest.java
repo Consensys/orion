@@ -6,10 +6,8 @@ import net.consensys.athena.impl.http.controllers.DeleteController;
 import net.consensys.athena.impl.http.controllers.PartyInfoController;
 import net.consensys.athena.impl.http.controllers.PushController;
 import net.consensys.athena.impl.http.controllers.ReceiveController;
-import net.consensys.athena.impl.http.controllers.ReceiveRawController;
 import net.consensys.athena.impl.http.controllers.ResendController;
 import net.consensys.athena.impl.http.controllers.SendController;
-import net.consensys.athena.impl.http.controllers.SendRawController;
 import net.consensys.athena.impl.http.controllers.UpcheckController;
 import net.consensys.athena.impl.http.server.Controller;
 
@@ -38,8 +36,8 @@ public class AthenaRouterTest {
     return Arrays.asList(
         new Object[][] {
           {"Upcheck", "/upcheck", UpcheckController.class},
-          {"SendRaw", "/sendraw", SendRawController.class},
-          {"ReceiveRaw", "/receiveraw", ReceiveRawController.class},
+          {"SendRaw", "/sendraw", SendController.class},
+          {"ReceiveRaw", "/receiveraw", ReceiveController.class},
           {"Send", "/send", SendController.class},
           {"Receive", "/receive", ReceiveController.class},
           {"Delete", "/delete", DeleteController.class},
@@ -65,4 +63,6 @@ public class AthenaRouterTest {
         controllerClass,
         controller.getClass());
   }
+
+  //TODO Check default content type for send and receive.
 }

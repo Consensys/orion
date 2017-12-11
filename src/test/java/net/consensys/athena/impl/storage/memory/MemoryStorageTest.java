@@ -1,13 +1,9 @@
 package net.consensys.athena.impl.storage.memory;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.storage.StorageData;
-import net.consensys.athena.api.storage.StorageKey;
-import net.consensys.athena.api.storage.StorageKeyBuilder;
-import net.consensys.athena.impl.enclave.BouncyCastleEnclave;
-import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
+import net.consensys.athena.api.storage.StorageId;
 import net.consensys.athena.impl.storage.SimpleStorage;
 
 import java.util.Optional;
@@ -15,20 +11,19 @@ import java.util.Optional;
 import org.junit.Test;
 
 public class MemoryStorageTest {
-  private Enclave enclave = new BouncyCastleEnclave();
-  private StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
-  MemoryStorage storage = new MemoryStorage(keyBuilder);
+  MemoryStorage storage = new MemoryStorage();
 
   @Test
   public void testStoreAndRetrieve() throws Exception {
     StorageData data = new SimpleStorage("hello".getBytes());
-    StorageKey key = storage.store(data);
-    assertEquals(data, storage.retrieve(key).get());
+    StorageId key = new SimpleStorage("key".getBytes());
+    storage.put(key, data);
+    assertEquals(data, storage.get(key).get());
   }
 
   @Test
   public void testRetrieveWithoutStore() throws Exception {
-    StorageKey key = new SimpleStorage("missing".getBytes());
-    assertEquals(Optional.empty(), storage.retrieve(key));
+    StorageId key = new SimpleStorage("missing".getBytes());
+    assertEquals(Optional.empty(), storage.get(key));
   }
 }

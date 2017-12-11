@@ -5,6 +5,7 @@ import static java.util.Optional.of;
 import static org.junit.Assert.assertEquals;
 
 import net.consensys.athena.api.cmd.AthenaRouter;
+import net.consensys.athena.impl.http.server.Serializer;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -14,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.URL;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 public class DefaultNettyServerTest {
@@ -22,7 +24,9 @@ public class DefaultNettyServerTest {
   public void testStartWillStartTheServerAndListenOnHttpPortFromSettings()
       throws IOException, InterruptedException {
     int port = getPortWithNothingRunningOnIt();
-    NettySettings settings = new NettySettings(empty(), of(port), empty(), new AthenaRouter());
+    NettySettings settings =
+        new NettySettings(
+            empty(), of(port), empty(), new AthenaRouter(), new Serializer(new ObjectMapper()));
     NettyServer server = new DefaultNettyServer(settings);
     server.start();
     URL url = new URL("http://localhost:" + port + "/upcheck");

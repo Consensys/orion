@@ -1,0 +1,24 @@
+# Test file with complete config settings (not defaults)
+url = "http://127.0.0.1:9001/"
+port = 9001
+workdir = "data"
+socket = "constellation.ipc"
+othernodes = ["http://127.0.0.1:9000/"]
+publickeys = ["foo.pub"]
+privatekeys = ["foo.key"]
+alwayssendto = ["http://127.0.0.1:9000/"]
+passwords = "passwords"
+storage = "memory"
+verbosity = 3
+ipwhitelist = ["10.0.0.1", "2001:0db8:85a3:0000:0000:8a2e:0370:7334"]
+tls = "off"
+tlsservercert = "server-cert.pem"
+tlsserverchain = []
+tlsserverkey = "server-key.pem"
+tlsservertrust = "ca-or-tofu"
+tlsknownclients = "known-clients"
+tlsclientcert = "client-cert.pem"
+tlsclientchain = []
+tlsclientkey = "client-key.pem"
+tlsclienttrust = "ca"
+tlsknownservers = "known-servers"
