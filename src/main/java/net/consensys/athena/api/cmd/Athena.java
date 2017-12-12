@@ -45,7 +45,6 @@ public class Athena {
   }
 
   private static void joinServer(NettyServer server) throws InterruptedException {
-    //Don't expect this method to be tested.
     server.join();
   }
 
