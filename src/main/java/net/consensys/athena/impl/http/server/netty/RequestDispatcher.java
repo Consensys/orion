@@ -55,6 +55,8 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
         fullHttpRequest.uri(),
         controller.getClass().getSimpleName());
 
+    // deserialize request payload
+
     Result result;
     try {
       // process http request
