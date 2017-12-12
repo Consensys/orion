@@ -26,14 +26,14 @@ public class PushController implements Controller {
   public Result handle(FullHttpRequest request) {
     // ensure HTTP method = POST
     if (request.method() != HttpMethod.POST) {
-      return badRequest(ContentType.JSON, "Error: http method must be POST");
+      return badRequest("http method must be POST");
     }
 
     // read the requestPayload, "Netty way"
     byte[] requestPayload;
     int length = request.content().readableBytes();
     if (length <= 0) { // empty payload
-      return badRequest(ContentType.JSON, "Error: request must have payload");
+      return badRequest("request must have payload");
     }
 
     if (request.content().hasArray()) {

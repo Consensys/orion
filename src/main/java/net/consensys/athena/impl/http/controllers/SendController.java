@@ -24,6 +24,6 @@ public class SendController implements Controller {
 
   @Override
   public Result handle(FullHttpRequest request) {
-    return notImplemented(contentType);
+    return notImplemented();
   }
 }

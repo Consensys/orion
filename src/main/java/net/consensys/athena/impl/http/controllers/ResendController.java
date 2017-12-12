@@ -4,7 +4,6 @@ import static net.consensys.athena.impl.http.server.Result.notImplemented;
 
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.storage.Storage;
-import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
 
@@ -25,6 +24,6 @@ public class ResendController implements Controller {
 
   @Override
   public Result handle(FullHttpRequest request) {
-    return notImplemented(ContentType.HASKELL_ENCODED);
+    return notImplemented();
   }
 }

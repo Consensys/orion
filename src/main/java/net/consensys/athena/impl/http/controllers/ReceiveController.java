@@ -49,7 +49,7 @@ public class ReceiveController implements Controller {
       Optional<StorageData> data = storage.get(key);
       if (!data.isPresent()) {
         // TODO log error
-        return internalServerError(contentType, "Error: unable to retrieve payload");
+        return internalServerError("unable to retrieve payload");
       }
 
       // first, let's build a EncryptedPayload from data
@@ -66,7 +66,7 @@ public class ReceiveController implements Controller {
 
     } catch (Exception e) {
       e.printStackTrace();
-      return internalServerError(contentType, e.getMessage());
+      return internalServerError(e.getMessage());
     }
   }
 

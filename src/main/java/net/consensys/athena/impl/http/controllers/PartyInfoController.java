@@ -1,6 +1,5 @@
 package net.consensys.athena.impl.http.controllers;
 
-import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
 
@@ -14,6 +13,6 @@ public class PartyInfoController implements Controller {
 
   @Override
   public Result handle(FullHttpRequest request) {
-    return Result.notImplemented(ContentType.HASKELL_ENCODED);
+    return Result.notImplemented();
   }
 }

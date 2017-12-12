@@ -16,19 +16,21 @@ public interface Result<T> {
   }
 
   @NotNull
-  static <U> Result<U> badRequest(ContentType defaultContentType, U payload) {
-    return new ResultImpl<>(defaultContentType, of(payload), HttpResponseStatus.BAD_REQUEST);
-  }
-
-  @NotNull
-  static Result notImplemented(ContentType defaultContentType) {
-    return new ResultImpl<>(defaultContentType, empty(), HttpResponseStatus.NOT_IMPLEMENTED);
-  }
-
-  @NotNull
-  static <U> Result<U> internalServerError(ContentType defaultContentType, U payload) {
+  static Result<ApiError> badRequest(String reason) {
     return new ResultImpl<>(
-        defaultContentType, of(payload), HttpResponseStatus.INTERNAL_SERVER_ERROR);
+        ContentType.JSON, of(new ApiError(reason)), HttpResponseStatus.BAD_REQUEST);
+  }
+
+  @NotNull
+  static Result<ApiError> notImplemented() {
+    return new ResultImpl<>(
+        ContentType.JSON, of(new ApiError("not implemented")), HttpResponseStatus.NOT_IMPLEMENTED);
+  }
+
+  @NotNull
+  static Result<ApiError> internalServerError(String reason) {
+    return new ResultImpl<>(
+        ContentType.JSON, of(new ApiError(reason)), HttpResponseStatus.INTERNAL_SERVER_ERROR);
   }
 
   Optional<T> getPayload();
