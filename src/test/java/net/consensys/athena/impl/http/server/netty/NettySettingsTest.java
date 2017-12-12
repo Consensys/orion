@@ -7,6 +7,8 @@ import static org.junit.Assert.assertTrue;
 
 import net.consensys.athena.impl.http.server.Serializer;
 
+import java.io.File;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
@@ -34,7 +36,11 @@ public class NettySettingsTest {
   public void testIsDomainIfDomainSocketPathSet() {
     NettySettings settings =
         new NettySettings(
-            of("/tmp/mysock.ipc"), empty(), empty(), null, new Serializer(new ObjectMapper()));
+            of(new File("/tmp/mysock.ipc")),
+            empty(),
+            empty(),
+            null,
+            new Serializer(new ObjectMapper()));
     assertTrue(settings.isDomainSocket());
     assertFalse(settings.isHttp());
     assertFalse(settings.isHttps());

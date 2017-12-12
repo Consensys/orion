@@ -98,7 +98,7 @@ public interface Config {
    *   <li>bdb:path - BerkeleyDB
    *   <li>dir:path - Directory/file storage, can be used with e.g. FUSE-mounted file systems.
    *   <li>leveldb:path - LevelDB - experimental
-   *   <li>memory - Contents are cleared when Constellation exits
+   *   <li>memory - Contents are cleared when Athena exits
    *   <li>sqlite:path - SQLite - experimental
    * </ul>
    *
@@ -182,7 +182,7 @@ public interface Config {
    *       after populating the <i>tlsKnownClients</i> list to restrict access.
    *   <li><strong>ca:</strong> Only nodes with a valid certificate and chain of trust to one of the
    *       system root certificates will be allowed to connect. The folder containing trusted root
-   *       certificates can be overriden with the SYSTEM_CERTIFICATE_PATH environment variable.
+   *       certificates can be overridden with the SYSTEM_CERTIFICATE_PATH environment variable.
    *   <li><strong>ca-or-tofu:</strong> A combination of ca and tofu: If a certificate is valid, it
    *       is always allowed and added to the <i>tlsKnownClients</i> list. If it is self-signed, it
    *       will be allowed only if it's the first certificate this node has seen for that host.
@@ -250,7 +250,7 @@ public interface Config {
    *       server for any given host. (Similar to how OpenSSH works.)
    *   <li><strong>ca:</strong> The node will only connect to servers with a valid certificate and
    *       chain of trust to one of the system root certificates. The folder containing trusted root
-   *       certificates can be overriden with the SYSTEM_CERTIFICATE_PATH environment variable.
+   *       certificates can be overridden with the SYSTEM_CERTIFICATE_PATH environment variable.
    *   <li><strong>ca-or-tofu:</strong> A combination of ca and tofu: If a certificate is valid, it
    *       is always allowed and added to the <i>tlsKnownServers</i> list. If it is self-signed, it
    *       will be allowed only if it's the first certificate this node has seen for that host.

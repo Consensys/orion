@@ -6,3 +6,4 @@ tls = "notValid"
 tlsservertrust = "invalid-trust-mode"
 tlsclienttrust = "invalid-trust-mode"
 storage = "invalidStorage"
+publickeys = ["foo.pub"]

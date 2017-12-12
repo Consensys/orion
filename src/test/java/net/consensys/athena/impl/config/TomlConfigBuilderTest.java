@@ -37,7 +37,7 @@ public class TomlConfigBuilderTest {
     assertTrue(testConf.workDir().isPresent());
     assertEquals(expectedFile, testConf.workDir().get());
 
-    expectedFile = new File("constellation.ipc");
+    expectedFile = new File("athena.ipc");
     assertTrue(testConf.socket().isPresent());
     assertEquals(expectedFile, testConf.socket().get());
 
@@ -115,6 +115,10 @@ public class TomlConfigBuilderTest {
     assertEquals("ca-or-tofu", testConf.tlsClientTrust());
     assertEquals(1, testConf.verbosity());
 
+    assertFalse(testConf.workDir().isPresent());
+    assertFalse(testConf.socket().isPresent());
+    assertFalse(testConf.passwords().isPresent());
+
     String expectedStringArray[] = new String[0];
     assertArrayEquals(expectedStringArray, testConf.ipWhitelist());
 
@@ -150,6 +154,7 @@ public class TomlConfigBuilderTest {
     } catch (ConfigException e) {
       String message =
           "Invalid Configuration Options\n"
+              + "Error: the number of keys specified for keys 'publickeys' and 'privatekeys' must be the same\n"
               + "Error: value for key 'storage' type must start with: ['bdp:', 'dir:', 'leveldb:', 'sqllite:'] or be 'memory'\n"
               + "Error: value for key 'tls' status must be 'strict' or 'off'\n"
               + "Error: value for key 'tlsservertrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n"

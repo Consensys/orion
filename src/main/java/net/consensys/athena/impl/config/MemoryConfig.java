@@ -9,13 +9,13 @@ public class MemoryConfig implements Config {
 
   private String url;
   private long port;
-  private Optional<File> workDir;
-  private Optional<File> socket;
+  private Optional<File> workDir = Optional.empty();
+  private Optional<File> socket = Optional.empty();
   private File[] otherNodes;
   private File[] publicKeys;
   private File[] privateKeys;
   private File[] alwaysSendTo;
-  private Optional<File> passwords;
+  private Optional<File> passwords = Optional.empty();
   private String storage;
   private String[] ipWhitelist;
   private String tls;
@@ -29,8 +29,8 @@ public class MemoryConfig implements Config {
   private File tlsClientKey;
   private String tlsClientTrust;
   private File tlsKnownServers;
-  private Optional<String[]> generateKeys;
-  private Optional<Boolean> showVersion;
+  private Optional<String[]> generateKeys = Optional.empty();
+  private Optional<Boolean> showVersion = Optional.empty();
   private long verbosity;
 
   public void setUrl(String url) {
