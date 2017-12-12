@@ -1,5 +1,7 @@
 package net.consensys.athena.impl.http.server;
 
+import net.consensys.athena.impl.http.data.ContentType;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

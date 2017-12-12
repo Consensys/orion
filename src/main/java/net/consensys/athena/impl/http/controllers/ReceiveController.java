@@ -1,6 +1,6 @@
 package net.consensys.athena.impl.http.controllers;
 
-import static net.consensys.athena.impl.http.server.Result.ok;
+import static net.consensys.athena.impl.http.data.Result.ok;
 
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
@@ -8,10 +8,10 @@ import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageData;
 import net.consensys.athena.api.storage.StorageId;
 import net.consensys.athena.impl.enclave.EncryptedPayloadBuilder;
-import net.consensys.athena.impl.http.server.ContentType;
+import net.consensys.athena.impl.http.data.ContentType;
+import net.consensys.athena.impl.http.data.Request;
+import net.consensys.athena.impl.http.data.Result;
 import net.consensys.athena.impl.http.server.Controller;
-import net.consensys.athena.impl.http.server.Request;
-import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.http.server.Serializer;
 import net.consensys.athena.impl.storage.SimpleStorage;
 

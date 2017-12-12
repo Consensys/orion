@@ -12,7 +12,7 @@ import net.consensys.athena.impl.http.controllers.ReceiveController;
 import net.consensys.athena.impl.http.controllers.ResendController;
 import net.consensys.athena.impl.http.controllers.SendController;
 import net.consensys.athena.impl.http.controllers.UpcheckController;
-import net.consensys.athena.impl.http.server.ContentType;
+import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Router;
 import net.consensys.athena.impl.http.server.Serializer;

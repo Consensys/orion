@@ -1,14 +1,14 @@
 package net.consensys.athena.impl.http.server.netty;
 
 import static java.util.Optional.empty;
-import static net.consensys.athena.impl.http.server.Result.internalServerError;
+import static net.consensys.athena.impl.http.data.Result.internalServerError;
 
-import net.consensys.athena.impl.http.server.ContentType;
+import net.consensys.athena.impl.http.data.ContentType;
+import net.consensys.athena.impl.http.data.EmptyPayload;
+import net.consensys.athena.impl.http.data.Request;
+import net.consensys.athena.impl.http.data.RequestImpl;
+import net.consensys.athena.impl.http.data.Result;
 import net.consensys.athena.impl.http.server.Controller;
-import net.consensys.athena.impl.http.server.EmptyPayload;
-import net.consensys.athena.impl.http.server.Request;
-import net.consensys.athena.impl.http.server.RequestImpl;
-import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.http.server.Router;
 import net.consensys.athena.impl.http.server.Serializer;
 
@@ -32,8 +32,8 @@ import org.apache.logging.log4j.Logger;
 
 public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHandlerContext> {
   private static final Logger log = LogManager.getLogger();
-  private Router router;
-  private Serializer serializer;
+  private final Router router;
+  private final Serializer serializer;
 
   public RequestDispatcher(Router router, Serializer serializer) {
     this.router = router;
@@ -87,6 +87,8 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     String contentEncoding = httpRequest.headers().get(HttpHeaderNames.CONTENT_ENCODING);
     if (contentEncoding == null) {
       log.warn("Content-encoding is not set, trying JSON as default fallback.");
+      // TODO if we do strict HTTP validation, we should reject the request, not sure that plays well
+      // with current Constellation Haskell implementation, thus the JSON fallback ?
       contentEncoding = HttpHeaderValues.APPLICATION_JSON.toString();
     }
 
@@ -136,6 +138,7 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
 
     // accept encoding header is specified and doesn't support controller encoding
     if (acceptEncoding != null && !acceptEncoding.contains(contentType.httpHeaderValue)) {
+      log.info("accept encoding header is specified and doesn't match value set by controller");
       // TODO parse acceptEncoding and set contentType variable accordingly
     }
 

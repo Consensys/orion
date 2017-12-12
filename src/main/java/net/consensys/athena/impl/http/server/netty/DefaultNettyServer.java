@@ -30,7 +30,7 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 public class DefaultNettyServer implements NettyServer {
-  private NettySettings settings;
+  private final NettySettings settings;
 
   public DefaultNettyServer(NettySettings settings) {
     this.settings = settings;
