@@ -36,7 +36,7 @@ public class Athena {
     if (configFileName.isPresent()) {
       configAsStream = new FileInputStream(new File(configFileName.get()));
     } else {
-      configAsStream = Athena.class.getResourceAsStream("default.conf");
+      configAsStream = Athena.class.getResourceAsStream("/default.conf");
     }
 
     TomlConfigBuilder configBuilder = new TomlConfigBuilder();

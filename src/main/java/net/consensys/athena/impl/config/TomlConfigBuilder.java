@@ -39,8 +39,14 @@ public class TomlConfigBuilder {
     }
 
     memoryConfig.setOtherNodes(convertListToFileArray(toml.getList("othernodes")));
+
     memoryConfig.setPublicKeys(convertListToFileArray(toml.getList("publickeys")));
     memoryConfig.setPrivateKeys(convertListToFileArray(toml.getList("privatekeys")));
+    if (memoryConfig.publicKeys().length != memoryConfig.privateKeys().length) {
+      errorMsg.append(
+          "Error: the number of keys specified for keys 'publickeys' and 'privatekeys' must be the same\n");
+    }
+
     memoryConfig.setAlwaysSendTo(convertListToFileArray(toml.getList("alwayssendto")));
 
     if (toml.getString("passwords") != null) {
