@@ -9,8 +9,10 @@ import net.consensys.athena.impl.http.server.netty.DefaultNettyServer;
 import net.consensys.athena.impl.http.server.netty.NettyServer;
 import net.consensys.athena.impl.http.server.netty.NettySettings;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,8 +22,8 @@ public class Athena {
 
   private static final int DEFAULT_HTTP_PORT = 8080;
 
-  public static void main(String[] args) throws InterruptedException {
-    String configFileName = args.length > 0 ? args[0] : "default.conf";
+  public static void main(String[] args) throws Exception {
+    Optional<String> configFileName = args.length > 0 ? Optional.of(args[0]) : Optional.empty();
 
     Config config = loadConfig(configFileName);
     // start http server
@@ -29,9 +31,14 @@ public class Athena {
     joinServer(server);
   }
 
-  private static Config loadConfig(String configFileName) {
-    InputStream configAsStream =
-        MethodHandles.lookup().lookupClass().getResourceAsStream(configFileName);
+  static Config loadConfig(Optional<String> configFileName) throws FileNotFoundException {
+    InputStream configAsStream;
+    if (configFileName.isPresent()) {
+      configAsStream = new FileInputStream(new File(configFileName.get()));
+    } else {
+      configAsStream = Athena.class.getResourceAsStream("default.conf");
+    }
+
     TomlConfigBuilder configBuilder = new TomlConfigBuilder();
 
     return configBuilder.build(configAsStream);
