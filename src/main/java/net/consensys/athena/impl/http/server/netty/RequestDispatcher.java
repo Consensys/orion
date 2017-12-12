@@ -5,6 +5,7 @@ import static net.consensys.athena.impl.http.server.Result.internalServerError;
 
 import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.http.server.EmptyPayload;
 import net.consensys.athena.impl.http.server.Request;
 import net.consensys.athena.impl.http.server.RequestImpl;
 import net.consensys.athena.impl.http.server.Result;
@@ -84,7 +85,7 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     int requestPayloadSize = httpRequest.content().readableBytes();
 
     // if the controller doesn't expect a payload
-    if (!controller.expectedRequest().isPresent()) {
+    if (controller.expectedRequest().equals(EmptyPayload.class)) {
       if (requestPayloadSize > 0) {
         throw new IllegalArgumentException("did not expect payload, yet one is provided");
       }
@@ -111,8 +112,7 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     // deserialize the bytes into expected type by controller
     try {
       ContentType cType = ContentType.fromHttpContentEncoding(contentEncoding);
-      Object payload =
-          serializer.deserialize(requestPayload, cType, controller.expectedRequest().get());
+      Object payload = serializer.deserialize(requestPayload, cType, controller.expectedRequest());
       return new RequestImpl(Optional.of(payload));
     } catch (NoSuchElementException e) {
       throw new UnsupportedEncodingException(contentEncoding + "isn't supported");

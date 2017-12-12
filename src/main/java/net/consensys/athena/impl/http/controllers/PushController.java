@@ -12,8 +12,6 @@ import net.consensys.athena.impl.http.server.Request;
 import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.storage.SimpleStorage;
 
-import java.util.Optional;
-
 /** used to push a payload to a node. */
 public class PushController implements Controller {
   private final Storage storage;
@@ -23,8 +21,8 @@ public class PushController implements Controller {
   }
 
   @Override
-  public Optional<Class<?>> expectedRequest() {
-    return Optional.of(EncryptedPayload.class);
+  public Class<?> expectedRequest() {
+    return EncryptedPayload.class;
   }
 
   @Override

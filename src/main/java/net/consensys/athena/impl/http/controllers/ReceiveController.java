@@ -38,6 +38,11 @@ public class ReceiveController implements Controller {
   }
 
   @Override
+  public Class<?> expectedRequest() {
+    return ReceiveRequest.class;
+  }
+
+  @Override
   public Result handle(Request request) throws Exception {
     // retrieves the encrypted payload from DB, using provided key
     ReceiveRequest receiveRequest = request.getPayload();
