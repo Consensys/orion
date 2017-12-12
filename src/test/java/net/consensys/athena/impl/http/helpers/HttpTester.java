@@ -21,7 +21,7 @@ public class HttpTester {
     this.controller = controller;
   }
 
-  public Result sendRequest() {
+  public Result sendRequest() throws Exception {
     // create Netty payload buffer
     ByteBuf buffPayload;
     if (payload != null && payload.length > 0) {

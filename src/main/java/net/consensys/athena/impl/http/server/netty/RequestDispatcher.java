@@ -1,5 +1,7 @@
 package net.consensys.athena.impl.http.server.netty;
 
+import static net.consensys.athena.impl.http.server.Result.internalServerError;
+
 import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Result;
@@ -53,7 +55,17 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
         fullHttpRequest.uri(),
         controller.getClass().getSimpleName());
 
-    Result result = controller.handle(fullHttpRequest);
+    Result result;
+    try {
+      // process http request
+      result = controller.handle(fullHttpRequest);
+    } catch (Exception e) {
+      // if an exception occurred, return a formatted ApiError
+      log.error(e.getMessage());
+      result = internalServerError(e.getMessage());
+    }
+
+    // build httpResponse
     FullHttpResponse response = outputResponse(fullHttpRequest, result);
     ctx.writeAndFlush(response);
     fullHttpRequest.release();

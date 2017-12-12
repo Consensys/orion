@@ -1,6 +1,5 @@
 package net.consensys.athena.impl.http.controllers;
 
-import static net.consensys.athena.impl.http.server.Result.internalServerError;
 import static net.consensys.athena.impl.http.server.Result.ok;
 
 import net.consensys.athena.api.enclave.Enclave;
@@ -39,35 +38,27 @@ public class ReceiveController implements Controller {
   }
 
   @Override
-  public Result handle(FullHttpRequest request) {
-    // TODO @gbotrel: validate request
-    try {
-      // retrieves the encrypted payload from DB, using provided key
-      ReceiveRequest receiveRequest =
-          serializer.deserialize(request.content().array(), ContentType.JSON, ReceiveRequest.class);
-      StorageId key = new SimpleStorage(receiveRequest.key);
-      Optional<StorageData> data = storage.get(key);
-      if (!data.isPresent()) {
-        // TODO log error
-        return internalServerError("unable to retrieve payload");
-      }
-
-      // first, let's build a EncryptedPayload from data
-      EncryptedPayload encPayload = new EncryptedPayloadBuilder(data.get().getRaw()).build();
-      // Haskell doc: let's check if receipients is set = it's a payload that we sent.
-      // if not, it's a payload sent to us
-      byte[] decryptedPayload = enclave.decrypt(encPayload, receiveRequest.publicKey);
-
-      // encode in base64 the decryptedPayload
-      // build a ReceiveResponse
-      ReceiveResponse toReturn =
-          new ReceiveResponse(Base64.getEncoder().encodeToString(decryptedPayload));
-      return ok(contentType, toReturn);
-
-    } catch (Exception e) {
-      e.printStackTrace();
-      return internalServerError(e.getMessage());
+  public Result handle(FullHttpRequest request) throws Exception {
+    // retrieves the encrypted payload from DB, using provided key
+    ReceiveRequest receiveRequest =
+        serializer.deserialize(request.content().array(), ContentType.JSON, ReceiveRequest.class);
+    StorageId key = new SimpleStorage(receiveRequest.key);
+    Optional<StorageData> data = storage.get(key);
+    if (!data.isPresent()) {
+      throw new IllegalArgumentException("unable to retrieve payload for provided key");
     }
+
+    // first, let's build a EncryptedPayload from data
+    EncryptedPayload encPayload = new EncryptedPayloadBuilder(data.get().getRaw()).build();
+    // Haskell doc: let's check if receipients is set = it's a payload that we sent.
+    // if not, it's a payload sent to us
+    byte[] decryptedPayload = enclave.decrypt(encPayload, receiveRequest.publicKey);
+
+    // encode in base64 the decryptedPayload
+    // build a ReceiveResponse
+    ReceiveResponse toReturn =
+        new ReceiveResponse(Base64.getEncoder().encodeToString(decryptedPayload));
+    return ok(contentType, toReturn);
   }
 
   static class ReceiveRequest {
