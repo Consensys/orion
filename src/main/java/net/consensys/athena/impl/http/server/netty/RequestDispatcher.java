@@ -135,12 +135,12 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     ContentType contentType = result.defaultContentType();
 
     // accept encoding header is specified and doesn't support controller encoding
-    if (acceptEncoding != null && !acceptEncoding.contains(contentType.httpHeaderValue())) {
+    if (acceptEncoding != null && !acceptEncoding.contains(contentType.httpHeaderValue)) {
       // TODO parse acceptEncoding and set contentType variable accordingly
     }
 
     // add content encoding header to response
-    response.headers().add(HttpHeaderNames.CONTENT_ENCODING, contentType.httpHeaderValue());
+    response.headers().add(HttpHeaderNames.CONTENT_ENCODING, contentType.httpHeaderValue);
 
     // serialize the payload
     try {

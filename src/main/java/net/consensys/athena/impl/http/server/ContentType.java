@@ -5,36 +5,24 @@ import java.util.NoSuchElementException;
 import io.netty.handler.codec.http.HttpHeaderValues;
 
 public enum ContentType {
-  JSON,
-  RAW,
-  HASKELL_ENCODED,
-  JAVA_ENCODED,
-  CBOR_ENCODED;
+  JSON(HttpHeaderValues.APPLICATION_JSON.toString()),
+  RAW(HttpHeaderValues.APPLICATION_OCTET_STREAM.toString()),
+  HASKELL_ENCODED("application/haskell-stream"),
+  JAVA_ENCODED("application/java-stream"),
+  CBOR_ENCODED("application/cbor");
 
-  public static ContentType fromHttpContentEncoding(String contentEncoding) {
-    if (contentEncoding.equals(HttpHeaderValues.APPLICATION_JSON.toString())) {
-      return JSON;
-    } else if (contentEncoding.equals(HttpHeaderValues.APPLICATION_OCTET_STREAM.toString())) {
-      return RAW;
-    } else {
-      throw new NoSuchElementException();
-    }
+  public final String httpHeaderValue;
+
+  ContentType(String httpHeaderValue) {
+    this.httpHeaderValue = httpHeaderValue;
   }
 
-  public String httpHeaderValue() {
-    switch (this) {
-      case JSON:
-        return HttpHeaderValues.APPLICATION_JSON.toString();
-      case RAW:
-        return HttpHeaderValues.APPLICATION_OCTET_STREAM.toString();
-      case JAVA_ENCODED:
-        return "application/java-stream";
-      case HASKELL_ENCODED:
-        return "application/haskell-stream";
-      case CBOR_ENCODED:
-        return "application/cbor";
-      default:
-        throw new NoSuchElementException();
+  public static ContentType fromHttpContentEncoding(String contentEncoding) {
+    for (ContentType cType : ContentType.values()) {
+      if (cType.httpHeaderValue.equalsIgnoreCase(contentEncoding)) {
+        return cType;
+      }
     }
+    throw new NoSuchElementException();
   }
 }
