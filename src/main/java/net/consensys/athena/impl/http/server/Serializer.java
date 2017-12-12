@@ -26,6 +26,8 @@ public class Serializer {
         return byteOutputStream.toByteArray();
       case JSON:
         return jsonObjectMapper.writeValueAsString(obj).getBytes(Charset.forName("UTF-8"));
+      case RAW:
+        return obj.toString().getBytes(Charset.forName("UTF-8"));
       default:
         throw new NotSerializableException();
     }
