@@ -33,6 +33,8 @@ public enum ContentType {
         return "application/haskell-stream";
       case CBOR_ENCODED:
         return "application/cbor";
+      default:
+        throw new NoSuchElementException();
     }
   }
 }
