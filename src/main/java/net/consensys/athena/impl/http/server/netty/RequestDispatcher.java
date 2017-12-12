@@ -24,9 +24,11 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHandlerContext> {
-
+  private static final Logger log = LogManager.getLogger();
   public static final Charset UTF_8 = Charset.forName("UTF-8");
   private Router router;
   private Serializer serializer;
@@ -44,6 +46,13 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     }
 
     Controller controller = router.lookup(fullHttpRequest);
+    // log incoming http request
+    log.debug(
+        "processing {} request on {} with {}",
+        fullHttpRequest.method().name(),
+        fullHttpRequest.uri(),
+        controller.getClass().getSimpleName());
+
     Result result = controller.handle(fullHttpRequest);
     FullHttpResponse response = outputResponse(fullHttpRequest, result);
     ctx.writeAndFlush(response);
