@@ -10,6 +10,7 @@ import net.consensys.athena.api.storage.StorageId;
 import net.consensys.athena.impl.enclave.EncryptedPayloadBuilder;
 import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.http.server.Request;
 import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.http.server.Serializer;
 import net.consensys.athena.impl.storage.SimpleStorage;
@@ -20,7 +21,6 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.netty.handler.codec.http.FullHttpRequest;
 
 /** Retrieve a base 64 encoded payload. */
 public class ReceiveController implements Controller {
@@ -38,10 +38,9 @@ public class ReceiveController implements Controller {
   }
 
   @Override
-  public Result handle(FullHttpRequest request) throws Exception {
+  public Result handle(Request request) throws Exception {
     // retrieves the encrypted payload from DB, using provided key
-    ReceiveRequest receiveRequest =
-        serializer.deserialize(request.content().array(), ContentType.JSON, ReceiveRequest.class);
+    ReceiveRequest receiveRequest = request.getPayload();
     StorageId key = new SimpleStorage(receiveRequest.key);
     Optional<StorageData> data = storage.get(key);
     if (!data.isPresent()) {

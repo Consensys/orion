@@ -11,9 +11,10 @@ import net.consensys.athena.api.storage.StorageIdBuilder;
 import net.consensys.athena.impl.enclave.CesarEnclave;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveRequest;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveResponse;
-import net.consensys.athena.impl.http.helpers.HttpTester;
 import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.http.server.Request;
+import net.consensys.athena.impl.http.server.RequestImpl;
 import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.http.server.Serializer;
 import net.consensys.athena.impl.storage.Sha512_256StorageIdBuilder;
@@ -22,10 +23,10 @@ import net.consensys.athena.impl.storage.StorageKeyValueStorageDelegate;
 import net.consensys.athena.impl.storage.memory.MemoryStorage;
 
 import java.util.Base64;
+import java.util.Optional;
 import java.util.Random;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Test;
 
@@ -56,13 +57,9 @@ public class ReceiveControllerTest {
     // and try to retrieve it with the receiveController
     ReceiveRequest req = new ReceiveRequest(id.getBase64Encoded(), null);
 
-    // perform fake http request
-    Result result =
-        new HttpTester(receiveController)
-            .uri("/receive")
-            .method(HttpMethod.POST)
-            .payload(serializer.serialize(req, ContentType.JSON))
-            .sendRequest();
+    // submit request to controller
+    Request controllerRequest = new RequestImpl(Optional.of(req));
+    Result result = receiveController.handle(controllerRequest);
 
     // ensure we got a 200 OK back
     assertEquals(result.getStatus().code(), HttpResponseStatus.OK.code());

@@ -1,17 +1,18 @@
 package net.consensys.athena.impl.http.controllers;
 
-import static net.consensys.athena.impl.http.server.Result.badRequest;
 import static net.consensys.athena.impl.http.server.Result.ok;
 
+import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageData;
 import net.consensys.athena.api.storage.StorageId;
 import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.http.server.Request;
 import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.storage.SimpleStorage;
 
-import io.netty.handler.codec.http.FullHttpRequest;
+import java.util.Optional;
 
 /** used to push a payload to a node. */
 public class PushController implements Controller {
@@ -22,28 +23,21 @@ public class PushController implements Controller {
   }
 
   @Override
-  public Result handle(FullHttpRequest request) {
-    // read the requestPayload, "Netty way"
-    byte[] requestPayload;
-    int length = request.content().readableBytes();
-    if (length <= 0) { // empty payload
-      return badRequest("request must have payload");
-    }
+  public Optional<Class<?>> expectedRequest() {
+    return Optional.of(EncryptedPayload.class);
+  }
 
-    if (request.content().hasArray()) {
-      requestPayload = request.content().array();
-    } else {
-      requestPayload = new byte[length];
-      request.content().getBytes(request.content().readerIndex(), requestPayload);
-    }
+  @Override
+  public Result handle(Request request) {
+    EncryptedPayload pushRequest = request.getPayload();
 
-    // we receive a encrypted payload (binary content) and store it into storage system
-    StorageData toStore = new SimpleStorage(requestPayload);
+    // we receive a EncryptedPayload and TODO the storage should be typed with that
+    StorageData toStore =
+        new SimpleStorage(
+            pushRequest.getCipherText()); // need typed storage, getCipherText to be removed.
     StorageId digest = storage.put(toStore);
 
     // return the digest (key)
-    //    ByteBuf content =
-    //        Unpooled.copiedBuffer(digest.getBase64Encoded().getBytes(Charset.forName("utf8")));
     return ok(ContentType.JSON, digest.getBase64Encoded());
   }
 }

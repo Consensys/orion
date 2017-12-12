@@ -4,9 +4,8 @@ import static net.consensys.athena.impl.http.server.Result.notImplemented;
 
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.http.server.Request;
 import net.consensys.athena.impl.http.server.Result;
-
-import io.netty.handler.codec.http.FullHttpRequest;
 
 /** Delete a payload from storage. */
 public class DeleteController implements Controller {
@@ -17,7 +16,7 @@ public class DeleteController implements Controller {
   }
 
   @Override
-  public Result handle(FullHttpRequest request) {
+  public Result handle(Request request) {
     return notImplemented();
   }
 }

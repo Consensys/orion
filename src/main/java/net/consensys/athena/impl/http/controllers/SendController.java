@@ -6,9 +6,8 @@ import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.http.server.Request;
 import net.consensys.athena.impl.http.server.Result;
-
-import io.netty.handler.codec.http.FullHttpRequest;
 
 /** Send a base64 encoded payload to encrypt. */
 public class SendController implements Controller {
@@ -23,7 +22,7 @@ public class SendController implements Controller {
   }
 
   @Override
-  public Result handle(FullHttpRequest request) {
+  public Result handle(Request request) {
     return notImplemented();
   }
 }

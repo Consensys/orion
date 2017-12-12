@@ -1,15 +1,20 @@
 package net.consensys.athena.impl.http.server.netty;
 
+import static java.util.Optional.empty;
 import static net.consensys.athena.impl.http.server.Result.internalServerError;
 
 import net.consensys.athena.impl.http.server.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.http.server.Request;
+import net.consensys.athena.impl.http.server.RequestImpl;
 import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.http.server.Router;
 import net.consensys.athena.impl.http.server.Serializer;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
@@ -55,12 +60,12 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
         fullHttpRequest.uri(),
         controller.getClass().getSimpleName());
 
-    // deserialize request payload
-
     Result result;
     try {
+      // deserialize payload
+      Request request = buildRequest(fullHttpRequest, controller);
       // process http request
-      result = controller.handle(fullHttpRequest);
+      result = controller.handle(request);
     } catch (Exception e) {
       // if an exception occurred, return a formatted ApiError
       log.error(e.getMessage());
@@ -68,12 +73,53 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     }
 
     // build httpResponse
-    FullHttpResponse response = outputResponse(fullHttpRequest, result);
+    FullHttpResponse response = buildHttpResponse(fullHttpRequest, result);
     ctx.writeAndFlush(response);
     fullHttpRequest.release();
   }
 
-  private FullHttpResponse outputResponse(FullHttpRequest request, Result result) {
+  // read httpRequest and deserialize the payload into expected typed object
+  private Request buildRequest(FullHttpRequest httpRequest, Controller controller)
+      throws Exception {
+    int requestPayloadSize = httpRequest.content().readableBytes();
+
+    // if the controller doesn't expect a payload
+    if (!controller.expectedRequest().isPresent()) {
+      if (requestPayloadSize > 0) {
+        throw new IllegalArgumentException("did not expect payload, yet one is provided");
+      }
+      return new RequestImpl(empty());
+    }
+
+    // controller expects a payload
+    // let's check if Content-encoding is set
+    String contentEncoding = httpRequest.headers().get(HttpHeaderNames.CONTENT_ENCODING);
+    if (contentEncoding == null) {
+      log.warn("Content-encoding is not set, trying JSON as default fallback.");
+      contentEncoding = HttpHeaderValues.APPLICATION_JSON.toString();
+    }
+
+    // read httpRequest payload bytes
+    byte[] requestPayload;
+    if (httpRequest.content().hasArray()) {
+      requestPayload = httpRequest.content().array();
+    } else {
+      requestPayload = new byte[requestPayloadSize];
+      httpRequest.content().getBytes(httpRequest.content().readerIndex(), requestPayload);
+    }
+
+    // deserialize the bytes into expected type by controller
+    try {
+      ContentType cType = ContentType.fromHttpContentEncoding(contentEncoding);
+      Object payload =
+          serializer.deserialize(requestPayload, cType, controller.expectedRequest().get());
+      return new RequestImpl(Optional.of(payload));
+    } catch (NoSuchElementException e) {
+      throw new UnsupportedEncodingException(contentEncoding + "isn't supported");
+    }
+  }
+
+  private FullHttpResponse buildHttpResponse(FullHttpRequest request, Result result) {
     // TODO lookup content type from the request
     FullHttpResponse response =
         new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);

@@ -1,12 +1,14 @@
 package net.consensys.athena.impl.http.server;
 
-import io.netty.handler.codec.http.FullHttpRequest;
+import static java.util.Optional.empty;
+
+import java.util.Optional;
 
 public interface Controller {
-  Result handle(FullHttpRequest request) throws Exception;
+  Result handle(Request request) throws Exception;
 
   // returns the expected request class, used for deserialization purposes
-  default Class expectedRequest() {
-    return EmptyRequest.class;
+  default Optional<Class<?>> expectedRequest() {
+    return empty();
   }
 }
