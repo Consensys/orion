@@ -55,6 +55,17 @@ public class BouncyCastleEnclave implements Enclave {
     return payload;
   }
 
+  public EncryptedPayload encrypt(byte[] plaintext, byte[] senderKey, byte[][] recipients) {
+
+    EncryptedPayload payload;
+
+    for (int i = 0; i < recipients.length; i++) {
+      payload = encrypt(plaintext, senderKey, recipients[i]);
+    }
+
+    return payload;
+  }
+
   public EncryptedPayload encrypt(byte[] plaintext, byte[] senderKey, byte[] recipient) {
 
     byte[] privateKey = getPrivateKey(senderKey);
@@ -72,12 +83,14 @@ public class BouncyCastleEnclave implements Enclave {
   @Override
   public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, PublicKey identity) {
 
-    return new byte[0];
+    byte[] ciphertextAndMetadataAsBytes = ciphertextAndMetadata.getCipherText();
+    byte[] PK = identity.getEncoded();
+    return decrypt(ciphertextAndMetadataAsBytes, PK);
   }
 
   public byte[] decrypt(byte[] ciphertextAndMetadata, byte[] identity) {
 
-    byte[] privateKey = getPrivateKey(identity);
+    byte[] privateKey = getNewPrivateKey(identity);
 
     SimpleBox box = new SimpleBox(ByteString.of(identity), ByteString.of(privateKey));
     ByteString cipher = ByteString.of(ciphertextAndMetadata);

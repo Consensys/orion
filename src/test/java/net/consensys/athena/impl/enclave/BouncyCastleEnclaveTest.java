@@ -31,42 +31,11 @@ import org.junit.runners.Parameterized;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 
+import okio.ByteString;
 
-@RunWith(Parameterized.class)
+
+
 public class BouncyCastleEnclaveTest {
-
-  private final HashAlgorithm algorithm;
-  private final String plaintext;
-  private final String expectedHash;
-  // test vectors taken from
-  // https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/SHA512_256.pdf
-  @Parameterized.Parameters
-  public static Collection testVectors() {
-    return Arrays.asList(
-        new Object[][] {
-          {SHA_512_256, "abc", "53048E2681941EF99B2E29B76B4C7DABE4C2D0C634FC6D46E0E2F13107E7AF23"},
-          {
-            SHA_512_256,
-            "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu",
-            "3928E184FB8690F840DA3988121D31BE65CB9D3EF83EE6146FEAC861E19B563A"
-          }
-        });
-  }
-
-  public BouncyCastleEnclaveTest(HashAlgorithm algorithm, String plaintext, String expectedHash) {
-    this.algorithm = algorithm;
-    this.plaintext = plaintext;
-    this.expectedHash = expectedHash;
-  }
-
-  @Test
-  public void testHashingUsingTestVector() {
-    // a simple hello world test of hashing a string
-    byte[] digest = new BouncyCastleEnclave().digest(algorithm, plaintext.getBytes());
-    String hex = DatatypeConverter.printHexBinary(digest);
-    assertEquals(expectedHash, hex);
-  }
-
   @Test
   public void testShouldEncryptData2() throws Exception {
     try {
@@ -91,14 +60,18 @@ public class BouncyCastleEnclaveTest {
 //              "     ,0xe0,0x82,0xf9,0x37,0x76,0x38,0x48,0x64\n" +
 //              "     ,0x5e,0x07,0x05");
 
+      //"0xde,0x9e,0xdb,0x7d,0x7b,0x7d,0xc1,0xb4,0xd3,0x5b,0x61,0xc2,0xec,0xe4,0x35,0x37,0x3f,0x83,0x43,0xc8,0x5b,0x78,0x67,0x4d,0xad,0xfc,0x7e,0x14,0x6f,0x88,0x2b,0x4f");
 
-      //byte[] bobpk = Hex.decode("0xde,0x9e,0xdb,0x7d,0x7b,0x7d,0xc1,0xb4,0xd3,0x5b,0x61,0xc2,0xec,0xe4,0x35,0x37,0x3f,0x83,0x43,0xc8,0x5b,0x78,0x67,0x4d,0xad,0xfc,0x7e,0x14,0x6f,0x88,0x2b,0x4f");
-      //byte[] bobpk = Byte.decode("0xde,0x9e,0xdb,0x7d,0x7b,0x7d,0xc1,0xb4,0xd3,0x5b,0x61,0xc2,0xec,0xe4,0x35,0x37,0x3f,0x83,0x43,0xc8,0x5b,0x78,0x67,0x4d,0xad,0xfc,0x7e,0x14,0x6f,0x88,0x2b,0x4f");
+      //Public key from the paper "bobpk"
+      byte[] sender = Hex.decode("de9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f");
+      assertEquals(32, sender.length);
 
-      byte[] bobpk = new byte[32];
-      assertEquals(32, bobpk.length);
+      //Pub key created from crypto_box lib
+      byte[] recipient = Hex.decode("6e52bf122ed989da8e5756292539961bd3c187ff8c9b951a1ba3c3600c3c8147");
 
-      enclave.encrypt(m, bobpk, bobpk);
+      net.consensys.athena.api.enclave.EncryptedPayload actual = enclave.encrypt(m, sender, recipient);
+      assertNotNull(actual);
+
     }
     catch (Exception ex) {
       throw ex;
@@ -149,27 +122,6 @@ public class BouncyCastleEnclaveTest {
   }
 
 
-//  @Test
-//  public void testShouldEncryptData2() throws Exception {
-//    try {
-//      Enclave enclave = new BouncyCastleEnclave(new MockKeyStorage(), new byte[16]);
-//
-//      byte[] plainText = new byte[32];
-//
-//      ECParameterSpec parameterSpec = org.bouncycastle.jce.ECNamedCurveTable.getParameterSpec("Curve25519");
-//      java.security.KeyPairGenerator g = java.security.KeyPairGenerator.getInstance("ECDH", "BC");
-////
-//      g.initialize(parameterSpec);
-//      KeyPair keyPair = g.generateKeyPair();
-//
-//      PublicKey pk = keyPair.getPublic();
-//
-//      enclave.encrypt(plainText, pk, null);
-//    }
-//    catch (Exception ex) {
-//      throw ex;
-//    }
-//  }
 
   @Test
   public void testShould_Generate_New_PrivateKey() {
@@ -178,12 +130,7 @@ public class BouncyCastleEnclaveTest {
       byte[] actual = enclave.generateKeyPair();
 
       assertNotNull(actual);
-
-//      PrivateKey k = actual.getPrivate();
-//      PublicKey K = actual.getPublic();
-//
-//      assertNotNull(k);
-//      assertNotNull(K);
+      assertEquals(32, actual.length);
     }
     catch (Exception ex) {
       ex.printStackTrace();
