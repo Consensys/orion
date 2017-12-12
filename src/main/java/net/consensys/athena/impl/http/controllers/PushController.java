@@ -12,7 +12,6 @@ import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.storage.SimpleStorage;
 
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpMethod;
 
 /** used to push a payload to a node. */
 public class PushController implements Controller {
@@ -24,11 +23,6 @@ public class PushController implements Controller {
 
   @Override
   public Result handle(FullHttpRequest request) {
-    // ensure HTTP method = POST
-    if (request.method() != HttpMethod.POST) {
-      return badRequest("http method must be POST");
-    }
-
     // read the requestPayload, "Netty way"
     byte[] requestPayload;
     int length = request.content().readableBytes();

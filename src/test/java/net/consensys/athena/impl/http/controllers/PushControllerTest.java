@@ -75,22 +75,4 @@ public class PushControllerTest {
     // ensure we didn't get a 200 OK : we provided an empty payload
     assertNotEquals(result.getStatus().code(), HttpResponseStatus.OK.code());
   }
-
-  @Test
-  public void testRequestHasHttpPostMethod() throws Exception {
-    // generate random byte content
-    byte[] toCheck = new byte[342];
-    new Random().nextBytes(toCheck);
-
-    // perform fake http request
-    Result result =
-        new HttpTester(controller)
-            .uri("/push")
-            .method(HttpMethod.GET)
-            .payload(toCheck)
-            .sendRequest();
-
-    // ensure we didn't get a 200 OK : we provided GET HTTP METHOD instead of POST
-    assertNotEquals(result.getStatus().code(), HttpResponseStatus.OK.code());
-  }
 }
