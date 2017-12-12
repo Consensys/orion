@@ -67,7 +67,7 @@ public class AthenaRouter implements Router {
         return new PartyInfoController();
       }
       if (uri.getPath().startsWith("/push")) {
-        return new PushController(STORAGE);
+        return new PushController(STORAGE, SERIALIZER);
       }
 
       throw new RuntimeException("Unsupported uri: " + uri);

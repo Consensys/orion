@@ -10,14 +10,19 @@ import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Request;
 import net.consensys.athena.impl.http.data.Result;
 import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.http.server.Serializer;
 import net.consensys.athena.impl.storage.SimpleStorage;
+
+import java.io.IOException;
 
 /** used to push a payload to a node. */
 public class PushController implements Controller {
   private final Storage storage;
+  private final Serializer serializer;
 
-  public PushController(Storage storage) {
+  public PushController(Storage storage, Serializer serializer) {
     this.storage = storage;
+    this.serializer = serializer;
   }
 
   @Override
@@ -26,13 +31,15 @@ public class PushController implements Controller {
   }
 
   @Override
-  public Result handle(Request request) {
+  public Result handle(Request request) throws IOException {
+    // that's actually useful to ensure we don't get random bytes as input
     EncryptedPayload pushRequest = request.getPayload();
 
+    // serialize encrypted payload for storage
+    byte[] bPayload = serializer.serialize(pushRequest, ContentType.CBOR);
+
     // we receive a EncryptedPayload and TODO the storage should be typed with that
-    StorageData toStore =
-        new SimpleStorage(
-            pushRequest.getCipherText()); // need typed storage, getCipherText to be removed.
+    StorageData toStore = new SimpleStorage(bPayload);
     StorageId digest = storage.put(toStore);
 
     // return the digest (key)
