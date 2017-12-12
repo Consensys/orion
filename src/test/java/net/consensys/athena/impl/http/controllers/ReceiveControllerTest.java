@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Random;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Test;
 
@@ -35,7 +36,8 @@ public class ReceiveControllerTest {
   private final StorageIdBuilder keyBuilder = new Sha512_256StorageIdBuilder(enclave);
   private final Storage storage =
       new StorageKeyValueStorageDelegate(new MemoryStorage(), keyBuilder);
-  private final Serializer serializer = new Serializer(new ObjectMapper());
+  private final Serializer serializer =
+      new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory()));
   private final Controller receiveController =
       new ReceiveController(enclave, storage, ContentType.JSON, serializer);
 

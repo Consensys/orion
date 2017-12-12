@@ -7,11 +7,12 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.junit.Test;
 
 public class SerializerTest {
 
-  Serializer serializer = new Serializer(new ObjectMapper());
+  Serializer serializer = new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory()));
 
   @Test
   public void testJavaSerialization() throws Exception {
@@ -27,6 +28,14 @@ public class SerializerTest {
     DummyObject dummyObjectOriginal = new DummyObject();
     byte[] bytes = serializer.serialize(dummyObjectOriginal, ContentType.JSON);
     DummyObject dummyObject = serializer.deserialize(bytes, ContentType.JSON, DummyObject.class);
+    assert (dummyObject.equals(dummyObjectOriginal));
+  }
+
+  @Test
+  public void testCBORSerialization() throws Exception {
+    DummyObject dummyObjectOriginal = new DummyObject();
+    byte[] bytes = serializer.serialize(dummyObjectOriginal, ContentType.CBOR);
+    DummyObject dummyObject = serializer.deserialize(bytes, ContentType.CBOR, DummyObject.class);
     assert (dummyObject.equals(dummyObjectOriginal));
   }
 }

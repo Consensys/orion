@@ -24,6 +24,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import io.netty.handler.codec.http.HttpRequest;
 
 public class AthenaRouter implements Router {
@@ -33,7 +34,8 @@ public class AthenaRouter implements Router {
   private static final KeyValueStore KEY_VALUE_STORE = new MapDbStorage("routerdb");
   private static final Storage STORAGE =
       new StorageKeyValueStorageDelegate(KEY_VALUE_STORE, KEY_BUILDER);
-  private static final Serializer SERIALIZER = new Serializer(new ObjectMapper());
+  private static final Serializer SERIALIZER =
+      new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory()));
 
   @Override
   public Controller lookup(HttpRequest request) {

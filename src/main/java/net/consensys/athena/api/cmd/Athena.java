@@ -11,6 +11,7 @@ import net.consensys.athena.impl.http.server.netty.NettySettings;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 
 public class Athena {
 
@@ -25,7 +26,7 @@ public class Athena {
             of(DEFAULT_HTTP_PORT),
             empty(),
             new AthenaRouter(),
-            new Serializer(new ObjectMapper()));
+            new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory())));
     NettyServer server = new DefaultNettyServer(settings);
     server.start();
     server.join();
