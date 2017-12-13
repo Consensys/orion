@@ -1,17 +1,35 @@
 package net.consensys.athena.impl.network;
 
+import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.network.PartyInfo;
 
 import java.net.URL;
 import java.security.PublicKey;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
 public class MemoryPartyInfo implements PartyInfo {
 
   private URL url;
-  private HashSet<URL> parties = new HashSet<>();
-  private HashMap<URL, PublicKey> receipts = new HashMap<>();
+  private HashSet<URL> parties;
+  private HashMap<URL, PublicKey> receipts;
+
+  public MemoryPartyInfo() {
+    parties = new HashSet<>();
+    receipts = new HashMap<>();
+  }
+
+  public MemoryPartyInfo(Config config) {
+    url = config.url();
+    if (config.otherNodes().length > 0) {
+      parties = new HashSet<>(Arrays.asList(config.otherNodes()));
+    } else {
+      parties = new HashSet<>();
+    }
+
+    receipts = new HashMap<>();
+  }
 
   public void setUrl(URL url) {
     this.url = url;

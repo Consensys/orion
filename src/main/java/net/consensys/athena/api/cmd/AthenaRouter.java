@@ -1,6 +1,7 @@
 package net.consensys.athena.api.cmd;
 
 import net.consensys.athena.api.enclave.Enclave;
+import net.consensys.athena.api.network.PartyInfo;
 import net.consensys.athena.api.storage.KeyValueStore;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageIdBuilder;
@@ -34,6 +35,11 @@ public class AthenaRouter implements Router {
   private static final Storage STORAGE =
       new StorageKeyValueStorageDelegate(KEY_VALUE_STORE, KEY_BUILDER);
   private static final Serializer SERIALIZER = new Serializer(new ObjectMapper());
+  private static PartyInfo partyInfo;
+
+  public AthenaRouter(PartyInfo info) {
+    partyInfo = info;
+  }
 
   @Override
   public Controller lookup(HttpRequest request) {
@@ -62,7 +68,7 @@ public class AthenaRouter implements Router {
       }
       if (uri.getPath().startsWith("/partyinfo")) {
         //probably need to inject something that stores the party info state.
-        return new PartyInfoController();
+        return new PartyInfoController(partyInfo);
       }
       if (uri.getPath().startsWith("/push")) {
         return new PushController(STORAGE);
