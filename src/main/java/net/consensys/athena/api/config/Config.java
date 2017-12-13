@@ -4,7 +4,9 @@ import java.io.File;
 import java.net.URL;
 import java.util.Optional;
 
-/** Configuration for Athena Refer to the "sample.conf" file for documentation on config elements */
+/**
+ * Configuration for Athena. Refer to the "sample.conf" file for documentation on config elements
+ */
 public interface Config {
 
   /**
