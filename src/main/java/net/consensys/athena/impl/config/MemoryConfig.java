@@ -3,15 +3,16 @@ package net.consensys.athena.impl.config;
 import net.consensys.athena.api.config.Config;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Optional;
 
 public class MemoryConfig implements Config {
 
-  private String url;
+  private URL url;
   private long port;
   private Optional<File> workDir = Optional.empty();
   private Optional<File> socket = Optional.empty();
-  private File[] otherNodes;
+  private URL[] otherNodes;
   private File[] publicKeys;
   private File[] privateKeys;
   private File[] alwaysSendTo;
@@ -33,7 +34,7 @@ public class MemoryConfig implements Config {
   private Optional<Boolean> showVersion = Optional.empty();
   private long verbosity;
 
-  public void setUrl(String url) {
+  public void setUrl(URL url) {
     this.url = url;
   }
 
@@ -49,7 +50,7 @@ public class MemoryConfig implements Config {
     this.socket = Optional.ofNullable(socket);
   }
 
-  public void setOtherNodes(File[] otherNodes) {
+  public void setOtherNodes(URL[] otherNodes) {
     this.otherNodes = otherNodes;
   }
 
@@ -134,7 +135,7 @@ public class MemoryConfig implements Config {
   }
 
   @Override
-  public String url() {
+  public URL url() {
     return url;
   }
 
@@ -154,7 +155,7 @@ public class MemoryConfig implements Config {
   }
 
   @Override
-  public File[] otherNodes() {
+  public URL[] otherNodes() {
     return otherNodes;
   }
 
