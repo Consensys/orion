@@ -18,6 +18,8 @@ import okio.ByteString;
 import java.security.*;
 import java.util.Optional;
 
+import java.util.*;
+
 public class BouncyCastleEnclave implements Enclave {
   static {
     Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
@@ -55,12 +57,13 @@ public class BouncyCastleEnclave implements Enclave {
     return payload;
   }
 
-  public EncryptedPayload encrypt(byte[] plaintext, byte[] senderKey, byte[][] recipients) {
+  public List<EncryptedPayload> encrypt(byte[] plaintext, byte[] senderKey, byte[][] recipients) {
 
-    EncryptedPayload payload;
+    List<EncryptedPayload> payloads = new ArrayList<>(recipients.length);
 
     for (int i = 0; i < recipients.length; i++) {
-      payload = encrypt(plaintext, senderKey, recipients[i]);
+      EncryptedPayload payload = encrypt(plaintext, senderKey, recipients[i]);
+      payloads.add(payload);
     }
 
     return payload;
