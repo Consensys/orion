@@ -10,6 +10,7 @@ import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.network.MemoryPartyInfo;
 
 import java.net.URL;
+import java.util.Optional;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -33,5 +34,6 @@ public class PartyInfoControllerTest {
         new HttpTester(controller).uri("/partyinfo").method(HttpMethod.POST).sendRequest();
 
     assertEquals(result.getStatus().code(), HttpResponseStatus.OK.code());
+    assertEquals(Optional.of(partyInfo), result.getPayload());
   }
 }

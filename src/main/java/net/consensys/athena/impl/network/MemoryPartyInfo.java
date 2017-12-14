@@ -31,22 +31,10 @@ public class MemoryPartyInfo implements PartyInfo {
     receipts = new HashMap<>();
   }
 
-  public void setUrl(URL url) {
-    this.url = url;
-  }
-
-  public void setParties(HashSet<URL> parties) {
-    this.parties = parties;
-  }
-
-  public void setReceipts(HashMap<URL, PublicKey> receipts) {
-    this.receipts = receipts;
-  }
-
   /**
    * Add the URL of a node to the parties list.
    *
-   * @param node
+   * @param node URL of new node
    */
   public void addNodeURL(URL node) {
     this.parties.add(node);
@@ -55,8 +43,8 @@ public class MemoryPartyInfo implements PartyInfo {
   /**
    * Add a node's URL and PublcKey to the parties and receipts lists
    *
-   * @param node
-   * @param nodePk
+   * @param node URL of new node
+   * @param nodePk PublicKey of new node
    */
   public void addNode(URL node, PublicKey nodePk) {
     this.parties.add(node);
