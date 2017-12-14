@@ -15,7 +15,7 @@ cache:
 install: true
 script:
   - sudo add-apt-repository -y ppa:rj-bertsche/libsodium
-  - sudo apt-get install -y autoconf automake libtool make tar gcc-multilib libaio-dev libsodium-dev
+  - sudo apt-get install -y autoconf automake libtool make tar gcc-multilib libaio-dev libsodium
   - gradle build
   - gradle test
 notifications:
