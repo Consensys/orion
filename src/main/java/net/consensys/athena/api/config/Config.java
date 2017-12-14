@@ -101,7 +101,7 @@ public interface Config {
    *   <li>bdb:path - BerkeleyDB
    *   <li>dir:path - Directory/file storage, can be used with e.g. FUSE-mounted file systems.
    *   <li>leveldb:path - LevelDB - experimental
-   *   <li>memory - Contents are cleared when Constellation exits
+   *   <li>memory - Contents are cleared when Athena exits
    *   <li>sqlite:path - SQLite - experimental
    * </ul>
    *

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /** Details of other nodes on the network */
-public interface PartyInfo {
+public interface NetworkNodes {
 
   /**
    * URL of this node
@@ -20,12 +20,12 @@ public interface PartyInfo {
    *
    * @return
    */
-  HashSet<URL> parties();
+  HashSet<URL> nodeURLs();
 
   /**
-   * List of public keys for other nodes on the network???
+   * Map from URL to public key for all discovered nodes.
    *
    * @return
    */
-  HashMap<URL, PublicKey> receipts();
+  HashMap<URL, PublicKey> nodePKs();
 }
