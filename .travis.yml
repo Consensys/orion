@@ -14,7 +14,8 @@ cache:
     - $HOME/.gradle/wrapper/
 install: true
 script:
-  - sudo add-apt-repository -y ppa:rj-bertsche/libsodium
+  - sudo add-apt-repository -y ppa:elt/libsodium
+  - sudo apt-get update
   - sudo apt-get install -y autoconf automake libtool make tar gcc-multilib libaio-dev libsodium
   - gradle build
   - gradle test
