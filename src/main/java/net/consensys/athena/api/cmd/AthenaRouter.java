@@ -67,7 +67,6 @@ public class AthenaRouter implements Router {
         return new ResendController(ENCLAVE, STORAGE);
       }
       if (uri.getPath().startsWith("/partyinfo")) {
-        //probably need to inject something that stores the party info state.
         return new PartyInfoController(networkNodes);
       }
       if (uri.getPath().startsWith("/push")) {
