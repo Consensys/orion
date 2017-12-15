@@ -1,6 +1,7 @@
 # Test config with invalid config settings to test validation exception
-url = "http://127.0.0.1:9001/"
+url = "htt://127.0.0.1:9001/"
 port = 9001
+othernodes = ["htt://127.0.0.1:9000/", "10.1.1.1"]
 verbosity = 4
 tls = "notValid"
 tlsservertrust = "invalid-trust-mode"
