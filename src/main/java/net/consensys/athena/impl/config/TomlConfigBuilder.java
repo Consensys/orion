@@ -5,6 +5,8 @@ import net.consensys.athena.api.config.ConfigException;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,7 +21,12 @@ public class TomlConfigBuilder {
     Toml toml = new Toml().read(config);
 
     if (toml.getString("url") != null) {
-      memoryConfig.setUrl(toml.getString("url"));
+      try {
+        memoryConfig.setUrl(new URL(toml.getString("url")));
+      } catch (MalformedURLException e) {
+        errorMsg.append("Error: key 'url' in config is malformed.\n\t");
+        errorMsg.append(e.getMessage()).append("\n");
+      }
     } else {
       errorMsg.append("Error: value for key 'url' in config must be specified\n");
     }
@@ -38,7 +45,12 @@ public class TomlConfigBuilder {
       memoryConfig.setSocket(new File(toml.getString("socket")));
     }
 
-    memoryConfig.setOtherNodes(convertListToFileArray(toml.getList("othernodes")));
+    try {
+      memoryConfig.setOtherNodes(convertListToURLArray(toml.getList("othernodes")));
+    } catch (ConfigException e) {
+      errorMsg.append("Error: key 'othernodes' in config containes malformed URLS.\n");
+      errorMsg.append(e.getMessage());
+    }
 
     memoryConfig.setPublicKeys(convertListToFileArray(toml.getList("publickeys")));
     memoryConfig.setPrivateKeys(convertListToFileArray(toml.getList("privatekeys")));
@@ -111,6 +123,34 @@ public class TomlConfigBuilder {
 
   private File[] convertListToFileArray(List<String> paths) {
     return paths == null ? new File[0] : paths.stream().map(File::new).toArray(File[]::new);
+  }
+
+  private URL[] convertListToURLArray(List<String> urls) {
+    URL[] urlArray;
+    StringBuilder errorMsg = new StringBuilder();
+
+    if (urls == null) {
+      urlArray = new URL[0];
+    } else {
+      urlArray = new URL[urls.size()];
+      for (int i = 0; i < urls.size(); i++) {
+        try {
+          urlArray[i] = new URL(urls.get(i));
+        } catch (MalformedURLException e) {
+          errorMsg
+              .append("\tURL [")
+              .append(urls.get(i))
+              .append("] ")
+              .append(e.getMessage())
+              .append("\n");
+        }
+      }
+    }
+    if (errorMsg.length() != 0) {
+      throw new ConfigException(errorMsg.toString());
+    }
+
+    return urlArray;
   }
 
   private String[] convertListToStringArray(List<String> paths) {

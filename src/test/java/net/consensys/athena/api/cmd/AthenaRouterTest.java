@@ -10,6 +10,7 @@ import net.consensys.athena.impl.http.controllers.ResendController;
 import net.consensys.athena.impl.http.controllers.SendController;
 import net.consensys.athena.impl.http.controllers.UpcheckController;
 import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.network.MemoryNetworkNodes;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,7 +29,7 @@ public class AthenaRouterTest {
   private final String testName;
   private final String path;
   private final Class controllerClass;
-  AthenaRouter router = new AthenaRouter();
+  AthenaRouter router = new AthenaRouter(new MemoryNetworkNodes());
 
   @Parameterized.Parameters
   public static Collection routes() {
@@ -42,7 +43,7 @@ public class AthenaRouterTest {
           {"Receive", "/receive", ReceiveController.class},
           {"Delete", "/delete", DeleteController.class},
           {"Resend", "/resend", ResendController.class},
-          {"PartyInfo", "/partyinfo", PartyInfoController.class},
+          {"NetworkNodes", "/partyinfo", PartyInfoController.class},
           {"Push", "/push", PushController.class},
         });
   }
