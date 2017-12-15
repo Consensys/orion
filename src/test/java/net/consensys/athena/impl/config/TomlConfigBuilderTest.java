@@ -151,6 +151,7 @@ public class TomlConfigBuilderTest {
 
     try {
       Config testConf = configBuilder.build(configAsStream);
+      fail("Expected Config Exception to be thrown");
     } catch (ConfigException e) {
       String message =
           "Invalid Configuration Options\n"
@@ -173,6 +174,7 @@ public class TomlConfigBuilderTest {
 
     try {
       Config testConf = configBuilder.build(configAsStream);
+      fail("Expected Config Exception to be thrown");
     } catch (ConfigException e) {
       String message =
           "Invalid Configuration Options\n"
@@ -193,6 +195,7 @@ public class TomlConfigBuilderTest {
 
     try {
       Config testConf = configBuilder.build(configAsStream);
+      fail("Expected Config Exception to be thrown");
     } catch (ConfigException e) {
       String message =
           "Invalid Configuration Options\n"
