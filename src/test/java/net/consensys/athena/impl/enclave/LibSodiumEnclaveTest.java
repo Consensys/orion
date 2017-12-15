@@ -5,8 +5,8 @@ import static org.junit.Assert.*;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.impl.config.MemoryConfig;
-import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
+import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
 
 import java.security.PublicKey;
@@ -24,7 +24,7 @@ public class LibSodiumEnclaveTest {
 
   @Before
   public void setUp() throws Exception {
-    config.setLibSodiumPath(TomlConfigBuilder.defaultLibSodiumPath());
+    config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
     enclave = new LibSodiumEnclave(config, memoryKeyStore);
   }
 

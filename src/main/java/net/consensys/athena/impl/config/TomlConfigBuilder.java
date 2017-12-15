@@ -2,6 +2,7 @@ package net.consensys.athena.impl.config;
 
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.config.ConfigException;
+import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
 
 import java.io.File;
 import java.io.InputStream;
@@ -9,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.moandjiezana.toml.Toml;
-import com.sun.jna.Platform;
 
 public class TomlConfigBuilder {
 
@@ -39,7 +39,8 @@ public class TomlConfigBuilder {
       memoryConfig.setSocket(new File(toml.getString("socket")));
     }
 
-    memoryConfig.setLibSodiumPath(toml.getString("libsodiumpath", defaultLibSodiumPath()));
+    memoryConfig.setLibSodiumPath(
+        toml.getString("libsodiumpath", LibSodiumSettings.defaultLibSodiumPath()));
     memoryConfig.setOtherNodes(convertListToFileArray(toml.getList("othernodes")));
 
     memoryConfig.setPublicKeys(convertListToFileArray(toml.getList("publickeys")));
@@ -109,18 +110,6 @@ public class TomlConfigBuilder {
     }
 
     return memoryConfig;
-  }
-
-  public static String defaultLibSodiumPath() {
-    if (Platform.isMac()) {
-      return "/usr/local/lib/libsodium.dylib";
-    } else if (Platform.isWindows()) {
-      return "C:/libsodium/libsodium.dll";
-    } else if (new File("/usr/lib/x86_64-linux-gnu/libsodium.so").exists()) {
-      return "/usr/lib/x86_64-linux-gnu/libsodium.so";
-    } else {
-      return "/usr/local/lib/libsodium.so";
-    }
   }
 
   private File[] convertListToFileArray(List<String> paths) {
