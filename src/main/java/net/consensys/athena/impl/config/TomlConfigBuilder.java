@@ -48,7 +48,6 @@ public class TomlConfigBuilder {
 
     memoryConfig.setLibSodiumPath(
         toml.getString("libsodiumpath", LibSodiumSettings.defaultLibSodiumPath()));
-    memoryConfig.setOtherNodes(convertListToURLArray(toml.getList("othernodes")));
 
     try {
       memoryConfig.setOtherNodes(convertListToURLArray(toml.getList("othernodes")));
