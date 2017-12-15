@@ -19,7 +19,7 @@ Perhaps you might like using the ssh protocol to clone... in which case do `git 
 
 In order to be compatible with the original Haskell Constellation, the lib sodium library has been used to provide the encryption primitives.
 
-In order to use thi, you will first need to install lib sodium on your machine.
+In order to use this, you will first need to install lib sodium on your machine.
 
 mac:
 `brew install libsodium`

@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.config.ConfigException;
+import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
 
 import java.io.File;
 import java.io.InputStream;
@@ -93,6 +94,8 @@ public class TomlConfigBuilderTest {
 
     expectedFile = new File("known-servers");
     assertEquals(expectedFile, testConf.tlsKnownServers());
+
+    assertEquals("/somepath", testConf.libSodiumPath());
   }
 
   @Test
@@ -143,6 +146,8 @@ public class TomlConfigBuilderTest {
 
     expectedFile = new File("tls-known-servers");
     assertEquals(expectedFile, testConf.tlsKnownServers());
+
+    assertEquals(LibSodiumSettings.defaultLibSodiumPath(), testConf.libSodiumPath());
   }
 
   @Test

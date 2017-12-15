@@ -22,3 +22,4 @@ tlsclientchain = []
 tlsclientkey = "client-key.pem"
 tlsclienttrust = "ca"
 tlsknownservers = "known-servers"
+libsodiumpath="/somepath"

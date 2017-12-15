@@ -25,7 +25,7 @@ public interface Config {
   long port();
 
   /**
-   * Path at which to locate the lib sodium shared library. Defaults to:
+   * Path at which to locate the lib sodium shared library. Default:
    *
    * <ul>
    *   <li><b>Linux</b> /usr/local/lib/libsodium.so
@@ -34,6 +34,7 @@ public interface Config {
    * </ul>
    */
   String libSodiumPath();
+
   /**
    * Directory to which paths to all other files referenced in the config are relative to.
    *

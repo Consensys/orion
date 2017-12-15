@@ -12,5 +12,5 @@ package net.consensys.athena.api.enclave;
  * @see java.security.PrivateKey
  */
 public interface CombinedKey {
-  public byte[] getEncoded();
+  byte[] getEncoded();
 }
