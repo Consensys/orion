@@ -116,6 +116,8 @@ public class TomlConfigBuilder {
       return "/usr/local/lib/libsodium.dylib";
     } else if (Platform.isWindows()) {
       return "C:/libsodium/libsodium.dll";
+    } else if (new File("/usr/lib/x86_64-linux-gnu/libsodium.so").exists()) {
+      return "/usr/lib/x86_64-linux-gnu/libsodium.so";
     } else {
       return "/usr/local/lib/libsodium.so";
     }
