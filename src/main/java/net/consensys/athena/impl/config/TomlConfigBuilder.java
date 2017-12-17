@@ -2,6 +2,7 @@ package net.consensys.athena.impl.config;
 
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.config.ConfigException;
+import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
 
 import java.io.File;
 import java.io.InputStream;
@@ -44,6 +45,9 @@ public class TomlConfigBuilder {
     if (toml.getString("socket") != null) {
       memoryConfig.setSocket(new File(toml.getString("socket")));
     }
+
+    memoryConfig.setLibSodiumPath(
+        toml.getString("libsodiumpath", LibSodiumSettings.defaultLibSodiumPath()));
 
     try {
       memoryConfig.setOtherNodes(convertListToURLArray(toml.getList("othernodes")));

@@ -33,6 +33,7 @@ public class MemoryConfig implements Config {
   private Optional<String[]> generateKeys = Optional.empty();
   private Optional<Boolean> showVersion = Optional.empty();
   private long verbosity;
+  private String libSodiumPath;
 
   public void setUrl(URL url) {
     this.url = url;
@@ -132,6 +133,10 @@ public class MemoryConfig implements Config {
 
   public void setVerbosity(long verbosity) {
     this.verbosity = verbosity;
+  }
+
+  public void setLibSodiumPath(String libSodiumPath) {
+    this.libSodiumPath = libSodiumPath;
   }
 
   @Override
@@ -257,5 +262,10 @@ public class MemoryConfig implements Config {
   @Override
   public long verbosity() {
     return verbosity;
+  }
+
+  @Override
+  public String libSodiumPath() {
+    return libSodiumPath;
   }
 }

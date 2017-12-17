@@ -18,7 +18,7 @@ dependencies {
   compile 'com.moandjiezana.toml:toml4j:0.7.2'
   implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
   implementation 'org.mapdb:mapdb:3.0.5'
-
+  implementation group: 'com.muquit.libsodiumjna', name: 'libsodium-jna', version: '1.0.4'
   testImplementation 'junit:junit:4.12'
 
   // logger
