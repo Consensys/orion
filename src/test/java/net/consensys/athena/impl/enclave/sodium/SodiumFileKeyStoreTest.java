@@ -51,6 +51,19 @@ public class SodiumFileKeyStoreTest {
   }
 
   @Test
+  public void testMissingAlgorithimRaisesAppropriateException() {
+    MemoryConfig config = new MemoryConfig();
+    config.setPrivateKeys(new File[] {new File("keys/noalgorithm.key")});
+    config.setPublicKeys(new File[] {new File("keys/tm1a.pub")});
+    try {
+      keyStore = new SodiumFileKeyStore(config, objectMapper);
+      fail("should have thrown an EnclaveException");
+    } catch (EnclaveException e) {
+      // expected
+    }
+  }
+
+  @Test
   public void testConfigLoadsMultipleKeys() {
     InputStream configAsStream =
         this.getClass().getClassLoader().getResourceAsStream("multipleKeyStoreTest.toml");
