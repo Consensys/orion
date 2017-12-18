@@ -85,7 +85,7 @@ public class LibSodiumEnclaveTest {
       enclave.encrypt("plaintext".getBytes(), fake, new PublicKey[] {recipientKey});
       fail("Should have thrown an Enclave Exception");
     } catch (EnclaveException e) {
-      assertEquals("No PrivateKey found in keystore", e.getMessage());
+      assertEquals("No StoredPrivateKey found in keystore", e.getMessage());
     }
   }
 
@@ -100,7 +100,7 @@ public class LibSodiumEnclaveTest {
       enclave.decrypt(payload, fake);
       fail("Should have thrown an Enclave Exception");
     } catch (EnclaveException e) {
-      assertEquals("No PrivateKey found in keystore", e.getMessage());
+      assertEquals("No StoredPrivateKey found in keystore", e.getMessage());
     }
   }
 }
