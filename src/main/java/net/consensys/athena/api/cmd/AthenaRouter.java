@@ -28,8 +28,12 @@ import java.net.URISyntaxException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.HttpRequest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class AthenaRouter implements Router {
+
+  private static final Logger log = LogManager.getLogger();
 
   private static final KeyValueStore KEY_VALUE_STORE = new MapDbStorage("routerdb");
 

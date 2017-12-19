@@ -43,10 +43,10 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     Controller controller = router.lookup(httpRequest);
     // log incoming http request
     log.debug(
-        "processing {} request on {} with {}",
+        "{} processing route: {} {}",
+        controller.getClass().getSimpleName(),
         httpRequest.method().name(),
-        httpRequest.uri(),
-        controller.getClass().getSimpleName());
+        httpRequest.uri());
 
     Result result;
     try {
@@ -59,6 +59,9 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
       log.error(e.getMessage());
       result = internalServerError(e.getMessage());
     }
+
+    log.debug(
+        "{} result: {}", controller.getClass().getSimpleName(), result.getStatus().toString());
 
     // build httpResponse
     FullHttpResponse response =

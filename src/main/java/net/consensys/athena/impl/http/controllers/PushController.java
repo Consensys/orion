@@ -6,7 +6,6 @@ import static net.consensys.athena.impl.http.data.Result.ok;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageData;
-import net.consensys.athena.api.storage.StorageId;
 import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Request;
 import net.consensys.athena.impl.http.data.Result;
@@ -49,11 +48,15 @@ public class PushController implements Controller {
       return internalServerError(e.getMessage());
     }
 
+    log.trace("read and serialized encrypted payload");
+
     // we receive a EncryptedPayload and TODO the storage should be typed with that
     StorageData toStore = new SimpleStorage(bPayload);
-    StorageId digest = storage.put(toStore);
+    String digest = storage.put(toStore).getBase64Encoded();
+
+    log.debug("stored payload. resulting digest: {}", digest);
 
     // return the digest (key)
-    return ok(ContentType.JSON, digest.getBase64Encoded());
+    return ok(ContentType.JSON, digest);
   }
 }
