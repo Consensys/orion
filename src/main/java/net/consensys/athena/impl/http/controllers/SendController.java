@@ -17,14 +17,12 @@ public class SendController implements Controller {
   private final Enclave enclave;
   private final Storage storage;
   private final ContentType contentType;
-  private final Serializer serializer;
 
   public SendController(
-      Enclave enclave, Storage storage, ContentType contentType, Serializer serializer) {
+      Enclave enclave, Storage storage, ContentType contentType) {
     this.enclave = enclave;
     this.storage = storage;
     this.contentType = contentType;
-    this.serializer = serializer;
   }
 
   @Override

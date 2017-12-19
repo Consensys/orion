@@ -50,15 +50,15 @@ public class TomlConfigBuilderTest {
 
     // File Arrays
     expectedFilesArray = new File[1];
-    expectedFilesArray[0] = new File("foo.pub");
+    expectedFilesArray[0] = new File("keys/tm1.pub");
     assertArrayEquals(expectedFilesArray, testConf.publicKeys());
 
     expectedFilesArray = new File[1];
-    expectedFilesArray[0] = new File("foo.key");
+    expectedFilesArray[0] = new File("keys/tm1.key");
     assertArrayEquals(expectedFilesArray, testConf.privateKeys());
 
     expectedFilesArray = new File[1];
-    expectedFilesArray[0] = new File("http://127.0.0.1:9000/");
+    expectedFilesArray[0] = new File("keys/tm1.pub");
     assertArrayEquals(expectedFilesArray, testConf.alwaysSendTo());
 
     expectedFilesArray = new File[0];
