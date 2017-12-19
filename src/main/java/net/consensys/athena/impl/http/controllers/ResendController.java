@@ -1,14 +1,12 @@
 package net.consensys.athena.impl.http.controllers;
 
-import static net.consensys.athena.impl.http.server.Result.notImplemented;
+import static net.consensys.athena.impl.http.data.Result.notImplemented;
 
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.storage.Storage;
-import net.consensys.athena.impl.http.server.ContentType;
+import net.consensys.athena.impl.http.data.Request;
+import net.consensys.athena.impl.http.data.Result;
 import net.consensys.athena.impl.http.server.Controller;
-import net.consensys.athena.impl.http.server.Result;
-
-import io.netty.handler.codec.http.FullHttpRequest;
 
 /**
  * ask to resend a single transaction or all transactions. Useful in situations where a
@@ -24,7 +22,7 @@ public class ResendController implements Controller {
   }
 
   @Override
-  public Result handle(FullHttpRequest request) {
-    return notImplemented(ContentType.HASKELL_ENCODED);
+  public Result handle(Request request) {
+    return notImplemented();
   }
 }

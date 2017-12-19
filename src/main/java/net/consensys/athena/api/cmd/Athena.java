@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.jetbrains.annotations.NotNull;
 
 public class Athena {
@@ -60,7 +61,7 @@ public class Athena {
             Optional.of((int) config.port()),
             empty(),
             new AthenaRouter(networkNodes),
-            new Serializer(new ObjectMapper()));
+            new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory())));
     NettyServer server = new DefaultNettyServer(settings);
     server.start();
     return server;

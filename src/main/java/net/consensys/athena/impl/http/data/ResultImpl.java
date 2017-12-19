@@ -1,4 +1,4 @@
-package net.consensys.athena.impl.http.server;
+package net.consensys.athena.impl.http.data;
 
 import java.util.Optional;
 

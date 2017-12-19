@@ -1,18 +1,17 @@
 package net.consensys.athena.impl.http.controllers;
 
-import static org.junit.Assert.*;
+import static junit.framework.TestCase.assertEquals;
 
 import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.impl.config.MemoryConfig;
-import net.consensys.athena.impl.http.helpers.HttpTester;
+import net.consensys.athena.impl.http.data.RequestImpl;
+import net.consensys.athena.impl.http.data.Result;
 import net.consensys.athena.impl.http.server.Controller;
-import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
 
 import java.net.URL;
 import java.util.Optional;
 
-import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Test;
 
@@ -30,8 +29,7 @@ public class PartyInfoControllerTest {
     NetworkNodes networkNodes = new MemoryNetworkNodes(config);
     Controller controller = new PartyInfoController(networkNodes);
 
-    Result result =
-        new HttpTester(controller).uri("/partyinfo").method(HttpMethod.POST).sendRequest();
+    Result result = controller.handle(new RequestImpl(Optional.empty()));
 
     assertEquals(result.getStatus().code(), HttpResponseStatus.OK.code());
     assertEquals(Optional.of(networkNodes), result.getPayload());

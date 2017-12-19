@@ -1,5 +1,7 @@
 package net.consensys.athena.impl.http.server;
 
+import net.consensys.athena.impl.http.data.ContentType;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -12,9 +14,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Serializer {
   private final ObjectMapper jsonObjectMapper;
+  private final ObjectMapper cborObjectMapper;
 
-  public Serializer(ObjectMapper jsonObjectMapper) {
+  public Serializer(ObjectMapper jsonObjectMapper, ObjectMapper cborObjectMapper) {
     this.jsonObjectMapper = jsonObjectMapper;
+    this.cborObjectMapper = cborObjectMapper;
   }
 
   public byte[] serialize(Object obj, ContentType contentType) throws IOException {
@@ -26,6 +30,10 @@ public class Serializer {
         return byteOutputStream.toByteArray();
       case JSON:
         return jsonObjectMapper.writeValueAsString(obj).getBytes(Charset.forName("UTF-8"));
+      case RAW:
+        return obj.toString().getBytes(Charset.forName("UTF-8"));
+      case CBOR:
+        return cborObjectMapper.writeValueAsBytes(obj);
       default:
         throw new NotSerializableException();
     }
@@ -39,6 +47,8 @@ public class Serializer {
         return (T) new ObjectInputStream(new ByteArrayInputStream(bytes)).readObject();
       case JSON:
         return jsonObjectMapper.readValue(bytes, valueType);
+      case CBOR:
+        return cborObjectMapper.readValue(bytes, valueType);
       default:
         throw new NotSerializableException();
     }

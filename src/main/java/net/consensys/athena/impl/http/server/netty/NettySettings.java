@@ -16,8 +16,8 @@ public class NettySettings {
   private Optional<Integer> httpPort;
   private Optional<File> domainSocketPath;
   private Optional<Integer> httpsPort;
-  private Router router;
-  private Serializer serializer;
+  private final Router router;
+  private final Serializer serializer;
 
   public NettySettings(
       Optional<File> domainSocketPath,
@@ -29,6 +29,7 @@ public class NettySettings {
     this.domainSocketPath = domainSocketPath;
     this.httpsPort = httpsPort;
     this.router = router;
+    this.serializer = serializer;
   }
 
   public boolean isHttp() {

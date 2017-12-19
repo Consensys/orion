@@ -11,10 +11,12 @@ import net.consensys.athena.api.storage.StorageIdBuilder;
 import net.consensys.athena.impl.enclave.CesarEnclave;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveRequest;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveResponse;
-import net.consensys.athena.impl.http.helpers.HttpTester;
-import net.consensys.athena.impl.http.server.ContentType;
+import net.consensys.athena.impl.http.data.ApiError;
+import net.consensys.athena.impl.http.data.ContentType;
+import net.consensys.athena.impl.http.data.Request;
+import net.consensys.athena.impl.http.data.RequestImpl;
+import net.consensys.athena.impl.http.data.Result;
 import net.consensys.athena.impl.http.server.Controller;
-import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.http.server.Serializer;
 import net.consensys.athena.impl.storage.Sha512_256StorageIdBuilder;
 import net.consensys.athena.impl.storage.SimpleStorage;
@@ -22,10 +24,11 @@ import net.consensys.athena.impl.storage.StorageKeyValueStorageDelegate;
 import net.consensys.athena.impl.storage.memory.MemoryStorage;
 
 import java.util.Base64;
+import java.util.Optional;
 import java.util.Random;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.netty.handler.codec.http.HttpMethod;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Test;
 
@@ -34,7 +37,8 @@ public class ReceiveControllerTest {
   private final StorageIdBuilder keyBuilder = new Sha512_256StorageIdBuilder(enclave);
   private final Storage storage =
       new StorageKeyValueStorageDelegate(new MemoryStorage(), keyBuilder);
-  private final Serializer serializer = new Serializer(new ObjectMapper());
+  private final Serializer serializer =
+      new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory()));
   private final Controller receiveController =
       new ReceiveController(enclave, storage, ContentType.JSON, serializer);
 
@@ -56,13 +60,9 @@ public class ReceiveControllerTest {
     // and try to retrieve it with the receiveController
     ReceiveRequest req = new ReceiveRequest(id.getBase64Encoded(), null);
 
-    // perform fake http request
-    Result result =
-        new HttpTester(receiveController)
-            .uri("/receive")
-            .method(HttpMethod.POST)
-            .payload(serializer.serialize(req, ContentType.JSON))
-            .sendRequest();
+    // submit request to controller
+    Request controllerRequest = new RequestImpl(Optional.of(req));
+    Result result = receiveController.handle(controllerRequest);
 
     // ensure we got a 200 OK back
     assertEquals(result.getStatus().code(), HttpResponseStatus.OK.code());
@@ -81,15 +81,10 @@ public class ReceiveControllerTest {
   public void testResponseWhenKeyNotFound() throws Exception {
     ReceiveRequest req = new ReceiveRequest("notForMe", null);
 
-    Result result =
-        new HttpTester(receiveController)
-            .uri("/receive")
-            .method(HttpMethod.POST)
-            .payload(serializer.serialize(req, ContentType.JSON))
-            .sendRequest();
+    Result result = receiveController.handle(new RequestImpl(Optional.of(req)));
 
     assertEquals(result.getStatus().code(), HttpResponseStatus.NOT_FOUND.code());
 
-    assertEquals(result.getPayload().get(), "Error: unable to retrieve payload");
+    assertEquals(result.getPayload().get(), new ApiError("Error: unable to retrieve payload"));
   }
 }
