@@ -1,9 +1,12 @@
 package net.consensys.athena.api.config;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Optional;
 
-/** Configuration for Athena Refer to the "sample.conf" file for documentation on config elements */
+/**
+ * Configuration for Athena. Refer to the "sample.conf" file for documentation on config elements
+ */
 public interface Config {
 
   /**
@@ -12,7 +15,7 @@ public interface Config {
    *
    * @return URL for this node
    */
-  String url();
+  URL url();
 
   /**
    * Port to listen on for the public API.
@@ -20,6 +23,17 @@ public interface Config {
    * @return Port to listen on for the public API
    */
   long port();
+
+  /**
+   * Path at which to locate the lib sodium shared library. Default:
+   *
+   * <ul>
+   *   <li><b>Linux</b> /usr/local/lib/libsodium.so
+   *   <li><b>Mac</b> /usr/local/lib/libsodium.dylib
+   *   <li><b>Windows</b> C:/libsodium/libsodium.dll
+   * </ul>
+   */
+  String libSodiumPath();
 
   /**
    * Directory to which paths to all other files referenced in the config are relative to.
@@ -47,7 +61,7 @@ public interface Config {
    *
    * @return Array of other node URLs to connect to on startup
    */
-  File[] otherNodes();
+  URL[] otherNodes();
 
   /**
    * The set of public keys this node will host.
@@ -98,7 +112,7 @@ public interface Config {
    *   <li>bdb:path - BerkeleyDB
    *   <li>dir:path - Directory/file storage, can be used with e.g. FUSE-mounted file systems.
    *   <li>leveldb:path - LevelDB - experimental
-   *   <li>memory - Contents are cleared when Constellation exits
+   *   <li>memory - Contents are cleared when Athena exits
    *   <li>sqlite:path - SQLite - experimental
    * </ul>
    *

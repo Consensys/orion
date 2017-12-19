@@ -1,6 +1,7 @@
 package net.consensys.athena.api.cmd;
 
 import net.consensys.athena.api.enclave.Enclave;
+import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.api.storage.KeyValueStore;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageIdBuilder;
@@ -12,7 +13,7 @@ import net.consensys.athena.impl.http.controllers.ReceiveController;
 import net.consensys.athena.impl.http.controllers.ResendController;
 import net.consensys.athena.impl.http.controllers.SendController;
 import net.consensys.athena.impl.http.controllers.UpcheckController;
-import net.consensys.athena.impl.http.server.ContentType;
+import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Router;
 import net.consensys.athena.impl.http.server.Serializer;
@@ -24,6 +25,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import io.netty.handler.codec.http.HttpRequest;
 
 public class AthenaRouter implements Router {
@@ -33,7 +35,13 @@ public class AthenaRouter implements Router {
   private static final KeyValueStore KEY_VALUE_STORE = new MapDbStorage("routerdb");
   private static final Storage STORAGE =
       new StorageKeyValueStorageDelegate(KEY_VALUE_STORE, KEY_BUILDER);
-  private static final Serializer SERIALIZER = new Serializer(new ObjectMapper());
+  private static final Serializer SERIALIZER =
+      new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory()));
+  private static NetworkNodes networkNodes;
+
+  public AthenaRouter(NetworkNodes info) {
+    networkNodes = info;
+  }
 
   @Override
   public Controller lookup(HttpRequest request) {
@@ -61,11 +69,10 @@ public class AthenaRouter implements Router {
         return new ResendController(ENCLAVE, STORAGE);
       }
       if (uri.getPath().startsWith("/partyinfo")) {
-        //probably need to inject something that stores the party info state.
-        return new PartyInfoController();
+        return new PartyInfoController(networkNodes);
       }
       if (uri.getPath().startsWith("/push")) {
-        return new PushController(STORAGE);
+        return new PushController(STORAGE, SERIALIZER);
       }
 
       throw new RuntimeException("Unsupported uri: " + uri);

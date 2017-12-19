@@ -7,7 +7,10 @@ import static org.junit.Assert.assertTrue;
 
 import net.consensys.athena.impl.http.server.Serializer;
 
+import java.io.File;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.junit.Test;
 
 public class NettySettingsTest {
@@ -15,7 +18,12 @@ public class NettySettingsTest {
   @Test
   public void testIsHttpIfHttpPortSet() {
     NettySettings settings =
-        new NettySettings(empty(), of(8080), empty(), null, new Serializer(new ObjectMapper()));
+        new NettySettings(
+            empty(),
+            of(8080),
+            empty(),
+            null,
+            new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory())));
     assertFalse(settings.isDomainSocket());
     assertTrue(settings.isHttp());
     assertFalse(settings.isHttps());
@@ -24,7 +32,12 @@ public class NettySettingsTest {
   @Test
   public void testIsHttpsIfHttpsPortSet() {
     NettySettings settings =
-        new NettySettings(empty(), empty(), of(8080), null, new Serializer(new ObjectMapper()));
+        new NettySettings(
+            empty(),
+            empty(),
+            of(8080),
+            null,
+            new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory())));
     assertFalse(settings.isDomainSocket());
     assertFalse(settings.isHttp());
     assertTrue(settings.isHttps());
@@ -34,7 +47,11 @@ public class NettySettingsTest {
   public void testIsDomainIfDomainSocketPathSet() {
     NettySettings settings =
         new NettySettings(
-            of("/tmp/mysock.ipc"), empty(), empty(), null, new Serializer(new ObjectMapper()));
+            of(new File("/tmp/mysock.ipc")),
+            empty(),
+            empty(),
+            null,
+            new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory())));
     assertTrue(settings.isDomainSocket());
     assertFalse(settings.isHttp());
     assertFalse(settings.isHttps());

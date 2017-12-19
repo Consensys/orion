@@ -3,19 +3,20 @@ package net.consensys.athena.impl.config;
 import net.consensys.athena.api.config.Config;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Optional;
 
 public class MemoryConfig implements Config {
 
-  private String url;
+  private URL url;
   private long port;
-  private Optional<File> workDir;
-  private Optional<File> socket;
-  private File[] otherNodes;
+  private Optional<File> workDir = Optional.empty();
+  private Optional<File> socket = Optional.empty();
+  private URL[] otherNodes;
   private File[] publicKeys;
   private File[] privateKeys;
   private File[] alwaysSendTo;
-  private Optional<File> passwords;
+  private Optional<File> passwords = Optional.empty();
   private String storage;
   private String[] ipWhitelist;
   private String tls;
@@ -29,11 +30,12 @@ public class MemoryConfig implements Config {
   private File tlsClientKey;
   private String tlsClientTrust;
   private File tlsKnownServers;
-  private Optional<String[]> generateKeys;
-  private Optional<Boolean> showVersion;
+  private Optional<String[]> generateKeys = Optional.empty();
+  private Optional<Boolean> showVersion = Optional.empty();
   private long verbosity;
+  private String libSodiumPath;
 
-  public void setUrl(String url) {
+  public void setUrl(URL url) {
     this.url = url;
   }
 
@@ -49,7 +51,7 @@ public class MemoryConfig implements Config {
     this.socket = Optional.ofNullable(socket);
   }
 
-  public void setOtherNodes(File[] otherNodes) {
+  public void setOtherNodes(URL[] otherNodes) {
     this.otherNodes = otherNodes;
   }
 
@@ -133,8 +135,12 @@ public class MemoryConfig implements Config {
     this.verbosity = verbosity;
   }
 
+  public void setLibSodiumPath(String libSodiumPath) {
+    this.libSodiumPath = libSodiumPath;
+  }
+
   @Override
-  public String url() {
+  public URL url() {
     return url;
   }
 
@@ -154,7 +160,7 @@ public class MemoryConfig implements Config {
   }
 
   @Override
-  public File[] otherNodes() {
+  public URL[] otherNodes() {
     return otherNodes;
   }
 
@@ -256,5 +262,10 @@ public class MemoryConfig implements Config {
   @Override
   public long verbosity() {
     return verbosity;
+  }
+
+  @Override
+  public String libSodiumPath() {
+    return libSodiumPath;
   }
 }

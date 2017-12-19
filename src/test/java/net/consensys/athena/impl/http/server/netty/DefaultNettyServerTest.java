@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 
 import net.consensys.athena.api.cmd.AthenaRouter;
 import net.consensys.athena.impl.http.server.Serializer;
+import net.consensys.athena.impl.network.MemoryNetworkNodes;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -16,6 +17,7 @@ import java.net.ServerSocket;
 import java.net.URL;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.junit.Test;
 
 public class DefaultNettyServerTest {
@@ -26,7 +28,11 @@ public class DefaultNettyServerTest {
     int port = getPortWithNothingRunningOnIt();
     NettySettings settings =
         new NettySettings(
-            empty(), of(port), empty(), new AthenaRouter(), new Serializer(new ObjectMapper()));
+            empty(),
+            of(port),
+            empty(),
+            new AthenaRouter(new MemoryNetworkNodes()),
+            new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory())));
     NettyServer server = new DefaultNettyServer(settings);
     server.start();
     URL url = new URL("http://localhost:" + port + "/upcheck");

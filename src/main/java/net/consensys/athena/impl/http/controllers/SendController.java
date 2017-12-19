@@ -1,18 +1,16 @@
 package net.consensys.athena.impl.http.controllers;
 
-import static net.consensys.athena.impl.http.server.Result.internalServerError;
-import static net.consensys.athena.impl.http.server.Result.notImplemented;
+import static net.consensys.athena.impl.http.data.Result.notImplemented;
 
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.storage.Storage;
-import net.consensys.athena.impl.http.server.ContentType;
+import net.consensys.athena.impl.http.data.ContentType;
+import net.consensys.athena.impl.http.data.Request;
+import net.consensys.athena.impl.http.data.Result;
 import net.consensys.athena.impl.http.server.Controller;
-import net.consensys.athena.impl.http.server.Result;
 import net.consensys.athena.impl.http.server.Serializer;
 
 import java.security.PublicKey;
-
-import io.netty.handler.codec.http.FullHttpRequest;
 
 /** Send a base64 encoded payload to encrypt. */
 public class SendController implements Controller {
@@ -30,15 +28,8 @@ public class SendController implements Controller {
   }
 
   @Override
-  public Result handle(FullHttpRequest request) {
-    try {
-      // read request
-      SendRequest sendRequest =
-          serializer.deserialize(request.content().array(), ContentType.JSON, SendRequest.class);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return internalServerError(contentType);
-    }
+  public Result handle(Request request) {
+    SendRequest sendRequest = request.getPayload();
     // if request.from == null, use default node public key as "from"
     // to = to + [nodeAlwaysSendTo] --> default pub key to always send to
     // if to == null, set to to self public key
@@ -48,7 +39,7 @@ public class SendController implements Controller {
     // toReturn = storage.store(encryptedPayload);
     // if [to] is not only self, propagate payload to receipients
     // for each t in [to], find the matching IP from public key, and call the /push API with the encryptedPayload
-    return notImplemented(contentType);
+    return notImplemented();
   }
 
   static class SendRequest {

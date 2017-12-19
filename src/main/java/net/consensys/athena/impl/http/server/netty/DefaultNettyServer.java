@@ -25,11 +25,12 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 public class DefaultNettyServer implements NettyServer {
-  private NettySettings settings;
+  private final NettySettings settings;
 
   public DefaultNettyServer(NettySettings settings) {
     this.settings = settings;
@@ -135,7 +136,14 @@ public class DefaultNettyServer implements NettyServer {
   }
 
   @Override
-  public void stop() {}
+  public void stop() {
+    channels.parallelStream().forEach(channel -> channel.close());
+  }
+
+  @Override
+  public NettySettings getSettings() {
+    return settings;
+  }
 
   private ServerBootstrap initChannel(Class<? extends ServerChannel> channelClass) {
     ServerBootstrap bootstrap = new ServerBootstrap();
@@ -146,10 +154,12 @@ public class DefaultNettyServer implements NettyServer {
           @Override
           public void initChannel(final SocketChannel ch) throws Exception {
             ch.pipeline().addLast("codec", new HttpServerCodec());
+            ch.pipeline().addAfter("codec", "chunker", new ChunkedWriteHandler());
             ch.pipeline().addLast("aggregator", new HttpObjectAggregator(512 * 1024));
             ch.pipeline().addLast("request", new RequestDispatcherHandler(requestDispatcher));
           }
         };
+
     return bootstrap
         .group(bossLoop, workerLoop)
         .channel(channelClass)

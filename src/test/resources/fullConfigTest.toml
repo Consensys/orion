@@ -2,7 +2,7 @@
 url = "http://127.0.0.1:9001/"
 port = 9001
 workdir = "data"
-socket = "constellation.ipc"
+socket = "athena.ipc"
 othernodes = ["http://127.0.0.1:9000/"]
 publickeys = ["foo.pub"]
 privatekeys = ["foo.key"]
@@ -22,3 +22,4 @@ tlsclientchain = []
 tlsclientkey = "client-key.pem"
 tlsclienttrust = "ca"
 tlsknownservers = "known-servers"
+libsodiumpath="/somepath"

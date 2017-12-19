@@ -4,9 +4,11 @@ import static org.junit.Assert.*;
 
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.config.ConfigException;
+import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
 
 import org.junit.Test;
 
@@ -24,7 +26,8 @@ public class TomlConfigBuilderTest {
 
     Config testConf = configBuilder.build(configAsStream);
 
-    assertEquals("http://127.0.0.1:9001/", testConf.url());
+    URL expectedURL = new URL("http://127.0.0.1:9001/");
+    assertEquals(expectedURL, testConf.url());
     assertEquals(9001, testConf.port());
     assertEquals("memory", testConf.storage());
     assertEquals("off", testConf.tls());
@@ -37,7 +40,7 @@ public class TomlConfigBuilderTest {
     assertTrue(testConf.workDir().isPresent());
     assertEquals(expectedFile, testConf.workDir().get());
 
-    expectedFile = new File("constellation.ipc");
+    expectedFile = new File("athena.ipc");
     assertTrue(testConf.socket().isPresent());
     assertEquals(expectedFile, testConf.socket().get());
 
@@ -46,10 +49,6 @@ public class TomlConfigBuilderTest {
     assertEquals(expectedFile, testConf.passwords().get());
 
     // File Arrays
-    expectedFilesArray = new File[1];
-    expectedFilesArray[0] = new File("http://127.0.0.1:9000/");
-    assertArrayEquals(expectedFilesArray, testConf.otherNodes());
-
     expectedFilesArray = new File[1];
     expectedFilesArray[0] = new File("foo.pub");
     assertArrayEquals(expectedFilesArray, testConf.publicKeys());
@@ -67,6 +66,11 @@ public class TomlConfigBuilderTest {
 
     expectedFilesArray = new File[0];
     assertArrayEquals(expectedFilesArray, testConf.tlsClientChain());
+
+    // URL Array
+    URL[] expectedURLArray = new URL[1];
+    expectedURLArray[0] = new URL("http://127.0.0.1:9000/");
+    assertArrayEquals(expectedURLArray, testConf.otherNodes());
 
     // String Array
     String expectedStringArray[] = {"10.0.0.1", "2001:0db8:85a3:0000:0000:8a2e:0370:7334"};
@@ -90,6 +94,8 @@ public class TomlConfigBuilderTest {
 
     expectedFile = new File("known-servers");
     assertEquals(expectedFile, testConf.tlsKnownServers());
+
+    assertEquals("/somepath", testConf.libSodiumPath());
   }
 
   @Test
@@ -115,6 +121,10 @@ public class TomlConfigBuilderTest {
     assertEquals("ca-or-tofu", testConf.tlsClientTrust());
     assertEquals(1, testConf.verbosity());
 
+    assertFalse(testConf.workDir().isPresent());
+    assertFalse(testConf.socket().isPresent());
+    assertFalse(testConf.passwords().isPresent());
+
     String expectedStringArray[] = new String[0];
     assertArrayEquals(expectedStringArray, testConf.ipWhitelist());
 
@@ -136,6 +146,8 @@ public class TomlConfigBuilderTest {
 
     expectedFile = new File("tls-known-servers");
     assertEquals(expectedFile, testConf.tlsKnownServers());
+
+    assertEquals(LibSodiumSettings.defaultLibSodiumPath(), testConf.libSodiumPath());
   }
 
   @Test
@@ -147,9 +159,15 @@ public class TomlConfigBuilderTest {
 
     try {
       Config testConf = configBuilder.build(configAsStream);
+      fail("Expected Config Exception to be thrown");
     } catch (ConfigException e) {
       String message =
           "Invalid Configuration Options\n"
+              + "Error: key 'url' in config is malformed.\n\tunknown protocol: htt\n"
+              + "Error: key 'othernodes' in config containes malformed URLS.\n"
+              + "\tURL [htt://127.0.0.1:9000/] unknown protocol: htt\n"
+              + "\tURL [10.1.1.1] no protocol: 10.1.1.1\n"
+              + "Error: the number of keys specified for keys 'publickeys' and 'privatekeys' must be the same\n"
               + "Error: value for key 'storage' type must start with: ['bdp:', 'dir:', 'leveldb:', 'sqllite:'] or be 'memory'\n"
               + "Error: value for key 'tls' status must be 'strict' or 'off'\n"
               + "Error: value for key 'tlsservertrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n"
@@ -168,6 +186,7 @@ public class TomlConfigBuilderTest {
 
     try {
       Config testConf = configBuilder.build(configAsStream);
+      fail("Expected Config Exception to be thrown");
     } catch (ConfigException e) {
       String message =
           "Invalid Configuration Options\n"
@@ -188,6 +207,7 @@ public class TomlConfigBuilderTest {
 
     try {
       Config testConf = configBuilder.build(configAsStream);
+      fail("Expected Config Exception to be thrown");
     } catch (ConfigException e) {
       String message =
           "Invalid Configuration Options\n"
