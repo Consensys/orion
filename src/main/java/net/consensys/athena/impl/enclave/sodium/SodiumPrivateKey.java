@@ -31,4 +31,23 @@ public class SodiumPrivateKey implements PrivateKey {
   public String toString() {
     return "SodiumPrivateKey{" + "privateKey=" + Arrays.toString(privateKey) + '}';
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    SodiumPrivateKey that = (SodiumPrivateKey) o;
+
+    return Arrays.equals(privateKey, that.privateKey);
+  }
+
+  @Override
+  public int hashCode() {
+    return Arrays.hashCode(privateKey);
+  }
 }

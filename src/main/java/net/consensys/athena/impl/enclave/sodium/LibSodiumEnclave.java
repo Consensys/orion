@@ -46,7 +46,7 @@ public class LibSodiumEnclave implements Enclave {
     try {
       PrivateKey senderPrivateKey = keyStore.getPrivateKey(senderKey);
       if (senderPrivateKey == null) {
-        throw new EnclaveException("No PrivateKey found in keystore");
+        throw new EnclaveException("No StoredPrivateKey found in keystore");
       }
       byte[] secretKey =
           SodiumLibrary.randomBytes(SodiumLibrary.cryptoSecretBoxKeyBytes().intValue());
@@ -66,7 +66,7 @@ public class LibSodiumEnclave implements Enclave {
     try {
       PrivateKey privateKey = keyStore.getPrivateKey(identity);
       if (privateKey == null) {
-        throw new EnclaveException("No PrivateKey found in keystore");
+        throw new EnclaveException("No StoredPrivateKey found in keystore");
       }
       CombinedKey key = ciphertextAndMetadata.getCombinedKeys()[0];
       byte[] secretKey =
