@@ -23,4 +23,10 @@ public interface KeyStore {
    * @return Return the public key part of the key pair.
    */
   PublicKey generateKeyPair();
+
+  /** @return the node public keys, ordered as in config file */
+  PublicKey[] getNodeKeys();
+
+  /** @return the "alwaysSendTo" as defined in Constellation public key set */
+  PublicKey[] getAlwaysSendTo();
 }

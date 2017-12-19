@@ -33,4 +33,14 @@ public class SodiumMemoryKeyStore implements KeyStore {
       throw new EnclaveException(e);
     }
   }
+
+  @Override
+  public PublicKey[] getNodeKeys() {
+    return new PublicKey[0];
+  }
+
+  @Override
+  public PublicKey[] getAlwaysSendTo() {
+    return new PublicKey[0];
+  }
 }

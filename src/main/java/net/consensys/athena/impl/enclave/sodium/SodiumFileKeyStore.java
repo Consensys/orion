@@ -23,21 +23,36 @@ public class SodiumFileKeyStore implements KeyStore {
   private Config config;
   private ObjectMapper objectMapper;
 
-  private Map<PublicKey, PrivateKey> cache = new HashMap<>();
+  private final Map<PublicKey, PrivateKey> cache = new HashMap<>();
+
+  private final PublicKey[] alwaysSendTo;
+  private final PublicKey[] nodeKeys;
 
   public SodiumFileKeyStore(Config config, ObjectMapper objectMapper) {
     this.config = config;
     this.objectMapper = objectMapper;
+
+    // init public keys arrays
+    nodeKeys = new PublicKey[config.publicKeys().length];
+    alwaysSendTo = new PublicKey[config.alwaysSendTo().length];
+
+    // load keys
     loadKeysFromConfig(config);
   }
 
   private void loadKeysFromConfig(Config config) {
+
     for (int i = 0; i < config.publicKeys().length; i++) {
       File publicKeyFile = config.publicKeys()[i];
       File privateKeyFile = config.privateKeys()[i];
       PublicKey publicKey = readPublicKey(publicKeyFile);
       PrivateKey privateKey = readPrivateKey(privateKeyFile);
       cache.put(publicKey, privateKey);
+      nodeKeys[i] = publicKey;
+    }
+
+    for (int i = 0; i < config.alwaysSendTo().length; i++) {
+      alwaysSendTo[i] = readPublicKey(config.alwaysSendTo()[i]);
     }
   }
 
@@ -81,5 +96,15 @@ public class SodiumFileKeyStore implements KeyStore {
           "Unable to generate key pair as no generatekeys configuration was provided");
     }
     return null;
+  }
+
+  @Override
+  public PublicKey[] getNodeKeys() {
+    return nodeKeys;
+  }
+
+  @Override
+  public PublicKey[] getAlwaysSendTo() {
+    return alwaysSendTo;
   }
 }

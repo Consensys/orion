@@ -6,18 +6,21 @@ import java.security.PublicKey;
 
 public class NodeImpl implements Node {
 
-  @Override
-  public PublicKey defaultPublicKey() {
-    return null;
+  private final PublicKey[] publicKeys;
+  private final PublicKey[] alwaysSendTo;
+
+  public NodeImpl(PublicKey[] publicKeys, PublicKey[] alwaysSendTo) {
+    this.publicKeys = publicKeys;
+    this.alwaysSendTo = alwaysSendTo;
   }
 
   @Override
-  public PublicKey selfSendingPublickKey() {
-    return null;
+  public PublicKey defaultKey() {
+    return publicKeys[0];
   }
 
   @Override
   public PublicKey[] alwaysSendTo() {
-    return new PublicKey[0];
+    return alwaysSendTo;
   }
 }

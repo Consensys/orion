@@ -32,7 +32,6 @@ public class LibSodiumEnclave implements Enclave {
 
   public LibSodiumEnclave(Config config, KeyStore keyStore) {
     SodiumLibrary.setLibraryPath(config.libSodiumPath());
-
     this.keyStore = keyStore;
   }
 
