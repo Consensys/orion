@@ -76,4 +76,20 @@ public class ReceiveControllerTest {
     // ensure we got the decrypted response back
     assertArrayEquals(Base64.getDecoder().decode(response.payload), toCheck);
   }
+
+  @Test
+  public void testResponseWhenKeyNotFound() throws Exception {
+    ReceiveRequest req = new ReceiveRequest("notForMe", null);
+
+    Result result =
+        new HttpTester(receiveController)
+            .uri("/receive")
+            .method(HttpMethod.POST)
+            .payload(serializer.serialize(req, ContentType.JSON))
+            .sendRequest();
+
+    assertEquals(result.getStatus().code(), HttpResponseStatus.NOT_FOUND.code());
+
+    assertEquals(result.getPayload().get(), "Error: unable to retrieve payload");
+  }
 }

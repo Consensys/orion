@@ -21,6 +21,11 @@ public interface Result<T> {
   }
 
   @NotNull
+  static <U> Result<U> notFound(ContentType defaultContentType, U payload) {
+    return new ResultImpl<>(defaultContentType, of(payload), HttpResponseStatus.NOT_FOUND);
+  }
+
+  @NotNull
   static Result notImplemented(ContentType defaultContentType) {
     return new ResultImpl<>(defaultContentType, empty(), HttpResponseStatus.NOT_IMPLEMENTED);
   }

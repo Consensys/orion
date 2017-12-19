@@ -1,6 +1,7 @@
 package net.consensys.athena.impl.http.controllers;
 
 import static net.consensys.athena.impl.http.server.Result.internalServerError;
+import static net.consensys.athena.impl.http.server.Result.notFound;
 import static net.consensys.athena.impl.http.server.Result.ok;
 
 import net.consensys.athena.api.enclave.Enclave;
@@ -49,7 +50,7 @@ public class ReceiveController implements Controller {
       Optional<StorageData> data = storage.get(key);
       if (!data.isPresent()) {
         // TODO log error
-        return internalServerError(contentType, "Error: unable to retrieve payload");
+        return notFound(contentType, "Error: unable to retrieve payload");
       }
 
       // first, let's build a EncryptedPayload from data
