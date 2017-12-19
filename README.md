@@ -15,6 +15,15 @@ gradle build
 
 Perhaps you might like using the ssh protocol to clone... in which case do `git clone git@github.com:ConsenSys/athena.git`
 
+## libsodium
+
+In order to be compatible with the original Haskell Constellation, the lib sodium library has been used to provide the encryption primitives.
+
+In order to use this, you will first need to install lib sodium on your machine.
+
+mac:
+`brew install libsodium`
+
 ## Native transports
 
 In order to make sure the http related communications are as optimised as possible, we use native transports with the

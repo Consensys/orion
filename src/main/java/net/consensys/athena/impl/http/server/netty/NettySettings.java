@@ -3,6 +3,7 @@ package net.consensys.athena.impl.http.server.netty;
 import net.consensys.athena.impl.http.server.Router;
 import net.consensys.athena.impl.http.server.Serializer;
 
+import java.io.File;
 import java.util.Optional;
 
 import io.netty.channel.epoll.Epoll;
@@ -13,13 +14,13 @@ public class NettySettings {
   private static final int DEFAULT_BOSS_THREAD_COUNT = 1;
   private static final int DEFAULT_WORKER_THREAD_COUNT = 4;
   private Optional<Integer> httpPort;
-  private Optional<String> domainSocketPath;
+  private Optional<File> domainSocketPath;
   private Optional<Integer> httpsPort;
   private final Router router;
   private final Serializer serializer;
 
   public NettySettings(
-      Optional<String> domainSocketPath,
+      Optional<File> domainSocketPath,
       Optional<Integer> httpPort,
       Optional<Integer> httpsPort,
       Router router,
@@ -59,7 +60,7 @@ public class NettySettings {
     return httpsPort;
   }
 
-  public Optional<String> getDomainSocketPath() {
+  public Optional<File> getDomainSocketPath() {
     return domainSocketPath;
   }
 

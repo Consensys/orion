@@ -6,4 +6,6 @@ public interface NettyServer {
   void join() throws InterruptedException;
 
   void stop();
+
+  NettySettings getSettings();
 }

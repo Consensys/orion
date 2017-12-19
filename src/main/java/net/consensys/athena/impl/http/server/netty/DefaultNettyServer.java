@@ -136,7 +136,14 @@ public class DefaultNettyServer implements NettyServer {
   }
 
   @Override
-  public void stop() {}
+  public void stop() {
+    channels.parallelStream().forEach(channel -> channel.close());
+  }
+
+  @Override
+  public NettySettings getSettings() {
+    return settings;
+  }
 
   private ServerBootstrap initChannel(Class<? extends ServerChannel> channelClass) {
     ServerBootstrap bootstrap = new ServerBootstrap();

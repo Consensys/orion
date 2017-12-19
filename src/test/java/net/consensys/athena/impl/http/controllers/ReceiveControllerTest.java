@@ -11,6 +11,7 @@ import net.consensys.athena.api.storage.StorageIdBuilder;
 import net.consensys.athena.impl.enclave.CesarEnclave;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveRequest;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveResponse;
+import net.consensys.athena.impl.http.data.ApiError;
 import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Request;
 import net.consensys.athena.impl.http.data.RequestImpl;
@@ -74,5 +75,16 @@ public class ReceiveControllerTest {
 
     // ensure we got the decrypted response back
     assertArrayEquals(Base64.getDecoder().decode(response.payload), toCheck);
+  }
+
+  @Test
+  public void testResponseWhenKeyNotFound() throws Exception {
+    ReceiveRequest req = new ReceiveRequest("notForMe", null);
+
+    Result result = receiveController.handle(new RequestImpl(Optional.of(req)));
+
+    assertEquals(result.getStatus().code(), HttpResponseStatus.NOT_FOUND.code());
+
+    assertEquals(result.getPayload().get(), new ApiError("Error: unable to retrieve payload"));
   }
 }

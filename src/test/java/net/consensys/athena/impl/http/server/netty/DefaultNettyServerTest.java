@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 
 import net.consensys.athena.api.cmd.AthenaRouter;
 import net.consensys.athena.impl.http.server.Serializer;
+import net.consensys.athena.impl.network.MemoryNetworkNodes;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -30,7 +31,7 @@ public class DefaultNettyServerTest {
             empty(),
             of(port),
             empty(),
-            new AthenaRouter(),
+            new AthenaRouter(new MemoryNetworkNodes()),
             new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory())));
     NettyServer server = new DefaultNettyServer(settings);
     server.start();

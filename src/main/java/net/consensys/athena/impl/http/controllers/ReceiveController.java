@@ -1,5 +1,6 @@
 package net.consensys.athena.impl.http.controllers;
 
+import static net.consensys.athena.impl.http.data.Result.notFound;
 import static net.consensys.athena.impl.http.data.Result.ok;
 
 import net.consensys.athena.api.enclave.Enclave;
@@ -38,18 +39,13 @@ public class ReceiveController implements Controller {
   }
 
   @Override
-  public Class<?> expectedRequest() {
-    return ReceiveRequest.class;
-  }
-
-  @Override
   public Result handle(Request request) throws Exception {
     // retrieves the encrypted payload from DB, using provided key
     ReceiveRequest receiveRequest = request.getPayload();
     StorageId key = new SimpleStorage(receiveRequest.key);
     Optional<StorageData> data = storage.get(key);
     if (!data.isPresent()) {
-      throw new IllegalArgumentException("unable to retrieve payload for provided key");
+      return notFound("Error: unable to retrieve payload");
     }
 
     // first, let's build a EncryptedPayload from data

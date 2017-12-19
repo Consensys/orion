@@ -28,6 +28,12 @@ public interface Result<T> {
   }
 
   @NotNull
+  static Result<ApiError> notFound(String reason) {
+    return new ResultImpl<>(
+        ContentType.JSON, of(new ApiError(reason)), HttpResponseStatus.NOT_FOUND);
+  }
+
+  @NotNull
   static Result<ApiError> internalServerError(String reason) {
     return new ResultImpl<>(
         ContentType.JSON, of(new ApiError(reason)), HttpResponseStatus.INTERNAL_SERVER_ERROR);

@@ -1,7 +1,7 @@
 package net.consensys.athena.impl.http.controllers;
 
-import static net.consensys.athena.impl.http.data.Result.notImplemented;
-
+import net.consensys.athena.api.network.NetworkNodes;
+import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Request;
 import net.consensys.athena.impl.http.data.Result;
 import net.consensys.athena.impl.http.server.Controller;
@@ -12,8 +12,14 @@ import net.consensys.athena.impl.http.server.Controller;
  */
 public class PartyInfoController implements Controller {
 
+  private static NetworkNodes networkNodes;
+
+  public PartyInfoController(NetworkNodes info) {
+    networkNodes = info;
+  }
+
   @Override
   public Result handle(Request request) {
-    return notImplemented();
+    return Result.ok(ContentType.HASKELL_ENCODED, networkNodes);
   }
 }

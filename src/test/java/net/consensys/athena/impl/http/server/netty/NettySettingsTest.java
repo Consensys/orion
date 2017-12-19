@@ -7,6 +7,8 @@ import static org.junit.Assert.assertTrue;
 
 import net.consensys.athena.impl.http.server.Serializer;
 
+import java.io.File;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.junit.Test;
@@ -45,7 +47,7 @@ public class NettySettingsTest {
   public void testIsDomainIfDomainSocketPathSet() {
     NettySettings settings =
         new NettySettings(
-            of("/tmp/mysock.ipc"),
+            of(new File("/tmp/mysock.ipc")),
             empty(),
             empty(),
             null,
