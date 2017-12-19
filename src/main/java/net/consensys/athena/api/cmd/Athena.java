@@ -55,13 +55,15 @@ public class Athena {
 
   @NotNull
   static NettyServer startServer(Config config) throws InterruptedException {
+    ObjectMapper jsonObjectMapper = new ObjectMapper();
+    Serializer serializer = new Serializer(jsonObjectMapper, new ObjectMapper(new CBORFactory()));
     NettySettings settings =
         new NettySettings(
             config.socket(),
             Optional.of((int) config.port()),
             empty(),
-            new AthenaRouter(networkNodes),
-            new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory())));
+            new AthenaRouter(networkNodes, config, serializer, jsonObjectMapper),
+            serializer);
     NettyServer server = new DefaultNettyServer(settings);
     server.start();
     return server;
