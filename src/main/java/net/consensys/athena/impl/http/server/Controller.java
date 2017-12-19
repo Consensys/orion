@@ -5,7 +5,7 @@ import net.consensys.athena.impl.http.data.Request;
 import net.consensys.athena.impl.http.data.Result;
 
 public interface Controller {
-  Result handle(Request request) throws Exception;
+  Result handle(Request request);
 
   // returns the expected request class, used for deserialization purposes
   default Class<?> expectedRequest() {

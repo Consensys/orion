@@ -39,7 +39,7 @@ public class ReceiveController implements Controller {
   }
 
   @Override
-  public Result handle(Request request) throws Exception {
+  public Result handle(Request request) {
     // retrieves the encrypted payload from DB, using provided key
     ReceiveRequest receiveRequest = request.getPayload();
     StorageId key = new SimpleStorage(receiveRequest.key);
