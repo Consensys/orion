@@ -2,6 +2,7 @@ package net.consensys.athena.api.cmd;
 
 import static org.junit.Assert.*;
 
+import net.consensys.athena.impl.config.MemoryConfig;
 import net.consensys.athena.impl.http.controllers.DeleteController;
 import net.consensys.athena.impl.http.controllers.PartyInfoController;
 import net.consensys.athena.impl.http.controllers.PushController;
@@ -10,11 +11,14 @@ import net.consensys.athena.impl.http.controllers.ResendController;
 import net.consensys.athena.impl.http.controllers.SendController;
 import net.consensys.athena.impl.http.controllers.UpcheckController;
 import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.http.server.Serializer;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
 
 import java.util.Arrays;
 import java.util.Collection;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
@@ -29,7 +33,13 @@ public class AthenaRouterTest {
   private final String testName;
   private final String path;
   private final Class controllerClass;
-  AthenaRouter router = new AthenaRouter(new MemoryNetworkNodes());
+  private ObjectMapper jsonObjectMapper = new ObjectMapper();
+  AthenaRouter router =
+      new AthenaRouter(
+          new MemoryNetworkNodes(),
+          new MemoryConfig(),
+          new Serializer(jsonObjectMapper, new ObjectMapper(new CBORFactory())),
+          jsonObjectMapper);
 
   @Parameterized.Parameters
   public static Collection routes() {
