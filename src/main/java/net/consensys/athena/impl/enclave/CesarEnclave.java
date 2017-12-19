@@ -4,13 +4,15 @@ import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.HashAlgorithm;
-import net.consensys.athena.impl.enclave.bouncycastle.Hasher;
 
 import java.security.PublicKey;
 
 public class CesarEnclave implements Enclave {
 
-  private final Hasher hasher = new Hasher();
+  @Override
+  public PublicKey[] alwaysSendTo() {
+    return new PublicKey[0];
+  }
 
   @Override
   public byte[] digest(HashAlgorithm algorithm, byte[] input) {

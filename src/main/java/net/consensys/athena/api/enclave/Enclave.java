@@ -3,6 +3,9 @@ package net.consensys.athena.api.enclave;
 import java.security.PublicKey;
 
 public interface Enclave {
+
+  PublicKey[] alwaysSendTo();
+
   byte[] digest(HashAlgorithm algorithm, byte[] input);
 
   /**

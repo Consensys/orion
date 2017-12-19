@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -81,5 +82,11 @@ public class SodiumFileKeyStore implements KeyStore {
           "Unable to generate key pair as no generatekeys configuration was provided");
     }
     return null;
+  }
+
+  @Override
+  public PublicKey[] alwaysSendTo() {
+    File[] alwaysSendTo = config.alwaysSendTo();
+    return Arrays.stream(alwaysSendTo).map(file -> readPublicKey(file)).toArray(PublicKey[]::new);
   }
 }

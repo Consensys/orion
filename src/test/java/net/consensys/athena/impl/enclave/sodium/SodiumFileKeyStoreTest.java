@@ -90,4 +90,25 @@ public class SodiumFileKeyStoreTest {
       assertEquals(privateKey, storedKey);
     }
   }
+
+  @Test
+  public void testAlwaysSendTo() {
+    InputStream configAsStream =
+        this.getClass().getClassLoader().getResourceAsStream("alwaysSendToKeyStoreTest.toml");
+
+    Config config = configBuilder.build(configAsStream);
+    keyStore = new SodiumFileKeyStore(config, objectMapper);
+    String[] encodedPublicKeys =
+        new String[] {
+          "BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=",
+          "8SjRHlUBe4hAmTk3KDeJ96RhN+s10xRrHDrxEi1O5W0="
+        };
+
+    PublicKey[] publicKeys = new PublicKey[encodedPublicKeys.length];
+    for (int i = 0; i < encodedPublicKeys.length; i++) {
+      PublicKey publicKey = new SodiumPublicKey(Base64.getDecoder().decode(encodedPublicKeys[i]));
+      publicKeys[i] = publicKey;
+    }
+    assertArrayEquals(publicKeys, keyStore.alwaysSendTo());
+  }
 }

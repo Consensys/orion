@@ -23,4 +23,6 @@ public interface KeyStore {
    * @return Return the public key part of the key pair.
    */
   PublicKey generateKeyPair();
+
+  PublicKey[] alwaysSendTo();
 }
