@@ -13,8 +13,6 @@ import net.consensys.athena.impl.http.server.Router;
 import net.consensys.athena.impl.http.server.Serializer;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
@@ -56,7 +54,7 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
       Request request = buildControllerRequest(httpRequest, controller);
       // process http request
       result = controller.handle(request);
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       // if an exception occurred, return a formatted ApiError
       log.error(e.getMessage());
       result = internalServerError(e.getMessage());
@@ -70,8 +68,7 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
   }
 
   // read httpRequest and deserialize the payload into controller expected typed object
-  private Request buildControllerRequest(FullHttpRequest httpRequest, Controller controller)
-      throws Exception {
+  private Request buildControllerRequest(FullHttpRequest httpRequest, Controller controller) {
     int requestPayloadSize = httpRequest.content().readableBytes();
 
     // if the controller doesn't expect a payload
@@ -106,8 +103,8 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
       ContentType cType = ContentType.fromHttpContentEncoding(contentEncoding);
       Object payload = serializer.deserialize(requestPayload, cType, controller.expectedRequest());
       return new RequestImpl(Optional.of(payload));
-    } catch (NoSuchElementException e) {
-      throw new UnsupportedEncodingException(contentEncoding + "isn't supported");
+    } catch (Exception e) {
+      throw new RuntimeException(contentEncoding + "isn't supported: " + e.getMessage());
     }
   }
 
