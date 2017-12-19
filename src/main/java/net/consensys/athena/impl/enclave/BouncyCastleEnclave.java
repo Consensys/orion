@@ -16,6 +16,11 @@ public class BouncyCastleEnclave implements Enclave {
   private final Hasher hasher = new Hasher();
 
   @Override
+  public PublicKey[] alwaysSendTo() {
+    return new PublicKey[0];
+  }
+
+  @Override
   public byte[] digest(HashAlgorithm algorithm, byte[] input) {
     return hasher.digest(algorithm, input);
   }

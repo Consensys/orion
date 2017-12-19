@@ -36,6 +36,11 @@ public class LibSodiumEnclave implements Enclave {
   }
 
   @Override
+  public PublicKey[] alwaysSendTo() {
+    return keyStore.alwaysSendTo();
+  }
+
+  @Override
   public byte[] digest(HashAlgorithm algorithm, byte[] input) {
     return hasher.digest(algorithm, input);
   }

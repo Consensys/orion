@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,16 +26,9 @@ public class SodiumFileKeyStore implements KeyStore {
 
   private final Map<PublicKey, PrivateKey> cache = new HashMap<>();
 
-  private final PublicKey[] alwaysSendTo;
-  private final PublicKey[] nodeKeys;
-
   public SodiumFileKeyStore(Config config, ObjectMapper objectMapper) {
     this.config = config;
     this.objectMapper = objectMapper;
-
-    // init public keys arrays
-    nodeKeys = new PublicKey[config.publicKeys().length];
-    alwaysSendTo = new PublicKey[config.alwaysSendTo().length];
 
     // load keys
     loadKeysFromConfig(config);
@@ -48,11 +42,6 @@ public class SodiumFileKeyStore implements KeyStore {
       PublicKey publicKey = readPublicKey(publicKeyFile);
       PrivateKey privateKey = readPrivateKey(privateKeyFile);
       cache.put(publicKey, privateKey);
-      nodeKeys[i] = publicKey;
-    }
-
-    for (int i = 0; i < config.alwaysSendTo().length; i++) {
-      alwaysSendTo[i] = readPublicKey(config.alwaysSendTo()[i]);
     }
   }
 
@@ -98,13 +87,8 @@ public class SodiumFileKeyStore implements KeyStore {
     return null;
   }
 
-  @Override
-  public PublicKey[] getNodeKeys() {
-    return nodeKeys;
-  }
-
-  @Override
-  public PublicKey[] getAlwaysSendTo() {
-    return alwaysSendTo;
+  public PublicKey[] alwaysSendTo() {
+    File[] alwaysSendTo = config.alwaysSendTo();
+    return Arrays.stream(alwaysSendTo).map(file -> readPublicKey(file)).toArray(PublicKey[]::new);
   }
 }

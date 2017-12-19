@@ -35,12 +35,7 @@ public class SodiumMemoryKeyStore implements KeyStore {
   }
 
   @Override
-  public PublicKey[] getNodeKeys() {
-    return new PublicKey[0];
-  }
-
-  @Override
-  public PublicKey[] getAlwaysSendTo() {
+  public PublicKey[] alwaysSendTo() {
     return new PublicKey[0];
   }
 }
