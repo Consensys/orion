@@ -19,28 +19,41 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 public class Athena {
 
+  private static final Logger log = LogManager.getLogger();
+
   private static NetworkNodes networkNodes;
 
   public static void main(String[] args) throws Exception {
+    log.info("starting athena");
     Optional<String> configFileName = args.length > 0 ? Optional.of(args[0]) : Optional.empty();
 
     Config config = loadConfig(configFileName);
     networkNodes = new MemoryNetworkNodes(config);
 
-    // start http server
-    NettyServer server = startServer(config);
-    joinServer(server);
+    try {
+      NettyServer server = startServer(config);
+      joinServer(server);
+    } catch (InterruptedException ie) {
+      log.error(ie.getMessage());
+      throw ie;
+    } finally {
+      log.warn("netty server stopped");
+    }
   }
 
   static Config loadConfig(Optional<String> configFileName) throws FileNotFoundException {
     InputStream configAsStream;
     if (configFileName.isPresent()) {
+      log.info("using {} provided config file", configFileName.get());
       configAsStream = new FileInputStream(new File(configFileName.get()));
     } else {
+      log.warn("no config file provided, using default.conf");
       configAsStream = Athena.class.getResourceAsStream("/default.conf");
     }
 
@@ -65,6 +78,8 @@ public class Athena {
             new AthenaRouter(networkNodes, config, serializer, jsonObjectMapper),
             serializer);
     NettyServer server = new DefaultNettyServer(settings);
+
+    log.info("starting netty server");
     server.start();
     return server;
   }
