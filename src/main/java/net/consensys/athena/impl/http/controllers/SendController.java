@@ -8,7 +8,6 @@ import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Request;
 import net.consensys.athena.impl.http.data.Result;
 import net.consensys.athena.impl.http.server.Controller;
-import net.consensys.athena.impl.http.server.Serializer;
 
 import java.security.PublicKey;
 
@@ -18,8 +17,7 @@ public class SendController implements Controller {
   private final Storage storage;
   private final ContentType contentType;
 
-  public SendController(
-      Enclave enclave, Storage storage, ContentType contentType) {
+  public SendController(Enclave enclave, Storage storage, ContentType contentType) {
     this.enclave = enclave;
     this.storage = storage;
     this.contentType = contentType;

@@ -34,15 +34,19 @@ public class AthenaRouter implements Router {
   private static final KeyValueStore KEY_VALUE_STORE = new MapDbStorage("routerdb");
 
   private final Enclave enclave;
-  private Serializer serializer;
+  private final Serializer serializer;
   private final Storage storage;
   private final NetworkNodes networkNodes;
 
   public AthenaRouter(
-      NetworkNodes info, Config config, Serializer serializer, ObjectMapper jsonObjectMapper) {
-    networkNodes = info;
-    enclave = new LibSodiumEnclave(config, new SodiumFileKeyStore(config, jsonObjectMapper));
+      NetworkNodes networkNodes,
+      Config config,
+      Serializer serializer,
+      ObjectMapper jsonObjectMapper) {
+    this.networkNodes = networkNodes;
     this.serializer = serializer;
+
+    enclave = new LibSodiumEnclave(config, new SodiumFileKeyStore(config, jsonObjectMapper));
 
     StorageIdBuilder keyBuilder = new Sha512_256StorageIdBuilder(enclave);
     storage = new StorageKeyValueStorageDelegate(KEY_VALUE_STORE, keyBuilder);
