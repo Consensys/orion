@@ -1,7 +1,5 @@
 package net.consensys.athena.impl.enclave.sodium;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Base64;
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.Enclave;
@@ -12,9 +10,11 @@ import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.impl.enclave.SimpleEncryptedPayload;
 import net.consensys.athena.impl.enclave.bouncycastle.Hasher;
 
+import java.io.UnsupportedEncodingException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
+import java.util.Base64;
 
 import com.muquit.libsodiumjna.SodiumLibrary;
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
