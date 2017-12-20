@@ -2,15 +2,17 @@ package net.consensys.athena.api.storage;
 
 import java.util.Optional;
 
-public interface Storage {
+public interface Storage<T> {
 
-  StorageId put(StorageData data);
+  /**
+   * @param data
+   * @return the base64 encoded key, as an UTF-8 String
+   */
+  String put(T data);
 
-  Optional<StorageData> get(StorageId key);
-
-  default boolean isOpen() {
-    return true;
-  }
-
-  default void close() {}
+  /**
+   * @param key should be base64 encoded UTF-8 string
+   * @return
+   */
+  Optional<T> get(String key);
 }

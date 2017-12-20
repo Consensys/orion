@@ -2,10 +2,11 @@ package net.consensys.athena.api.cmd;
 
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.Enclave;
+import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.network.NetworkNodes;
-import net.consensys.athena.api.storage.KeyValueStore;
 import net.consensys.athena.api.storage.Storage;
-import net.consensys.athena.api.storage.StorageIdBuilder;
+import net.consensys.athena.api.storage.StorageEngine;
+import net.consensys.athena.api.storage.StorageKeyBuilder;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
 import net.consensys.athena.impl.http.controllers.DeleteController;
@@ -19,8 +20,8 @@ import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Router;
 import net.consensys.athena.impl.http.server.Serializer;
-import net.consensys.athena.impl.storage.Sha512_256StorageIdBuilder;
-import net.consensys.athena.impl.storage.StorageKeyValueStorageDelegate;
+import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
+import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.file.MapDbStorage;
 
 import java.net.URI;
@@ -28,28 +29,28 @@ import java.net.URISyntaxException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.HttpRequest;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class AthenaRouter implements Router {
 
-  private static final Logger log = LogManager.getLogger();
-
-  private static final KeyValueStore KEY_VALUE_STORE = new MapDbStorage("routerdb");
+  private static final StorageEngine<EncryptedPayload> STORAGE_ENGINE =
+      new MapDbStorage("routerdb");
 
   private final Enclave enclave;
-  private Serializer serializer;
+  private final Serializer serializer;
   private final Storage storage;
   private final NetworkNodes networkNodes;
 
   public AthenaRouter(
-      NetworkNodes info, Config config, Serializer serializer, ObjectMapper jsonObjectMapper) {
-    networkNodes = info;
-    enclave = new LibSodiumEnclave(config, new SodiumFileKeyStore(config, jsonObjectMapper));
-    this.serializer = serializer;
+      NetworkNodes networkNodes,
+      Config config,
+      Serializer serializer,
+      ObjectMapper jsonObjectMapper) {
 
-    StorageIdBuilder keyBuilder = new Sha512_256StorageIdBuilder(enclave);
-    storage = new StorageKeyValueStorageDelegate(KEY_VALUE_STORE, keyBuilder);
+    this.enclave = new LibSodiumEnclave(config, new SodiumFileKeyStore(config, jsonObjectMapper));
+    StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
+    this.storage = new EncryptedPayloadStorage(STORAGE_ENGINE, keyBuilder);
+    this.serializer = serializer;
+    this.networkNodes = networkNodes;
   }
 
   @Override
@@ -81,7 +82,7 @@ public class AthenaRouter implements Router {
         return new PartyInfoController(networkNodes);
       }
       if (uri.getPath().startsWith("/push")) {
-        return new PushController(storage, serializer);
+        return new PushController(storage);
       }
 
       throw new RuntimeException("Unsupported uri: " + uri);
