@@ -13,7 +13,7 @@ public class MemoryNetworkNodes implements NetworkNodes {
 
   private URL url;
   private HashSet<URL> nodeURLs;
-  private HashMap<URL, PublicKey> nodePKs;
+  private HashMap<PublicKey, URL> nodePKs;
 
   public MemoryNetworkNodes() {
     nodeURLs = new HashSet<>();
@@ -43,12 +43,12 @@ public class MemoryNetworkNodes implements NetworkNodes {
   /**
    * Add a node's URL and PublcKey to the nodeURLs and nodePKs lists
    *
-   * @param node URL of new node
    * @param nodePk PublicKey of new node
+   * @param node URL of new node
    */
-  public void addNode(URL node, PublicKey nodePk) {
+  public void addNode(PublicKey nodePk, URL node) {
     this.nodeURLs.add(node);
-    this.nodePKs.put(node, nodePk);
+    this.nodePKs.put(nodePk, node);
   }
 
   @Override
@@ -61,7 +61,13 @@ public class MemoryNetworkNodes implements NetworkNodes {
     return nodeURLs;
   }
 
-  public HashMap<URL, PublicKey> nodePKs() {
+  @Override
+  public URL urlForRecipient(PublicKey recipient) {
+    return null;
+  }
+
+  @Override
+  public HashMap<PublicKey, URL> nodePKs() {
     return nodePKs;
   }
 }
