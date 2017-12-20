@@ -4,6 +4,7 @@ import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.EnclaveException;
 import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.impl.enclave.sodium.storage.StoredPrivateKey;
+import net.consensys.athena.impl.http.data.Base64;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,7 +13,6 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -51,7 +51,7 @@ public class SodiumFileKeyStore implements KeyStore {
           objectMapper.readValue(privateKeyFile, StoredPrivateKey.class);
       // TODO decrypt stored key
       if (storedPrivateKey.getType().equals(StoredPrivateKey.UNLOCKED)) {
-        byte[] decoded = Base64.getDecoder().decode(storedPrivateKey.getData().getBytes());
+        byte[] decoded = Base64.decode(storedPrivateKey.getData().getBytes());
         return new SodiumPrivateKey(decoded);
       } else {
         throw new EnclaveException(
@@ -65,7 +65,7 @@ public class SodiumFileKeyStore implements KeyStore {
   private PublicKey readPublicKey(File publicKeyFile) {
     try (BufferedReader br = new BufferedReader(new FileReader(publicKeyFile))) {
       String base64Encoded = br.readLine();
-      byte[] decoded = Base64.getDecoder().decode(base64Encoded);
+      byte[] decoded = Base64.decode(base64Encoded);
       return new SodiumPublicKey(decoded);
     } catch (IOException e) {
       throw new EnclaveException(e);

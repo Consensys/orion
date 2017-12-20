@@ -10,8 +10,8 @@ import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Request;
 import net.consensys.athena.impl.http.data.Result;
+import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.Controller;
-import net.consensys.athena.impl.http.server.Serializer;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -97,7 +97,9 @@ public class SendController implements Controller {
           // do not send payload to self
           continue;
         }
-        URL url = null; // TODO @gbotrel, use NetworkNodes to map PublicKey to URL
+
+        URL recipientURL = networkNodes.urlForRecipient(recipients[i]);
+        URL pushURL = new URL(recipientURL, "/push"); // TODO @gbotrel reverse routing would be nice
 
         // serialize payload and build RequestBody
         byte[] payload = serializer.serialize(encryptedPayload, ContentType.CBOR);
@@ -107,7 +109,7 @@ public class SendController implements Controller {
         RequestBody body = RequestBody.create(CBOR, payload);
 
         // build the request
-        okhttp3.Request req = new okhttp3.Request.Builder().url(url).post(body).build();
+        okhttp3.Request req = new okhttp3.Request.Builder().url(pushURL).post(body).build();
 
         // send the request
         Response response =
