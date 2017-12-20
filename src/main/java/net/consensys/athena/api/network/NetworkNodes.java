@@ -22,10 +22,12 @@ public interface NetworkNodes {
    */
   HashSet<URL> nodeURLs();
 
+  URL urlForRecipient(PublicKey recipient);
+
   /**
-   * Map from URL to public key for all discovered nodes.
+   * Map from public key to node for all discovered nodes.
    *
    * @return
    */
-  HashMap<URL, PublicKey> nodePKs();
+  HashMap<PublicKey, URL> nodePKs();
 }

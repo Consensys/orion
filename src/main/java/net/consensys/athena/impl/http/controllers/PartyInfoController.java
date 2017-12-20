@@ -20,6 +20,6 @@ public class PartyInfoController implements Controller {
 
   @Override
   public Result handle(Request request) {
-    return Result.ok(ContentType.HASKELL_ENCODED, networkNodes);
+    return Result.ok(ContentType.CBOR, networkNodes);
   }
 }
