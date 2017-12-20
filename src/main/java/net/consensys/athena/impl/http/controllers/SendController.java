@@ -11,14 +11,21 @@ import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Request;
 import net.consensys.athena.impl.http.data.Result;
 import net.consensys.athena.impl.http.server.Controller;
+import net.consensys.athena.impl.http.server.Serializer;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Stream;
 
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,14 +38,23 @@ public class SendController implements Controller {
   private final ContentType contentType;
   private final List<PublicKey> nodeKeys;
   private final NetworkNodes networkNodes;
+  private final Serializer serializer;
+
+  private final OkHttpClient httpClient = new OkHttpClient();
+  private final MediaType CBOR = MediaType.parse(ContentType.CBOR.httpHeaderValue);
 
   public SendController(
-      Enclave enclave, Storage storage, ContentType contentType, NetworkNodes networkNodes) {
+      Enclave enclave,
+      Storage storage,
+      ContentType contentType,
+      NetworkNodes networkNodes,
+      Serializer serializer) {
     this.enclave = enclave;
     this.storage = storage;
     this.contentType = contentType;
     this.nodeKeys = Arrays.asList(enclave.nodeKeys());
     this.networkNodes = networkNodes;
+    this.serializer = serializer;
   }
 
   @Override
@@ -73,13 +89,39 @@ public class SendController implements Controller {
     log.trace("storing payload");
     String toReturn = storage.put(encryptedPayload);
 
-    // if [to] is not only self, propagate payload to recipients
-    // for each t in [to], find the matching IP from public key, and call the /push API with the encryptedPayload
-    for (int i = 0; i < recipients.length; i++) {
-      if (nodeKeys.contains(recipients[i])) {
-        // do not send payload to self
-        continue;
+    try {
+      // if [to] is not only self, propagate payload to recipients
+      // for each t in [to], find the matching IP from public key, and call the /push API with the encryptedPayload
+      for (int i = 0; i < recipients.length; i++) {
+        if (nodeKeys.contains(recipients[i])) {
+          // do not send payload to self
+          continue;
+        }
+        URL url = null; // TODO @gbotrel, use NetworkNodes to map PublicKey to URL
+
+        // serialize payload and build RequestBody
+        byte[] payload = serializer.serialize(encryptedPayload, ContentType.CBOR);
+
+        // TODO this is currently in the for loop as we aim to strip the payload and keep only
+        // relevant combinedKeys
+        RequestBody body = RequestBody.create(CBOR, payload);
+
+        // build the request
+        okhttp3.Request req = new okhttp3.Request.Builder().url(url).post(body).build();
+
+        // send the request
+        Response response =
+            httpClient
+                .newCall(req)
+                .execute(); // TODO @gbotrel perform these requests async with callback
+        if (response.code() != 200) {
+          // error and stop
+        }
+        // TODO @gbotrel : check that response.content() == toReturn (i.e. encrypted payload digest).
       }
+    } catch (IOException io) {
+      log.error(io.getMessage());
+      throw new RuntimeException(io);
     }
     return ok(ContentType.JSON, new SendResponse(toReturn));
   }
