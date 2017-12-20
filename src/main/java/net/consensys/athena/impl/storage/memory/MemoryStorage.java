@@ -20,6 +20,11 @@ public class MemoryStorage<T> implements StorageEngine<T> {
   }
 
   @Override
+  public void remove(String key) {
+    store.remove(key);
+  }
+
+  @Override
   public boolean isOpen() {
     return true;
   }

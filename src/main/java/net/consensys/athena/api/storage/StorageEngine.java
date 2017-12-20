@@ -8,6 +8,8 @@ public interface StorageEngine<T> {
 
   Optional<T> get(String key);
 
+  void remove(String key);
+
   boolean isOpen();
 
   void close();

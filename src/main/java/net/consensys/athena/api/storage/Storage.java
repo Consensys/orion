@@ -15,4 +15,6 @@ public interface Storage<T> {
    * @return
    */
   Optional<T> get(String key);
+
+  void remove(String key);
 }

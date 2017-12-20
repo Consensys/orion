@@ -36,6 +36,13 @@ public class MapDbStorageTest {
   }
 
   @Test
+  public void testStoreAndRemove() {
+    storage.put("key", toStore);
+    storage.remove("key");
+    assertEquals(Optional.empty(), storage.get("key"));
+  }
+
+  @Test
   public void testStoreAndRetrieveAcrossSessions() {
     storage.close();
     MapDbStorage<byte[]> secondStorage = new MapDbStorage(path);
