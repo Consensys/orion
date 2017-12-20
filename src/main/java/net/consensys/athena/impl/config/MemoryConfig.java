@@ -21,12 +21,12 @@ public class MemoryConfig implements Config {
   private String[] ipWhitelist = new String[] {};
   private String tls;
   private File tlsServerCert;
-  private File[] tlsServerChain = new File[] {};;
+  private File[] tlsServerChain = new File[] {};
   private File tlsServerKey;
   private String tlsServerTrust;
   private File tlsKnownClients;
   private File tlsClientCert;
-  private File[] tlsClientChain = new File[] {};;
+  private File[] tlsClientChain = new File[] {};
   private File tlsClientKey;
   private String tlsClientTrust;
   private File tlsKnownServers;
