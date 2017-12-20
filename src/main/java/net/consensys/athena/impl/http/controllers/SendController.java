@@ -87,11 +87,11 @@ public class SendController implements Controller {
 
     // storing payload
     log.trace("storing payload");
-    String toReturn = storage.put(encryptedPayload);
+    String digest = storage.put(encryptedPayload);
 
+    // if [to] is not only self, propagate payload to recipients
+    // for each t in [to], find the matching IP from public key, and call the /push API with the encryptedPayload
     try {
-      // if [to] is not only self, propagate payload to recipients
-      // for each t in [to], find the matching IP from public key, and call the /push API with the encryptedPayload
       for (int i = 0; i < recipients.length; i++) {
         if (nodeKeys.contains(recipients[i])) {
           // do not send payload to self
@@ -101,11 +101,9 @@ public class SendController implements Controller {
         URL recipientURL = networkNodes.urlForRecipient(recipients[i]);
         URL pushURL = new URL(recipientURL, "/push"); // TODO @gbotrel reverse routing would be nice
 
-        // serialize payload and build RequestBody
-        byte[] payload = serializer.serialize(encryptedPayload, ContentType.CBOR);
-
-        // TODO this is currently in the for loop as we aim to strip the payload and keep only
-        // relevant combinedKeys
+        // serialize payload and build RequestBody. we also strip non relevant combinedKeys
+        byte[] payload =
+            serializer.serialize(encryptedPayload.stripFor(recipients[i]), ContentType.CBOR);
         RequestBody body = RequestBody.create(CBOR, payload);
 
         // build the request
@@ -116,16 +114,17 @@ public class SendController implements Controller {
             httpClient
                 .newCall(req)
                 .execute(); // TODO @gbotrel perform these requests async with callback
-        if (response.code() != 200) {
+        if ((response.code() != 200) || !(response.body().string().equals(digest))) {
           // error and stop
+          throw new IOException("payload propagation failed");
         }
-        // TODO @gbotrel : check that response.content() == toReturn (i.e. encrypted payload digest).
       }
     } catch (IOException io) {
       log.error(io.getMessage());
+      //          storage.remove(digest);
       throw new RuntimeException(io);
     }
-    return ok(ContentType.JSON, new SendResponse(toReturn));
+    return ok(ContentType.JSON, new SendResponse(digest));
   }
 
   static class SendRequest {
