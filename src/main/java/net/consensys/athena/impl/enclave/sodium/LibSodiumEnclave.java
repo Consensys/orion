@@ -15,6 +15,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
 import java.util.Base64;
+import java.util.HashMap;
 
 import com.muquit.libsodiumjna.SodiumLibrary;
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
@@ -71,7 +72,14 @@ public class LibSodiumEnclave implements Enclave {
 
       byte[] nonce = nonce();
       CombinedKey[] combinedKeys = getCombinedKeys(recipients, senderPrivateKey, secretKey, nonce);
-      return new SimpleEncryptedPayload(senderKey, secretNonce, nonce, combinedKeys, cipherText);
+
+      // store mapping between combined keys and recipients
+      HashMap<PublicKey, Integer> combinedKeysMapping = new HashMap<>();
+      for (int i = 0; i < recipients.length; i++) {
+        combinedKeysMapping.put(recipients[i], i);
+      }
+      return new SimpleEncryptedPayload(
+          senderKey, secretNonce, nonce, combinedKeys, cipherText, combinedKeysMapping);
     } catch (SodiumLibraryException e) {
       throw new EnclaveException(e);
     }

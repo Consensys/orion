@@ -6,6 +6,7 @@ import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.HashAlgorithm;
 
 import java.security.PublicKey;
+import java.util.HashMap;
 
 public class CesarEnclave implements Enclave {
 
@@ -55,6 +56,6 @@ public class CesarEnclave implements Enclave {
     byte[] combinedKeyNonce = {};
     byte[] nonce = {};
     return new SimpleEncryptedPayload(
-        senderKey, nonce, combinedKeyNonce, combinedKeys, ciphterText);
+        senderKey, nonce, combinedKeyNonce, combinedKeys, ciphterText, new HashMap<>());
   }
 }
