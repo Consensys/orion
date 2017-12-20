@@ -5,7 +5,7 @@ import static java.util.Optional.empty;
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
-import net.consensys.athena.impl.http.server.Serializer;
+import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.netty.DefaultNettyServer;
 import net.consensys.athena.impl.http.server.netty.NettyServer;
 import net.consensys.athena.impl.http.server.netty.NettySettings;

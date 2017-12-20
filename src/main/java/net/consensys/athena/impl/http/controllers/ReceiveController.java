@@ -9,8 +9,8 @@ import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Request;
 import net.consensys.athena.impl.http.data.Result;
+import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.Controller;
-import net.consensys.athena.impl.http.server.Serializer;
 
 import java.nio.charset.Charset;
 import java.security.PublicKey;

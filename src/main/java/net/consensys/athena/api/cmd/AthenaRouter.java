@@ -17,9 +17,9 @@ import net.consensys.athena.impl.http.controllers.ResendController;
 import net.consensys.athena.impl.http.controllers.SendController;
 import net.consensys.athena.impl.http.controllers.UpcheckController;
 import net.consensys.athena.impl.http.data.ContentType;
+import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Router;
-import net.consensys.athena.impl.http.server.Serializer;
 import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.file.MapDbStorage;
@@ -61,10 +61,10 @@ public class AthenaRouter implements Router {
         return new UpcheckController();
       }
       if (uri.getPath().startsWith("/sendraw")) {
-        return new SendController(enclave, storage, ContentType.RAW);
+        return new SendController(enclave, storage, ContentType.TEXT);
       }
       if (uri.getPath().startsWith("/receiveraw")) {
-        return new ReceiveController(enclave, storage, ContentType.RAW, serializer);
+        return new ReceiveController(enclave, storage, ContentType.TEXT, serializer);
       }
       if (uri.getPath().startsWith("/send")) {
         return new SendController(enclave, storage, ContentType.JSON);

@@ -1,7 +1,7 @@
 package net.consensys.athena.impl.http;
 
 import net.consensys.athena.impl.http.data.ContentType;
-import net.consensys.athena.impl.http.server.Serializer;
+import net.consensys.athena.impl.http.data.Serializer;
 
 import java.io.Serializable;
 import java.util.Objects;
