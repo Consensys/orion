@@ -2,9 +2,13 @@ package net.consensys.athena.api.storage;
 
 import java.util.Optional;
 
-public interface Storage<T> {
+public interface StorageEngine<T> {
 
-  String put(T data);
+  void put(String key, T data);
 
   Optional<T> get(String key);
+
+  boolean isOpen();
+
+  void close();
 }

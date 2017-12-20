@@ -1,23 +1,29 @@
 package net.consensys.athena.impl.storage.memory;
 
-import net.consensys.athena.api.storage.KeyValueStore;
-import net.consensys.athena.api.storage.StorageData;
-import net.consensys.athena.api.storage.StorageId;
+import net.consensys.athena.api.storage.StorageEngine;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class MemoryStorage implements KeyValueStore {
-  private final Map<StorageId, StorageData> store = new HashMap<>();
+public class MemoryStorage<T> implements StorageEngine<T> {
+  private final Map<String, T> store = new HashMap<>();
 
   @Override
-  public void put(StorageId key, StorageData data) {
+  public void put(String key, T data) {
     store.put(key, data);
   }
 
   @Override
-  public Optional<StorageData> get(StorageId key) {
+  public Optional<T> get(String key) {
     return Optional.ofNullable(store.get(key));
   }
+
+  @Override
+  public boolean isOpen() {
+    return true;
+  }
+
+  @Override
+  public void close() {}
 }

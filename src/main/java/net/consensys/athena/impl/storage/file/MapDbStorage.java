@@ -1,41 +1,50 @@
 package net.consensys.athena.impl.storage.file;
 
-import net.consensys.athena.api.storage.KeyValueStore;
-import net.consensys.athena.api.storage.StorageData;
-import net.consensys.athena.api.storage.StorageId;
-import net.consensys.athena.impl.storage.SimpleStorage;
+import net.consensys.athena.api.storage.StorageEngine;
+import net.consensys.athena.api.storage.StorageException;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
 
-public class MapDbStorage implements KeyValueStore {
+public class MapDbStorage<T> implements StorageEngine<T> {
+
+  private static final Logger log = LogManager.getLogger();
 
   private final DB db;
-  private final HTreeMap<byte[], byte[]> storageData;
+  private final HTreeMap<byte[], T> storageData;
 
   public MapDbStorage(String path) {
     db = DBMaker.fileDB(path).transactionEnable().make();
-    storageData =
-        db.hashMap("storageData", Serializer.BYTE_ARRAY, Serializer.BYTE_ARRAY).createOrOpen();
+    storageData = db.hashMap("storageData", Serializer.BYTE_ARRAY, Serializer.JAVA).createOrOpen();
   }
 
   @Override
-  public void put(StorageId key, StorageData data) {
-    storageData.put(key.getRaw(), data.getRaw());
-    db.commit();
-  }
-
-  @Override
-  public Optional<StorageData> get(StorageId key) {
-    byte[] rawData = storageData.get(key.getRaw());
-    if (rawData == null) {
-      return Optional.empty();
+  public void put(String key, T data) {
+    // store data
+    try {
+      storageData.put(key.getBytes("UTF-8"), data);
+      db.commit();
+    } catch (UnsupportedEncodingException e) {
+      log.error(e.getMessage());
+      throw new StorageException(e.getMessage());
     }
-    return Optional.of(new SimpleStorage(rawData));
+  }
+
+  @Override
+  public Optional<T> get(String key) {
+    try {
+      return Optional.ofNullable(storageData.get(key.getBytes("UTF-8")));
+    } catch (UnsupportedEncodingException e) {
+      log.error(e.getMessage());
+      throw new StorageException(e.getMessage());
+    }
   }
 
   @Override

@@ -6,8 +6,7 @@ import static org.junit.Assert.assertEquals;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
-import net.consensys.athena.api.storage.StorageId;
-import net.consensys.athena.api.storage.StorageIdBuilder;
+import net.consensys.athena.api.storage.StorageKeyBuilder;
 import net.consensys.athena.impl.enclave.CesarEnclave;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveRequest;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveResponse;
@@ -18,9 +17,8 @@ import net.consensys.athena.impl.http.data.RequestImpl;
 import net.consensys.athena.impl.http.data.Result;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Serializer;
-import net.consensys.athena.impl.storage.Sha512_256StorageIdBuilder;
-import net.consensys.athena.impl.storage.SimpleStorage;
-import net.consensys.athena.impl.storage.StorageKeyValueStorageDelegate;
+import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
+import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.memory.MemoryStorage;
 
 import java.util.Base64;
@@ -34,9 +32,9 @@ import org.junit.Test;
 
 public class ReceiveControllerTest {
   private final Enclave enclave = new CesarEnclave();
-  private final StorageIdBuilder keyBuilder = new Sha512_256StorageIdBuilder(enclave);
-  private final Storage storage =
-      new StorageKeyValueStorageDelegate(new MemoryStorage(), keyBuilder);
+  private final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
+  private final Storage<EncryptedPayload> storage =
+      new EncryptedPayloadStorage(new MemoryStorage(), keyBuilder);
   private final Serializer serializer =
       new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory()));
   private final Controller receiveController =
@@ -44,21 +42,18 @@ public class ReceiveControllerTest {
 
   @Test
   public void testPayloadIsRetrieved() throws Exception {
-    // let's create a random payload
-    byte[] toCheck = new byte[342];
-    new Random().nextBytes(toCheck);
+    // generate random byte content
+    byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
 
-    // encrypt the payload
-    EncryptedPayload encryptedPayload = enclave.encrypt(toCheck, null, null);
-
-    // serialize it
-    byte[] serialized = serializer.serialize(encryptedPayload, ContentType.JAVA_ENCODED);
+    // generate dummy encrypted payload object
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
 
     // store it
-    StorageId id = storage.put(new SimpleStorage(serialized));
+    String key = storage.put(encryptedPayload);
 
     // and try to retrieve it with the receiveController
-    ReceiveRequest req = new ReceiveRequest(id.getBase64Encoded(), null);
+    ReceiveRequest req = new ReceiveRequest(key, null);
 
     // submit request to controller
     Request controllerRequest = new RequestImpl(Optional.of(req));
@@ -74,7 +69,7 @@ public class ReceiveControllerTest {
     ReceiveResponse response = (ReceiveResponse) result.getPayload().get();
 
     // ensure we got the decrypted response back
-    assertArrayEquals(Base64.getDecoder().decode(response.payload), toCheck);
+    assertArrayEquals(Base64.getDecoder().decode(response.payload.getBytes("UTF-8")), toEncrypt);
   }
 
   @Test
