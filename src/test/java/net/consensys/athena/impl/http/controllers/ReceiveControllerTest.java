@@ -11,6 +11,7 @@ import net.consensys.athena.impl.enclave.CesarEnclave;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveRequest;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveResponse;
 import net.consensys.athena.impl.http.data.ApiError;
+import net.consensys.athena.impl.http.data.Base64;
 import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Request;
 import net.consensys.athena.impl.http.data.RequestImpl;
@@ -21,7 +22,6 @@ import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.memory.MemoryStorage;
 
-import java.util.Base64;
 import java.util.Optional;
 import java.util.Random;
 
@@ -69,7 +69,7 @@ public class ReceiveControllerTest {
     ReceiveResponse response = (ReceiveResponse) result.getPayload().get();
 
     // ensure we got the decrypted response back
-    assertArrayEquals(Base64.getDecoder().decode(response.payload.getBytes("UTF-8")), toEncrypt);
+    assertArrayEquals(Base64.decode(response.payload), toEncrypt);
   }
 
   @Test

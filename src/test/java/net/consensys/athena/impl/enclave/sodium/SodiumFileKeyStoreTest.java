@@ -6,12 +6,12 @@ import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.EnclaveException;
 import net.consensys.athena.impl.config.MemoryConfig;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
+import net.consensys.athena.impl.http.data.Base64;
 
 import java.io.File;
 import java.io.InputStream;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.util.Base64;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -27,9 +27,8 @@ public class SodiumFileKeyStoreTest {
   SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, objectMapper);
   String publicKey1Base64Encoded = "BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=";
   String privateKey1Base64Encoded = "Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA=";
-  PublicKey publicKey1 = new SodiumPublicKey(Base64.getDecoder().decode(publicKey1Base64Encoded));
-  PrivateKey privateKey1 =
-      new SodiumPrivateKey(Base64.getDecoder().decode(privateKey1Base64Encoded));
+  PublicKey publicKey1 = new SodiumPublicKey(Base64.decode(publicKey1Base64Encoded));
+  PrivateKey privateKey1 = new SodiumPrivateKey(Base64.decode(privateKey1Base64Encoded));
 
   @Test
   public void testConfigLoadsRawKeys() throws Exception {
@@ -83,9 +82,8 @@ public class SodiumFileKeyStoreTest {
         };
 
     for (int i = 0; i < encodedPrivateKeys.length; i++) {
-      PrivateKey privateKey =
-          new SodiumPrivateKey(Base64.getDecoder().decode(encodedPrivateKeys[i]));
-      PublicKey publicKey = new SodiumPublicKey(Base64.getDecoder().decode(encodedPublicKeys[i]));
+      PrivateKey privateKey = new SodiumPrivateKey(Base64.decode(encodedPrivateKeys[i]));
+      PublicKey publicKey = new SodiumPublicKey(Base64.decode(encodedPublicKeys[i]));
       PrivateKey storedKey = keyStore.getPrivateKey(publicKey);
       assertEquals(privateKey, storedKey);
     }
@@ -106,7 +104,7 @@ public class SodiumFileKeyStoreTest {
 
     PublicKey[] publicKeys = new PublicKey[encodedPublicKeys.length];
     for (int i = 0; i < encodedPublicKeys.length; i++) {
-      PublicKey publicKey = new SodiumPublicKey(Base64.getDecoder().decode(encodedPublicKeys[i]));
+      PublicKey publicKey = new SodiumPublicKey(Base64.decode(encodedPublicKeys[i]));
       publicKeys[i] = publicKey;
     }
     assertArrayEquals(publicKeys, keyStore.alwaysSendTo());
