@@ -4,7 +4,7 @@ import java.security.PublicKey;
 
 public interface Enclave {
 
-  PublicKey[] alwaysSendTo();
+
 
   byte[] digest(HashAlgorithm algorithm, byte[] input);
 
@@ -31,4 +31,10 @@ public interface Enclave {
    * @return return the decrypted byte array that is the data.
    */
   byte[] decrypt(EncryptedPayload ciphertextAndMetadata, PublicKey identity);
+
+
+  PublicKey[] alwaysSendTo();
+  PublicKey[] nodeKeys();
+
+  PublicKey readKey(String b64);
 }

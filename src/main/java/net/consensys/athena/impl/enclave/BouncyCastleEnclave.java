@@ -34,4 +34,9 @@ public class BouncyCastleEnclave implements Enclave {
   public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, PublicKey identity) {
     return new byte[0];
   }
+
+  @Override
+  public PublicKey readKey(String b64) {
+    return null;
+  }
 }

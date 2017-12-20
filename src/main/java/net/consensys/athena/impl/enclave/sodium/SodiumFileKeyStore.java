@@ -91,4 +91,10 @@ public class SodiumFileKeyStore implements KeyStore {
     File[] alwaysSendTo = config.alwaysSendTo();
     return Arrays.stream(alwaysSendTo).map(file -> readPublicKey(file)).toArray(PublicKey[]::new);
   }
+
+  @Override
+  public PublicKey[] nodeKeys() {
+    File[] publicKeys = config.publicKeys();
+    return Arrays.stream(publicKeys).map(file -> readPublicKey(file)).toArray(PublicKey[]::new);
+  }
 }

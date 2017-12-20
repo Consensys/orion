@@ -35,6 +35,11 @@ public class CesarEnclave implements Enclave {
   }
 
   @Override
+  public PublicKey readKey(String b64) {
+    return null; //TODO
+  }
+
+  @Override
   public EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients) {
     byte[] ciphterText = new byte[plaintext.length];
     for (int i = 0; i < plaintext.length; i++) {

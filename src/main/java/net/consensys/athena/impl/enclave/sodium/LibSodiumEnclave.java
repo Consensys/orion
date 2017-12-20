@@ -1,5 +1,7 @@
 package net.consensys.athena.impl.enclave.sodium;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Base64;
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.Enclave;
@@ -30,14 +32,24 @@ public class LibSodiumEnclave implements Enclave {
   private final Hasher hasher = new Hasher();
   private KeyStore keyStore;
 
+  private final PublicKey[] alwaysSendTo;
+  private final PublicKey[] nodeKeys;
+
   public LibSodiumEnclave(Config config, KeyStore keyStore) {
     SodiumLibrary.setLibraryPath(config.libSodiumPath());
     this.keyStore = keyStore;
+    this.alwaysSendTo = keyStore.alwaysSendTo();
+    this.nodeKeys = keyStore.nodeKeys();
   }
 
   @Override
   public PublicKey[] alwaysSendTo() {
-    return keyStore.alwaysSendTo();
+    return alwaysSendTo;
+  }
+
+  @Override
+  public PublicKey[] nodeKeys() {
+    return nodeKeys;
   }
 
   @Override
@@ -82,6 +94,15 @@ public class LibSodiumEnclave implements Enclave {
       return SodiumLibrary.cryptoSecretBoxOpenEasy(
           ciphertextAndMetadata.getCipherText(), ciphertextAndMetadata.getNonce(), secretKey);
     } catch (SodiumLibraryException e) {
+      throw new EnclaveException(e);
+    }
+  }
+
+  @Override
+  public PublicKey readKey(String b64) {
+    try {
+      return new SodiumPublicKey(Base64.getDecoder().decode(b64.getBytes("UTF-8")));
+    } catch (UnsupportedEncodingException e) {
       throw new EnclaveException(e);
     }
   }

@@ -46,7 +46,6 @@ public class AthenaRouter implements Router {
       Serializer serializer,
       ObjectMapper jsonObjectMapper) {
 
-
     this.enclave = new LibSodiumEnclave(config, new SodiumFileKeyStore(config, jsonObjectMapper));
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
     this.storage = new EncryptedPayloadStorage(STORAGE_ENGINE, keyBuilder);
