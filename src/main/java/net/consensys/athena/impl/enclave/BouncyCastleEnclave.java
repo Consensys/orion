@@ -21,6 +21,11 @@ public class BouncyCastleEnclave implements Enclave {
   }
 
   @Override
+  public PublicKey[] nodeKeys() {
+    return new PublicKey[0];
+  }
+
+  @Override
   public byte[] digest(HashAlgorithm algorithm, byte[] input) {
     return hasher.digest(algorithm, input);
   }

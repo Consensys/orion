@@ -15,6 +15,11 @@ public class CesarEnclave implements Enclave {
   }
 
   @Override
+  public PublicKey[] nodeKeys() {
+    return new PublicKey[0];
+  }
+
+  @Override
   public byte[] digest(HashAlgorithm algorithm, byte[] input) {
     byte[] hash = new byte[256];
     for (int i = 0; i < input.length && i < 256; i++) {
