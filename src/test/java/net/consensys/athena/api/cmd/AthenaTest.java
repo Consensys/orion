@@ -15,6 +15,7 @@ import java.util.Optional;
 import org.junit.Test;
 
 public class AthenaTest {
+  Athena athena = new Athena();
 
   @Test
   public void testServerStartWithFullConfig() throws Exception {
@@ -22,7 +23,7 @@ public class AthenaTest {
     Config config =
         configBuilder.build(
             this.getClass().getClassLoader().getResourceAsStream("fullConfigTest.toml"));
-    NettyServer server = Athena.startServer(config);
+    NettyServer server = athena.startServer(config);
 
     NettySettings settings = server.getSettings();
 
@@ -36,7 +37,7 @@ public class AthenaTest {
 
   @Test
   public void testLoadConfigForTheStandardConfig() throws Exception {
-    Config config = Athena.loadConfig(Optional.of("src/main/resources/sample.conf"));
+    Config config = athena.loadConfig(Optional.of("src/main/resources/sample.conf"));
     assertEquals(9001, config.port());
 
     File expectedSocket = new File("athena.ipc");
@@ -46,7 +47,7 @@ public class AthenaTest {
 
   @Test
   public void testDefaultConfigIsUsedWhenNoneProvided() throws Exception {
-    Config config = Athena.loadConfig(Optional.empty());
+    Config config = athena.loadConfig(Optional.empty());
 
     assertEquals(8080, config.port());
     assertFalse(config.socket().isPresent());
