@@ -66,8 +66,8 @@ public class LibSodiumEnclaveTest {
 
   @Test
   public void testEncryptDecrypt() throws SodiumLibraryException {
-    PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    PublicKey senderKey = memoryKeyStore.generateKeyPair()[0];
+    PublicKey recipientKey = memoryKeyStore.generateKeyPair()[0];
 
     String plaintext = "hello";
     EncryptedPayload encryptedPayload =
@@ -80,7 +80,7 @@ public class LibSodiumEnclaveTest {
   @Test
   public void testEncryptThrowsExceptionWhenMissingKey() throws Exception {
     PublicKey fake = new SodiumPublicKey("fake".getBytes());
-    PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    PublicKey recipientKey = memoryKeyStore.generateKeyPair()[0];
     try {
       enclave.encrypt("plaintext".getBytes(), fake, new PublicKey[] {recipientKey});
       fail("Should have thrown an Enclave Exception");
@@ -92,7 +92,7 @@ public class LibSodiumEnclaveTest {
   @Test
   public void testDecryptThrowsExceptionWhnMissingKey() throws Exception {
     PublicKey fake = new SodiumPublicKey("fake".getBytes());
-    PublicKey sender = memoryKeyStore.generateKeyPair();
+    PublicKey sender = memoryKeyStore.generateKeyPair()[0];
     try {
       EncryptedPayload payload =
           new SimpleEncryptedPayload(

@@ -44,7 +44,7 @@ public class TomlConfigBuilderTest {
     assertTrue(testConf.socket().isPresent());
     assertEquals(expectedFile, testConf.socket().get());
 
-    expectedFile = new File("passwords");
+    expectedFile = new File("keys/password.txt");
     assertTrue(testConf.passwords().isPresent());
     assertEquals(expectedFile, testConf.passwords().get());
 

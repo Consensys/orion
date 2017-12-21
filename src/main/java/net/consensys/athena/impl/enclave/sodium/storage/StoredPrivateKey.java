@@ -2,6 +2,7 @@ package net.consensys.athena.impl.enclave.sodium.storage;
 
 public class StoredPrivateKey {
   public static final String UNLOCKED = "unlocked";
+  public static final String ARGON2_SBOX = "sodiumargon2sbox";
 
   private PrivateKeyData data;
   private String type = UNLOCKED;

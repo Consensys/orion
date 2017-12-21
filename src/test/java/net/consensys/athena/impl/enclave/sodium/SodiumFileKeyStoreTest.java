@@ -13,7 +13,10 @@ import java.io.InputStream;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.muquit.libsodiumjna.SodiumLibrary;
+import org.junit.Before;
 import org.junit.Test;
 
 public class SodiumFileKeyStoreTest {
@@ -29,6 +32,11 @@ public class SodiumFileKeyStoreTest {
   String privateKey1Base64Encoded = "Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA=";
   PublicKey publicKey1 = new SodiumPublicKey(Base64.decode(publicKey1Base64Encoded));
   PrivateKey privateKey1 = new SodiumPrivateKey(Base64.decode(privateKey1Base64Encoded));
+
+  @Before
+  public void setUp() throws Exception {
+    objectMapper.setSerializationInclusion(Include.NON_NULL);
+  }
 
   @Test
   public void testConfigLoadsRawKeys() throws Exception {
@@ -108,5 +116,65 @@ public class SodiumFileKeyStoreTest {
       publicKeys[i] = publicKey;
     }
     assertArrayEquals(publicKeys, keyStore.alwaysSendTo());
+  }
+
+  public void testLoadOfPasswordProtectedKeys() {
+    MemoryConfig config = new MemoryConfig();
+    config.setPrivateKeys(new File[] {new File("keys/password.key")});
+    config.setPublicKeys(new File[] {new File("keys/password.pub")});
+    keyStore = new SodiumFileKeyStore(config, objectMapper);
+  }
+
+  @Test
+  public void testGenerateUnlockedProtectedKeyPair() {
+    String keyPrefix = "keys/generated";
+    try {
+      MemoryConfig config = new MemoryConfig();
+      config.setGenerateKeys(new String[] {keyPrefix});
+      keyStore = new SodiumFileKeyStore(config, objectMapper);
+      System.out.println("SodiumLibrary.getLibaryPath() = " + SodiumLibrary.getLibaryPath());
+      keyStore.generateKeyPair();
+
+      config = new MemoryConfig();
+      config.setPrivateKeys(new File[] {new File("keys/generated.key")});
+      config.setPublicKeys(new File[] {new File("keys/generated.pub")});
+      keyStore = new SodiumFileKeyStore(config, objectMapper);
+    } finally {
+      File privateKey = new File(keyPrefix + ".key");
+      File publicKey = new File(keyPrefix + ".pub");
+      if (privateKey.exists()) {
+        privateKey.delete();
+      }
+      if (publicKey.exists()) {
+        publicKey.delete();
+      }
+    }
+  }
+
+  @Test
+  public void testGeneratePasswordProtectedKeyPair() {
+    String keyPrefix = "keys/generated_password";
+    try {
+      MemoryConfig config = new MemoryConfig();
+      config.setGenerateKeys(new String[] {keyPrefix});
+      config.setPasswords(new File("keys/password.txt"));
+      keyStore = new SodiumFileKeyStore(config, objectMapper);
+      keyStore.generateKeyPair();
+
+      config = new MemoryConfig();
+      config.setPasswords(new File("keys/password.txt"));
+      config.setPrivateKeys(new File[] {new File("keys/generated_password.key")});
+      config.setPublicKeys(new File[] {new File("keys/generated_password.pub")});
+      keyStore = new SodiumFileKeyStore(config, objectMapper);
+    } finally {
+      File privateKey = new File(keyPrefix + ".key");
+      File publicKey = new File(keyPrefix + ".pub");
+      if (privateKey.exists()) {
+        privateKey.delete();
+      }
+      if (publicKey.exists()) {
+        publicKey.delete();
+      }
+    }
   }
 }

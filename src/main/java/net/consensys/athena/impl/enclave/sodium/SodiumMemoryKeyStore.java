@@ -22,13 +22,13 @@ public class SodiumMemoryKeyStore implements KeyStore {
   }
 
   @Override
-  public PublicKey generateKeyPair() {
+  public PublicKey[] generateKeyPair() {
     try {
       SodiumKeyPair keyPair = SodiumLibrary.cryptoBoxKeyPair();
       SodiumPrivateKey privateKey = new SodiumPrivateKey(keyPair.getPrivateKey());
       SodiumPublicKey publicKey = new SodiumPublicKey(keyPair.getPublicKey());
       store.put(publicKey, privateKey);
-      return publicKey;
+      return new PublicKey[] {publicKey};
     } catch (SodiumLibraryException e) {
       throw new EnclaveException(e);
     }
