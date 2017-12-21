@@ -41,6 +41,7 @@ public class SodiumFileKeyStoreTest {
     MemoryConfig config = new MemoryConfig();
     config.setPrivateKeys(new File[] {new File("Does not exist")});
     config.setPublicKeys(new File[] {new File("Does not exist")});
+    config.setAlwaysSendTo(new File[] {new File("Does not exist")});
     try {
       keyStore = new SodiumFileKeyStore(config, objectMapper);
       fail("should have thrown an EnclaveException");
@@ -54,6 +55,7 @@ public class SodiumFileKeyStoreTest {
     MemoryConfig config = new MemoryConfig();
     config.setPrivateKeys(new File[] {new File("keys/noalgorithm.key")});
     config.setPublicKeys(new File[] {new File("keys/tm1a.pub")});
+    config.setAlwaysSendTo(new File[] {new File("keys/tm1a.pub")});
     try {
       keyStore = new SodiumFileKeyStore(config, objectMapper);
       fail("should have thrown an EnclaveException");

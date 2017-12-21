@@ -3,9 +3,9 @@ package net.consensys.athena.api.config;
 import java.security.PublicKey;
 
 public interface Node {
-  PublicKey defaultPublicKey();
+  PublicKey defaultKey();
 
-  PublicKey selfSendingPublickKey();
+  //  PublicKey selfSendingPublickKey();
 
   PublicKey[] alwaysSendTo();
 }

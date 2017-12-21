@@ -21,6 +21,11 @@ public class BouncyCastleEnclave implements Enclave {
   }
 
   @Override
+  public PublicKey[] nodeKeys() {
+    return new PublicKey[0];
+  }
+
+  @Override
   public byte[] digest(HashAlgorithm algorithm, byte[] input) {
     return hasher.digest(algorithm, input);
   }
@@ -33,5 +38,10 @@ public class BouncyCastleEnclave implements Enclave {
   @Override
   public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, PublicKey identity) {
     return new byte[0];
+  }
+
+  @Override
+  public PublicKey readKey(String b64) {
+    return null;
   }
 }

@@ -13,6 +13,7 @@ import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 
 import java.security.PublicKey;
+import java.util.HashMap;
 
 import com.muquit.libsodiumjna.SodiumKeyPair;
 import com.muquit.libsodiumjna.SodiumLibrary;
@@ -96,7 +97,12 @@ public class LibSodiumEnclaveTest {
     try {
       EncryptedPayload payload =
           new SimpleEncryptedPayload(
-              sender, new byte[] {}, new byte[] {}, new CombinedKey[] {}, new byte[] {});
+              sender,
+              new byte[] {},
+              new byte[] {},
+              new CombinedKey[] {},
+              new byte[] {},
+              new HashMap<>());
       enclave.decrypt(payload, fake);
       fail("Should have thrown an Enclave Exception");
     } catch (EnclaveException e) {
