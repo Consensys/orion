@@ -31,13 +31,11 @@ public class PushController implements Controller {
   @Override
   public Result handle(Request request) {
     // that's actually useful to ensure we don't get random bytes as input
-    Optional<EncryptedPayload> pushRequest = request.getPayload();
-    if (!pushRequest.isPresent()) {
-      throw new IllegalArgumentException();
-    }
+    Optional<EncryptedPayload> requestPayload = request.getPayload();
+    EncryptedPayload pushRequest = requestPayload.orElseThrow(() -> new IllegalArgumentException());
 
     // we receive a EncryptedPayload and
-    String digest = storage.put(pushRequest.get());
+    String digest = storage.put(pushRequest);
 
     log.debug("stored payload. resulting digest: {}", digest);
 

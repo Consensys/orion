@@ -42,4 +42,9 @@ public class SendControllerTest {
     sendRequest.from = "me";
     controller.handle(new RequestImpl(sendRequest));
   }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testEmptyPayload() {
+    controller.handle(new RequestImpl());
+  }
 }

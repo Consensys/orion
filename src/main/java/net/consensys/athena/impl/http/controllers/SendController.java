@@ -60,21 +60,23 @@ public class SendController implements Controller {
 
   @Override
   public Result handle(Request request) {
-    Optional<SendRequest> sendRequest = request.getPayload();
-    if (!sendRequest.isPresent() || !sendRequest.get().isValid()) {
+    Optional<SendRequest> requestPayload = request.getPayload();
+    SendRequest sendRequest = requestPayload.orElseThrow(() -> new IllegalArgumentException());
+
+    if (!sendRequest.isValid()) {
       throw new IllegalArgumentException();
     }
 
     log.trace("reading public keys from SendRequest object");
     // read provided public keys
-    PublicKey fromKey = enclave.readKey(sendRequest.get().from);
-    Stream<PublicKey> toKeys = Arrays.stream(sendRequest.get().to).map(enclave::readKey);
+    PublicKey fromKey = enclave.readKey(sendRequest.from);
+    Stream<PublicKey> toKeys = Arrays.stream(sendRequest.to).map(enclave::readKey);
 
     // toKeys = toKeys + [nodeAlwaysSendTo] --> default pub key to always send to
     toKeys = Stream.concat(Arrays.stream(enclave.alwaysSendTo()), toKeys);
 
     // convert payload from b64 to bytes
-    byte[] rawPayload = Base64.decode(sendRequest.get().payload);
+    byte[] rawPayload = Base64.decode(sendRequest.payload);
 
     // encrypting payload
     log.trace("encrypting payload from SendRequest object");
