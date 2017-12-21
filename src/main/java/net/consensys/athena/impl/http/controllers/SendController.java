@@ -1,12 +1,14 @@
 package net.consensys.athena.impl.http.controllers;
 
 import static net.consensys.athena.impl.http.data.Result.badRequest;
+import static net.consensys.athena.impl.http.data.Result.internalServerError;
 import static net.consensys.athena.impl.http.data.Result.ok;
 
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.api.storage.Storage;
+import net.consensys.athena.impl.http.data.Base64;
 import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Request;
 import net.consensys.athena.impl.http.data.Result;
@@ -14,11 +16,9 @@ import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.Controller;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.security.PublicKey;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -67,64 +67,69 @@ public class SendController implements Controller {
     log.trace("reading public keys from SendRequest object");
     // read provided public keys
     PublicKey fromKey = enclave.readKey(sendRequest.from);
-    Stream<PublicKey> toKeys = Arrays.stream(sendRequest.to).map(b64key -> enclave.readKey(b64key));
+    Stream<PublicKey> toKeys = Arrays.stream(sendRequest.to).map(enclave::readKey);
 
-    // recipients = toKeys + [nodeAlwaysSendTo] --> default pub key to always send to
-    PublicKey[] recipients =
-        Stream.concat(Arrays.stream(enclave.alwaysSendTo()), toKeys).toArray(PublicKey[]::new);
+    // toKeys = toKeys + [nodeAlwaysSendTo] --> default pub key to always send to
+    toKeys = Stream.concat(Arrays.stream(enclave.alwaysSendTo()), toKeys);
 
     // convert payload from b64 to bytes
-    byte[] rawPayload;
-    try {
-      rawPayload = Base64.getDecoder().decode(sendRequest.payload.getBytes("UTF-8"));
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e);
-    }
+    byte[] rawPayload = Base64.decode(sendRequest.payload);
 
     // encrypting payload
     log.trace("encrypting payload from SendRequest object");
-    EncryptedPayload encryptedPayload = enclave.encrypt(rawPayload, fromKey, recipients);
+    EncryptedPayload encryptedPayload =
+        enclave.encrypt(rawPayload, fromKey, toKeys.toArray(PublicKey[]::new));
 
     // storing payload
     log.trace("storing payload");
     String digest = storage.put(encryptedPayload);
 
-    // if [to] is not only self, propagate payload to recipients
-    // for each t in [to], find the matching IP from public key, and call the /push API with the encryptedPayload
+    // propagate payload
+    log.trace("propagating payload");
+    boolean propagated =
+        toKeys
+            .parallel()
+            .filter(pKey -> !nodeKeys.contains(pKey))
+            .map(pKey -> pushToPeer(encryptedPayload, pKey))
+            .allMatch(resp -> isValidResponse(resp, digest));
+
+    if (!propagated) {
+      log.warn("propagating the payload failed, removing stored encrypted payload");
+      storage.remove(digest);
+      return internalServerError("couldn't propagate payload to all recipients");
+    }
+
+    return ok(ContentType.JSON, new SendResponse(digest));
+  }
+
+  private Response pushToPeer(EncryptedPayload encryptedPayload, PublicKey recipient) {
     try {
-      for (int i = 0; i < recipients.length; i++) {
-        if (nodeKeys.contains(recipients[i])) {
-          // do not send payload to self
-          continue;
-        }
+      URL recipientURL = networkNodes.urlForRecipient(recipient);
+      URL pushURL = new URL(recipientURL, "/push"); // TODO @gbotrel reverse routing would be nice
 
-        URL recipientURL = networkNodes.urlForRecipient(recipients[i]);
-        URL pushURL = new URL(recipientURL, "/push"); // TODO @gbotrel reverse routing would be nice
+      // serialize payload and build RequestBody. we also strip non relevant combinedKeys
+      byte[] payload = serializer.serialize(encryptedPayload.stripFor(recipient), ContentType.CBOR);
+      RequestBody body = RequestBody.create(CBOR, payload);
 
-        // serialize payload and build RequestBody. we also strip non relevant combinedKeys
-        byte[] payload =
-            serializer.serialize(encryptedPayload.stripFor(recipients[i]), ContentType.CBOR);
-        RequestBody body = RequestBody.create(CBOR, payload);
+      // build request
+      okhttp3.Request req = new okhttp3.Request.Builder().url(pushURL).post(body).build();
 
-        // build the request
-        okhttp3.Request req = new okhttp3.Request.Builder().url(pushURL).post(body).build();
-
-        // send the request
-        Response response =
-            httpClient
-                .newCall(req)
-                .execute(); // TODO @gbotrel perform these requests async with callback
-        if ((response.code() != 200) || !(response.body().string().equals(digest))) {
-          // error and stop
-          throw new IOException("payload propagation failed");
-        }
-      }
+      // execute request
+      return httpClient.newCall(req).execute();
     } catch (IOException io) {
-      log.error(io.getMessage());
-      //          storage.remove(digest);
+      throw new RuntimeException(io);
+      // TODO @gbotrel / reviewer --> in case of network exception, shall we throw RuntimeException
+      // or return the following response ?
+      //      return new Response.Builder().code(418).build();
+    }
+  }
+
+  private boolean isValidResponse(Response response, String digest) {
+    try {
+      return response.code() == 200 && response.body().string().equals(digest);
+    } catch (IOException io) {
       throw new RuntimeException(io);
     }
-    return ok(ContentType.JSON, new SendResponse(digest));
   }
 
   static class SendRequest {
