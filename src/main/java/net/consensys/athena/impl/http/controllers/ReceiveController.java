@@ -37,15 +37,19 @@ public class ReceiveController implements Controller {
   @Override
   public Result handle(Request request) {
     // retrieves the encrypted payload from DB, using provided key
-    ReceiveRequest receiveRequest = request.getPayload();
-    Optional<EncryptedPayload> encryptedPayload = storage.get(receiveRequest.key);
+    Optional<ReceiveRequest> receiveRequest = request.getPayload();
+    if (!receiveRequest.isPresent()) {
+      throw new IllegalArgumentException();
+    }
+    Optional<EncryptedPayload> encryptedPayload = storage.get(receiveRequest.get().key);
     if (!encryptedPayload.isPresent()) {
       return notFound("Error: unable to retrieve payload");
     }
 
     // Haskell doc: let's check if receipients is set = it's a payload that we sent. TODO @gbotrel
     // if not, it's a payload sent to us
-    byte[] decryptedPayload = enclave.decrypt(encryptedPayload.get(), receiveRequest.publicKey);
+    byte[] decryptedPayload =
+        enclave.decrypt(encryptedPayload.get(), receiveRequest.get().publicKey);
 
     // build a ReceiveResponse
     ReceiveResponse toReturn = new ReceiveResponse(Base64.encode(decryptedPayload));

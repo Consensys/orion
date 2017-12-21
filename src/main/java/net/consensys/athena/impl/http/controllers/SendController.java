@@ -1,6 +1,5 @@
 package net.consensys.athena.impl.http.controllers;
 
-import static net.consensys.athena.impl.http.data.Result.badRequest;
 import static net.consensys.athena.impl.http.data.Result.internalServerError;
 import static net.consensys.athena.impl.http.data.Result.ok;
 
@@ -20,6 +19,8 @@ import java.net.URL;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import okhttp3.MediaType;
@@ -59,21 +60,21 @@ public class SendController implements Controller {
 
   @Override
   public Result handle(Request request) {
-    SendRequest sendRequest = request.getPayload();
-    if (!sendRequest.isValid()) {
-      return badRequest("payload, from or to field not properly set");
+    Optional<SendRequest> sendRequest = request.getPayload();
+    if (!sendRequest.isPresent() || !sendRequest.get().isValid()) {
+      throw new IllegalArgumentException();
     }
 
     log.trace("reading public keys from SendRequest object");
     // read provided public keys
-    PublicKey fromKey = enclave.readKey(sendRequest.from);
-    Stream<PublicKey> toKeys = Arrays.stream(sendRequest.to).map(enclave::readKey);
+    PublicKey fromKey = enclave.readKey(sendRequest.get().from);
+    Stream<PublicKey> toKeys = Arrays.stream(sendRequest.get().to).map(enclave::readKey);
 
     // toKeys = toKeys + [nodeAlwaysSendTo] --> default pub key to always send to
     toKeys = Stream.concat(Arrays.stream(enclave.alwaysSendTo()), toKeys);
 
     // convert payload from b64 to bytes
-    byte[] rawPayload = Base64.decode(sendRequest.payload);
+    byte[] rawPayload = Base64.decode(sendRequest.get().payload);
 
     // encrypting payload
     log.trace("encrypting payload from SendRequest object");
@@ -138,6 +139,9 @@ public class SendController implements Controller {
     String[] to; // b64 encoded
 
     public boolean isValid() {
+      if (Stream.of(payload, from, to).anyMatch(Objects::isNull)) {
+        return false;
+      }
       for (int i = 0; i < to.length; i++) {
         if (to[i].length() <= 0) {
           return false;

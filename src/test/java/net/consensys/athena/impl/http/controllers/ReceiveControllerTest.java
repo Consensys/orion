@@ -22,7 +22,6 @@ import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.memory.MemoryStorage;
 
-import java.util.Optional;
 import java.util.Random;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,7 +55,7 @@ public class ReceiveControllerTest {
     ReceiveRequest req = new ReceiveRequest(key, null);
 
     // submit request to controller
-    Request controllerRequest = new RequestImpl(Optional.of(req));
+    Request controllerRequest = new RequestImpl(req);
     Result result = receiveController.handle(controllerRequest);
 
     // ensure we got a 200 OK back
@@ -76,7 +75,7 @@ public class ReceiveControllerTest {
   public void testResponseWhenKeyNotFound() throws Exception {
     ReceiveRequest req = new ReceiveRequest("notForMe", null);
 
-    Result result = receiveController.handle(new RequestImpl(Optional.of(req)));
+    Result result = receiveController.handle(new RequestImpl(req));
 
     assertEquals(result.getStatus().code(), HttpResponseStatus.NOT_FOUND.code());
 

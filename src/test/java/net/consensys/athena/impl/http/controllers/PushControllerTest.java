@@ -38,7 +38,7 @@ public class PushControllerTest {
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
 
     // call controller
-    Result result = controller.handle(new RequestImpl(Optional.of(encryptedPayload)));
+    Result result = controller.handle(new RequestImpl(encryptedPayload));
 
     // ensure we got a 200 OK back
     assertEquals(result.getStatus().code(), HttpResponseStatus.OK.code());
