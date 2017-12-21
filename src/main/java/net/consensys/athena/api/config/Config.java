@@ -28,6 +28,7 @@ public interface Config {
    * Path at which to locate the lib sodium shared library.
    *
    * <p><strong>Default:</strong>
+   *
    * <ul>
    *   <li><b>Linux</b> /usr/local/lib/libsodium.so
    *   <li><b>Mac</b> /usr/local/lib/libsodium.dylib
