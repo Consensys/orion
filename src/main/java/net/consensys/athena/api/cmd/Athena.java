@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
 public class Athena {
 
@@ -30,6 +29,11 @@ public class Athena {
   private static NetworkNodes networkNodes;
 
   public static void main(String[] args) throws Exception {
+    Athena athena = new Athena();
+    athena.run(args);
+  }
+
+  public void run(String[] args) throws FileNotFoundException, InterruptedException {
     log.info("starting athena");
     Optional<String> configFileName = args.length > 0 ? Optional.of(args[0]) : Optional.empty();
 
@@ -47,7 +51,7 @@ public class Athena {
     }
   }
 
-  static Config loadConfig(Optional<String> configFileName) throws FileNotFoundException {
+  Config loadConfig(Optional<String> configFileName) throws FileNotFoundException {
     InputStream configAsStream;
     if (configFileName.isPresent()) {
       log.info("using {} provided config file", configFileName.get());
@@ -62,12 +66,11 @@ public class Athena {
     return configBuilder.build(configAsStream);
   }
 
-  private static void joinServer(NettyServer server) throws InterruptedException {
+  private void joinServer(NettyServer server) throws InterruptedException {
     server.join();
   }
 
-  @NotNull
-  static NettyServer startServer(Config config) throws InterruptedException {
+  NettyServer startServer(Config config) throws InterruptedException {
     ObjectMapper jsonObjectMapper = new ObjectMapper();
     Serializer serializer = new Serializer(jsonObjectMapper, new ObjectMapper(new CBORFactory()));
     NettySettings settings =
