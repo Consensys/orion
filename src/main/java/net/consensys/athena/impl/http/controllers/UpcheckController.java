@@ -13,6 +13,6 @@ public class UpcheckController implements Controller {
 
   @Override
   public Result handle(Request request) {
-    return Result.ok(ContentType.RAW, "I'm up!");
+    return Result.ok(ContentType.TEXT, "I'm up!");
   }
 }

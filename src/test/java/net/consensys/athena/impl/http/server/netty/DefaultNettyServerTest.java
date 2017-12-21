@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 
 import net.consensys.athena.api.cmd.AthenaRouter;
 import net.consensys.athena.impl.config.MemoryConfig;
-import net.consensys.athena.impl.http.server.Serializer;
+import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
 
 import java.io.BufferedReader;

@@ -1,7 +1,7 @@
 package net.consensys.athena.impl.http.server.netty;
 
+import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.Router;
-import net.consensys.athena.impl.http.server.Serializer;
 
 import java.io.File;
 import java.util.Optional;

@@ -8,11 +8,10 @@ import net.consensys.athena.impl.http.data.EmptyPayload;
 import net.consensys.athena.impl.http.data.Request;
 import net.consensys.athena.impl.http.data.RequestImpl;
 import net.consensys.athena.impl.http.data.Result;
+import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.Controller;
 import net.consensys.athena.impl.http.server.Router;
-import net.consensys.athena.impl.http.server.Serializer;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
@@ -102,13 +101,9 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     }
 
     // deserialize the bytes into expected type by controller
-    try {
-      ContentType cType = ContentType.fromHttpContentEncoding(contentEncoding);
-      Object payload = serializer.deserialize(requestPayload, cType, controller.expectedRequest());
-      return new RequestImpl(Optional.of(payload));
-    } catch (Exception e) {
-      throw new RuntimeException(contentEncoding + "isn't supported: " + e.getMessage());
-    }
+    ContentType cType = ContentType.fromHttpContentEncoding(contentEncoding);
+    Object payload = serializer.deserialize(requestPayload, cType, controller.expectedRequest());
+    return new RequestImpl(Optional.of(payload));
   }
 
   private FullHttpResponse buildHttpResponse(Result result, String acceptEncoding) {
@@ -146,14 +141,9 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     response.headers().add(HttpHeaderNames.CONTENT_ENCODING, contentType.httpHeaderValue);
 
     // serialize the payload
-    try {
-      byte[] bytes = serializer.serialize(result.getPayload().get(), contentType);
-      return response.replace(Unpooled.copiedBuffer(bytes));
-    } catch (IOException e) {
-      log.error(e.getMessage());
-      throw new RuntimeException(e);
-      // TODO shall we do the RuntimeExpection or return a internal server error ?
-      // TODO /!\ Controller did his job, we should tell the user /!\
-    }
+    byte[] bytes = serializer.serialize(result.getPayload().get(), contentType);
+    return response.replace(Unpooled.copiedBuffer(bytes));
+    // TODO shall we do the RuntimeExpection or return a internal server error ?
+    // TODO /!\ Controller did his job, we should tell the user /!\
   }
 }

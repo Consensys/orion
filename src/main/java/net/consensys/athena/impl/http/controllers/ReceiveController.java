@@ -6,15 +6,14 @@ import static net.consensys.athena.impl.http.data.Result.ok;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
+import net.consensys.athena.impl.http.data.Base64;
 import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Request;
 import net.consensys.athena.impl.http.data.Result;
+import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.Controller;
-import net.consensys.athena.impl.http.server.Serializer;
 
-import java.nio.charset.Charset;
 import java.security.PublicKey;
-import java.util.Base64;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -48,11 +47,8 @@ public class ReceiveController implements Controller {
     // if not, it's a payload sent to us
     byte[] decryptedPayload = enclave.decrypt(encryptedPayload.get(), receiveRequest.publicKey);
 
-    // encode in base64 the decryptedPayload
-    String b64Payload =
-        new String(Base64.getEncoder().encode(decryptedPayload), Charset.forName("UTF-8"));
     // build a ReceiveResponse
-    ReceiveResponse toReturn = new ReceiveResponse(b64Payload);
+    ReceiveResponse toReturn = new ReceiveResponse(Base64.encode(decryptedPayload));
     return ok(contentType, toReturn);
   }
 
