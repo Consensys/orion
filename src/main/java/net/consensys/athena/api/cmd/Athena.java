@@ -35,19 +35,42 @@ public class Athena {
 
   public void run(String[] args) throws FileNotFoundException, InterruptedException {
     log.info("starting athena");
-    Optional<String> configFileName = args.length > 0 ? Optional.of(args[0]) : Optional.empty();
 
-    Config config = loadConfig(configFileName);
-    networkNodes = new MemoryNetworkNodes(config);
+    //Process Arguments
+    // Usage Athena [--generatekeys|-g names] [--version | -v] [--help | -h] [config]
+    // names - comma seperated list of key file prefixes (can include directory information) to generate key(s) for
 
-    try {
-      NettyServer server = startServer(config);
-      joinServer(server);
-    } catch (InterruptedException ie) {
-      log.error(ie.getMessage());
-      throw ie;
-    } finally {
-      log.warn("netty server stopped");
+    Optional<String> configFileName = Optional.empty();
+    Optional<String[]> keysToGenerate = Optional.empty();
+
+    //iterate over the args we have
+    for (int i = 0; i < args.length; i++) {
+      switch (args[i]) {
+        case "--generatekeys":
+        case "-g":
+          String keys = args[++i];
+          keysToGenerate = Optional.of(keys.split(","));
+          break;
+        default:
+          configFileName = Optional.of(args[i]);
+      }
+    }
+
+    if (keysToGenerate.isPresent()) {
+      //TODO - Generate keys SodiumFileKeyStore.generateKeyPair()
+    } else {
+
+      Config config = loadConfig(configFileName);
+      networkNodes = new MemoryNetworkNodes(config);
+      try {
+        NettyServer server = startServer(config);
+        joinServer(server);
+      } catch (InterruptedException ie) {
+        log.error(ie.getMessage());
+        throw ie;
+      } finally {
+        log.warn("netty server stopped");
+      }
     }
   }
 
