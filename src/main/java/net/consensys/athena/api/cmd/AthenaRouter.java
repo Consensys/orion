@@ -61,10 +61,10 @@ public class AthenaRouter implements Router {
         return new UpcheckController();
       }
       if (uri.getPath().startsWith("/sendraw")) {
-        return new SendController(enclave, storage, ContentType.TEXT);
+        return new SendController(enclave, storage, ContentType.BINARY);
       }
       if (uri.getPath().startsWith("/receiveraw")) {
-        return new ReceiveController(enclave, storage, ContentType.TEXT, serializer);
+        return new ReceiveController(enclave, storage, ContentType.BINARY, serializer);
       }
       if (uri.getPath().startsWith("/send")) {
         return new SendController(enclave, storage, ContentType.JSON);
