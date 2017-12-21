@@ -25,7 +25,9 @@ public interface Config {
   long port();
 
   /**
-   * Path at which to locate the lib sodium shared library. Default:
+   * Path at which to locate the lib sodium shared library.
+   *
+   * <p><strong>Default:</strong>
    *
    * <ul>
    *   <li><b>Linux</b> /usr/local/lib/libsodium.so
@@ -127,6 +129,8 @@ public interface Config {
    * will be allowed (but the private API remains accessible only via the IPC socket.) To allow
    * connections from localhost when a whitelist is defined, e.g. when running multiple Athena nodes
    * on the same machine, add "127.0.0.1" and "::1" to this list.
+   *
+   * <p><strong>Default:</strong> []
    *
    * @see #socket()
    * @return Array of IPv4 and IPv6 addresses that may connect to this node's public API
