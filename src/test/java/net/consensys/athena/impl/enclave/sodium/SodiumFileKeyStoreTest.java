@@ -1,9 +1,12 @@
 package net.consensys.athena.impl.enclave.sodium;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.EnclaveException;
+import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.impl.config.MemoryConfig;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.http.data.Base64;
@@ -12,10 +15,10 @@ import java.io.File;
 import java.io.InputStream;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.muquit.libsodiumjna.SodiumLibrary;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -129,13 +132,10 @@ public class SodiumFileKeyStoreTest {
   public void testGenerateUnlockedProtectedKeyPair() {
     String keyPrefix = "keys/generated";
     try {
-      MemoryConfig config = new MemoryConfig();
-      config.setGenerateKeys(new String[] {keyPrefix});
       keyStore = new SodiumFileKeyStore(config, objectMapper);
-      System.out.println("SodiumLibrary.getLibaryPath() = " + SodiumLibrary.getLibaryPath());
-      keyStore.generateKeyPair();
+      keyStore.generateKeyPair(new KeyConfig(keyPrefix, Optional.empty()));
 
-      config = new MemoryConfig();
+      MemoryConfig config = new MemoryConfig();
       config.setPrivateKeys(new File[] {new File("keys/generated.key")});
       config.setPublicKeys(new File[] {new File("keys/generated.pub")});
       keyStore = new SodiumFileKeyStore(config, objectMapper);
@@ -155,13 +155,10 @@ public class SodiumFileKeyStoreTest {
   public void testGeneratePasswordProtectedKeyPair() {
     String keyPrefix = "keys/generated_password";
     try {
-      MemoryConfig config = new MemoryConfig();
-      config.setGenerateKeys(new String[] {keyPrefix});
-      config.setPasswords(new File("keys/password.txt"));
       keyStore = new SodiumFileKeyStore(config, objectMapper);
-      keyStore.generateKeyPair();
+      keyStore.generateKeyPair(new KeyConfig(keyPrefix, Optional.of("yolo")));
 
-      config = new MemoryConfig();
+      MemoryConfig config = new MemoryConfig();
       config.setPasswords(new File("keys/password.txt"));
       config.setPrivateKeys(new File[] {new File("keys/generated_password.key")});
       config.setPublicKeys(new File[] {new File("keys/generated_password.pub")});

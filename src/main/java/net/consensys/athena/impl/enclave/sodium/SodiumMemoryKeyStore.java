@@ -1,6 +1,7 @@
 package net.consensys.athena.impl.enclave.sodium;
 
 import net.consensys.athena.api.enclave.EnclaveException;
+import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.enclave.KeyStore;
 
 import java.security.PrivateKey;
@@ -22,13 +23,13 @@ public class SodiumMemoryKeyStore implements KeyStore {
   }
 
   @Override
-  public PublicKey[] generateKeyPair() {
+  public PublicKey generateKeyPair(KeyConfig keyConfig) {
     try {
       SodiumKeyPair keyPair = SodiumLibrary.cryptoBoxKeyPair();
       SodiumPrivateKey privateKey = new SodiumPrivateKey(keyPair.getPrivateKey());
       SodiumPublicKey publicKey = new SodiumPublicKey(keyPair.getPublicKey());
       store.put(publicKey, privateKey);
-      return new PublicKey[] {publicKey};
+      return publicKey;
     } catch (SodiumLibraryException e) {
       throw new EnclaveException(e);
     }

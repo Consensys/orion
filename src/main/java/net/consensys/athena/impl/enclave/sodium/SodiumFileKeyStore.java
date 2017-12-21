@@ -2,6 +2,7 @@ package net.consensys.athena.impl.enclave.sodium;
 
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.EnclaveException;
+import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.impl.enclave.sodium.storage.ArgonOptions;
 import net.consensys.athena.impl.enclave.sodium.storage.PrivateKeyData;
@@ -17,7 +18,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -98,24 +98,10 @@ public class SodiumFileKeyStore implements KeyStore {
   }
 
   @Override
-  public PublicKey[] generateKeyPair() {
-    Optional<String[]> keys = config.generateKeys();
-    if (!keys.isPresent()) {
-      throw new EnclaveException(
-          "Unable to generate key pair as no generatekeys configuration was provided");
-    }
-    String[] keysToGenerate = keys.get();
-    Optional<String[]> passwordList = lookupPasswords();
-    List<PublicKey> result = new ArrayList<>();
-    for (int i = 0; i < keysToGenerate.length; i++) {
-      String key = keysToGenerate[i];
-      Optional<String> password = Optional.empty();
-      if (passwordList.isPresent()) {
-        password = Optional.of(passwordList.get()[i]);
-      }
-      result.add(generateStoreAndCache(key, password));
-    }
-    return result.toArray(new PublicKey[result.size()]);
+  public PublicKey generateKeyPair(KeyConfig config) {
+    String basePath = config.getBasePath();
+    Optional<String> password = config.getPassword();
+    return generateStoreAndCache(basePath, password);
   }
 
   private Optional<String[]> lookupPasswords() {
