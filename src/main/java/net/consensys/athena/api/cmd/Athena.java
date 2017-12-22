@@ -34,14 +34,12 @@ public class Athena {
   public void run(String[] args) throws FileNotFoundException, InterruptedException {
     log.info("starting athena");
 
-    //Process Arguments
-    // Usage Athena [--generatekeys|-g names] [--version | -v] [--help | -h] [config]
-    // names - comma seperated list of key file prefixes (can include directory information) to generate key(s) for
-
     Optional<String> configFileName = Optional.empty();
     Optional<String[]> keysToGenerate = Optional.empty();
 
-    //iterate over the args we have
+    //Process Arguments
+    // Usage Athena [--generatekeys|-g names] [--version | -v] [--help | -h] [config]
+    // names - comma seperated list of key file prefixes (can include directory information) to generate key(s) for
     for (int i = 0; i < args.length; i++) {
       switch (args[i]) {
         case "--generatekeys":
@@ -57,7 +55,6 @@ public class Athena {
     Config config = loadConfig(configFileName);
 
     if (keysToGenerate.isPresent()) {
-      //TODO - Generate keys SodiumFileKeyStore.generateKeyPair()
       ObjectMapper objectMapper = new ObjectMapper();
       SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, objectMapper);
       Console console = System.console();
@@ -65,15 +62,16 @@ public class Athena {
         System.out.println("Unable to get a Console instance");
         System.exit(0);
       }
-      char[] password;
+      char[] pwd;
 
       for (int i = 0; i < keysToGenerate.get().length; i++) {
         //Prompt for Password from user
-        password = console.readPassword("Enter password for key pair %s", keysToGenerate.get()[i]);
+        pwd = console.readPassword("Enter password for key pair %s", keysToGenerate.get()[i]);
+        Optional<String> password = pwd.length > 0 ? Optional.of(new String(pwd)) : Optional.empty();
         System.out.println(
-            "Password for key [" + keysToGenerate.get()[i] + "] - [" + new String(password) + "]");
+            "Password for key [" + keysToGenerate.get()[i] + "] - [" + password + "]");
 
-        //keyStore.generateKeyPair(new KeyConfig(keysToGenerate.get()[i], Optional.empty()));
+        //keyStore.generateKeyPair(new KeyConfig(keysToGenerate.get()[i], password));
       }
 
     } else {
