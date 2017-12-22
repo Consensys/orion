@@ -37,8 +37,16 @@ public class MapDbStorageTest {
 
   @Test
   public void testStoreAndRetrieveAcrossSessions() {
+    storage.put("key", toStore);
     storage.close();
     MapDbStorage<byte[]> secondStorage = new MapDbStorage(path);
     assertArrayEquals(toStore, secondStorage.get("key").get());
+  }
+
+  @Test
+  public void testStoreAndRemove() {
+    storage.put("key", toStore);
+    storage.remove("key");
+    assertEquals(Optional.empty(), storage.get("key"));
   }
 }

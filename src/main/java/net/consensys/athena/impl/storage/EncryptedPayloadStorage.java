@@ -31,4 +31,9 @@ public class EncryptedPayloadStorage implements Storage<EncryptedPayload> {
   public Optional<EncryptedPayload> get(String key) {
     return storageEngine.get(key);
   }
+
+  @Override
+  public void remove(String key) {
+    storageEngine.remove(key);
+  }
 }

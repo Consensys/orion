@@ -24,15 +24,18 @@ public class SodiumFileKeyStore implements KeyStore {
   private Config config;
   private ObjectMapper objectMapper;
 
-  private Map<PublicKey, PrivateKey> cache = new HashMap<>();
+  private final Map<PublicKey, PrivateKey> cache = new HashMap<>();
 
   public SodiumFileKeyStore(Config config, ObjectMapper objectMapper) {
     this.config = config;
     this.objectMapper = objectMapper;
+
+    // load keys
     loadKeysFromConfig(config);
   }
 
   private void loadKeysFromConfig(Config config) {
+
     for (int i = 0; i < config.publicKeys().length; i++) {
       File publicKeyFile = config.publicKeys()[i];
       File privateKeyFile = config.privateKeys()[i];
@@ -84,9 +87,14 @@ public class SodiumFileKeyStore implements KeyStore {
     return null;
   }
 
-  @Override
   public PublicKey[] alwaysSendTo() {
     File[] alwaysSendTo = config.alwaysSendTo();
     return Arrays.stream(alwaysSendTo).map(file -> readPublicKey(file)).toArray(PublicKey[]::new);
+  }
+
+  @Override
+  public PublicKey[] nodeKeys() {
+    File[] publicKeys = config.publicKeys();
+    return Arrays.stream(publicKeys).map(file -> readPublicKey(file)).toArray(PublicKey[]::new);
   }
 }

@@ -9,7 +9,7 @@ import io.netty.handler.codec.http.HttpHeaders;
 
 public interface Request {
 
-  <U> U getPayload();
+  <U> Optional<U> getPayload();
 
   default Optional<HttpHeaders> getExtraHeaders() {
     return empty();

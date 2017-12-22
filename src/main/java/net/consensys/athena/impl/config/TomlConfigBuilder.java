@@ -2,7 +2,6 @@ package net.consensys.athena.impl.config;
 
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.config.ConfigException;
-import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
 
 import java.io.File;
 import java.io.InputStream;
@@ -10,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import com.moandjiezana.toml.Toml;
 
@@ -32,44 +32,49 @@ public class TomlConfigBuilder {
       errorMsg.append("Error: value for key 'url' in config must be specified\n");
     }
 
-    if (toml.getLong("port") != null) {
-      memoryConfig.setPort(toml.getLong("port"));
-    } else {
+    setLong(toml.getLong("port"), memoryConfig::setPort);
+
+    setFile(toml.getString("workdir"), memoryConfig::setWorkDir);
+    setFile(toml.getString("socket"), memoryConfig::setSocket);
+    setString(toml.getString("libsodiumpath"), memoryConfig::setLibSodiumPath);
+
+    StringBuilder othernodesError =
+        setURLArray(toml.getList("othernodes"), memoryConfig::setOtherNodes);
+
+    setFileArray(toml.getList("publickeys"), memoryConfig::setPublicKeys);
+    setFileArray(toml.getList("privatekeys"), memoryConfig::setPrivateKeys);
+    setFileArray(toml.getList("alwayssendto"), memoryConfig::setAlwaysSendTo);
+    setFile(toml.getString("passwords"), memoryConfig::setPasswords);
+    setString(toml.getString("storage"), memoryConfig::setStorage);
+    setStringArray(toml.getList("ipwhitelist"), memoryConfig::setIpWhitelist);
+    setString(toml.getString("tls"), memoryConfig::setTls);
+    setFile(toml.getString("tlsservercert"), memoryConfig::setTlsServerCert);
+    setFileArray(toml.getList("tlsserverchain"), memoryConfig::setTlsServerChain);
+    setFile(toml.getString("tlsserverkey"), memoryConfig::setTlsServerKey);
+    setString(toml.getString("tlsservertrust"), memoryConfig::setTlsServerTrust);
+    setFile(toml.getString("tlsknownclients"), memoryConfig::setTlsKnownClients);
+    setFile(toml.getString("tlsclientcert"), memoryConfig::setTlsClientCert);
+    setFileArray(toml.getList("tlsclientchain"), memoryConfig::setTlsClientChain);
+    setFile(toml.getString("tlsclientkey"), memoryConfig::setTlsClientKey);
+    setString(toml.getString("tlsclienttrust"), memoryConfig::setTlsClientTrust);
+    setFile(toml.getString("tlsknownservers"), memoryConfig::setTlsKnownServers);
+    setLong(toml.getLong("verbosity"), memoryConfig::setVerbosity);
+
+    // Validations
+    if (memoryConfig.port() == Long.MIN_VALUE) {
       errorMsg.append("Error: value for key 'port' in config must be specified\n");
     }
 
-    if (toml.getString("workdir") != null) {
-      memoryConfig.setWorkDir(new File(toml.getString("workdir")));
-    }
-
-    if (toml.getString("socket") != null) {
-      memoryConfig.setSocket(new File(toml.getString("socket")));
-    }
-
-    memoryConfig.setLibSodiumPath(
-        toml.getString("libsodiumpath", LibSodiumSettings.defaultLibSodiumPath()));
-
-    try {
-      memoryConfig.setOtherNodes(convertListToURLArray(toml.getList("othernodes")));
-    } catch (ConfigException e) {
+    if (othernodesError.length() != 0) {
       errorMsg.append("Error: key 'othernodes' in config containes malformed URLS.\n");
-      errorMsg.append(e.getMessage());
+      errorMsg.append(othernodesError);
     }
 
-    memoryConfig.setPublicKeys(convertListToFileArray(toml.getList("publickeys")));
-    memoryConfig.setPrivateKeys(convertListToFileArray(toml.getList("privatekeys")));
     if (memoryConfig.publicKeys().length != memoryConfig.privateKeys().length) {
       errorMsg.append(
           "Error: the number of keys specified for keys 'publickeys' and 'privatekeys' must be the same\n");
     }
 
-    memoryConfig.setAlwaysSendTo(convertListToFileArray(toml.getList("alwayssendto")));
-
-    if (toml.getString("passwords") != null) {
-      memoryConfig.setPasswords(new File(toml.getString("passwords")));
-    }
-
-    memoryConfig.setStorage(toml.getString("storage", "dir:storage"));
     if (!validateStorageTypes(memoryConfig.storage())) {
       errorMsg.append(
           "Error: value for key 'storage' type must start with: ['bdp:', 'dir:', 'leveldb:', 'sqllite:'] or be 'memory'\n");
@@ -80,39 +85,20 @@ public class TomlConfigBuilder {
           "Error: value for key 'storage' of types ['bdp:', 'dir:', 'leveldb:', 'sqllite:'] must specify a path\n");
     }
 
-    memoryConfig.setIpWhitelist(convertListToStringArray(toml.getList("ipwhitelist")));
-
-    memoryConfig.setTls(toml.getString("tls", "strict"));
     if (!validateTLS(memoryConfig.tls())) {
       errorMsg.append("Error: value for key 'tls' status must be 'strict' or 'off'\n");
     }
 
-    memoryConfig.setTlsServerCert(new File(toml.getString("tlsservercert", "tls-server-cert.pem")));
-    memoryConfig.setTlsServerChain(convertListToFileArray(toml.getList("tlsserverchain")));
-    memoryConfig.setTlsServerKey(new File(toml.getString("tlsserverkey", "tls-server-key.pem")));
-
-    memoryConfig.setTlsServerTrust(toml.getString("tlsservertrust", "tofu"));
     if (!validateTrustMode(memoryConfig.tlsServerTrust())) {
       errorMsg.append(
           "Error: value for key 'tlsservertrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n");
     }
 
-    memoryConfig.setTlsKnownClients(
-        new File(toml.getString("tlsknownclients", "tls-known-clients")));
-    memoryConfig.setTlsClientCert(new File(toml.getString("tlsclientcert", "tls-client-cert.pem")));
-    memoryConfig.setTlsClientChain(convertListToFileArray(toml.getList("tlsclientchain")));
-    memoryConfig.setTlsClientKey(new File(toml.getString("tlsclientkey", "tls-client-key.pem")));
-
-    memoryConfig.setTlsClientTrust(toml.getString("tlsclienttrust", "ca-or-tofu"));
     if (!validateTrustMode(memoryConfig.tlsClientTrust())) {
       errorMsg.append(
           "Error: value for key 'tlsclienttrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n");
     }
 
-    memoryConfig.setTlsKnownServers(
-        new File(toml.getString("tlsknownservers", "tls-known-servers")));
-
-    memoryConfig.setVerbosity(toml.getLong("verbosity", (long) 1));
     if (!validateVerbosity(memoryConfig.verbosity())) {
       errorMsg.append("Error: value for key 'verbosity' must be within range 0 to 3\n");
     }
@@ -125,17 +111,41 @@ public class TomlConfigBuilder {
     return memoryConfig;
   }
 
-  private File[] convertListToFileArray(List<String> paths) {
-    return paths == null ? new File[0] : paths.stream().map(File::new).toArray(File[]::new);
+  private void setFile(String value, Consumer<File> setter) {
+    if (value != null) {
+      setter.accept(new File(value));
+    }
   }
 
-  private URL[] convertListToURLArray(List<String> urls) {
+  private void setString(String value, Consumer<String> setter) {
+    if (value != null) {
+      setter.accept(value);
+    }
+  }
+
+  private void setLong(Long value, Consumer<Long> setter) {
+    if (value != null) {
+      setter.accept(value);
+    }
+  }
+
+  private void setFileArray(List<String> paths, Consumer<File[]> setter) {
+    if (paths != null) {
+      setter.accept(paths.stream().map(File::new).toArray(File[]::new));
+    }
+  }
+
+  private void setStringArray(List<String> paths, Consumer<String[]> setter) {
+    if (paths != null) {
+      setter.accept(paths.toArray(new String[paths.size()]));
+    }
+  }
+
+  private StringBuilder setURLArray(List<String> urls, Consumer<URL[]> setter) {
     URL[] urlArray;
     StringBuilder errorMsg = new StringBuilder();
 
-    if (urls == null) {
-      urlArray = new URL[0];
-    } else {
+    if (urls != null) {
       urlArray = new URL[urls.size()];
       for (int i = 0; i < urls.size(); i++) {
         try {
@@ -149,18 +159,13 @@ public class TomlConfigBuilder {
               .append("\n");
         }
       }
-    }
-    if (errorMsg.length() != 0) {
-      throw new ConfigException(errorMsg.toString());
+      setter.accept(urlArray);
     }
 
-    return urlArray;
+    return errorMsg;
   }
 
-  private String[] convertListToStringArray(List<String> paths) {
-    return paths == null ? new String[0] : paths.toArray(new String[paths.size()]);
-  }
-
+  // Validators
   // If options change, error message must also be changed
   boolean validateTrustMode(String mode) {
     List<String> validModes =

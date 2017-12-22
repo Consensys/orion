@@ -1,6 +1,7 @@
 package net.consensys.athena.impl.config;
 
 import net.consensys.athena.api.config.Config;
+import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
 
 import java.io.File;
 import java.net.URL;
@@ -9,7 +10,7 @@ import java.util.Optional;
 public class MemoryConfig implements Config {
 
   private URL url;
-  private long port;
+  private long port = Long.MIN_VALUE;
   private Optional<File> workDir = Optional.empty();
   private Optional<File> socket = Optional.empty();
   private URL[] otherNodes = new URL[] {};
@@ -17,23 +18,23 @@ public class MemoryConfig implements Config {
   private File[] privateKeys = new File[] {};
   private File[] alwaysSendTo = new File[] {};
   private Optional<File> passwords = Optional.empty();
-  private String storage;
+  private String storage = "dir:storage";
   private String[] ipWhitelist = new String[] {};
-  private String tls;
-  private File tlsServerCert;
-  private File[] tlsServerChain = new File[] {};;
-  private File tlsServerKey;
-  private String tlsServerTrust;
-  private File tlsKnownClients;
-  private File tlsClientCert;
-  private File[] tlsClientChain = new File[] {};;
-  private File tlsClientKey;
-  private String tlsClientTrust;
-  private File tlsKnownServers;
+  private String tls = "strict";
+  private File tlsServerCert = new File("tls-server-cert.pem");
+  private File[] tlsServerChain = new File[] {};
+  private File tlsServerKey = new File("tls-server-key.pem");
+  private String tlsServerTrust = "tofu";
+  private File tlsKnownClients = new File("tls-known-clients");
+  private File tlsClientCert = new File("tls-client-cert.pem");
+  private File[] tlsClientChain = new File[] {};
+  private File tlsClientKey = new File("tls-client-key.pem");
+  private String tlsClientTrust = "ca-or-tofu";
+  private File tlsKnownServers = new File("tls-known-servers");
   private Optional<String[]> generateKeys = Optional.empty();
   private Optional<Boolean> showVersion = Optional.empty();
-  private long verbosity;
-  private String libSodiumPath;
+  private long verbosity = 1;
+  private String libSodiumPath = LibSodiumSettings.defaultLibSodiumPath();
 
   public void setUrl(URL url) {
     this.url = url;

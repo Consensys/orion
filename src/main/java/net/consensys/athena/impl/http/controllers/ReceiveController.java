@@ -37,7 +37,10 @@ public class ReceiveController implements Controller {
   @Override
   public Result handle(Request request) {
     // retrieves the encrypted payload from DB, using provided key
-    ReceiveRequest receiveRequest = request.getPayload();
+    Optional<ReceiveRequest> requestPayload = request.getPayload();
+    ReceiveRequest receiveRequest =
+        requestPayload.orElseThrow(() -> new IllegalArgumentException());
+
     Optional<EncryptedPayload> encryptedPayload = storage.get(receiveRequest.key);
     if (!encryptedPayload.isPresent()) {
       return notFound("Error: unable to retrieve payload");
