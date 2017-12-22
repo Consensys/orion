@@ -5,16 +5,14 @@ import static java.util.Optional.empty;
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
+import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
 import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.netty.DefaultNettyServer;
 import net.consensys.athena.impl.http.server.netty.NettyServer;
 import net.consensys.athena.impl.http.server.netty.NettySettings;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,11 +54,29 @@ public class Athena {
       }
     }
 
+    Config config = loadConfig(configFileName);
+
     if (keysToGenerate.isPresent()) {
       //TODO - Generate keys SodiumFileKeyStore.generateKeyPair()
-    } else {
+      ObjectMapper objectMapper = new ObjectMapper();
+      SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, objectMapper);
+      Console console = System.console();
+      if (console == null) {
+        System.out.println("Unable to get a Console instance");
+        System.exit(0);
+      }
+      char[] password;
 
-      Config config = loadConfig(configFileName);
+      for (int i = 0; i < keysToGenerate.get().length; i++) {
+        //Prompt for Password from user
+        password = console.readPassword("Enter password for key pair %s", keysToGenerate.get()[i]);
+        System.out.println(
+            "Password for key [" + keysToGenerate.get()[i] + "] - [" + new String(password) + "]");
+
+        //keyStore.generateKeyPair(new KeyConfig(keysToGenerate.get()[i], Optional.empty()));
+      }
+
+    } else {
       networkNodes = new MemoryNetworkNodes(config);
       try {
         NettyServer server = startServer(config);

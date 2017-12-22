@@ -55,14 +55,12 @@ public class AthenaTest {
 
   @Test
   public void testConfigArgumentProvided() throws Exception {
-    String[] args = new String[0];
+    //String[] args = new String[0];
     //athena.run(args);
-    String[] args2 = {"src/test/resources/defaultConfigTest.toml"};
+    //String[] args2 = {"src/test/resources/defaultConfigTest.toml"};
     //athena.run(args2);
 
     String[] args3 = {"--generatekeys", "testkey1,testkey2"};
     athena.run(args3);
   }
-
-
 }
