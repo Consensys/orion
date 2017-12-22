@@ -3,6 +3,7 @@ package net.consensys.athena.api.cmd;
 import static java.util.Optional.empty;
 
 import net.consensys.athena.api.config.Config;
+import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
@@ -34,18 +35,24 @@ public class Athena {
 
   public void run(String[] args) throws FileNotFoundException, InterruptedException {
     log.info("starting athena");
+    boolean argumentExit = false;
 
     Optional<String> configFileName = Optional.empty();
     Optional<String[]> keysToGenerate = Optional.empty();
 
     //Process Arguments
-    // Usage Athena [--generatekeys|-g names] [--version | -v] [--help | -h] [config]
+    // Usage Athena [--generatekeys|-g names] [config]
     // names - comma seperated list of key file prefixes (can include directory information) to generate key(s) for
     for (int i = 0; i < args.length; i++) {
       switch (args[i]) {
         case "--generatekeys":
         case "-g":
-          String keys = args[++i];
+          if (++i >= args.length) {
+            System.out.println("Error: Missing key names to generate.");
+            argumentExit = true;
+            break;
+          }
+          String keys = args[i];
           keysToGenerate = Optional.of(keys.split(","));
           break;
         default:
@@ -53,38 +60,29 @@ public class Athena {
       }
     }
 
-    Config config = loadConfig(configFileName);
+    if (!argumentExit) {
+      Config config = loadConfig(configFileName);
 
-    if (keysToGenerate.isPresent()) {
-      ObjectMapper objectMapper = new ObjectMapper();
-      SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, objectMapper);
-      Console console = System.console();
-      if (console == null) {
-        System.out.println("Unable to get a Console instance");
-        System.exit(0);
-      }
-      char[] pwd;
+      if (keysToGenerate.isPresent()) {
+        log.info("Generating Key Pairs");
+        ObjectMapper objectMapper = new ObjectMapper();
+        SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, objectMapper);
 
-      for (int i = 0; i < keysToGenerate.get().length; i++) {
-        //Prompt for Password from user
-        pwd = console.readPassword("Enter password for key pair %s", keysToGenerate.get()[i]);
-        Optional<String> password = pwd.length > 0 ? Optional.of(new String(pwd)) : Optional.empty();
-        System.out.println(
-            "Password for key [" + keysToGenerate.get()[i] + "] - [" + password + "]");
+        for (int i = 0; i < keysToGenerate.get().length; i++) {
+          keyStore.generateKeyPair(new KeyConfig(keysToGenerate.get()[i], Optional.empty()));
+        }
 
-        //keyStore.generateKeyPair(new KeyConfig(keysToGenerate.get()[i], password));
-      }
-
-    } else {
-      networkNodes = new MemoryNetworkNodes(config);
-      try {
-        NettyServer server = startServer(config);
-        joinServer(server);
-      } catch (InterruptedException ie) {
-        log.error(ie.getMessage());
-        throw ie;
-      } finally {
-        log.warn("netty server stopped");
+      } else {
+        networkNodes = new MemoryNetworkNodes(config);
+        try {
+          NettyServer server = startServer(config);
+          joinServer(server);
+        } catch (InterruptedException ie) {
+          log.error(ie.getMessage());
+          throw ie;
+        } finally {
+          log.warn("netty server stopped");
+        }
       }
     }
   }
