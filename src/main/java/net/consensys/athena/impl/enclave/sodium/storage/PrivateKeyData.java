@@ -31,6 +31,7 @@ public class PrivateKeyData {
     return bytes;
   }
 
+  /** @return The base64 encoded salt to use with Argon */
   public String getAsalt() {
     return asalt;
   }
@@ -39,6 +40,7 @@ public class PrivateKeyData {
     this.asalt = asalt;
   }
 
+  /** @return General options to use with Argon */
   public ArgonOptions getAopts() {
     return aopts;
   }
@@ -47,6 +49,10 @@ public class PrivateKeyData {
     this.aopts = aopts;
   }
 
+  /**
+   * @return base64 encoded nonce to use with the secret box encryption, using the password
+   *     generated key.
+   */
   public String getSnonce() {
     return snonce;
   }
@@ -55,6 +61,7 @@ public class PrivateKeyData {
     this.snonce = snonce;
   }
 
+  /** @return base64 encoded Secret box containing the password protected private key. */
   public String getSbox() {
     return sbox;
   }
