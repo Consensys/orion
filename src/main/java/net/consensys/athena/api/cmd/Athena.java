@@ -15,6 +15,7 @@ import net.consensys.athena.impl.network.MemoryNetworkNodes;
 import java.io.*;
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.apache.logging.log4j.LogManager;
@@ -109,7 +110,11 @@ public class Athena {
 
   NettyServer startServer(Config config) throws InterruptedException {
     ObjectMapper jsonObjectMapper = new ObjectMapper();
-    Serializer serializer = new Serializer(jsonObjectMapper, new ObjectMapper(new CBORFactory()));
+    jsonObjectMapper.setSerializationInclusion(Include.NON_NULL);
+
+    ObjectMapper cborObjectMapper = new ObjectMapper(new CBORFactory());
+    cborObjectMapper.setSerializationInclusion(Include.NON_NULL);
+    Serializer serializer = new Serializer(jsonObjectMapper, cborObjectMapper);
     NettySettings settings =
         new NettySettings(
             config.socket(),

@@ -1,10 +1,13 @@
 package net.consensys.athena.impl.enclave;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.EnclaveException;
 import net.consensys.athena.api.enclave.EncryptedPayload;
+import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.impl.config.MemoryConfig;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
@@ -14,6 +17,7 @@ import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 
 import java.security.PublicKey;
 import java.util.HashMap;
+import java.util.Optional;
 
 import com.muquit.libsodiumjna.SodiumKeyPair;
 import com.muquit.libsodiumjna.SodiumLibrary;
@@ -67,8 +71,8 @@ public class LibSodiumEnclaveTest {
 
   @Test
   public void testEncryptDecrypt() throws SodiumLibraryException {
-    PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    PublicKey senderKey = generateKey();
+    PublicKey recipientKey = generateKey();
 
     String plaintext = "hello";
     EncryptedPayload encryptedPayload =
@@ -81,7 +85,7 @@ public class LibSodiumEnclaveTest {
   @Test
   public void testEncryptThrowsExceptionWhenMissingKey() throws Exception {
     PublicKey fake = new SodiumPublicKey("fake".getBytes());
-    PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    PublicKey recipientKey = generateKey();
     try {
       enclave.encrypt("plaintext".getBytes(), fake, new PublicKey[] {recipientKey});
       fail("Should have thrown an Enclave Exception");
@@ -90,10 +94,14 @@ public class LibSodiumEnclaveTest {
     }
   }
 
+  private PublicKey generateKey() {
+    return memoryKeyStore.generateKeyPair(new KeyConfig("ignore", Optional.empty()));
+  }
+
   @Test
   public void testDecryptThrowsExceptionWhnMissingKey() throws Exception {
     PublicKey fake = new SodiumPublicKey("fake".getBytes());
-    PublicKey sender = memoryKeyStore.generateKeyPair();
+    PublicKey sender = generateKey();
     try {
       EncryptedPayload payload =
           new SimpleEncryptedPayload(
