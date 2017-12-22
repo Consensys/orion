@@ -1,6 +1,8 @@
 package net.consensys.athena.impl.enclave;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.EnclaveException;
@@ -14,6 +16,7 @@ import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 
 import java.security.PublicKey;
+import java.util.HashMap;
 import java.util.Optional;
 
 import com.muquit.libsodiumjna.SodiumKeyPair;
@@ -102,7 +105,12 @@ public class LibSodiumEnclaveTest {
     try {
       EncryptedPayload payload =
           new SimpleEncryptedPayload(
-              sender, new byte[] {}, new byte[] {}, new CombinedKey[] {}, new byte[] {});
+              sender,
+              new byte[] {},
+              new byte[] {},
+              new CombinedKey[] {},
+              new byte[] {},
+              new HashMap<>());
       enclave.decrypt(payload, fake);
       fail("Should have thrown an Enclave Exception");
     } catch (EnclaveException e) {

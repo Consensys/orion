@@ -6,11 +6,17 @@ import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.HashAlgorithm;
 
 import java.security.PublicKey;
+import java.util.HashMap;
 
 public class CesarEnclave implements Enclave {
 
   @Override
   public PublicKey[] alwaysSendTo() {
+    return new PublicKey[0];
+  }
+
+  @Override
+  public PublicKey[] nodeKeys() {
     return new PublicKey[0];
   }
 
@@ -35,6 +41,11 @@ public class CesarEnclave implements Enclave {
   }
 
   @Override
+  public PublicKey readKey(String b64) {
+    return null; //TODO
+  }
+
+  @Override
   public EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients) {
     byte[] ciphterText = new byte[plaintext.length];
     for (int i = 0; i < plaintext.length; i++) {
@@ -45,6 +56,6 @@ public class CesarEnclave implements Enclave {
     byte[] combinedKeyNonce = {};
     byte[] nonce = {};
     return new SimpleEncryptedPayload(
-        senderKey, nonce, combinedKeyNonce, combinedKeys, ciphterText);
+        senderKey, nonce, combinedKeyNonce, combinedKeys, ciphterText, new HashMap<>());
   }
 }

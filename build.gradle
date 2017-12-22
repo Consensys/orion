@@ -21,6 +21,9 @@ dependencies {
   implementation group: 'com.muquit.libsodiumjna', name: 'libsodium-jna', version: '1.0.4'
   testImplementation 'junit:junit:4.12'
 
+  // http client
+  implementation 'com.squareup.okhttp3:okhttp:3.9.1'
+
   // serialization
   implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
   implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.0'

@@ -12,4 +12,6 @@ public interface EncryptedPayload {
   CombinedKey[] getCombinedKeys();
 
   byte[] getCombinedKeyNonce();
+
+  EncryptedPayload stripFor(PublicKey key);
 }

@@ -25,4 +25,6 @@ public interface KeyStore {
   PublicKey generateKeyPair(KeyConfig keyConfig);
 
   PublicKey[] alwaysSendTo();
+
+  PublicKey[] nodeKeys();
 }

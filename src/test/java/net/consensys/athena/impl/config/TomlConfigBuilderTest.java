@@ -58,7 +58,7 @@ public class TomlConfigBuilderTest {
     assertArrayEquals(expectedFilesArray, testConf.privateKeys());
 
     expectedFilesArray = new File[1];
-    expectedFilesArray[0] = new File("http://127.0.0.1:9000/");
+    expectedFilesArray[0] = new File("keys/tm1.pub");
     assertArrayEquals(expectedFilesArray, testConf.alwaysSendTo());
 
     expectedFilesArray = new File[0];

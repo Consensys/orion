@@ -48,6 +48,17 @@ public class MapDbStorage<T> implements StorageEngine<T> {
   }
 
   @Override
+  public void remove(String key) {
+    try {
+      if (storageData.remove(key.getBytes("UTF-8")) != null) {
+        db.commit();
+      }
+    } catch (UnsupportedEncodingException e) {
+      throw new StorageException(e.getMessage());
+    }
+  }
+
+  @Override
   public boolean isOpen() {
     return !db.isClosed();
   }
