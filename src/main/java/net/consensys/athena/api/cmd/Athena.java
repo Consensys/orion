@@ -5,6 +5,7 @@ import static java.util.Optional.empty;
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.network.NetworkNodes;
+import net.consensys.athena.impl.cmd.AthenaArguments;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
 import net.consensys.athena.impl.http.data.Serializer;
@@ -35,41 +36,21 @@ public class Athena {
 
   public void run(String[] args) throws FileNotFoundException, InterruptedException {
     log.info("starting athena");
-    boolean argumentExit = false;
+    AthenaArguments arguments = new AthenaArguments(args);
 
-    Optional<String> configFileName = Optional.empty();
-    Optional<String[]> keysToGenerate = Optional.empty();
+    if (!arguments.argumentExit()) {
+      Config config = loadConfig(arguments.configFileName());
 
-    //Process Arguments
-    // Usage Athena [--generatekeys|-g names] [config]
-    // names - comma seperated list of key file prefixes (can include directory information) to generate key(s) for
-    for (int i = 0; i < args.length; i++) {
-      switch (args[i]) {
-        case "--generatekeys":
-        case "-g":
-          if (++i >= args.length) {
-            System.out.println("Error: Missing key names to generate.");
-            argumentExit = true;
-            break;
-          }
-          String keys = args[i];
-          keysToGenerate = Optional.of(keys.split(","));
-          break;
-        default:
-          configFileName = Optional.of(args[i]);
-      }
-    }
-
-    if (!argumentExit) {
-      Config config = loadConfig(configFileName);
-
-      if (keysToGenerate.isPresent()) {
+      if (arguments.keysToGenerate().isPresent()) {
         log.info("Generating Key Pairs");
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(Include.NON_NULL);
+
         SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, objectMapper);
 
-        for (int i = 0; i < keysToGenerate.get().length; i++) {
-          keyStore.generateKeyPair(new KeyConfig(keysToGenerate.get()[i], Optional.empty()));
+        for (int i = 0; i < arguments.keysToGenerate().get().length; i++) {
+          keyStore.generateKeyPair(
+              new KeyConfig(arguments.keysToGenerate().get()[i], Optional.empty()));
         }
 
       } else {
