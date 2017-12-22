@@ -43,8 +43,7 @@ public class Athena {
 
       if (arguments.keysToGenerate().isPresent()) {
         log.info("Generating Key Pairs");
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(Include.NON_NULL);
+        ObjectMapper objectMapper = jsonObjectMapper();
 
         SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, objectMapper);
 
@@ -68,6 +67,12 @@ public class Athena {
     }
   }
 
+  private ObjectMapper jsonObjectMapper() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.setSerializationInclusion(Include.NON_NULL);
+    return objectMapper;
+  }
+
   Config loadConfig(Optional<String> configFileName) throws FileNotFoundException {
     InputStream configAsStream;
     if (configFileName.isPresent()) {
@@ -88,8 +93,7 @@ public class Athena {
   }
 
   NettyServer startServer(Config config) throws InterruptedException {
-    ObjectMapper jsonObjectMapper = new ObjectMapper();
-    jsonObjectMapper.setSerializationInclusion(Include.NON_NULL);
+    ObjectMapper jsonObjectMapper = jsonObjectMapper();
 
     ObjectMapper cborObjectMapper = new ObjectMapper(new CBORFactory());
     cborObjectMapper.setSerializationInclusion(Include.NON_NULL);
