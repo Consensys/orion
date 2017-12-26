@@ -22,7 +22,11 @@ import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.memory.MemoryStorage;
 
+import java.io.IOException;
+import java.net.URL;
 import java.security.PublicKey;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +34,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -70,20 +75,29 @@ public class SendControllerTest {
   }
 
   @Test
-  public void testSendFailsWhenBadResponseFromPeer() throws Exception {
-    //create fake peer
-    MockWebServer fakePeer = new MockWebServer();
-    PublicKey fakePeerPK = memoryKeyStore.generateKeyPair();
-
-    // schedule our fakePeer to send a response, that's not the expected digest
-    fakePeer.enqueue(new MockResponse().setBody("not the best digest"));
-
-    // start our peer
-    fakePeer.start();
+  public void testSendFailsWhenBadDigestFromPeer() throws Exception {
+    // create fake peer
+    FakePeer fakePeer = new FakePeer(new MockResponse().setBody("not the best digest"));
 
     // add peer push URL to networkNodes
-    networkNodes.addNode(fakePeerPK, fakePeer.url("").url());
+    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
+    // build our sendRequest
+    SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer));
+
+    // call controller
+    Result result = controller.handle(new RequestImpl(sendRequest));
+
+    // ensure we got a 500 ERROR, as the digest the fakePeer sent doesn't match
+    assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.getStatus());
+
+    // ensure the fakePeer got a good formatted request
+    RecordedRequest recordedRequest = fakePeer.server.takeRequest();
+    assertEquals("/push", recordedRequest.getPath());
+    assertEquals("POST", recordedRequest.getMethod());
+  }
+
+  private SendRequest buildFakeRequest(List<FakePeer> forPeers) {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
@@ -91,14 +105,30 @@ public class SendControllerTest {
     // create sendRequest
     PublicKey sender = memoryKeyStore.generateKeyPair();
     String from = Base64.encode(sender.getEncoded());
-    String[] to = new String[] {Base64.encode(fakePeerPK.getEncoded())};
     String payload = Base64.encode(toEncrypt);
 
-    SendRequest sendRequest = new SendRequest(payload, from, to);
+    String[] to =
+        forPeers
+            .stream()
+            .map(fp -> Base64.encode(fp.publicKey.getEncoded()))
+            .toArray(String[]::new);
 
-    // call controller
-    Result result = controller.handle(new RequestImpl(sendRequest));
+    return new SendRequest(payload, from, to);
+  }
 
-    assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.getStatus());
+  class FakePeer {
+    final MockWebServer server;
+    final PublicKey publicKey;
+
+    public FakePeer(MockResponse response) throws IOException {
+      server = new MockWebServer();
+      publicKey = memoryKeyStore.generateKeyPair();
+      server.enqueue(response);
+      server.start();
+    }
+
+    URL getURL() {
+      return server.url("").url();
+    }
   }
 }
