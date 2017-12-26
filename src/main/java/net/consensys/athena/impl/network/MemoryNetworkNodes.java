@@ -63,7 +63,7 @@ public class MemoryNetworkNodes implements NetworkNodes {
 
   @Override
   public URL urlForRecipient(PublicKey recipient) {
-    return null;
+    return nodePKs.get(recipient);
   }
 
   @Override
