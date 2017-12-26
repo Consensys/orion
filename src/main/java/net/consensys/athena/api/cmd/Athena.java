@@ -17,9 +17,6 @@ import net.consensys.athena.impl.network.MemoryNetworkNodes;
 import java.io.*;
 import java.util.Optional;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,6 +25,7 @@ public class Athena {
   private static final Logger log = LogManager.getLogger();
 
   private static NetworkNodes networkNodes;
+  private static final Serializer serializer = new Serializer();
 
   public static void main(String[] args) throws Exception {
     Athena athena = new Athena();
@@ -43,9 +41,8 @@ public class Athena {
 
       if (arguments.keysToGenerate().isPresent()) {
         log.info("Generating Key Pairs");
-        ObjectMapper objectMapper = jsonObjectMapper();
 
-        SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, objectMapper);
+        SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
 
         for (int i = 0; i < arguments.keysToGenerate().get().length; i++) {
           keyStore.generateKeyPair(
@@ -65,12 +62,6 @@ public class Athena {
         }
       }
     }
-  }
-
-  private ObjectMapper jsonObjectMapper() {
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.setSerializationInclusion(Include.NON_NULL);
-    return objectMapper;
   }
 
   Config loadConfig(Optional<String> configFileName) throws FileNotFoundException {
@@ -93,17 +84,12 @@ public class Athena {
   }
 
   NettyServer startServer(Config config) throws InterruptedException {
-    ObjectMapper jsonObjectMapper = jsonObjectMapper();
-
-    ObjectMapper cborObjectMapper = new ObjectMapper(new CBORFactory());
-    cborObjectMapper.setSerializationInclusion(Include.NON_NULL);
-    Serializer serializer = new Serializer(jsonObjectMapper, cborObjectMapper);
     NettySettings settings =
         new NettySettings(
             config.socket(),
             Optional.of((int) config.port()),
             empty(),
-            new AthenaRouter(networkNodes, config, serializer, jsonObjectMapper),
+            new AthenaRouter(networkNodes, config, serializer),
             serializer);
     NettyServer server = new DefaultNettyServer(settings);
 

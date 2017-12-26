@@ -9,6 +9,8 @@ import net.consensys.athena.impl.enclave.sodium.storage.PrivateKeyData;
 import net.consensys.athena.impl.enclave.sodium.storage.SodiumArgon2Sbox;
 import net.consensys.athena.impl.enclave.sodium.storage.StoredPrivateKey;
 import net.consensys.athena.impl.http.data.Base64;
+import net.consensys.athena.impl.http.data.ContentType;
+import net.consensys.athena.impl.http.data.Serializer;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.muquit.libsodiumjna.SodiumKeyPair;
 import com.muquit.libsodiumjna.SodiumLibrary;
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
@@ -32,14 +33,14 @@ import org.jetbrains.annotations.NotNull;
 
 public class SodiumFileKeyStore implements KeyStore {
 
-  private Config config;
-  private ObjectMapper objectMapper;
+  private final Config config;
+  private final Serializer serializer;
 
   private final Map<PublicKey, PrivateKey> cache = new HashMap<>();
 
-  public SodiumFileKeyStore(Config config, ObjectMapper objectMapper) {
+  public SodiumFileKeyStore(Config config, Serializer serializer) {
     this.config = config;
-    this.objectMapper = objectMapper;
+    this.serializer = serializer;
     SodiumLibrary.setLibraryPath(config.libSodiumPath());
     // load keys
     loadKeysFromConfig(config);
@@ -62,25 +63,22 @@ public class SodiumFileKeyStore implements KeyStore {
   }
 
   private PrivateKey readPrivateKey(File privateKeyFile, Optional<String> password) {
-    try {
-      StoredPrivateKey storedPrivateKey =
-          objectMapper.readValue(privateKeyFile, StoredPrivateKey.class);
-      byte[] decoded;
-      switch (storedPrivateKey.getType()) {
-        case StoredPrivateKey.UNLOCKED:
-          decoded = Base64.decode(storedPrivateKey.getData().getBytes());
-          break;
-        case StoredPrivateKey.ARGON2_SBOX:
-          decoded = new SodiumArgon2Sbox(config).decrypt(storedPrivateKey, password.get());
-          break;
-        default:
-          throw new EnclaveException(
-              "Unable to support private key storage of type: " + storedPrivateKey.getType());
-      }
-      return new SodiumPrivateKey(decoded);
-    } catch (IOException e) {
-      throw new EnclaveException(e);
+    StoredPrivateKey storedPrivateKey =
+        serializer.readFile(ContentType.JSON, privateKeyFile, StoredPrivateKey.class);
+
+    byte[] decoded;
+    switch (storedPrivateKey.getType()) {
+      case StoredPrivateKey.UNLOCKED:
+        decoded = Base64.decode(storedPrivateKey.getData().getBytes());
+        break;
+      case StoredPrivateKey.ARGON2_SBOX:
+        decoded = new SodiumArgon2Sbox(config).decrypt(storedPrivateKey, password.get());
+        break;
+      default:
+        throw new EnclaveException(
+            "Unable to support private key storage of type: " + storedPrivateKey.getType());
     }
+    return new SodiumPrivateKey(decoded);
   }
 
   private PublicKey readPublicKey(File publicKeyFile) {
@@ -137,11 +135,7 @@ public class SodiumFileKeyStore implements KeyStore {
   }
 
   private void storePrivateKey(StoredPrivateKey privKey, File privateFile) {
-    try {
-      objectMapper.writeValue(privateFile, privKey);
-    } catch (IOException e) {
-      throw new EnclaveException(e);
-    }
+    serializer.writeFile(privKey, ContentType.JSON, privateFile);
   }
 
   private void storePublicKey(byte[] publicKey, File publicFile) {

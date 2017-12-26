@@ -16,8 +16,6 @@ import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.memory.MemoryStorage;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.junit.Test;
 
 public class SendControllerTest {
@@ -28,8 +26,7 @@ public class SendControllerTest {
   private final Storage<EncryptedPayload> storage =
       new EncryptedPayloadStorage(new MemoryStorage(), keyBuilder);
 
-  private final Serializer serializer =
-      new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory()));
+  private final Serializer serializer = new Serializer();
 
   private final NetworkNodes networkNodes = new MemoryNetworkNodes();
 

@@ -6,13 +6,11 @@ import net.consensys.athena.impl.http.data.Serializer;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.junit.Test;
 
 public class SerializerTest {
 
-  Serializer serializer = new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory()));
+  final Serializer serializer = new Serializer();
 
   @Test
   public void testJsonSerialization() throws Exception {

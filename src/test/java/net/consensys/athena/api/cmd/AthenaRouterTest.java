@@ -17,8 +17,6 @@ import net.consensys.athena.impl.network.MemoryNetworkNodes;
 import java.util.Arrays;
 import java.util.Collection;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
@@ -33,13 +31,8 @@ public class AthenaRouterTest {
   private final String testName;
   private final String path;
   private final Class controllerClass;
-  private ObjectMapper jsonObjectMapper = new ObjectMapper();
   AthenaRouter router =
-      new AthenaRouter(
-          new MemoryNetworkNodes(),
-          new MemoryConfig(),
-          new Serializer(jsonObjectMapper, new ObjectMapper(new CBORFactory())),
-          jsonObjectMapper);
+      new AthenaRouter(new MemoryNetworkNodes(), new MemoryConfig(), new Serializer());
 
   @Parameterized.Parameters
   public static Collection routes() {

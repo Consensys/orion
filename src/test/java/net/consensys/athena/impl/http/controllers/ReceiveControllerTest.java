@@ -24,8 +24,6 @@ import net.consensys.athena.impl.storage.memory.MemoryStorage;
 
 import java.util.Random;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Test;
 
@@ -34,8 +32,7 @@ public class ReceiveControllerTest {
   private final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
   private final Storage<EncryptedPayload> storage =
       new EncryptedPayloadStorage(new MemoryStorage(), keyBuilder);
-  private final Serializer serializer =
-      new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory()));
+  private final Serializer serializer = new Serializer();
   private final Controller receiveController =
       new ReceiveController(enclave, storage, ContentType.JSON, serializer);
 
