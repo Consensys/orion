@@ -76,9 +76,6 @@ public class SendController implements Controller {
     List<PublicKey> toKeys =
         Arrays.stream(sendRequest.to).map(enclave::readKey).collect(Collectors.toList());
 
-    log.trace("from key {}", fromKey);
-    log.trace("to keys {}", toKeys);
-
     // toKeys = toKeys + [nodeAlwaysSendTo] --> default pub key to always send to
     toKeys.addAll(Arrays.asList(enclave.alwaysSendTo()));
     PublicKey[] arrToKeys = new PublicKey[toKeys.size()];

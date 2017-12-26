@@ -75,6 +75,29 @@ public class SendControllerTest {
   }
 
   @Test
+  public void testSendFailsWhenBadResponseFromPeer() throws Exception {
+    // create fake peer
+    FakePeer fakePeer = new FakePeer(new MockResponse().setResponseCode(500));
+
+    // add peer push URL to networkNodes
+    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+
+    // build our sendRequest
+    SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer));
+
+    // call controller
+    Result result = controller.handle(new RequestImpl(sendRequest));
+
+    // ensure we got a 500 ERROR, as the fakePeer didn't return 200 OK
+    assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.getStatus());
+
+    // ensure the fakePeer got a good formatted request
+    RecordedRequest recordedRequest = fakePeer.server.takeRequest();
+    assertEquals("/push", recordedRequest.getPath());
+    assertEquals("POST", recordedRequest.getMethod());
+  }
+
+  @Test
   public void testSendFailsWhenBadDigestFromPeer() throws Exception {
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody("not the best digest"));
@@ -90,11 +113,6 @@ public class SendControllerTest {
 
     // ensure we got a 500 ERROR, as the digest the fakePeer sent doesn't match
     assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.getStatus());
-
-    // ensure the fakePeer got a good formatted request
-    RecordedRequest recordedRequest = fakePeer.server.takeRequest();
-    assertEquals("/push", recordedRequest.getPath());
-    assertEquals("POST", recordedRequest.getMethod());
   }
 
   private SendRequest buildFakeRequest(List<FakePeer> forPeers) {
