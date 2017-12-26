@@ -21,8 +21,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
@@ -70,18 +73,23 @@ public class SendController implements Controller {
     log.trace("reading public keys from SendRequest object");
     // read provided public keys
     PublicKey fromKey = enclave.readKey(sendRequest.from);
-    Stream<PublicKey> toKeys = Arrays.stream(sendRequest.to).map(enclave::readKey);
+    List<PublicKey> toKeys =
+        Arrays.stream(sendRequest.to).map(enclave::readKey).collect(Collectors.toList());
+
+    log.trace("from key {}", fromKey);
+    log.trace("to keys {}", toKeys);
 
     // toKeys = toKeys + [nodeAlwaysSendTo] --> default pub key to always send to
-    toKeys = Stream.concat(Arrays.stream(enclave.alwaysSendTo()), toKeys);
+    toKeys.addAll(Arrays.asList(enclave.alwaysSendTo()));
+    PublicKey[] arrToKeys = new PublicKey[toKeys.size()];
+    arrToKeys = toKeys.toArray(arrToKeys);
 
     // convert payload from b64 to bytes
     byte[] rawPayload = Base64.decode(sendRequest.payload);
 
     // encrypting payload
     log.trace("encrypting payload from SendRequest object");
-    EncryptedPayload encryptedPayload =
-        enclave.encrypt(rawPayload, fromKey, toKeys.toArray(PublicKey[]::new));
+    EncryptedPayload encryptedPayload = enclave.encrypt(rawPayload, fromKey, arrToKeys);
 
     // storing payload
     log.trace("storing payload");
@@ -91,6 +99,7 @@ public class SendController implements Controller {
     log.trace("propagating payload");
     boolean propagated =
         toKeys
+            .stream()
             .parallel()
             .filter(pKey -> !nodeKeys.contains(pKey))
             .map(pKey -> pushToPeer(encryptedPayload, pKey))
@@ -108,6 +117,9 @@ public class SendController implements Controller {
   private Response pushToPeer(EncryptedPayload encryptedPayload, PublicKey recipient) {
     try {
       URL recipientURL = networkNodes.urlForRecipient(recipient);
+      if (recipientURL == null) {
+        throw new RuntimeException("couldn't find peer URL");
+      }
       URL pushURL = new URL(recipientURL, "/push"); // TODO @gbotrel reverse routing would be nice
 
       // serialize payload and build RequestBody. we also strip non relevant combinedKeys
@@ -139,6 +151,16 @@ public class SendController implements Controller {
     String payload; // b64 encoded
     String from; // b64 encoded
     String[] to; // b64 encoded
+
+    @JsonCreator
+    public SendRequest(
+        @JsonProperty("payload") String payload,
+        @JsonProperty("from") String from,
+        @JsonProperty("to") String[] to) {
+      this.payload = payload;
+      this.from = from;
+      this.to = to;
+    }
 
     public boolean isValid() {
       if (Stream.of(payload, from, to).anyMatch(Objects::isNull)) {

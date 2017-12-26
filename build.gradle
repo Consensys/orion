@@ -24,6 +24,9 @@ dependencies {
   // http client
   implementation 'com.squareup.okhttp3:okhttp:3.9.1'
 
+  // mock http server (unit test purposes)
+  testImplementation 'com.squareup.okhttp3:mockwebserver:3.9.1'
+
   // serialization
   implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
   implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.0'
