@@ -15,15 +15,6 @@ public class SerializerTest {
   Serializer serializer = new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory()));
 
   @Test
-  public void testJavaSerialization() throws Exception {
-    DummyObject dummyObjectOriginal = new DummyObject();
-    byte[] bytes = serializer.serialize(dummyObjectOriginal, ContentType.JAVA_ENCODED);
-    DummyObject dummyObject =
-        serializer.deserialize(bytes, ContentType.JAVA_ENCODED, DummyObject.class);
-    assert (dummyObject.equals(dummyObjectOriginal));
-  }
-
-  @Test
   public void testJsonSerialization() throws Exception {
     DummyObject dummyObjectOriginal = new DummyObject();
     byte[] bytes = serializer.serialize(dummyObjectOriginal, ContentType.JSON);

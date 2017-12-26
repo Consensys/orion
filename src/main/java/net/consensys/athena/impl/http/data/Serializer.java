@@ -1,11 +1,7 @@
 package net.consensys.athena.impl.http.data;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.NotSerializableException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,11 +18,6 @@ public class Serializer {
   public byte[] serialize(Object obj, ContentType contentType) {
     try {
       switch (contentType) {
-        case JAVA_ENCODED:
-          ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
-          ObjectOutputStream outputStream = new ObjectOutputStream(byteOutputStream);
-          outputStream.writeObject(obj);
-          return byteOutputStream.toByteArray();
         case JSON:
           return jsonObjectMapper.writeValueAsString(obj).getBytes(Charset.forName("UTF-8"));
         case TEXT:
@@ -45,8 +36,6 @@ public class Serializer {
   public <T> T deserialize(byte[] bytes, ContentType contentType, Class<T> valueType) {
     try {
       switch (contentType) {
-        case JAVA_ENCODED:
-          return (T) new ObjectInputStream(new ByteArrayInputStream(bytes)).readObject();
         case JSON:
           return jsonObjectMapper.readValue(bytes, valueType);
         case CBOR:

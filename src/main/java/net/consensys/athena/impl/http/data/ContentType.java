@@ -9,7 +9,6 @@ public enum ContentType {
   BINARY(HttpHeaderValues.BINARY.toString()),
   TEXT(HttpHeaderValues.TEXT_PLAIN.toString() + "; charset=utf-8"),
   HASKELL_ENCODED("application/haskell-stream"),
-  JAVA_ENCODED("application/java-stream"),
   CBOR("application/cbor");
 
   public final String httpHeaderValue;
