@@ -3,20 +3,21 @@ package net.consensys.athena.api.cmd;
 import static java.util.Optional.empty;
 
 import net.consensys.athena.api.config.Config;
+import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.network.NetworkNodes;
+import net.consensys.athena.impl.cmd.AthenaArguments;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
+import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
 import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.netty.DefaultNettyServer;
 import net.consensys.athena.impl.http.server.netty.NettyServer;
 import net.consensys.athena.impl.http.server.netty.NettySettings;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.apache.logging.log4j.LogManager;
@@ -35,20 +36,41 @@ public class Athena {
 
   public void run(String[] args) throws FileNotFoundException, InterruptedException {
     log.info("starting athena");
-    Optional<String> configFileName = args.length > 0 ? Optional.of(args[0]) : Optional.empty();
+    AthenaArguments arguments = new AthenaArguments(args);
 
-    Config config = loadConfig(configFileName);
-    networkNodes = new MemoryNetworkNodes(config);
+    if (!arguments.argumentExit()) {
+      Config config = loadConfig(arguments.configFileName());
 
-    try {
-      NettyServer server = startServer(config);
-      joinServer(server);
-    } catch (InterruptedException ie) {
-      log.error(ie.getMessage());
-      throw ie;
-    } finally {
-      log.warn("netty server stopped");
+      if (arguments.keysToGenerate().isPresent()) {
+        log.info("Generating Key Pairs");
+        ObjectMapper objectMapper = jsonObjectMapper();
+
+        SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, objectMapper);
+
+        for (int i = 0; i < arguments.keysToGenerate().get().length; i++) {
+          keyStore.generateKeyPair(
+              new KeyConfig(arguments.keysToGenerate().get()[i], Optional.empty()));
+        }
+
+      } else {
+        networkNodes = new MemoryNetworkNodes(config);
+        try {
+          NettyServer server = startServer(config);
+          joinServer(server);
+        } catch (InterruptedException ie) {
+          log.error(ie.getMessage());
+          throw ie;
+        } finally {
+          log.warn("netty server stopped");
+        }
+      }
     }
+  }
+
+  private ObjectMapper jsonObjectMapper() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.setSerializationInclusion(Include.NON_NULL);
+    return objectMapper;
   }
 
   Config loadConfig(Optional<String> configFileName) throws FileNotFoundException {
@@ -71,8 +93,11 @@ public class Athena {
   }
 
   NettyServer startServer(Config config) throws InterruptedException {
-    ObjectMapper jsonObjectMapper = new ObjectMapper();
-    Serializer serializer = new Serializer(jsonObjectMapper, new ObjectMapper(new CBORFactory()));
+    ObjectMapper jsonObjectMapper = jsonObjectMapper();
+
+    ObjectMapper cborObjectMapper = new ObjectMapper(new CBORFactory());
+    cborObjectMapper.setSerializationInclusion(Include.NON_NULL);
+    Serializer serializer = new Serializer(jsonObjectMapper, cborObjectMapper);
     NettySettings settings =
         new NettySettings(
             config.socket(),

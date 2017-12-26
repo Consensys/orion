@@ -52,4 +52,47 @@ public class AthenaTest {
     assertEquals(8080, config.port());
     assertFalse(config.socket().isPresent());
   }
+
+  @Test
+  public void testGenerateKeysArgumentWithNoKeyNamesProvided() throws Exception {
+    String[] args1 = {"--generatekeys"};
+    athena.run(args1);
+  }
+
+  @Test
+  public void testGenerateKeysArgumentProvided() throws Exception {
+    //Test "--generatekeys" option
+    String[] args1 = {"--generatekeys", "testkey1"};
+    athena.run(args1);
+
+    File privateKey1 = new File("testkey1.key");
+    File publicKey1 = new File("testkey1.pub");
+    if (privateKey1.exists()) {
+      privateKey1.delete();
+    }
+    if (publicKey1.exists()) {
+      publicKey1.delete();
+    }
+
+    //Test "--g" option and multiple key files
+    args1 = new String[] {"-g", "testkey2,testkey3"};
+    athena.run(args1);
+
+    File privateKey2 = new File("testkey2.key");
+    File publicKey2 = new File("testkey2.pub");
+    File privateKey3 = new File("testkey3.key");
+    File publicKey3 = new File("testkey3.pub");
+    if (privateKey2.exists()) {
+      privateKey2.delete();
+    }
+    if (publicKey2.exists()) {
+      publicKey2.delete();
+    }
+    if (privateKey3.exists()) {
+      privateKey3.delete();
+    }
+    if (publicKey3.exists()) {
+      publicKey3.delete();
+    }
+  }
 }
