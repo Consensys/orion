@@ -10,7 +10,7 @@ import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.impl.enclave.SimpleEncryptedPayload;
 import net.consensys.athena.impl.enclave.bouncycastle.Hasher;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
@@ -108,11 +108,7 @@ public class LibSodiumEnclave implements Enclave {
 
   @Override
   public PublicKey readKey(String b64) {
-    try {
-      return new SodiumPublicKey(Base64.getDecoder().decode(b64.getBytes("UTF-8")));
-    } catch (UnsupportedEncodingException e) {
-      throw new EnclaveException(e);
-    }
+    return new SodiumPublicKey(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
   }
 
   private byte[] secretNonce() {

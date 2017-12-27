@@ -3,7 +3,7 @@ package net.consensys.athena.impl.http.data;
 import java.io.File;
 import java.io.IOException;
 import java.io.NotSerializableException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,9 +25,9 @@ public class Serializer {
     try {
       switch (contentType) {
         case JSON:
-          return jsonObjectMapper.writeValueAsString(obj).getBytes(Charset.forName("UTF-8"));
+          return jsonObjectMapper.writeValueAsString(obj).getBytes(StandardCharsets.UTF_8);
         case TEXT:
-          return obj.toString().getBytes(Charset.forName("UTF-8"));
+          return obj.toString().getBytes(StandardCharsets.UTF_8);
         case CBOR:
           return cborObjectMapper.writeValueAsBytes(obj);
         default:
@@ -38,7 +38,6 @@ public class Serializer {
     }
   }
 
-  @SuppressWarnings("unchecked")
   public <T> T deserialize(ContentType contentType, Class<T> valueType, byte[] bytes) {
     try {
       switch (contentType) {
@@ -50,7 +49,7 @@ public class Serializer {
           if (valueType != String.class) {
             throw new SerializationException(new NotSerializableException());
           }
-          return (T) new String(bytes, Charset.forName("UTF-8"));
+          return (T) new String(bytes, StandardCharsets.UTF_8);
         default:
           throw new SerializationException(new NotSerializableException());
       }
