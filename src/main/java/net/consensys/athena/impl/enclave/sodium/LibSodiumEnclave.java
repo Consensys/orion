@@ -8,7 +8,6 @@ import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.HashAlgorithm;
 import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.impl.enclave.Hasher;
-import net.consensys.athena.impl.enclave.SimpleEncryptedPayload;
 
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
@@ -61,6 +60,10 @@ public class LibSodiumEnclave implements Enclave {
   @Override
   public EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients) {
     try {
+      if (!(senderKey instanceof SodiumPublicKey)) {
+        throw new EnclaveException("SodiumEnclave needs SodiumPublicKey");
+      }
+      SodiumPublicKey sodiumSenderKey = (SodiumPublicKey) senderKey;
       PrivateKey senderPrivateKey = keyStore.getPrivateKey(senderKey);
       if (senderPrivateKey == null) {
         throw new EnclaveException("No StoredPrivateKey found in keystore");
@@ -78,8 +81,8 @@ public class LibSodiumEnclave implements Enclave {
       for (int i = 0; i < recipients.length; i++) {
         combinedKeysMapping.put(recipients[i], i);
       }
-      return new SimpleEncryptedPayload(
-          senderKey, secretNonce, nonce, combinedKeys, cipherText, combinedKeysMapping);
+      return new SodiumEncryptedPayload(
+          sodiumSenderKey, secretNonce, nonce, combinedKeys, cipherText, combinedKeysMapping);
     } catch (SodiumLibraryException e) {
       throw new EnclaveException(e);
     }

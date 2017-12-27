@@ -1,4 +1,4 @@
-package net.consensys.athena.impl.enclave;
+package net.consensys.athena.impl.enclave.sodium;
 
 import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.EnclaveException;
@@ -15,18 +15,18 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class SimpleEncryptedPayload implements EncryptedPayload, Serializable {
+public class SodiumEncryptedPayload implements EncryptedPayload, Serializable {
 
   private byte[] combinedKeyNonce;
-  private PublicKey sender;
+  private SodiumPublicKey sender;
   private byte[] cipherText;
   private byte[] nonce;
   private CombinedKey[] combinedKeys;
 
   @JsonIgnore private Map<PublicKey, Integer> combinedKeysOwners;
 
-  public SimpleEncryptedPayload(
-      PublicKey sender,
+  public SodiumEncryptedPayload(
+      SodiumPublicKey sender,
       byte[] nonce,
       byte[] combinedKeyNonce,
       CombinedKey[] combinedKeys,
@@ -41,8 +41,8 @@ public class SimpleEncryptedPayload implements EncryptedPayload, Serializable {
   }
 
   @JsonCreator
-  public SimpleEncryptedPayload(
-      @JsonProperty("sender") PublicKey sender,
+  public SodiumEncryptedPayload(
+      @JsonProperty("sender") SodiumPublicKey sender,
       @JsonProperty("nonce") byte[] nonce,
       @JsonProperty("combinedKeyNonce") byte[] combinedKeyNonce,
       @JsonProperty("combinedKeys") CombinedKey[] combinedKeys,
@@ -87,7 +87,7 @@ public class SimpleEncryptedPayload implements EncryptedPayload, Serializable {
       throw new EnclaveException("can't strip encrypted payload for provided key");
     }
 
-    return new SimpleEncryptedPayload(
+    return new SodiumEncryptedPayload(
         sender,
         nonce,
         combinedKeyNonce,
@@ -104,7 +104,7 @@ public class SimpleEncryptedPayload implements EncryptedPayload, Serializable {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    SimpleEncryptedPayload that = (SimpleEncryptedPayload) o;
+    SodiumEncryptedPayload that = (SodiumEncryptedPayload) o;
     return Arrays.equals(combinedKeyNonce, that.combinedKeyNonce)
         && Objects.equals(sender, that.sender)
         && Arrays.equals(cipherText, that.cipherText)

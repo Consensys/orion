@@ -10,7 +10,6 @@ import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.impl.config.MemoryConfig;
-import net.consensys.athena.impl.enclave.SimpleEncryptedPayload;
 
 import java.security.PublicKey;
 import java.util.HashMap;
@@ -98,10 +97,10 @@ public class LibSodiumEnclaveTest {
   @Test
   public void testDecryptThrowsExceptionWhnMissingKey() throws Exception {
     PublicKey fake = new SodiumPublicKey("fake".getBytes());
-    PublicKey sender = generateKey();
+    SodiumPublicKey sender = (SodiumPublicKey) generateKey();
     try {
       EncryptedPayload payload =
-          new SimpleEncryptedPayload(
+          new SodiumEncryptedPayload(
               sender,
               new byte[] {},
               new byte[] {},

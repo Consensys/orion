@@ -4,7 +4,7 @@ import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.HashAlgorithm;
-import net.consensys.athena.impl.enclave.SimpleEncryptedPayload;
+import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 
 import java.nio.charset.StandardCharsets;
@@ -72,7 +72,12 @@ public class CesarEnclave implements Enclave {
     } else {
       combinedKeys = new CombinedKey[0];
     }
-    return new SimpleEncryptedPayload(
-        senderKey, nonce, combinedKeyNonce, combinedKeys, ciphterText, combinedKeysOwners);
+    return new SodiumEncryptedPayload(
+        (SodiumPublicKey) senderKey,
+        nonce,
+        combinedKeyNonce,
+        combinedKeys,
+        ciphterText,
+        combinedKeysOwners);
   }
 }

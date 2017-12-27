@@ -3,7 +3,6 @@ package net.consensys.athena.impl.http.controllers;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertArrayEquals;
-import static org.mockito.Mockito.*;
 
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
@@ -12,10 +11,10 @@ import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.impl.config.MemoryConfig;
-import net.consensys.athena.impl.enclave.SimpleEncryptedPayload;
 import net.consensys.athena.impl.enclave.cesar.CesarEnclave;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
+import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.athena.impl.http.controllers.SendController.SendRequest;
 import net.consensys.athena.impl.http.data.Base64;
@@ -175,10 +174,10 @@ public class SendControllerTest {
           recordedRequest.getHeader("Content-Type").contains(ContentType.CBOR.httpHeaderValue));
 
       // ensure cipher text is same.
-      SimpleEncryptedPayload receivedPayload =
+      SodiumEncryptedPayload receivedPayload =
           serializer.deserialize(
               ContentType.CBOR,
-              SimpleEncryptedPayload.class,
+              SodiumEncryptedPayload.class,
               recordedRequest.getBody().readByteArray());
       assertArrayEquals(receivedPayload.getCipherText(), encryptedPayload.getCipherText());
     }

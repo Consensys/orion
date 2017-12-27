@@ -7,15 +7,15 @@ import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.impl.config.MemoryConfig;
-import net.consensys.athena.impl.enclave.SimpleEncryptedPayload;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
+import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
+import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Serializer;
 
 import java.io.Serializable;
-import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
@@ -55,20 +55,20 @@ public class SerializerTest {
     CombinedKey[] combinedKeys = new CombinedKey[0];
     byte[] combinedKeyNonce = {};
     byte[] nonce = {};
-    PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
+    SodiumPublicKey sender = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
 
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    SimpleEncryptedPayload original =
-        new SimpleEncryptedPayload(
+    SodiumEncryptedPayload original =
+        new SodiumEncryptedPayload(
             sender, nonce, combinedKeyNonce, combinedKeys, toEncrypt, new HashMap<>());
 
-    SimpleEncryptedPayload processed =
+    SodiumEncryptedPayload processed =
         serializer.deserialize(
             ContentType.CBOR,
-            SimpleEncryptedPayload.class,
+            SodiumEncryptedPayload.class,
             serializer.serialize(ContentType.CBOR, original));
 
     assertEquals(original, processed);
