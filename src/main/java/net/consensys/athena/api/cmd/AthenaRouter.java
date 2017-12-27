@@ -27,7 +27,6 @@ import net.consensys.athena.impl.storage.file.MapDbStorage;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.HttpRequest;
 
 public class AthenaRouter implements Router {
@@ -40,13 +39,9 @@ public class AthenaRouter implements Router {
   private final Storage storage;
   private final NetworkNodes networkNodes;
 
-  public AthenaRouter(
-      NetworkNodes networkNodes,
-      Config config,
-      Serializer serializer,
-      ObjectMapper jsonObjectMapper) {
+  public AthenaRouter(NetworkNodes networkNodes, Config config, Serializer serializer) {
 
-    this.enclave = new LibSodiumEnclave(config, new SodiumFileKeyStore(config, jsonObjectMapper));
+    this.enclave = new LibSodiumEnclave(config, new SodiumFileKeyStore(config, serializer));
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
     this.storage = new EncryptedPayloadStorage(STORAGE_ENGINE, keyBuilder);
     this.serializer = serializer;

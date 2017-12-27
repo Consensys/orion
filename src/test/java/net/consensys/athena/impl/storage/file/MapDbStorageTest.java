@@ -4,6 +4,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.junit.After;
@@ -13,7 +14,7 @@ public class MapDbStorageTest {
   String path = "db";
   MapDbStorage<byte[]> storage = new MapDbStorage<>(path);
 
-  final byte[] toStore = "data".getBytes("UTF-8");
+  final byte[] toStore = "data".getBytes(StandardCharsets.UTF_8);
 
   public MapDbStorageTest() throws UnsupportedEncodingException {}
 

@@ -23,6 +23,7 @@ import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.memory.MemoryStorage;
 
+<<<<<<< HEAD
 import java.io.IOException;
 import java.net.URL;
 import java.security.PublicKey;
@@ -31,8 +32,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -44,8 +43,7 @@ public class SendControllerTest {
 
   private final KeyStore memoryKeyStore = new SodiumMemoryKeyStore();
   private final MemoryConfig config = new MemoryConfig();
-  private final Serializer serializer =
-      new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory()));
+  private final Serializer serializer = new Serializer();
 
   // these are re-built between tests
   Enclave enclave;

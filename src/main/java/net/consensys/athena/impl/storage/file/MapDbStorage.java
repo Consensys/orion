@@ -1,9 +1,8 @@
 package net.consensys.athena.impl.storage.file;
 
 import net.consensys.athena.api.storage.StorageEngine;
-import net.consensys.athena.api.storage.StorageException;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
@@ -28,33 +27,19 @@ public class MapDbStorage<T> implements StorageEngine<T> {
   @Override
   public void put(String key, T data) {
     // store data
-    try {
-      storageData.put(key.getBytes("UTF-8"), data);
-      db.commit();
-    } catch (UnsupportedEncodingException e) {
-      log.error(e.getMessage());
-      throw new StorageException(e.getMessage());
-    }
+    storageData.put(key.getBytes(StandardCharsets.UTF_8), data);
+    db.commit();
   }
 
   @Override
   public Optional<T> get(String key) {
-    try {
-      return Optional.ofNullable(storageData.get(key.getBytes("UTF-8")));
-    } catch (UnsupportedEncodingException e) {
-      log.error(e.getMessage());
-      throw new StorageException(e.getMessage());
-    }
+    return Optional.ofNullable(storageData.get(key.getBytes(StandardCharsets.UTF_8)));
   }
 
   @Override
   public void remove(String key) {
-    try {
-      if (storageData.remove(key.getBytes("UTF-8")) != null) {
-        db.commit();
-      }
-    } catch (UnsupportedEncodingException e) {
-      throw new StorageException(e.getMessage());
+    if (storageData.remove(key.getBytes(StandardCharsets.UTF_8)) != null) {
+      db.commit();
     }
   }
 

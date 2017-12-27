@@ -6,36 +6,25 @@ import net.consensys.athena.impl.http.data.Serializer;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.junit.Test;
 
 public class SerializerTest {
 
-  Serializer serializer = new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory()));
-
-  @Test
-  public void testJavaSerialization() throws Exception {
-    DummyObject dummyObjectOriginal = new DummyObject();
-    byte[] bytes = serializer.serialize(dummyObjectOriginal, ContentType.JAVA_ENCODED);
-    DummyObject dummyObject =
-        serializer.deserialize(bytes, ContentType.JAVA_ENCODED, DummyObject.class);
-    assert (dummyObject.equals(dummyObjectOriginal));
-  }
+  final Serializer serializer = new Serializer();
 
   @Test
   public void testJsonSerialization() throws Exception {
     DummyObject dummyObjectOriginal = new DummyObject();
-    byte[] bytes = serializer.serialize(dummyObjectOriginal, ContentType.JSON);
-    DummyObject dummyObject = serializer.deserialize(bytes, ContentType.JSON, DummyObject.class);
+    byte[] bytes = serializer.serialize(ContentType.JSON, dummyObjectOriginal);
+    DummyObject dummyObject = serializer.deserialize(ContentType.JSON, DummyObject.class, bytes);
     assert (dummyObject.equals(dummyObjectOriginal));
   }
 
   @Test
   public void testCBORSerialization() throws Exception {
     DummyObject dummyObjectOriginal = new DummyObject();
-    byte[] bytes = serializer.serialize(dummyObjectOriginal, ContentType.CBOR);
-    DummyObject dummyObject = serializer.deserialize(bytes, ContentType.CBOR, DummyObject.class);
+    byte[] bytes = serializer.serialize(ContentType.CBOR, dummyObjectOriginal);
+    DummyObject dummyObject = serializer.deserialize(ContentType.CBOR, DummyObject.class, bytes);
     assert (dummyObject.equals(dummyObjectOriginal));
   }
 }

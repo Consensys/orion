@@ -120,7 +120,7 @@ public class SendController implements Controller {
       URL pushURL = new URL(recipientURL, "/push"); // TODO @gbotrel reverse routing would be nice
 
       // serialize payload and build RequestBody. we also strip non relevant combinedKeys
-      byte[] payload = serializer.serialize(encryptedPayload.stripFor(recipient), ContentType.CBOR);
+      byte[] payload = serializer.serialize(ContentType.CBOR, encryptedPayload.stripFor(recipient));
       RequestBody body = RequestBody.create(CBOR, payload);
 
       // build request

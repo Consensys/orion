@@ -102,7 +102,7 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
 
     // deserialize the bytes into expected type by controller
     ContentType cType = ContentType.fromHttpContentEncoding(contentEncoding);
-    Object payload = serializer.deserialize(requestPayload, cType, controller.expectedRequest());
+    Object payload = serializer.deserialize(cType, controller.expectedRequest(), requestPayload);
     return new RequestImpl(Optional.of(payload));
   }
 
@@ -141,7 +141,7 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     response.headers().add(HttpHeaderNames.CONTENT_ENCODING, contentType.httpHeaderValue);
 
     // serialize the payload
-    byte[] bytes = serializer.serialize(result.getPayload().get(), contentType);
+    byte[] bytes = serializer.serialize(contentType, result.getPayload().get());
     return response.replace(Unpooled.copiedBuffer(bytes));
     // TODO shall we do the RuntimeExpection or return a internal server error ?
     // TODO /!\ Controller did his job, we should tell the user /!\
