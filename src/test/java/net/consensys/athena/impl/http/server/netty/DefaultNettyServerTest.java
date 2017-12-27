@@ -17,28 +17,23 @@ import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.URL;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.junit.Test;
 
 public class DefaultNettyServerTest {
+
+  final Serializer serializer = new Serializer();
 
   @Test
   public void testStartWillStartTheServerAndListenOnHttpPortFromSettings()
       throws IOException, InterruptedException {
     int port = getPortWithNothingRunningOnIt();
-    ObjectMapper jsonObjectMapper = new ObjectMapper();
     NettySettings settings =
         new NettySettings(
             empty(),
             of(port),
             empty(),
-            new AthenaRouter(
-                new MemoryNetworkNodes(),
-                new MemoryConfig(),
-                new Serializer(jsonObjectMapper, new ObjectMapper(new CBORFactory())),
-                jsonObjectMapper),
-            new Serializer(new ObjectMapper(), new ObjectMapper(new CBORFactory())));
+            new AthenaRouter(new MemoryNetworkNodes(), new MemoryConfig(), serializer),
+            serializer);
     NettyServer server = new DefaultNettyServer(settings);
     server.start();
     URL url = new URL("http://localhost:" + port + "/upcheck");

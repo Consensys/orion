@@ -1,36 +1,33 @@
 package net.consensys.athena.impl.http.data;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.NotSerializableException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 
 public class Serializer {
   private final ObjectMapper jsonObjectMapper;
   private final ObjectMapper cborObjectMapper;
 
-  public Serializer(ObjectMapper jsonObjectMapper, ObjectMapper cborObjectMapper) {
-    this.jsonObjectMapper = jsonObjectMapper;
-    this.cborObjectMapper = cborObjectMapper;
+  public Serializer() {
+    cborObjectMapper = new ObjectMapper(new CBORFactory());
+    cborObjectMapper.setSerializationInclusion(Include.NON_NULL);
+
+    jsonObjectMapper = new ObjectMapper();
+    jsonObjectMapper.setSerializationInclusion(Include.NON_NULL);
   }
 
-  public byte[] serialize(Object obj, ContentType contentType) {
+  public byte[] serialize(ContentType contentType, Object obj) {
     try {
       switch (contentType) {
-        case JAVA_ENCODED:
-          ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
-          ObjectOutputStream outputStream = new ObjectOutputStream(byteOutputStream);
-          outputStream.writeObject(obj);
-          return byteOutputStream.toByteArray();
         case JSON:
-          return jsonObjectMapper.writeValueAsString(obj).getBytes(Charset.forName("UTF-8"));
+          return jsonObjectMapper.writeValueAsString(obj).getBytes(StandardCharsets.UTF_8);
         case TEXT:
-          return obj.toString().getBytes(Charset.forName("UTF-8"));
+          return obj.toString().getBytes(StandardCharsets.UTF_8);
         case CBOR:
           return cborObjectMapper.writeValueAsBytes(obj);
         default:
@@ -41,12 +38,9 @@ public class Serializer {
     }
   }
 
-  @SuppressWarnings("unchecked")
-  public <T> T deserialize(byte[] bytes, ContentType contentType, Class<T> valueType) {
+  public <T> T deserialize(ContentType contentType, Class<T> valueType, byte[] bytes) {
     try {
       switch (contentType) {
-        case JAVA_ENCODED:
-          return (T) new ObjectInputStream(new ByteArrayInputStream(bytes)).readObject();
         case JSON:
           return jsonObjectMapper.readValue(bytes, valueType);
         case CBOR:
@@ -55,12 +49,39 @@ public class Serializer {
           if (valueType != String.class) {
             throw new SerializationException(new NotSerializableException());
           }
-          return (T) new String(bytes, Charset.forName("UTF-8"));
+          return (T) new String(bytes, StandardCharsets.UTF_8);
         default:
           throw new SerializationException(new NotSerializableException());
       }
     } catch (Exception e) {
       throw new SerializationException(e);
+    }
+  }
+
+  public void writeFile(ContentType contentType, File file, Object obj) {
+    try {
+      getMapperOrThrows(contentType).writeValue(file, obj);
+    } catch (IOException io) {
+      throw new SerializationException(io);
+    }
+  }
+
+  public <T> T readFile(ContentType contentType, File file, Class<T> valueType) {
+    try {
+      return getMapperOrThrows(contentType).readValue(file, valueType);
+    } catch (IOException io) {
+      throw new SerializationException(io);
+    }
+  }
+
+  private ObjectMapper getMapperOrThrows(ContentType contentType) throws SerializationException {
+    switch (contentType) {
+      case JSON:
+        return jsonObjectMapper;
+      case CBOR:
+        return cborObjectMapper;
+      default:
+        throw new SerializationException(new NotSerializableException());
     }
   }
 }
