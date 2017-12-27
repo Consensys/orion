@@ -135,7 +135,7 @@ public class SodiumFileKeyStore implements KeyStore {
   }
 
   private void storePrivateKey(StoredPrivateKey privKey, File privateFile) {
-    serializer.writeFile(privKey, ContentType.JSON, privateFile);
+    serializer.writeFile(ContentType.JSON, privateFile, privKey);
   }
 
   private void storePublicKey(byte[] publicKey, File publicFile) {

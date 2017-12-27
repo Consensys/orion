@@ -15,16 +15,16 @@ public class SerializerTest {
   @Test
   public void testJsonSerialization() throws Exception {
     DummyObject dummyObjectOriginal = new DummyObject();
-    byte[] bytes = serializer.serialize(dummyObjectOriginal, ContentType.JSON);
-    DummyObject dummyObject = serializer.deserialize(bytes, ContentType.JSON, DummyObject.class);
+    byte[] bytes = serializer.serialize(ContentType.JSON, dummyObjectOriginal);
+    DummyObject dummyObject = serializer.deserialize(ContentType.JSON, DummyObject.class, bytes);
     assert (dummyObject.equals(dummyObjectOriginal));
   }
 
   @Test
   public void testCBORSerialization() throws Exception {
     DummyObject dummyObjectOriginal = new DummyObject();
-    byte[] bytes = serializer.serialize(dummyObjectOriginal, ContentType.CBOR);
-    DummyObject dummyObject = serializer.deserialize(bytes, ContentType.CBOR, DummyObject.class);
+    byte[] bytes = serializer.serialize(ContentType.CBOR, dummyObjectOriginal);
+    DummyObject dummyObject = serializer.deserialize(ContentType.CBOR, DummyObject.class, bytes);
     assert (dummyObject.equals(dummyObjectOriginal));
   }
 }

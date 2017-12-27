@@ -1,8 +1,5 @@
 package net.consensys.athena.impl.http.data;
 
-import static net.consensys.athena.impl.http.data.ContentType.CBOR;
-import static net.consensys.athena.impl.http.data.ContentType.JSON;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.NotSerializableException;
@@ -24,7 +21,7 @@ public class Serializer {
     jsonObjectMapper.setSerializationInclusion(Include.NON_NULL);
   }
 
-  public byte[] serialize(Object obj, ContentType contentType) {
+  public byte[] serialize(ContentType contentType, Object obj) {
     try {
       switch (contentType) {
         case JSON:
@@ -42,7 +39,7 @@ public class Serializer {
   }
 
   @SuppressWarnings("unchecked")
-  public <T> T deserialize(byte[] bytes, ContentType contentType, Class<T> valueType) {
+  public <T> T deserialize(ContentType contentType, Class<T> valueType, byte[] bytes) {
     try {
       switch (contentType) {
         case JSON:
@@ -62,7 +59,7 @@ public class Serializer {
     }
   }
 
-  public void writeFile(Object obj, ContentType contentType, File file) {
+  public void writeFile(ContentType contentType, File file, Object obj) {
     try {
       getMapperOrThrows(contentType).writeValue(file, obj);
     } catch (IOException io) {
