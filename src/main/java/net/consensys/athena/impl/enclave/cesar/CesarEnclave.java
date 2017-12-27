@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.Map;
 
 public class CesarEnclave implements Enclave {
 
@@ -56,10 +57,22 @@ public class CesarEnclave implements Enclave {
       byte b = plaintext[i];
       ciphterText[i] = (byte) (b + 10);
     }
-    CombinedKey[] combinedKeys = new CombinedKey[0];
+
     byte[] combinedKeyNonce = {};
     byte[] nonce = {};
+
+    CombinedKey[] combinedKeys;
+    Map<PublicKey, Integer> combinedKeysOwners = new HashMap<>();
+
+    if (recipients != null && recipients.length > 0) {
+      combinedKeys = new CombinedKey[recipients.length];
+      for (int i = 0; i < recipients.length; i++) {
+        combinedKeysOwners.put(recipients[i], i);
+      }
+    } else {
+      combinedKeys = new CombinedKey[0];
+    }
     return new SimpleEncryptedPayload(
-        senderKey, nonce, combinedKeyNonce, combinedKeys, ciphterText, new HashMap<>());
+        senderKey, nonce, combinedKeyNonce, combinedKeys, ciphterText, combinedKeysOwners);
   }
 }

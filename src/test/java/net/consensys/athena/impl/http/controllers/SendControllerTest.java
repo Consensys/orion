@@ -1,14 +1,19 @@
 package net.consensys.athena.impl.http.controllers;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertArrayEquals;
 import static org.mockito.Mockito.*;
 
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
+import net.consensys.athena.api.enclave.HashAlgorithm;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.impl.config.MemoryConfig;
+import net.consensys.athena.impl.enclave.SimpleEncryptedPayload;
+import net.consensys.athena.impl.enclave.cesar.CesarEnclave;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
@@ -27,6 +32,7 @@ import net.consensys.athena.impl.storage.memory.MemoryStorage;
 import java.io.IOException;
 import java.net.URL;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +47,7 @@ import org.junit.Test;
 
 public class SendControllerTest {
 
+  private final KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());;
   private final KeyStore memoryKeyStore = new SodiumMemoryKeyStore();
   private final MemoryConfig config = new MemoryConfig();
   private final Serializer serializer = new Serializer();
@@ -50,7 +57,6 @@ public class SendControllerTest {
   Storage<EncryptedPayload> storage;
   Controller controller;
   MemoryNetworkNodes networkNodes;
-  private KeyConfig keyConfig = new KeyConfig("ingore", Optional.empty());;
 
   @Before
   public void setUp() throws Exception {
@@ -118,27 +124,67 @@ public class SendControllerTest {
 
   @Test
   public void testPropagatedToMultiplePeers() throws Exception {
-    // create fake peer
-    FakePeer fakePeer = new FakePeer(new MockResponse().setBody("not the best digest"));
+    // create cesarController
+    // note: we need to do this as the fakePeers need to know in advance the digest to return.
+    // not possible with libSodium due to random nonce
+    CesarEnclave cesarEnclave = new CesarEnclave();
+    Storage cesarStorage =
+        new EncryptedPayloadStorage(
+            new MemoryStorage(), new Sha512_256StorageKeyBuilder(cesarEnclave));
+    Controller cesarController =
+        new SendController(cesarEnclave, cesarStorage, ContentType.JSON, networkNodes, serializer);
 
-    // add peer push URL to networkNodes
-    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
-
-    // build our sendRequest
-    SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer));
-
-    // call controller
-    Result result = controller.handle(new RequestImpl(sendRequest));
-
-    // ensure we got a 500 ERROR, as the digest the fakePeer sent doesn't match
-    assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.getStatus());
-  }
-
-  private SendRequest buildFakeRequest(List<FakePeer> forPeers) {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
+    // encrypt it here to compute digest
+    EncryptedPayload encryptedPayload = cesarEnclave.encrypt(toEncrypt, null, null);
+    String digest =
+        Base64.encode(
+            cesarEnclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.getCipherText()));
+
+    // create fake peers
+    List<FakePeer> fakePeers = new ArrayList<>(5);
+    for (int i = 0; i < 5; i++) {
+      FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
+      // add peer push URL to networkNodes
+      networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+      fakePeers.add(fakePeer);
+    }
+
+    // build our sendRequest
+    SendRequest sendRequest = buildFakeRequest(fakePeers, toEncrypt);
+
+    // call controller
+    Result result = cesarController.handle(new RequestImpl(sendRequest));
+
+    // ensure we got a 200 OK
+    assertEquals(HttpResponseStatus.OK, result.getStatus());
+
+    // ensure each pear actually got the EncryptedPayload
+    for (FakePeer fp : fakePeers) {
+      RecordedRequest recordedRequest = fp.server.takeRequest();
+
+      // check method and path
+      assertEquals("/push", recordedRequest.getPath());
+      assertEquals("POST", recordedRequest.getMethod());
+
+      // check header
+      assertTrue(
+          recordedRequest.getHeader("Content-Type").contains(ContentType.CBOR.httpHeaderValue));
+
+      // ensure cipher text is same.
+      SimpleEncryptedPayload receivedPayload =
+          serializer.deserialize(
+              ContentType.CBOR,
+              SimpleEncryptedPayload.class,
+              recordedRequest.getBody().readByteArray());
+      assertArrayEquals(receivedPayload.getCipherText(), encryptedPayload.getCipherText());
+    }
+  }
+
+  private SendRequest buildFakeRequest(List<FakePeer> forPeers, byte[] toEncrypt) {
     // create sendRequest
     PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
     String from = Base64.encode(sender.getEncoded());
@@ -151,6 +197,13 @@ public class SendControllerTest {
             .toArray(String[]::new);
 
     return new SendRequest(payload, from, to);
+  }
+
+  private SendRequest buildFakeRequest(List<FakePeer> forPeers) {
+    // generate random byte content
+    byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+    return buildFakeRequest(forPeers, toEncrypt);
   }
 
   class FakePeer {
