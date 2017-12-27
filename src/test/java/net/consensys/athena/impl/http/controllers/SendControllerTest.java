@@ -4,6 +4,7 @@ import static junit.framework.TestCase.assertEquals;
 
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
+import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.impl.config.MemoryConfig;
@@ -27,6 +28,7 @@ import java.net.URL;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,6 +52,7 @@ public class SendControllerTest {
   Storage<EncryptedPayload> storage;
   Controller controller;
   MemoryNetworkNodes networkNodes;
+  private KeyConfig keyConfig = new KeyConfig("ingore", Optional.empty());;
 
   @Before
   public void setUp() throws Exception {
@@ -121,7 +124,7 @@ public class SendControllerTest {
     new Random().nextBytes(toEncrypt);
 
     // create sendRequest
-    PublicKey sender = memoryKeyStore.generateKeyPair();
+    PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
     String from = Base64.encode(sender.getEncoded());
     String payload = Base64.encode(toEncrypt);
 
@@ -140,7 +143,7 @@ public class SendControllerTest {
 
     public FakePeer(MockResponse response) throws IOException {
       server = new MockWebServer();
-      publicKey = memoryKeyStore.generateKeyPair();
+      publicKey = memoryKeyStore.generateKeyPair(keyConfig);
       server.enqueue(response);
       server.start();
     }

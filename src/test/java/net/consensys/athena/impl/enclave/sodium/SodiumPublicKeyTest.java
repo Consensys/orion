@@ -3,17 +3,20 @@ package net.consensys.athena.impl.enclave.sodium;
 import static junit.framework.TestCase.assertEquals;
 
 import net.consensys.athena.api.enclave.Enclave;
+import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.impl.config.MemoryConfig;
 import net.consensys.athena.impl.http.data.Base64;
 
 import java.security.PublicKey;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 
 public class SodiumPublicKeyTest {
   private final KeyStore memoryKeyStore = new SodiumMemoryKeyStore();
+  private KeyConfig keyConfig = new KeyConfig("ingore", Optional.empty());;
 
   private final MemoryConfig config = new MemoryConfig();
   private Enclave enclave;
@@ -27,7 +30,7 @@ public class SodiumPublicKeyTest {
   @Test
   public void testKeyFromB64EqualsOriginal() {
     // generate key
-    PublicKey fakePK = memoryKeyStore.generateKeyPair();
+    PublicKey fakePK = memoryKeyStore.generateKeyPair(keyConfig);
 
     // b64 representation of key
     String b64 = Base64.encode(fakePK.getEncoded());
