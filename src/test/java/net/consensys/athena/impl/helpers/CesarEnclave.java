@@ -1,9 +1,10 @@
-package net.consensys.athena.impl.enclave.cesar;
+package net.consensys.athena.impl.helpers;
 
 import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.HashAlgorithm;
+import net.consensys.athena.impl.enclave.sodium.SodiumCombinedKey;
 import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 
@@ -15,14 +16,27 @@ import java.util.Map;
 
 public class CesarEnclave implements Enclave {
 
+  private final SodiumPublicKey[] alwaysSendTo;
+  private final SodiumPublicKey[] nodeKeys;
+
+  public CesarEnclave(SodiumPublicKey[] alwaysSendTo, SodiumPublicKey[] nodeKeys) {
+    this.alwaysSendTo = alwaysSendTo;
+    this.nodeKeys = nodeKeys;
+  }
+
+  public CesarEnclave() {
+    this.alwaysSendTo = new SodiumPublicKey[0];
+    this.nodeKeys = new SodiumPublicKey[0];
+  }
+
   @Override
   public PublicKey[] alwaysSendTo() {
-    return new PublicKey[0];
+    return alwaysSendTo;
   }
 
   @Override
   public PublicKey[] nodeKeys() {
-    return new PublicKey[0];
+    return nodeKeys;
   }
 
   @Override
@@ -52,6 +66,7 @@ public class CesarEnclave implements Enclave {
 
   @Override
   public EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients) {
+
     byte[] ciphterText = new byte[plaintext.length];
     for (int i = 0; i < plaintext.length; i++) {
       byte b = plaintext[i];
@@ -68,7 +83,9 @@ public class CesarEnclave implements Enclave {
       combinedKeys = new CombinedKey[recipients.length];
       for (int i = 0; i < recipients.length; i++) {
         combinedKeysOwners.put(recipients[i], i);
+        combinedKeys[i] = new SodiumCombinedKey(recipients[i].getEncoded());
       }
+
     } else {
       combinedKeys = new CombinedKey[0];
     }

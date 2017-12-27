@@ -3,6 +3,7 @@ package net.consensys.athena.impl.enclave.cesar;
 import static org.junit.Assert.*;
 
 import net.consensys.athena.api.enclave.EncryptedPayload;
+import net.consensys.athena.impl.helpers.CesarEnclave;
 
 import javax.xml.bind.DatatypeConverter;
 
