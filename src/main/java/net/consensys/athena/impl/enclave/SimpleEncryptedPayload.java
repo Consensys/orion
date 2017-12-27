@@ -25,13 +25,12 @@ public class SimpleEncryptedPayload implements EncryptedPayload, Serializable {
 
   @JsonIgnore private Map<PublicKey, Integer> combinedKeysOwners;
 
-  @JsonCreator
   public SimpleEncryptedPayload(
-      @JsonProperty("sender") PublicKey sender,
-      @JsonProperty("nonce") byte[] nonce,
-      @JsonProperty("combinedKeyNonce") byte[] combinedKeyNonce,
-      @JsonProperty("combinedKeys") CombinedKey[] combinedKeys,
-      @JsonProperty("cipherText") byte[] cipherText,
+      PublicKey sender,
+      byte[] nonce,
+      byte[] combinedKeyNonce,
+      CombinedKey[] combinedKeys,
+      byte[] cipherText,
       Map<PublicKey, Integer> combinedKeysOwners) {
     this.combinedKeyNonce = combinedKeyNonce;
     this.sender = sender;
@@ -39,6 +38,21 @@ public class SimpleEncryptedPayload implements EncryptedPayload, Serializable {
     this.nonce = nonce;
     this.combinedKeys = combinedKeys;
     this.combinedKeysOwners = combinedKeysOwners;
+  }
+
+  @JsonCreator
+  public SimpleEncryptedPayload(
+      @JsonProperty("sender") PublicKey sender,
+      @JsonProperty("nonce") byte[] nonce,
+      @JsonProperty("combinedKeyNonce") byte[] combinedKeyNonce,
+      @JsonProperty("combinedKeys") CombinedKey[] combinedKeys,
+      @JsonProperty("cipherText") byte[] cipherText) {
+    this.combinedKeyNonce = combinedKeyNonce;
+    this.sender = sender;
+    this.cipherText = cipherText;
+    this.nonce = nonce;
+    this.combinedKeys = combinedKeys;
+    this.combinedKeysOwners = new HashMap<>();
   }
 
   @Override
