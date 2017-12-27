@@ -23,7 +23,6 @@ import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.memory.MemoryStorage;
 
-<<<<<<< HEAD
 import java.io.IOException;
 import java.net.URL;
 import java.security.PublicKey;
