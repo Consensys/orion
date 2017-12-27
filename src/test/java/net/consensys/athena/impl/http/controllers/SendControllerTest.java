@@ -1,6 +1,7 @@
 package net.consensys.athena.impl.http.controllers;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.mockito.Mockito.*;
 
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
@@ -99,6 +100,24 @@ public class SendControllerTest {
 
   @Test
   public void testSendFailsWhenBadDigestFromPeer() throws Exception {
+    // create fake peer
+    FakePeer fakePeer = new FakePeer(new MockResponse().setBody("not the best digest"));
+
+    // add peer push URL to networkNodes
+    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+
+    // build our sendRequest
+    SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer));
+
+    // call controller
+    Result result = controller.handle(new RequestImpl(sendRequest));
+
+    // ensure we got a 500 ERROR, as the digest the fakePeer sent doesn't match
+    assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.getStatus());
+  }
+
+  @Test
+  public void testPropagatedToMultiplePeers() throws Exception {
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody("not the best digest"));
 

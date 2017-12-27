@@ -1,11 +1,15 @@
-package net.consensys.athena.impl.enclave;
+package net.consensys.athena.impl.enclave.cesar;
 
 import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.HashAlgorithm;
+import net.consensys.athena.impl.enclave.SimpleEncryptedPayload;
+import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 
+import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
+import java.util.Base64;
 import java.util.HashMap;
 
 public class CesarEnclave implements Enclave {
@@ -42,7 +46,7 @@ public class CesarEnclave implements Enclave {
 
   @Override
   public PublicKey readKey(String b64) {
-    return null; //TODO
+    return new SodiumPublicKey(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
   }
 
   @Override

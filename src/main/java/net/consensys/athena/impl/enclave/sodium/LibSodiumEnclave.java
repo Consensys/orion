@@ -7,8 +7,8 @@ import net.consensys.athena.api.enclave.EnclaveException;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.HashAlgorithm;
 import net.consensys.athena.api.enclave.KeyStore;
+import net.consensys.athena.impl.enclave.Hasher;
 import net.consensys.athena.impl.enclave.SimpleEncryptedPayload;
-import net.consensys.athena.impl.enclave.bouncycastle.Hasher;
 
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;

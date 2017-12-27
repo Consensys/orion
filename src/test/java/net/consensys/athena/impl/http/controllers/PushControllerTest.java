@@ -6,7 +6,7 @@ import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageKeyBuilder;
-import net.consensys.athena.impl.enclave.CesarEnclave;
+import net.consensys.athena.impl.enclave.cesar.CesarEnclave;
 import net.consensys.athena.impl.http.data.RequestImpl;
 import net.consensys.athena.impl.http.data.Result;
 import net.consensys.athena.impl.http.server.Controller;

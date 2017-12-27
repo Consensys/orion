@@ -7,7 +7,7 @@ import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageKeyBuilder;
-import net.consensys.athena.impl.enclave.CesarEnclave;
+import net.consensys.athena.impl.enclave.cesar.CesarEnclave;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveRequest;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveResponse;
 import net.consensys.athena.impl.http.data.ApiError;
