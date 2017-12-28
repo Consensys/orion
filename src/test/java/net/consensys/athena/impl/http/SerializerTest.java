@@ -2,13 +2,13 @@ package net.consensys.athena.impl.http;
 
 import static junit.framework.TestCase.assertEquals;
 
-import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.impl.config.MemoryConfig;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
+import net.consensys.athena.impl.enclave.sodium.SodiumCombinedKey;
 import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
@@ -52,7 +52,7 @@ public class SerializerTest {
     ;
     Enclave enclave = new LibSodiumEnclave(config, memoryKeyStore);
 
-    CombinedKey[] combinedKeys = new CombinedKey[0];
+    SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[0];
     byte[] combinedKeyNonce = {};
     byte[] nonce = {};
     SodiumPublicKey sender = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);

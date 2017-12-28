@@ -4,7 +4,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.EnclaveException;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.KeyConfig;
@@ -104,7 +103,7 @@ public class LibSodiumEnclaveTest {
               sender,
               new byte[] {},
               new byte[] {},
-              new CombinedKey[] {},
+              new SodiumCombinedKey[] {},
               new byte[] {},
               new HashMap<>());
       enclave.decrypt(payload, fake);

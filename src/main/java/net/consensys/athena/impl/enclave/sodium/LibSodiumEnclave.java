@@ -74,7 +74,8 @@ public class LibSodiumEnclave implements Enclave {
       byte[] cipherText = SodiumLibrary.cryptoSecretBoxEasy(plaintext, secretNonce, secretKey);
 
       byte[] nonce = nonce();
-      CombinedKey[] combinedKeys = getCombinedKeys(recipients, senderPrivateKey, secretKey, nonce);
+      SodiumCombinedKey[] combinedKeys =
+          getCombinedKeys(recipients, senderPrivateKey, secretKey, nonce);
 
       // store mapping between combined keys and recipients
       HashMap<PublicKey, Integer> combinedKeysMapping = new HashMap<>();
@@ -126,10 +127,10 @@ public class LibSodiumEnclave implements Enclave {
   }
 
   @NotNull
-  private CombinedKey[] getCombinedKeys(
+  private SodiumCombinedKey[] getCombinedKeys(
       PublicKey[] recipients, PrivateKey senderPrivateKey, byte[] secretKey, byte[] nonce)
       throws SodiumLibraryException {
-    CombinedKey[] combinedKeys = new CombinedKey[recipients.length];
+    SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[recipients.length];
     for (int i = 0; i < recipients.length; i++) {
       PublicKey recipient = recipients[i];
       byte[] encryptedKey =

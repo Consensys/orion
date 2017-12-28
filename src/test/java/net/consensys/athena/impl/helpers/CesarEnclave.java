@@ -1,6 +1,5 @@
 package net.consensys.athena.impl.helpers;
 
-import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.HashAlgorithm;
@@ -76,18 +75,18 @@ public class CesarEnclave implements Enclave {
     byte[] combinedKeyNonce = {};
     byte[] nonce = {};
 
-    CombinedKey[] combinedKeys;
+    SodiumCombinedKey[] combinedKeys;
     Map<PublicKey, Integer> combinedKeysOwners = new HashMap<>();
 
     if (recipients != null && recipients.length > 0) {
-      combinedKeys = new CombinedKey[recipients.length];
+      combinedKeys = new SodiumCombinedKey[recipients.length];
       for (int i = 0; i < recipients.length; i++) {
         combinedKeysOwners.put(recipients[i], i);
         combinedKeys[i] = new SodiumCombinedKey(recipients[i].getEncoded());
       }
 
     } else {
-      combinedKeys = new CombinedKey[0];
+      combinedKeys = new SodiumCombinedKey[0];
     }
     return new SodiumEncryptedPayload(
         (SodiumPublicKey) senderKey,

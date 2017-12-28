@@ -21,7 +21,7 @@ public class SodiumEncryptedPayload implements EncryptedPayload, Serializable {
   private SodiumPublicKey sender;
   private byte[] cipherText;
   private byte[] nonce;
-  private CombinedKey[] combinedKeys;
+  private SodiumCombinedKey[] combinedKeys;
 
   @JsonIgnore private Map<PublicKey, Integer> combinedKeysOwners;
 
@@ -29,7 +29,7 @@ public class SodiumEncryptedPayload implements EncryptedPayload, Serializable {
       SodiumPublicKey sender,
       byte[] nonce,
       byte[] combinedKeyNonce,
-      CombinedKey[] combinedKeys,
+      SodiumCombinedKey[] combinedKeys,
       byte[] cipherText,
       Map<PublicKey, Integer> combinedKeysOwners) {
     this.combinedKeyNonce = combinedKeyNonce;
@@ -45,7 +45,7 @@ public class SodiumEncryptedPayload implements EncryptedPayload, Serializable {
       @JsonProperty("sender") SodiumPublicKey sender,
       @JsonProperty("nonce") byte[] nonce,
       @JsonProperty("combinedKeyNonce") byte[] combinedKeyNonce,
-      @JsonProperty("combinedKeys") CombinedKey[] combinedKeys,
+      @JsonProperty("combinedKeys") SodiumCombinedKey[] combinedKeys,
       @JsonProperty("cipherText") byte[] cipherText) {
     this.combinedKeyNonce = combinedKeyNonce;
     this.sender = sender;
@@ -91,7 +91,7 @@ public class SodiumEncryptedPayload implements EncryptedPayload, Serializable {
         sender,
         nonce,
         combinedKeyNonce,
-        new CombinedKey[] {combinedKeys[toKeepIdx]},
+        new SodiumCombinedKey[] {combinedKeys[toKeepIdx]},
         cipherText,
         new HashMap<>());
   }
