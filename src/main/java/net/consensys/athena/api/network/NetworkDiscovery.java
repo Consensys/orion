@@ -10,5 +10,5 @@ public interface NetworkDiscovery {
 
     void doDiscover() throws IOException;
 
-    void doDiscover(int timeout) throws IOException;
+    void doDiscover(long timeout) throws IOException;
 }
