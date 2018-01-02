@@ -8,6 +8,7 @@ import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.netty.DefaultNettyServer;
 import net.consensys.athena.impl.http.server.netty.NettyServer;
 import net.consensys.athena.impl.http.server.netty.NettySettings;
+import org.junit.Before;
 import org.junit.Test;
 
 import static java.util.Optional.empty;
@@ -17,12 +18,10 @@ import static org.junit.Assert.*;
 public class NetworkDiscoveryTest {
 
     final Serializer serializer = new Serializer();
+    private NettyServer server = null;
 
-    @Test
-    public void shouldDiscoverLocalNode() throws Exception {
-        NetworkNodes mocks = new MockNodes();
-        NetworkDiscovery networkDiscovery = new NetworkDiscovery(mocks);
-
+    @Before
+    public void Setup() throws Exception {
         int port = 9001;
         NettySettings settings =
                 new NettySettings(
@@ -32,8 +31,14 @@ public class NetworkDiscoveryTest {
                         new AthenaRouter(new MemoryNetworkNodes(), new MemoryConfig(), serializer),
                         serializer);
 
-        NettyServer server = new DefaultNettyServer(settings);
+        server = new DefaultNettyServer(settings);
         server.start();
+    }
+
+    @Test
+    public void shouldDiscoverLocalNode() throws Exception {
+        NetworkNodes mocks = new MockNodes();
+        NetworkDiscovery networkDiscovery = new NetworkDiscovery(mocks);
 
         networkDiscovery.doDiscover();
 
