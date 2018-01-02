@@ -47,7 +47,11 @@ sudo apt-get install autoconf automake libtool make tar \
 
 ## Running Athena
 
-Kick start the Athena http server after getting everything setup with `gradle run`
+Kick start the Athena http server after getting everything setup with `gradle run`.
+
+If you want to add runtime options, use `-Pargs`, for example:
+
+`gradle run -Pargs="-g ath-key"`
 
 ## Code coverage report
 

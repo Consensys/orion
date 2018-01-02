@@ -39,9 +39,14 @@ dependencies {
   compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
 }
 
-apply plugin:'application'
-mainClassName = "net.consensys.athena.api.cmd.Athena"
+task run(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
 
+  main = 'net.consensys.athena.api.cmd.Athena'
+  if (project.hasProperty("args")) {
+    args project.getProperty('args').split()
+  }
+}
 spotless {
   java {
     removeUnusedImports()
