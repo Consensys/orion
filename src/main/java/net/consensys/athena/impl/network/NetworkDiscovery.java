@@ -15,18 +15,18 @@ public class NetworkDiscovery extends BaseNetworkDiscovery implements net.consen
     }
 
     public NetworkDiscovery(Collection<NodeStatus> nodeStatuses) {
-
         this.nodeStatuses = nodeStatuses;
     }
 
     public NetworkDiscovery(NetworkNodes nodes) {
 
+        nodeStatuses = new ArrayList<NodeStatus>();
         HashSet<URL> urls = nodes.nodeURLs();
 
         for (URL url : urls) {
             NodeStatus nodeStatus = new NodeStatus();
             nodeStatus.setURL(url);
-            nodeStatuses.add(new NodeStatus());
+            nodeStatuses.add(nodeStatus);
         }
     }
 

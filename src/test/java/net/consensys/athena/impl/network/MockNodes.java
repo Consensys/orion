@@ -21,7 +21,16 @@ public class MockNodes implements NetworkNodes {
 
     @Override
     public HashSet<URL> nodeURLs() {
-        return null;
+        try {
+            HashSet<URL> nodes = new HashSet<URL>(1);
+            URL url = new URL("http://localhost:9001");
+            nodes.add(url);
+
+            return nodes;
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
