@@ -1,18 +1,19 @@
 package net.consensys.athena.impl.network;
 
+import java.net.URL;
 import java.util.Date;
 
 public class NodeStatus {
 
     private Date _lastSeen;
-    private String _ip;
+    private URL _url;
 
-    public String getURL() {
-        return _ip;
+    public URL getURL() {
+        return _url;
     }
 
-    public void setURL(String ip) {
-        this._ip = ip;
+    public void setURL(URL url) {
+        _url = url;
     }
 
     public long getLatency() {
