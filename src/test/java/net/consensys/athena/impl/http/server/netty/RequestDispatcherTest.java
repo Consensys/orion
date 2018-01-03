@@ -116,9 +116,7 @@ public class RequestDispatcherTest {
         new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/failing");
     byte[] payload = serializer.serialize(ContentType.CBOR, new MockDummyPayload(42, "toto"));
     fakeHttpRequest = fakeHttpRequest.replace(Unpooled.copiedBuffer(payload));
-    fakeHttpRequest
-        .headers()
-        .add(HttpHeaderNames.CONTENT_ENCODING, ContentType.CBOR.httpHeaderValue);
+    fakeHttpRequest.headers().add(HttpHeaderNames.CONTENT_TYPE, ContentType.CBOR.httpHeaderValue);
 
     // let our channel process it, and ensure we got a result
     ch.writeInbound(fakeHttpRequest);

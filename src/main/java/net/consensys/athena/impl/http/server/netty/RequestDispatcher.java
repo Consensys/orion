@@ -64,7 +64,7 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
 
     // build httpResponse
     FullHttpResponse response =
-        buildHttpResponse(result, httpRequest.headers().get(HttpHeaderNames.ACCEPT_ENCODING));
+        buildHttpResponse(result, httpRequest.headers().get(HttpHeaderNames.ACCEPT));
     ctx.writeAndFlush(response);
     httpRequest.release();
   }
@@ -87,13 +87,13 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
       throw new IllegalArgumentException("did expect payload");
     }
 
-    // let's check if Content-encoding is set
-    String contentEncoding = httpRequest.headers().get(HttpHeaderNames.CONTENT_ENCODING);
-    if (contentEncoding == null) {
-      log.warn("Content-encoding is not set, trying JSON as default fallback.");
+    // let's check if Content type header is set
+    String contentType = httpRequest.headers().get(HttpHeaderNames.CONTENT_TYPE);
+    if (contentType == null) {
+      log.warn("Content-type is not set, trying JSON as default fallback.");
       // TODO if we do strict HTTP validation, we should reject the request, not sure that plays well
       // with current Constellation Haskell implementation, thus the JSON fallback ?
-      contentEncoding = HttpHeaderValues.APPLICATION_JSON.toString();
+      contentType = HttpHeaderValues.APPLICATION_JSON.toString();
     }
 
     // read httpRequest payload bytes
@@ -106,12 +106,12 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     }
 
     // deserialize the bytes into expected type by controller
-    ContentType cType = ContentType.fromHttpContentEncoding(contentEncoding);
+    ContentType cType = ContentType.fromHttpContentType(contentType);
     Object payload = serializer.deserialize(cType, controller.expectedRequest(), requestPayload);
     return new RequestImpl(Optional.of(payload));
   }
 
-  private FullHttpResponse buildHttpResponse(Result result, String acceptEncoding) {
+  private FullHttpResponse buildHttpResponse(Result result, String acceptHeader) {
     // if result does have a payload, and specified encoding is in accept-encoding headers or accept-encoding is empty
     // encode as is and return
     // else, use first accept-encoding header to serialize the payload
@@ -133,17 +133,17 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
       return response;
     }
 
-    // default; use controller specified encoding
+    // default; use controller specified content type
     ContentType contentType = result.defaultContentType();
 
-    // accept encoding header is specified and doesn't support controller encoding
-    if (acceptEncoding != null && !acceptEncoding.contains(contentType.httpHeaderValue)) {
-      log.info("accept encoding header is specified and doesn't match value set by controller");
-      // TODO parse acceptEncoding and set contentType variable accordingly
+    // accept header is specified and doesn't support controller default
+    if (acceptHeader != null && !acceptHeader.contains(contentType.httpHeaderValue)) {
+      log.info("accept header is specified and doesn't match value set by controller");
+      // TODO parse accept header and set contentType variable accordingly
     }
 
-    // add content encoding header to response
-    response.headers().add(HttpHeaderNames.CONTENT_ENCODING, contentType.httpHeaderValue);
+    // add content type header to response
+    response.headers().add(HttpHeaderNames.CONTENT_TYPE, contentType.httpHeaderValue);
 
     // serialize the payload
     byte[] bytes = serializer.serialize(contentType, result.getPayload().get());

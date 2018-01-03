@@ -17,9 +17,9 @@ public enum ContentType {
     this.httpHeaderValue = httpHeaderValue;
   }
 
-  public static ContentType fromHttpContentEncoding(String contentEncoding) {
+  public static ContentType fromHttpContentType(String contentType) {
     for (ContentType cType : ContentType.values()) {
-      if (cType.httpHeaderValue.equalsIgnoreCase(contentEncoding)) {
+      if (cType.httpHeaderValue.equalsIgnoreCase(contentType)) {
         return cType;
       }
     }
