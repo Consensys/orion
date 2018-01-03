@@ -38,10 +38,30 @@ public class NetworkDiscoveryTest {
     @Test
     public void shouldDiscoverLocalNode() throws Exception {
         NetworkNodes mocks = new MockNodes();
-        NetworkDiscovery networkDiscovery = new NetworkDiscovery(mocks);
+        net.consensys.athena.api.network.NetworkDiscovery networkDiscovery = new NetworkDiscovery(mocks);
 
         networkDiscovery.doDiscover();
 
-        assertFalse(networkDiscovery.getNodeStatuses().isEmpty());
+        assertNotNull(networkDiscovery.getNodeStatuses());
+
+        for(NodeStatus node : networkDiscovery.getNodeStatuses()) {
+            long delta = node.getLastSeen();
+            assertTrue(delta >= 0);
+        }
+    }
+
+    @Test
+    public void shouldDiscoverLocalNodeInParallel() throws Exception {
+        NetworkNodes mocks = new MockNodes();
+        net.consensys.athena.api.network.NetworkDiscovery networkDiscovery = new ParallelNetworkDiscovery(mocks);
+
+        networkDiscovery.doDiscover();
+
+        assertNotNull(networkDiscovery.getNodeStatuses());
+
+        for(NodeStatus node : networkDiscovery.getNodeStatuses()) {
+            long delta = node.getLastSeen();
+            assertTrue(delta >= 0);
+        }
     }
 }

@@ -2,6 +2,7 @@ package net.consensys.athena.api.cmd;
 
 import static java.util.Optional.empty;
 
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.network.NetworkNodes;
@@ -13,10 +14,14 @@ import net.consensys.athena.impl.http.server.netty.DefaultNettyServer;
 import net.consensys.athena.impl.http.server.netty.NettyServer;
 import net.consensys.athena.impl.http.server.netty.NettySettings;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
+import net.consensys.athena.api.network.*;
 
+import java.util.TimerTask;
+import java.util.Timer;
 import java.io.*;
 import java.util.Optional;
 
+import net.consensys.athena.impl.network.ParallelNetworkDiscovery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -25,6 +30,7 @@ public class Athena {
   private static final Logger log = LogManager.getLogger();
 
   private static NetworkNodes networkNodes;
+  private static NetworkDiscovery networkDiscovery;
   private static final Serializer serializer = new Serializer();
 
   public static void main(String[] args) throws Exception {
@@ -51,6 +57,9 @@ public class Athena {
 
       } else {
         networkNodes = new MemoryNetworkNodes(config);
+
+        startDiscoveryTask(1000);
+
         try {
           NettyServer server = startServer(config);
           joinServer(server);
@@ -62,6 +71,23 @@ public class Athena {
         }
       }
     }
+  }
+
+  private void startDiscoveryTask(long delay) {
+    networkDiscovery = new ParallelNetworkDiscovery(networkNodes);
+
+    TimerTask task = new TimerTask() {
+      public void run() {
+        try {
+          networkDiscovery.doDiscover(1000);
+        } catch (IOException ex)
+        {
+          log.error(ex.getMessage());
+        }
+      }
+    };
+    Timer timer = new Timer("NetworkDiscoveryTimer");
+    timer.schedule(task, delay);
   }
 
   Config loadConfig(Optional<String> configFileName) throws FileNotFoundException {

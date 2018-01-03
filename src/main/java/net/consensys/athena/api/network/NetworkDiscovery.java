@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 public interface NetworkDiscovery {
-    Collection<NodeStatus> getNodeStatuses();
+    Iterable<NodeStatus> getNodeStatuses();
 
     void doDiscover() throws IOException;
 

@@ -12,12 +12,12 @@ import java.util.concurrent.TimeUnit;
 
 public class NetworkDiscovery extends BaseNetworkDiscovery implements net.consensys.athena.api.network.NetworkDiscovery {
 
-    public NetworkDiscovery() {
-        nodeStatuses = new ArrayList<NodeStatus>();
-    }
+    public NetworkDiscovery(Iterable<NodeStatus> nodeStatuses) {
+        this.nodeStatuses = new ArrayList<NodeStatus>();
 
-    public NetworkDiscovery(Collection<NodeStatus> nodeStatuses) {
-        this.nodeStatuses = nodeStatuses;
+        for(NodeStatus node : nodeStatuses) {
+            this.nodeStatuses.add(node);
+        }
     }
 
     public NetworkDiscovery(NetworkNodes nodes) {

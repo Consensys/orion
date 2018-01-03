@@ -1,23 +1,46 @@
 package net.consensys.athena.impl.network;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
 import net.consensys.athena.api.config.Node;
 import net.consensys.athena.api.network.NetworkDiscovery;
+import net.consensys.athena.api.network.NetworkNodes;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public class ParallelNetworkDiscovery implements NetworkDiscovery {
-    private final int timeout = 1000;
-    private Set<NodeStatus> nodes;
+public class ParallelNetworkDiscovery extends BaseNetworkDiscovery implements NetworkDiscovery {
 
     @Override
-    public Collection<NodeStatus> getNodeStatuses() {
-        return nodes;
+    public Iterable<NodeStatus> getNodeStatuses() {
+        return nodeStatuses;
+    }
+
+    public ParallelNetworkDiscovery(Iterable<NodeStatus> nodeStatuses) {
+        this.nodeStatuses = new ArrayList<NodeStatus>();
+
+        for(NodeStatus node : nodeStatuses) {
+            this.nodeStatuses.add(node);
+        }
+    }
+
+    public ParallelNetworkDiscovery(NetworkNodes nodes) {
+
+        nodeStatuses = new ArrayList<NodeStatus>();
+        HashSet<URL> urls = nodes.nodeURLs();
+
+        for (URL url : urls) {
+            NodeStatus nodeStatus = new NodeStatus();
+            nodeStatus.setURL(url);
+            nodeStatuses.add(nodeStatus);
+        }
     }
 
     @Override
@@ -31,7 +54,7 @@ public class ParallelNetworkDiscovery implements NetworkDiscovery {
                 .connectTimeout(timeout, TimeUnit.MILLISECONDS)
                 .build();
 
-        nodes.parallelStream().forEach(nodeStatus -> {
+        nodeStatuses.parallelStream().forEach(nodeStatus -> {
             Request request = new Request.Builder()
                     .url(nodeStatus.getURL() + "/upcheck")
                     .build();
