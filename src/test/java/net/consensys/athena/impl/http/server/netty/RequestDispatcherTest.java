@@ -22,9 +22,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -59,7 +61,7 @@ public class RequestDispatcherTest {
     // ensure we got an empty response
     assertEquals(HttpResponseStatus.OK, httpResponse.status());
     assertEquals(0, httpResponse.content().readableBytes());
-    //    assertEquals(HttpHeaderValues.APPLICATION_JSON, httpResponse.headers().get(HttpHeaderNames.CONTENT_ENCODING));
+    assertEquals("header", httpResponse.headers().get("extra"));
 
     ch.finish();
   }
@@ -176,7 +178,8 @@ class MockEmptyController implements Controller {
 
   @Override
   public Result handle(Request request) {
-    return new ResultImpl(ContentType.JSON, Optional.empty(), HttpResponseStatus.OK);
+    HttpHeaders extraHeaders = new DefaultHttpHeaders().add("extra", "header");
+    return new ResultImpl(ContentType.JSON, Optional.empty(), HttpResponseStatus.OK, extraHeaders);
   }
 
   @Override
