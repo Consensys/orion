@@ -2,7 +2,6 @@ package net.consensys.athena.api.cmd;
 
 import static java.util.Optional.empty;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.network.NetworkNodes;
