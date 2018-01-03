@@ -8,6 +8,7 @@ import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.netty.DefaultNettyServer;
 import net.consensys.athena.impl.http.server.netty.NettyServer;
 import net.consensys.athena.impl.http.server.netty.NettySettings;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,6 +34,12 @@ public class NetworkDiscoveryTest {
 
         server = new DefaultNettyServer(settings);
         server.start();
+    }
+
+    @After
+    public void TearDown()
+    {
+        server.stop();
     }
 
     @Test
