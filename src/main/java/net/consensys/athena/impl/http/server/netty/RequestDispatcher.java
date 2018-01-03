@@ -82,6 +82,11 @@ public class RequestDispatcher implements BiConsumer<FullHttpRequest, ChannelHan
     }
 
     // controller expects a payload
+    // let's check that a payload is provided
+    if (requestPayloadSize <= 0) {
+      throw new IllegalArgumentException("did expect payload");
+    }
+
     // let's check if Content-encoding is set
     String contentEncoding = httpRequest.headers().get(HttpHeaderNames.CONTENT_ENCODING);
     if (contentEncoding == null) {
