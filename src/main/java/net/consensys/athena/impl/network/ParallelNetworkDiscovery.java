@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ser.Serializers;
 import net.consensys.athena.api.config.Node;
 import net.consensys.athena.api.network.NetworkDiscovery;
 import net.consensys.athena.api.network.NetworkNodes;
+import net.consensys.athena.api.network.NetworkNodesStatus;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -16,31 +17,17 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public class ParallelNetworkDiscovery extends BaseNetworkDiscovery implements NetworkDiscovery {
+public class ParallelNetworkDiscovery implements NetworkDiscovery {
+    private final long timeout = 1000;
+    private NetworkNodes nodes;
 
     @Override
-    public Iterable<NodeStatus> getNodeStatuses() {
-        return nodeStatuses;
-    }
-
-    public ParallelNetworkDiscovery(Iterable<NodeStatus> nodeStatuses) {
-        this.nodeStatuses = new ArrayList<NodeStatus>();
-
-        for(NodeStatus node : nodeStatuses) {
-            this.nodeStatuses.add(node);
-        }
+    public NetworkNodesStatus getNetworkNodeStatuses() {
+        return this.nodes;
     }
 
     public ParallelNetworkDiscovery(NetworkNodes nodes) {
-
-        nodeStatuses = new ArrayList<NodeStatus>();
-        HashSet<URL> urls = nodes.nodeURLs();
-
-        for (URL url : urls) {
-            NodeStatus nodeStatus = new NodeStatus();
-            nodeStatus.setURL(url);
-            nodeStatuses.add(nodeStatus);
-        }
+        this.nodes = nodes;
     }
 
     @Override
@@ -54,14 +41,14 @@ public class ParallelNetworkDiscovery extends BaseNetworkDiscovery implements Ne
                 .connectTimeout(timeout, TimeUnit.MILLISECONDS)
                 .build();
 
-        nodeStatuses.parallelStream().forEach(nodeStatus -> {
+        nodes.nodeURLs().parallelStream().forEach(node -> {
             Request request = new Request.Builder()
-                    .url(nodeStatus.getURL() + "/upcheck")
+                    .url(node + "/upcheck")
                     .build();
 
             try (Response response = client.newCall(request).execute()) {
                 if (response.isSuccessful()) {
-                    nodeStatus.Update();
+                    nodes.Update(node);
                 }
                 response.body().close();
             } catch (IOException ex) {

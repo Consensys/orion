@@ -70,4 +70,14 @@ public class MemoryNetworkNodes implements NetworkNodes {
   public HashMap<PublicKey, URL> nodePKs() {
     return nodePKs;
   }
+
+  @Override
+  public long getLastSeen(URL node) {
+    return 0;
+  }
+
+  @Override
+  public void Update(URL node) {
+    //
+  }
 }
