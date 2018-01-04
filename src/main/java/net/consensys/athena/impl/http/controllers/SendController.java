@@ -1,18 +1,12 @@
 package net.consensys.athena.impl.http.controllers;
 
-import static net.consensys.athena.impl.http.data.Result.internalServerError;
-import static net.consensys.athena.impl.http.data.Result.ok;
-
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.impl.http.data.Base64;
 import net.consensys.athena.impl.http.data.ContentType;
-import net.consensys.athena.impl.http.data.Request;
-import net.consensys.athena.impl.http.data.Result;
 import net.consensys.athena.impl.http.data.Serializer;
-import net.consensys.athena.impl.http.server.Controller;
 
 import java.io.IOException;
 import java.net.URL;
@@ -20,12 +14,14 @@ import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.web.RoutingContext;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
@@ -34,12 +30,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /** Send a base64 encoded payload to encrypt. */
-public class SendController implements Controller {
+public class SendController implements Handler<RoutingContext> {
   private static final Logger log = LogManager.getLogger();
 
   private final Enclave enclave;
   private final Storage storage;
-  private final ContentType contentType;
   private final List<PublicKey> nodeKeys;
   private final NetworkNodes networkNodes;
   private final Serializer serializer;
@@ -48,23 +43,19 @@ public class SendController implements Controller {
   private final MediaType CBOR = MediaType.parse(ContentType.CBOR.httpHeaderValue);
 
   public SendController(
-      Enclave enclave,
-      Storage storage,
-      ContentType contentType,
-      NetworkNodes networkNodes,
-      Serializer serializer) {
+      Enclave enclave, Storage storage, NetworkNodes networkNodes, Serializer serializer) {
     this.enclave = enclave;
     this.storage = storage;
-    this.contentType = contentType;
     this.nodeKeys = Arrays.asList(enclave.nodeKeys());
     this.networkNodes = networkNodes;
     this.serializer = serializer;
   }
 
   @Override
-  public Result handle(Request request) {
-    Optional<SendRequest> requestPayload = request.getPayload();
-    SendRequest sendRequest = requestPayload.orElseThrow(() -> new IllegalArgumentException());
+  public void handle(RoutingContext routingContext) {
+    SendRequest sendRequest =
+        serializer.deserialize(
+            ContentType.JSON, SendRequest.class, routingContext.getBody().getBytes());
 
     if (!sendRequest.isValid()) {
       throw new IllegalArgumentException();
@@ -105,10 +96,13 @@ public class SendController implements Controller {
     if (!propagated) {
       log.warn("propagating the payload failed, removing stored encrypted payload");
       storage.remove(digest);
-      return internalServerError("couldn't propagate payload to all recipients");
+      routingContext.fail(new RuntimeException("couldn't propagate payload to all recipients"));
+      return;
     }
 
-    return ok(ContentType.JSON, new SendResponse(digest));
+    Buffer responseData =
+        Buffer.buffer(serializer.serialize(ContentType.JSON, new SendResponse(digest)));
+    routingContext.response().end(responseData);
   }
 
   private Response pushToPeer(EncryptedPayload encryptedPayload, PublicKey recipient) {

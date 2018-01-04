@@ -1,14 +1,12 @@
 package net.consensys.athena.impl.http.controllers;
 
-import static net.consensys.athena.impl.http.data.Result.notImplemented;
-
 import net.consensys.athena.api.storage.Storage;
-import net.consensys.athena.impl.http.data.Request;
-import net.consensys.athena.impl.http.data.Result;
-import net.consensys.athena.impl.http.server.Controller;
+
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 /** Delete a payload from storage. */
-public class DeleteController implements Controller {
+public class DeleteController implements Handler<RoutingContext> {
   private final Storage storage;
 
   public DeleteController(Storage storage) {
@@ -16,7 +14,7 @@ public class DeleteController implements Controller {
   }
 
   @Override
-  public Result handle(Request request) {
-    return notImplemented();
+  public void handle(RoutingContext routingContext) {
+    routingContext.fail(500);
   }
 }

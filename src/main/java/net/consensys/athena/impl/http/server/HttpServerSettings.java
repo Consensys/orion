@@ -1,7 +1,6 @@
-package net.consensys.athena.impl.http.server.netty;
+package net.consensys.athena.impl.http.server;
 
 import net.consensys.athena.impl.http.data.Serializer;
-import net.consensys.athena.impl.http.server.Router;
 
 import java.io.File;
 import java.util.Optional;
@@ -9,26 +8,25 @@ import java.util.Optional;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.kqueue.KQueue;
 
-public class NettySettings {
+public class HttpServerSettings {
 
-  private static final int DEFAULT_BOSS_THREAD_COUNT = 1;
-  private static final int DEFAULT_WORKER_THREAD_COUNT = 4;
   private Optional<Integer> httpPort;
   private Optional<File> domainSocketPath;
   private Optional<Integer> httpsPort;
-  private final Router router;
+
+  // legacy ?
+  private static final int DEFAULT_BOSS_THREAD_COUNT = 1;
+  private static final int DEFAULT_WORKER_THREAD_COUNT = 4;
   private final Serializer serializer;
 
-  public NettySettings(
+  public HttpServerSettings(
       Optional<File> domainSocketPath,
       Optional<Integer> httpPort,
       Optional<Integer> httpsPort,
-      Router router,
       Serializer serializer) {
     this.httpPort = httpPort;
     this.domainSocketPath = domainSocketPath;
     this.httpsPort = httpsPort;
-    this.router = router;
     this.serializer = serializer;
   }
 
@@ -70,13 +68,5 @@ public class NettySettings {
 
   public int workerThreads() {
     return DEFAULT_WORKER_THREAD_COUNT;
-  }
-
-  public Router getRouter() {
-    return router;
-  }
-
-  public Serializer getSerializer() {
-    return serializer;
   }
 }

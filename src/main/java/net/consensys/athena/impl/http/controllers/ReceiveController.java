@@ -1,49 +1,43 @@
 package net.consensys.athena.impl.http.controllers;
 
-import static net.consensys.athena.impl.http.data.Result.notFound;
-import static net.consensys.athena.impl.http.data.Result.ok;
-
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.impl.http.data.Base64;
 import net.consensys.athena.impl.http.data.ContentType;
-import net.consensys.athena.impl.http.data.Request;
-import net.consensys.athena.impl.http.data.Result;
 import net.consensys.athena.impl.http.data.Serializer;
-import net.consensys.athena.impl.http.server.Controller;
 
 import java.security.PublicKey;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.web.RoutingContext;
 
 /** Retrieve a base 64 encoded payload. */
-public class ReceiveController implements Controller {
+public class ReceiveController implements Handler<RoutingContext> {
   private final Enclave enclave;
   private final Storage storage;
-  private final ContentType contentType;
   private final Serializer serializer;
 
-  public ReceiveController(
-      Enclave enclave, Storage storage, ContentType contentType, Serializer serializer) {
+  public ReceiveController(Enclave enclave, Storage storage, Serializer serializer) {
     this.enclave = enclave;
     this.storage = storage;
-    this.contentType = contentType;
     this.serializer = serializer;
   }
 
   @Override
-  public Result handle(Request request) {
-    // retrieves the encrypted payload from DB, using provided key
-    Optional<ReceiveRequest> requestPayload = request.getPayload();
+  public void handle(RoutingContext routingContext) {
     ReceiveRequest receiveRequest =
-        requestPayload.orElseThrow(() -> new IllegalArgumentException());
+        serializer.deserialize(
+            ContentType.JSON, ReceiveRequest.class, routingContext.getBody().getBytes());
 
     Optional<EncryptedPayload> encryptedPayload = storage.get(receiveRequest.key);
     if (!encryptedPayload.isPresent()) {
-      return notFound("Error: unable to retrieve payload");
+      routingContext.fail(new RuntimeException(("unable to retrieve payload")));
+      return;
     }
 
     // Haskell doc: let's check if receipients is set = it's a payload that we sent. TODO @gbotrel
@@ -51,8 +45,12 @@ public class ReceiveController implements Controller {
     byte[] decryptedPayload = enclave.decrypt(encryptedPayload.get(), receiveRequest.publicKey);
 
     // build a ReceiveResponse
-    ReceiveResponse toReturn = new ReceiveResponse(Base64.encode(decryptedPayload));
-    return ok(contentType, toReturn);
+    Buffer toReturn =
+        Buffer.buffer(
+            serializer.serialize(
+                ContentType.JSON, new ReceiveResponse(Base64.encode(decryptedPayload))));
+
+    routingContext.response().end(toReturn);
   }
 
   static class ReceiveRequest {

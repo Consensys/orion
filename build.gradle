@@ -21,6 +21,10 @@ dependencies {
   implementation group: 'com.muquit.libsodiumjna', name: 'libsodium-jna', version: '1.0.4'
   testImplementation 'junit:junit:4.12'
 
+  // vertx
+  implementation 'io.vertx:vertx-core:3.5.0'
+  implementation 'io.vertx:vertx-web:3.5.0'
+  
   // http client
   implementation 'com.squareup.okhttp3:okhttp:3.9.1'
 
