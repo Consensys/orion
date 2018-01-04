@@ -17,7 +17,7 @@ import org.junit.Test;
 
 public class PartyInfoControllerTest {
   @Test
-  public void testSuccessfullProcessingOfRequest() throws Exception {
+  public void testSuccessfulProcessingOfRequest() throws Exception {
 
     MemoryConfig config = new MemoryConfig();
 
