@@ -4,6 +4,7 @@ import static java.util.Optional.empty;
 
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.KeyConfig;
+import net.consensys.athena.api.network.*;
 import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.impl.cmd.AthenaArguments;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
@@ -13,14 +14,13 @@ import net.consensys.athena.impl.http.server.netty.DefaultNettyServer;
 import net.consensys.athena.impl.http.server.netty.NettyServer;
 import net.consensys.athena.impl.http.server.netty.NettySettings;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
-import net.consensys.athena.api.network.*;
+import net.consensys.athena.impl.network.ParallelNetworkDiscovery;
 
-import java.util.TimerTask;
-import java.util.Timer;
 import java.io.*;
 import java.util.Optional;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import net.consensys.athena.impl.network.ParallelNetworkDiscovery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -75,16 +75,16 @@ public class Athena {
   private void startDiscoveryTask(long delay) {
     networkDiscovery = new ParallelNetworkDiscovery(networkNodes);
 
-    TimerTask task = new TimerTask() {
-      public void run() {
-        try {
-          networkDiscovery.doDiscover(1000);
-        } catch (IOException ex)
-        {
-          log.error(ex.getMessage());
-        }
-      }
-    };
+    TimerTask task =
+        new TimerTask() {
+          public void run() {
+            try {
+              networkDiscovery.doDiscover(1000);
+            } catch (IOException ex) {
+              log.error(ex.getMessage());
+            }
+          }
+        };
     Timer timer = new Timer("NetworkDiscoveryTimer");
     timer.schedule(task, delay);
   }

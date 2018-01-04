@@ -5,10 +5,10 @@ import net.consensys.athena.api.network.NetworkNodes;
 
 import java.net.URL;
 import java.security.PublicKey;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.time.Instant;
 
 public class MemoryNetworkNodes implements NetworkNodes {
 
@@ -82,7 +82,7 @@ public class MemoryNetworkNodes implements NetworkNodes {
 
   @Override
   public void Update(URL node) {
-      Instant instant = Instant.now();
-      lastSeen.put(node, instant.toEpochMilli());
+    Instant instant = Instant.now();
+    lastSeen.put(node, instant.toEpochMilli());
   }
 }
