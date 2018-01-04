@@ -8,16 +8,19 @@ import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.time.Instant;
 
 public class MemoryNetworkNodes implements NetworkNodes {
 
   private URL url;
   private HashSet<URL> nodeURLs;
   private HashMap<PublicKey, URL> nodePKs;
+  private HashMap<URL, Long> lastSeen;
 
   public MemoryNetworkNodes() {
     nodeURLs = new HashSet<>();
     nodePKs = new HashMap<>();
+    lastSeen = new HashMap<>();
   }
 
   public MemoryNetworkNodes(Config config) {
@@ -29,6 +32,7 @@ public class MemoryNetworkNodes implements NetworkNodes {
     }
 
     nodePKs = new HashMap<>();
+    lastSeen = new HashMap<>();
   }
 
   /**
@@ -73,11 +77,12 @@ public class MemoryNetworkNodes implements NetworkNodes {
 
   @Override
   public long getLastSeen(URL node) {
-    return 0;
+    return Instant.now().toEpochMilli() - lastSeen.get(node);
   }
 
   @Override
   public void Update(URL node) {
-    //
+      Instant instant = Instant.now();
+      lastSeen.put(node, instant.toEpochMilli());
   }
 }

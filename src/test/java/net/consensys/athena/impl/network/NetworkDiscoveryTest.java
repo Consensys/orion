@@ -21,7 +21,6 @@ public class NetworkDiscoveryTest {
 
     final Serializer serializer = new Serializer();
     private NettyServer[] server = new NettyServer[10];
-
     private MemoryNetworkNodes mocks = new MemoryNetworkNodes();
 
     @Before
@@ -56,7 +55,6 @@ public class NetworkDiscoveryTest {
     public void shouldDiscoverLocalNodeInParallel() throws Exception {
 
         NetworkDiscovery networkDiscovery = new ParallelNetworkDiscovery(mocks);
-
         networkDiscovery.doDiscover();
 
         assertNotNull(networkDiscovery.getNetworkNodeStatuses());
