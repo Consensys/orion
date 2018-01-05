@@ -3,6 +3,17 @@
 //
 //import static org.junit.Assert.assertEquals;
 //
+//import io.netty.handler.codec.http.HttpResponseStatus;
+//import io.vertx.core.DeploymentOptions;
+//import io.vertx.core.Vertx;
+//import io.vertx.core.json.JsonObject;
+//import io.vertx.ext.unit.TestContext;
+//import io.vertx.ext.unit.junit.VertxUnitRunner;
+//import java.io.IOException;
+//import java.net.ServerSocket;
+//import java.util.Optional;
+//import java.util.Random;
+//import net.consensys.athena.api.cmd.AthenaRoutes;
 //import net.consensys.athena.api.enclave.Enclave;
 //import net.consensys.athena.api.enclave.EncryptedPayload;
 //import net.consensys.athena.api.storage.Storage;
@@ -11,27 +22,33 @@
 //import net.consensys.athena.impl.http.data.RequestImpl;
 //import net.consensys.athena.impl.http.data.Result;
 //import net.consensys.athena.impl.http.server.Controller;
+
 //import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
 //import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 //import net.consensys.athena.impl.storage.memory.MemoryStorage;
-//
-//import java.util.Optional;
-//import java.util.Random;
-//
-//import io.netty.handler.codec.http.HttpResponseStatus;
+//import org.junit.After;
+//import org.junit.Before;
 //import org.junit.Test;
+//import org.junit.runner.RunWith;
 //
-//public class PushControllerTest {
+//public class PushControllerTest extends ControllerTest {
 //
 //  private final Enclave enclave = new LibSodiumEnclaveStub();
 //  private final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
 //  private final Storage<EncryptedPayload> storage =
 //      new EncryptedPayloadStorage(new MemoryStorage(), keyBuilder);
 //
-//  private final Controller controller = new PushController(storage);
+//  private final PushController controller = new PushController(storage, new Serializer());
+//
+//
+//
+//  @After
+//  public void tearDown(TestContext context) {
+//    vertx.close(context.asyncAssertSuccess());
+//  }
 //
 //  @Test
-//  public void testPayloadIsStored() throws Exception {
+//  public void testPayloadIsStored(TestContext context) {
 //    // generate random byte content
 //    byte[] toEncrypt = new byte[342];
 //    new Random().nextBytes(toEncrypt);

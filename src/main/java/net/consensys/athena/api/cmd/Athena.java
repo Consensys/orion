@@ -1,6 +1,7 @@
 package net.consensys.athena.api.cmd;
 
 import static io.vertx.core.Vertx.vertx;
+import static java.util.Optional.empty;
 
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.KeyConfig;
@@ -9,6 +10,7 @@ import net.consensys.athena.impl.cmd.AthenaArguments;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
 import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.http.server.HttpServerSettings;
 import net.consensys.athena.impl.http.server.vertx.VertxServer;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
 
@@ -62,7 +64,11 @@ public class Athena {
     networkNodes = new MemoryNetworkNodes(config);
 
     AthenaRoutes routes = new AthenaRoutes(vertx, networkNodes, config, serializer);
-    VertxServer httpServer = new VertxServer(vertx, routes.getRouter(), config);
+
+    HttpServerSettings httpSettings =
+        new HttpServerSettings(config.socket(), Optional.of((int) config.port()), empty(), null);
+
+    VertxServer httpServer = new VertxServer(vertx, routes.getRouter(), httpSettings);
     httpServer.start();
   }
 
