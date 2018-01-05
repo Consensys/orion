@@ -1,16 +1,16 @@
 package net.consensys.athena.impl.network;
 
 import net.consensys.athena.api.config.Config;
-import net.consensys.athena.api.network.NetworkNodes;
+import net.consensys.athena.api.network.NetworkNodesRepository;
 
 import java.net.URL;
 import java.security.PublicKey;
-import java.time.Instant;
+//import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class MemoryNetworkNodes implements NetworkNodes {
+public class MemoryNetworkNodes implements NetworkNodesRepository {
 
   private URL url;
   private HashSet<URL> nodeURLs;
@@ -45,7 +45,7 @@ public class MemoryNetworkNodes implements NetworkNodes {
   }
 
   /**
-   * Add a node's URL and PublcKey to the nodeURLs and nodePKs lists
+   * Add a node's URL and PublicKey to the nodeURLs and nodePKs lists
    *
    * @param nodePk PublicKey of new node
    * @param node URL of new node
@@ -75,14 +75,14 @@ public class MemoryNetworkNodes implements NetworkNodes {
     return nodePKs;
   }
 
-  @Override
-  public long getLastSeen(URL node) {
-    return Instant.now().toEpochMilli() - lastSeen.get(node);
-  }
-
-  @Override
-  public void Update(URL node) {
-    Instant instant = Instant.now();
-    lastSeen.put(node, instant.toEpochMilli());
-  }
+//  @Override
+//  public long getLastSeen(URL node) {
+//    return Instant.now().toEpochMilli() - lastSeen.get(node);
+//  }
+//
+//  @Override
+//  public void Update(URL node) {
+//    Instant instant = Instant.now();
+//    lastSeen.put(node, instant.toEpochMilli());
+//  }
 }

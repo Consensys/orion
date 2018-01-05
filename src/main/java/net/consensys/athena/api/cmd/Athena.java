@@ -7,6 +7,7 @@ import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.network.*;
 import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.impl.cmd.AthenaArguments;
+import net.consensys.athena.impl.config.MemoryConfig;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
 import net.consensys.athena.impl.http.data.Serializer;
@@ -17,6 +18,7 @@ import net.consensys.athena.impl.network.MemoryNetworkNodes;
 import net.consensys.athena.impl.network.ParallelNetworkDiscovery;
 
 import java.io.*;
+import java.net.URL;
 import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -28,7 +30,7 @@ public class Athena {
 
   private static final Logger log = LogManager.getLogger();
 
-  private static NetworkNodes networkNodes;
+  private static NetworkNodesRepository networkNodes;
   private static NetworkDiscovery networkDiscovery;
   private static final Serializer serializer = new Serializer();
 
@@ -55,9 +57,16 @@ public class Athena {
         }
 
       } else {
+
         networkNodes = new MemoryNetworkNodes(config);
 
-        startDiscoveryTask(1000);
+        try {
+          networkNodes.addNodeURL(new URL("http://localhost:9001"));
+        } catch (Exception ex) {
+          //
+        }
+
+        //startDiscoveryTask(1000);
 
         try {
           NettyServer server = startServer(config);

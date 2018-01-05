@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /** Details of other nodes on the network */
-public interface NetworkNodes extends NetworkNodesStatus {
+public interface NetworkNodes {
 
   /**
    * URL of this node
