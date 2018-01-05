@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -53,9 +52,11 @@ public class SendController implements Handler<RoutingContext> {
 
   @Override
   public void handle(RoutingContext routingContext) {
-    SendRequest sendRequest =
-        serializer.deserialize(
-            ContentType.JSON, SendRequest.class, routingContext.getBody().getBytes());
+    //    SendRequest sendRequest =
+    //        serializer.deserialize(
+    //            ContentType.JSON, SendRequest.class, routingContext.getBody().getBytes());
+
+    SendRequest sendRequest = routingContext.get("request");
 
     if (!sendRequest.isValid()) {
       throw new IllegalArgumentException();
@@ -100,9 +101,11 @@ public class SendController implements Handler<RoutingContext> {
       return;
     }
 
-    Buffer responseData =
-        Buffer.buffer(serializer.serialize(ContentType.JSON, new SendResponse(digest)));
-    routingContext.response().end(responseData);
+    //    Buffer responseData =
+    //        Buffer.buffer(serializer.serialize(ContentType.JSON, new SendResponse(digest)));
+    //    routingContext.response().end(responseData);
+    routingContext.put("response", new SendResponse(digest));
+    routingContext.next();
   }
 
   private Response pushToPeer(EncryptedPayload encryptedPayload, PublicKey recipient) {
@@ -138,7 +141,7 @@ public class SendController implements Handler<RoutingContext> {
     }
   }
 
-  static class SendRequest {
+  public static class SendRequest {
     String payload; // b64 encoded
     String from; // b64 encoded
     String[] to; // b64 encoded

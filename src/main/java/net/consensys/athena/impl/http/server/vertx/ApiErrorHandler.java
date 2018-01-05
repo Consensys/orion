@@ -1,4 +1,4 @@
-package net.consensys.athena.impl.http.controllers;
+package net.consensys.athena.impl.http.server.vertx;
 
 import net.consensys.athena.impl.http.data.ApiError;
 import net.consensys.athena.impl.http.data.ContentType;

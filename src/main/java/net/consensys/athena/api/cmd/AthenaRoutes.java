@@ -9,15 +9,18 @@ import net.consensys.athena.api.storage.StorageEngine;
 import net.consensys.athena.api.storage.StorageKeyBuilder;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
-import net.consensys.athena.impl.http.controllers.ApiErrorHandler;
 import net.consensys.athena.impl.http.controllers.DeleteController;
 import net.consensys.athena.impl.http.controllers.PartyInfoController;
 import net.consensys.athena.impl.http.controllers.PushController;
 import net.consensys.athena.impl.http.controllers.ReceiveController;
 import net.consensys.athena.impl.http.controllers.SendController;
+import net.consensys.athena.impl.http.controllers.SendController.SendRequest;
 import net.consensys.athena.impl.http.controllers.UpcheckController;
 import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.http.server.vertx.ApiErrorHandler;
+import net.consensys.athena.impl.http.server.vertx.RequestSerializationHandler;
+import net.consensys.athena.impl.http.server.vertx.ResponseSerializationHandler;
 import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.file.MapDbStorage;
@@ -52,9 +55,12 @@ public class AthenaRoutes {
     router = Router.router(vertx);
 
     // sets response content-type from Accept header
-    router.route().handler(ResponseContentTypeHandler.create());
-    // catch errors from controllers to return standard ApiError
-    router.route().failureHandler(new ApiErrorHandler(serializer));
+    // and handle errors
+    router
+        .route()
+        .handler(BodyHandler.create())
+        .handler(ResponseContentTypeHandler.create())
+        .failureHandler(new ApiErrorHandler(serializer));
 
     router
         .get("/upcheck")
@@ -64,8 +70,9 @@ public class AthenaRoutes {
     router
         .post("/send")
         .produces(ContentType.JSON.httpHeaderValue)
-        .handler(BodyHandler.create())
-        .handler(new SendController(enclave, storage, networkNodes, serializer));
+        .handler(new RequestSerializationHandler(serializer, ContentType.JSON, SendRequest.class))
+        .handler(new SendController(enclave, storage, networkNodes, serializer))
+        .handler(new ResponseSerializationHandler(serializer, ContentType.JSON));
 
     router
         .post("/receive")
