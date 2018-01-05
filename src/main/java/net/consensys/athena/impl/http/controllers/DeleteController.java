@@ -4,6 +4,7 @@ import net.consensys.athena.api.storage.Storage;
 
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /** Delete a payload from storage. */
 public class DeleteController implements Handler<RoutingContext> {
@@ -15,6 +16,6 @@ public class DeleteController implements Handler<RoutingContext> {
 
   @Override
   public void handle(RoutingContext routingContext) {
-    routingContext.fail(500);
+    throw new NotImplementedException();
   }
 }

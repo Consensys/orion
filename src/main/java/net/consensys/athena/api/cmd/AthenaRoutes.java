@@ -9,6 +9,9 @@ import net.consensys.athena.api.storage.StorageEngine;
 import net.consensys.athena.api.storage.StorageKeyBuilder;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
+import net.consensys.athena.impl.http.controllers.ApiErrorHandler;
+import net.consensys.athena.impl.http.controllers.DeleteController;
+import net.consensys.athena.impl.http.controllers.PartyInfoController;
 import net.consensys.athena.impl.http.controllers.PushController;
 import net.consensys.athena.impl.http.controllers.ReceiveController;
 import net.consensys.athena.impl.http.controllers.SendController;
@@ -24,7 +27,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.ResponseContentTypeHandler;
 
-public class AthenaRouter {
+public class AthenaRoutes {
 
   private static final StorageEngine<EncryptedPayload> STORAGE_ENGINE =
       new MapDbStorage("routerdb");
@@ -36,18 +39,22 @@ public class AthenaRouter {
 
   private final Router router;
 
-  public AthenaRouter(
+  public AthenaRoutes(
       Vertx vertx, NetworkNodes networkNodes, Config config, Serializer serializer) {
+    // controller dependencies
     this.enclave = new LibSodiumEnclave(config, new SodiumFileKeyStore(config, serializer));
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
     this.storage = new EncryptedPayloadStorage(STORAGE_ENGINE, keyBuilder);
     this.serializer = serializer;
     this.networkNodes = networkNodes;
 
+    // Vertx router
     router = Router.router(vertx);
 
     // sets response content-type from Accept header
     router.route().handler(ResponseContentTypeHandler.create());
+    // catch errors from controllers to return standard ApiError
+    router.route().failureHandler(new ApiErrorHandler(serializer));
 
     router
         .get("/upcheck")
@@ -66,6 +73,14 @@ public class AthenaRouter {
         .handler(BodyHandler.create())
         .handler(new ReceiveController(enclave, storage, serializer));
 
+    router.post("/delete").handler(BodyHandler.create()).handler(new DeleteController(storage));
+
+    router
+        .get("/partyinfo")
+        .produces(ContentType.JSON.httpHeaderValue)
+        .handler(BodyHandler.create())
+        .handler(new PartyInfoController(networkNodes, serializer));
+
     router
         .post("/push")
         .produces(ContentType.TEXT.httpHeaderValue)
@@ -76,33 +91,4 @@ public class AthenaRouter {
   public Router getRouter() {
     return router;
   }
-
-  //  @Override
-  //  public Controller lookup(HttpRequest request) {
-  //    try {
-
-  //      if (uri.getPath().startsWith("/send")) {
-  //        return new SendController(enclave, storage, ContentType.JSON, networkNodes, serializer);
-  //      }
-  //      if (uri.getPath().startsWith("/receive")) {
-  //        return new ReceiveController(enclave, storage, ContentType.JSON, serializer);
-  //      }
-  //      if (uri.getPath().startsWith("/delete")) {
-  //        return new DeleteController(storage);
-  //      }
-  //      if (uri.getPath().startsWith("/resend")) {
-  //        return new ResendController(enclave, storage);
-  //      }
-  //      if (uri.getPath().startsWith("/partyinfo")) {
-  //        return new PartyInfoController(networkNodes);
-  //      }
-  //      if (uri.getPath().startsWith("/push")) {
-  //        return new PushController(storage);
-  //      }
-  //
-  //      throw new RuntimeException("Unsupported uri: " + uri);
-  //    } catch (URISyntaxException e) {
-  //      throw new RuntimeException("Unable to handle request.", e);
-  //    }
-  //  }
 }

@@ -28,43 +28,53 @@ public class Athena {
 
   private static final Vertx vertx = vertx();
 
+  private Config config;
+  private AthenaArguments arguments;
+
   public static void main(String[] args) throws Exception {
     log.info("starting athena");
     Athena athena = new Athena();
     athena.run(args);
   }
 
-  public void run(String[] args) throws FileNotFoundException, InterruptedException {
+  public void run(String[] args) throws FileNotFoundException {
     // parsing arguments
-    AthenaArguments arguments = new AthenaArguments(args);
+    arguments = new AthenaArguments(args);
 
     if (arguments.argumentExit()) {
       return;
     }
 
     // load config file
-    Config config = loadConfig(arguments.configFileName());
+    config = loadConfig(arguments.configFileName());
 
     // generate key pair and exit
     if (arguments.keysToGenerate().isPresent()) {
-
-      log.info("generating Key Pairs");
-
-      SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
-
-      for (int i = 0; i < arguments.keysToGenerate().get().length; i++) {
-        keyStore.generateKeyPair(
-            new KeyConfig(arguments.keysToGenerate().get()[i], Optional.empty()));
-      }
+      runGenerateKeyPairs();
       return;
     }
 
     // start our API server
+    runApiServer();
+  }
+
+  private void runApiServer() {
     networkNodes = new MemoryNetworkNodes(config);
 
-    AthenaRouter router = new AthenaRouter(vertx, networkNodes, config, serializer);
-    VertxServer httpServer = new VertxServer(vertx, router.getRouter(), config);
+    AthenaRoutes routes = new AthenaRoutes(vertx, networkNodes, config, serializer);
+    VertxServer httpServer = new VertxServer(vertx, routes.getRouter(), config);
     httpServer.start();
+  }
+
+  private void runGenerateKeyPairs() {
+    log.info("generating Key Pairs");
+
+    SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
+
+    for (int i = 0; i < arguments.keysToGenerate().get().length; i++) {
+      keyStore.generateKeyPair(
+          new KeyConfig(arguments.keysToGenerate().get()[i], Optional.empty()));
+    }
   }
 
   Config loadConfig(Optional<String> configFileName) throws FileNotFoundException {
