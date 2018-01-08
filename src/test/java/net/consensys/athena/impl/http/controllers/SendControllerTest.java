@@ -5,7 +5,7 @@ import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageKeyBuilder;
-import net.consensys.athena.impl.enclave.CesarEnclave;
+import net.consensys.athena.impl.enclave.LibSodiumEnclaveStub;
 import net.consensys.athena.impl.http.controllers.SendController.SendRequest;
 import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.RequestImpl;
@@ -19,7 +19,7 @@ import net.consensys.athena.impl.storage.memory.MemoryStorage;
 import org.junit.Test;
 
 public class SendControllerTest {
-  private final Enclave enclave = new CesarEnclave();
+  private final Enclave enclave = new LibSodiumEnclaveStub();
 
   private final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
 

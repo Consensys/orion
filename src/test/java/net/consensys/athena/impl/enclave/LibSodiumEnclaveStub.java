@@ -1,14 +1,15 @@
 package net.consensys.athena.impl.enclave;
 
-import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.HashAlgorithm;
+import net.consensys.athena.impl.enclave.sodium.SodiumCombinedKey;
+import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 
 import java.security.PublicKey;
 import java.util.HashMap;
 
-public class CesarEnclave implements Enclave {
+public class LibSodiumEnclaveStub implements Enclave {
 
   @Override
   public PublicKey[] alwaysSendTo() {
@@ -52,10 +53,15 @@ public class CesarEnclave implements Enclave {
       byte b = plaintext[i];
       ciphterText[i] = (byte) (b + 10);
     }
-    CombinedKey[] combinedKeys = new CombinedKey[0];
+    SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[0];
     byte[] combinedKeyNonce = {};
     byte[] nonce = {};
     return new SimpleEncryptedPayload(
-        senderKey, nonce, combinedKeyNonce, combinedKeys, ciphterText, new HashMap<>());
+        (SodiumPublicKey) senderKey,
+        nonce,
+        combinedKeyNonce,
+        combinedKeys,
+        ciphterText,
+        new HashMap<>());
   }
 }

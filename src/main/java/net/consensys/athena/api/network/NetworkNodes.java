@@ -2,8 +2,8 @@ package net.consensys.athena.api.network;
 
 import java.net.URL;
 import java.security.PublicKey;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /** Details of other nodes on the network */
 public interface NetworkNodes {
@@ -20,7 +20,7 @@ public interface NetworkNodes {
    *
    * @return
    */
-  HashSet<URL> nodeURLs();
+  Set<URL> nodeURLs();
 
   URL urlForRecipient(PublicKey recipient);
 
@@ -29,5 +29,5 @@ public interface NetworkNodes {
    *
    * @return
    */
-  HashMap<PublicKey, URL> nodePKs();
+  Map<PublicKey, URL> nodePKs();
 }
