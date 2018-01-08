@@ -3,6 +3,8 @@ package net.consensys.athena.impl.enclave;
 import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.EnclaveException;
 import net.consensys.athena.api.enclave.EncryptedPayload;
+import net.consensys.athena.impl.enclave.sodium.SodiumCombinedKey;
+import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 
 import java.io.Serializable;
 import java.security.PublicKey;
@@ -18,20 +20,34 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class SimpleEncryptedPayload implements EncryptedPayload, Serializable {
 
   private byte[] combinedKeyNonce;
-  private PublicKey sender;
+  private SodiumPublicKey sender;
   private byte[] cipherText;
   private byte[] nonce;
-  private CombinedKey[] combinedKeys;
+  private SodiumCombinedKey[] combinedKeys;
 
   @JsonIgnore private Map<PublicKey, Integer> combinedKeysOwners;
 
   @JsonCreator
   public SimpleEncryptedPayload(
-      @JsonProperty("sender") PublicKey sender,
+      @JsonProperty("sender") SodiumPublicKey sender,
       @JsonProperty("nonce") byte[] nonce,
       @JsonProperty("combinedKeyNonce") byte[] combinedKeyNonce,
-      @JsonProperty("combinedKeys") CombinedKey[] combinedKeys,
-      @JsonProperty("cipherText") byte[] cipherText,
+      @JsonProperty("combinedKeys") SodiumCombinedKey[] combinedKeys,
+      @JsonProperty("cipherText") byte[] cipherText) {
+    this.combinedKeyNonce = combinedKeyNonce;
+    this.sender = sender;
+    this.cipherText = cipherText;
+    this.nonce = nonce;
+    this.combinedKeys = combinedKeys;
+    this.combinedKeysOwners = new HashMap<>();
+  }
+
+  public SimpleEncryptedPayload(
+      SodiumPublicKey sender,
+      byte[] nonce,
+      byte[] combinedKeyNonce,
+      SodiumCombinedKey[] combinedKeys,
+      byte[] cipherText,
       Map<PublicKey, Integer> combinedKeysOwners) {
     this.combinedKeyNonce = combinedKeyNonce;
     this.sender = sender;
@@ -77,9 +93,8 @@ public class SimpleEncryptedPayload implements EncryptedPayload, Serializable {
         sender,
         nonce,
         combinedKeyNonce,
-        new CombinedKey[] {combinedKeys[toKeepIdx]},
-        cipherText,
-        new HashMap<>());
+        new SodiumCombinedKey[] {combinedKeys[toKeepIdx]},
+        cipherText);
   }
 
   @Override
