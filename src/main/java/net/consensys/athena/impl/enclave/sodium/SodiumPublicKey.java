@@ -1,5 +1,7 @@
 package net.consensys.athena.impl.enclave.sodium;
 
+import net.consensys.athena.impl.http.data.Base64;
+
 import java.security.PublicKey;
 import java.util.Arrays;
 
@@ -11,7 +13,7 @@ public class SodiumPublicKey implements PublicKey {
   private byte[] encoded;
 
   @JsonCreator
-  public SodiumPublicKey(@JsonProperty("publicKey") byte[] encoded) {
+  public SodiumPublicKey(@JsonProperty("encoded") byte[] encoded) {
     this.encoded = encoded;
   }
 
@@ -42,6 +44,11 @@ public class SodiumPublicKey implements PublicKey {
     SodiumPublicKey publicKey1 = (SodiumPublicKey) o;
 
     return Arrays.equals(encoded, publicKey1.encoded);
+  }
+
+  @Override
+  public String toString() {
+    return Base64.encode(encoded);
   }
 
   @Override

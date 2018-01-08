@@ -6,7 +6,7 @@ import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageKeyBuilder;
-import net.consensys.athena.impl.helpers.CesarEnclave;
+import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclaveStub;
 import net.consensys.athena.impl.http.data.RequestImpl;
 import net.consensys.athena.impl.http.data.Result;
 import net.consensys.athena.impl.http.server.Controller;
@@ -22,7 +22,7 @@ import org.junit.Test;
 
 public class PushControllerTest {
 
-  private final Enclave enclave = new CesarEnclave();
+  private final Enclave enclave = new LibSodiumEnclaveStub();
   private final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
   private final Storage<EncryptedPayload> storage =
       new EncryptedPayloadStorage(new MemoryStorage(), keyBuilder);

@@ -45,7 +45,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class SendControllerTest {
-
   private final KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());;
   private final KeyStore memoryKeyStore = new SodiumMemoryKeyStore();
   private final MemoryConfig config = new MemoryConfig();

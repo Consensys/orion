@@ -83,7 +83,12 @@ public class LibSodiumEnclave implements Enclave {
         combinedKeysMapping.put(recipients[i], i);
       }
       return new SodiumEncryptedPayload(
-          sodiumSenderKey, secretNonce, nonce, combinedKeys, cipherText, combinedKeysMapping);
+          (SodiumPublicKey) senderKey,
+          secretNonce,
+          nonce,
+          combinedKeys,
+          cipherText,
+          combinedKeysMapping);
     } catch (SodiumLibraryException e) {
       throw new EnclaveException(e);
     }

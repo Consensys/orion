@@ -1,4 +1,4 @@
-package net.consensys.athena.impl.enclave.sodium;
+package net.consensys.athena.impl.enclave;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -9,6 +9,12 @@ import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.impl.config.MemoryConfig;
+import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
+import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
+import net.consensys.athena.impl.enclave.sodium.SodiumCombinedKey;
+import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
+import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
+import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 
 import java.security.PublicKey;
 import java.util.HashMap;
@@ -89,14 +95,15 @@ public class LibSodiumEnclaveTest {
     }
   }
 
-  private PublicKey generateKey() {
-    return memoryKeyStore.generateKeyPair(new KeyConfig("ignore", Optional.empty()));
+  private SodiumPublicKey generateKey() {
+    return (SodiumPublicKey)
+        memoryKeyStore.generateKeyPair(new KeyConfig("ignore", Optional.empty()));
   }
 
   @Test
   public void testDecryptThrowsExceptionWhnMissingKey() throws Exception {
     PublicKey fake = new SodiumPublicKey("fake".getBytes());
-    SodiumPublicKey sender = (SodiumPublicKey) generateKey();
+    SodiumPublicKey sender = generateKey();
     try {
       EncryptedPayload payload =
           new SodiumEncryptedPayload(

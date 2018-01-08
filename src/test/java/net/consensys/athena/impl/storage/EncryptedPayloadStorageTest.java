@@ -6,7 +6,7 @@ import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageKeyBuilder;
-import net.consensys.athena.impl.helpers.CesarEnclave;
+import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclaveStub;
 import net.consensys.athena.impl.storage.memory.MemoryStorage;
 
 import java.util.Optional;
@@ -16,7 +16,7 @@ import org.junit.Test;
 
 public class EncryptedPayloadStorageTest {
 
-  private Enclave enclave = new CesarEnclave();
+  private Enclave enclave = new LibSodiumEnclaveStub();
   private StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
   MemoryStorage memory = new MemoryStorage();
   Storage<EncryptedPayload> storage = new EncryptedPayloadStorage(memory, keyBuilder);

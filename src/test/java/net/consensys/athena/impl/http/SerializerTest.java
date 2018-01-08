@@ -44,7 +44,7 @@ public class SerializerTest {
   }
 
   @Test
-  public void testSimpleEncryptedPayloadSerialization() throws Exception {
+  public void testSodiumEncryptedPayloadSerialization() throws Exception {
     MemoryConfig config = new MemoryConfig();
     config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
     final KeyStore memoryKeyStore = new SodiumMemoryKeyStore();

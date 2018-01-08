@@ -1,20 +1,19 @@
-package net.consensys.athena.impl.enclave.cesar;
+package net.consensys.athena.impl.enclave.sodium;
 
 import static org.junit.Assert.*;
 
 import net.consensys.athena.api.enclave.EncryptedPayload;
-import net.consensys.athena.impl.helpers.CesarEnclave;
 
 import javax.xml.bind.DatatypeConverter;
 
 import org.junit.Test;
 
-public class CesarEnclaveTest {
+public class LibSodiumEnclaveStubTest {
 
   @Test
   public void testRoundTripEncryption() {
     byte[] message = "hello".getBytes();
-    CesarEnclave enclave = new CesarEnclave();
+    LibSodiumEnclaveStub enclave = new LibSodiumEnclaveStub();
     EncryptedPayload encryptedPayload = enclave.encrypt(message, null, null);
     byte[] bytes = enclave.decrypt(encryptedPayload, null);
     assertArrayEquals(message, bytes);
@@ -23,7 +22,7 @@ public class CesarEnclaveTest {
   @Test
   public void testRoundTripEncryptionWithFunkyBytes() {
     byte[] message = DatatypeConverter.parseHexBinary("0079FF00FF89");
-    CesarEnclave enclave = new CesarEnclave();
+    LibSodiumEnclaveStub enclave = new LibSodiumEnclaveStub();
     EncryptedPayload encryptedPayload = enclave.encrypt(message, null, null);
     byte[] bytes = enclave.decrypt(encryptedPayload, null);
     assertArrayEquals(message, bytes);

@@ -92,8 +92,7 @@ public class SodiumEncryptedPayload implements EncryptedPayload, Serializable {
         nonce,
         combinedKeyNonce,
         new SodiumCombinedKey[] {combinedKeys[toKeepIdx]},
-        cipherText,
-        new HashMap<>());
+        cipherText);
   }
 
   @Override
