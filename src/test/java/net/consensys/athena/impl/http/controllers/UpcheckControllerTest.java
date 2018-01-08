@@ -1,5 +1,7 @@
 package net.consensys.athena.impl.http.controllers;
 
+import net.consensys.athena.api.cmd.AthenaRoutes;
+
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -15,7 +17,7 @@ public class UpcheckControllerTest extends ControllerTest {
         .getNow(
             httpServerPort,
             "localhost",
-            "/upcheck",
+            AthenaRoutes.UPCHECK,
             response -> {
               response.handler(
                   body -> {

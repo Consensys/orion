@@ -24,10 +24,13 @@ public class ApiErrorHandler implements Handler<RoutingContext> {
     ApiError apiError = new ApiError(failureContext.failure().getMessage());
     Buffer buffer = Buffer.buffer(serializer.serialize(ContentType.JSON, apiError));
 
+    int statusCode = failureContext.statusCode();
+    statusCode = statusCode < 0 ? 500 : statusCode;
+
     failureContext
         .response()
         .putHeader(HttpHeaders.CONTENT_TYPE, ContentType.JSON.httpHeaderValue)
-        .setStatusCode(failureContext.statusCode())
+        .setStatusCode(statusCode)
         .end(buffer);
   }
 }

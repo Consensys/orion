@@ -28,9 +28,18 @@ import net.consensys.athena.impl.storage.file.MapDbStorage;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.LoggerHandler;
 import io.vertx.ext.web.handler.ResponseContentTypeHandler;
 
 public class AthenaRoutes {
+
+  // route paths
+  public static final String UPCHECK = "/upcheck";
+  public static final String SEND = "/send";
+  public static final String RECIEVE = "/receive";
+  public static final String PARTYINFO = "/partyinfo";
+  public static final String DELETE = "/delete";
+  public static final String PUSH = "/push";
 
   private static final StorageEngine<EncryptedPayload> STORAGE_ENGINE =
       new MapDbStorage("routerdb");
@@ -59,40 +68,46 @@ public class AthenaRoutes {
     router
         .route()
         .handler(BodyHandler.create())
+        .handler(LoggerHandler.create())
         .handler(ResponseContentTypeHandler.create())
         .failureHandler(new ApiErrorHandler(serializer));
 
-    router
-        .get("/upcheck")
-        .produces(ContentType.TEXT.httpHeaderValue)
-        .handler(new UpcheckController());
+    router.get(UPCHECK).produces(ContentType.TEXT.httpHeaderValue).handler(new UpcheckController());
 
     router
-        .post("/send")
+        .post(SEND)
         .produces(ContentType.JSON.httpHeaderValue)
         .handler(new RequestSerializationHandler(serializer, ContentType.JSON, SendRequest.class))
         .handler(new SendController(enclave, storage, networkNodes, serializer))
         .handler(new ResponseSerializationHandler(serializer, ContentType.JSON));
 
     router
-        .post("/receive")
+        .post(RECIEVE)
         .produces(ContentType.JSON.httpHeaderValue)
         .handler(BodyHandler.create())
         .handler(new ReceiveController(enclave, storage, serializer));
 
-    router.post("/delete").handler(BodyHandler.create()).handler(new DeleteController(storage));
+    router.post(DELETE).handler(BodyHandler.create()).handler(new DeleteController(storage));
 
     router
-        .get("/partyinfo")
+        .get(PARTYINFO)
         .produces(ContentType.JSON.httpHeaderValue)
         .handler(BodyHandler.create())
         .handler(new PartyInfoController(networkNodes, serializer));
 
     router
-        .post("/push")
+        .post(PUSH)
         .produces(ContentType.TEXT.httpHeaderValue)
         .handler(BodyHandler.create())
         .handler(new PushController(storage, serializer));
+  }
+
+  public Enclave getEnclave() {
+    return enclave;
+  }
+
+  public Storage getStorage() {
+    return storage;
   }
 
   public Router getRouter() {
