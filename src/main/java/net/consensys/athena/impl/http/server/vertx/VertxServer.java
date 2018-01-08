@@ -2,13 +2,15 @@ package net.consensys.athena.impl.http.server.vertx;
 
 import net.consensys.athena.impl.http.server.HttpServerSettings;
 
-import io.vertx.core.AbstractVerticle;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
 
-public class VertxServer extends AbstractVerticle {
+public class VertxServer {
   private final HttpServer httpServer;
   private final Router router;
 
@@ -23,13 +25,23 @@ public class VertxServer extends AbstractVerticle {
     this.router = router;
   }
 
-  @Override
-  public void start() throws Exception {
-    httpServer.requestHandler(router::accept).listen();
+  public Future<Boolean> start() {
+    CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
+    httpServer
+        .requestHandler(router::accept)
+        .listen(
+            result -> {
+              if (result.succeeded()) {
+                resultFuture.complete(true);
+              } else {
+                resultFuture.completeExceptionally(result.cause());
+              }
+            });
+
+    return resultFuture;
   }
 
-  @Override
-  public void stop() throws Exception {
+  public void stop() {
     httpServer.close();
   }
 }

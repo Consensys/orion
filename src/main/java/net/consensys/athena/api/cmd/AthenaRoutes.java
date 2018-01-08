@@ -1,14 +1,11 @@
 package net.consensys.athena.api.cmd;
 
-import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageEngine;
 import net.consensys.athena.api.storage.StorageKeyBuilder;
-import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
-import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
 import net.consensys.athena.impl.http.controllers.DeleteController;
 import net.consensys.athena.impl.http.controllers.PartyInfoController;
 import net.consensys.athena.impl.http.controllers.PushController;
@@ -52,9 +49,9 @@ public class AthenaRoutes {
   private final Router router;
 
   public AthenaRoutes(
-      Vertx vertx, NetworkNodes networkNodes, Config config, Serializer serializer) {
+      Vertx vertx, NetworkNodes networkNodes, Serializer serializer, Enclave enclave) {
     // controller dependencies
-    this.enclave = new LibSodiumEnclave(config, new SodiumFileKeyStore(config, serializer));
+    this.enclave = enclave;
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
     this.storage = new EncryptedPayloadStorage(STORAGE_ENGINE, keyBuilder);
     this.serializer = serializer;
@@ -100,10 +97,6 @@ public class AthenaRoutes {
         .produces(ContentType.TEXT.httpHeaderValue)
         .handler(BodyHandler.create())
         .handler(new PushController(storage, serializer));
-  }
-
-  public Enclave getEnclave() {
-    return enclave;
   }
 
   public Storage getStorage() {

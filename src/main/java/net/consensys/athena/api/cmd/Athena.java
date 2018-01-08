@@ -4,10 +4,12 @@ import static io.vertx.core.Vertx.vertx;
 import static java.util.Optional.empty;
 
 import net.consensys.athena.api.config.Config;
+import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.impl.cmd.AthenaArguments;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
+import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
 import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.HttpServerSettings;
@@ -25,9 +27,7 @@ public class Athena {
 
   private static final Logger log = LogManager.getLogger();
 
-  private static NetworkNodes networkNodes;
   private static final Serializer serializer = new Serializer();
-
   private static final Vertx vertx = vertx();
 
   private Config config;
@@ -61,15 +61,16 @@ public class Athena {
   }
 
   private void runApiServer() {
-    networkNodes = new MemoryNetworkNodes(config);
+    NetworkNodes networkNodes = new MemoryNetworkNodes(config);
+    Enclave enclave = new LibSodiumEnclave(config, new SodiumFileKeyStore(config, serializer));
 
-    AthenaRoutes routes = new AthenaRoutes(vertx, networkNodes, config, serializer);
+    AthenaRoutes routes = new AthenaRoutes(vertx, networkNodes, serializer, enclave);
 
     HttpServerSettings httpSettings =
         new HttpServerSettings(config.socket(), Optional.of((int) config.port()), empty(), null);
 
     VertxServer httpServer = new VertxServer(vertx, routes.getRouter(), httpSettings);
-    vertx.deployVerticle(httpServer);
+    httpServer.start();
   }
 
   private void runGenerateKeyPairs() {

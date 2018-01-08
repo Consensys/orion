@@ -24,7 +24,6 @@ dependencies {
   // vertx
   implementation 'io.vertx:vertx-core:3.5.0'
   implementation 'io.vertx:vertx-web:3.5.0'
-  testCompile 'io.vertx:vertx-unit:3.5.0'
 
   // http client
   implementation 'com.squareup.okhttp3:okhttp:3.9.1'
