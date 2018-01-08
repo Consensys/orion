@@ -12,6 +12,7 @@ import net.consensys.athena.impl.config.MemoryConfig;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.athena.impl.enclave.sodium.SodiumCombinedKey;
+import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 
@@ -105,7 +106,7 @@ public class LibSodiumEnclaveTest {
     SodiumPublicKey sender = generateKey();
     try {
       EncryptedPayload payload =
-          new SimpleEncryptedPayload(
+          new SodiumEncryptedPayload(
               sender,
               new byte[] {},
               new byte[] {},

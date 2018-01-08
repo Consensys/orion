@@ -1,10 +1,8 @@
-package net.consensys.athena.impl.enclave;
+package net.consensys.athena.impl.enclave.sodium;
 
 import net.consensys.athena.api.enclave.CombinedKey;
 import net.consensys.athena.api.enclave.EnclaveException;
 import net.consensys.athena.api.enclave.EncryptedPayload;
-import net.consensys.athena.impl.enclave.sodium.SodiumCombinedKey;
-import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 
 import java.io.Serializable;
 import java.security.PublicKey;
@@ -17,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class SimpleEncryptedPayload implements EncryptedPayload, Serializable {
+public class SodiumEncryptedPayload implements EncryptedPayload, Serializable {
 
   private byte[] combinedKeyNonce;
   private SodiumPublicKey sender;
@@ -27,22 +25,7 @@ public class SimpleEncryptedPayload implements EncryptedPayload, Serializable {
 
   @JsonIgnore private Map<PublicKey, Integer> combinedKeysOwners;
 
-  @JsonCreator
-  public SimpleEncryptedPayload(
-      @JsonProperty("sender") SodiumPublicKey sender,
-      @JsonProperty("nonce") byte[] nonce,
-      @JsonProperty("combinedKeyNonce") byte[] combinedKeyNonce,
-      @JsonProperty("combinedKeys") SodiumCombinedKey[] combinedKeys,
-      @JsonProperty("cipherText") byte[] cipherText) {
-    this.combinedKeyNonce = combinedKeyNonce;
-    this.sender = sender;
-    this.cipherText = cipherText;
-    this.nonce = nonce;
-    this.combinedKeys = combinedKeys;
-    this.combinedKeysOwners = new HashMap<>();
-  }
-
-  public SimpleEncryptedPayload(
+  public SodiumEncryptedPayload(
       SodiumPublicKey sender,
       byte[] nonce,
       byte[] combinedKeyNonce,
@@ -55,6 +38,21 @@ public class SimpleEncryptedPayload implements EncryptedPayload, Serializable {
     this.nonce = nonce;
     this.combinedKeys = combinedKeys;
     this.combinedKeysOwners = combinedKeysOwners;
+  }
+
+  @JsonCreator
+  public SodiumEncryptedPayload(
+      @JsonProperty("sender") SodiumPublicKey sender,
+      @JsonProperty("nonce") byte[] nonce,
+      @JsonProperty("combinedKeyNonce") byte[] combinedKeyNonce,
+      @JsonProperty("combinedKeys") SodiumCombinedKey[] combinedKeys,
+      @JsonProperty("cipherText") byte[] cipherText) {
+    this.combinedKeyNonce = combinedKeyNonce;
+    this.sender = sender;
+    this.cipherText = cipherText;
+    this.nonce = nonce;
+    this.combinedKeys = combinedKeys;
+    this.combinedKeysOwners = new HashMap<>();
   }
 
   @Override
@@ -89,7 +87,7 @@ public class SimpleEncryptedPayload implements EncryptedPayload, Serializable {
       throw new EnclaveException("can't strip encrypted payload for provided key");
     }
 
-    return new SimpleEncryptedPayload(
+    return new SodiumEncryptedPayload(
         sender,
         nonce,
         combinedKeyNonce,
@@ -105,7 +103,7 @@ public class SimpleEncryptedPayload implements EncryptedPayload, Serializable {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    SimpleEncryptedPayload that = (SimpleEncryptedPayload) o;
+    SodiumEncryptedPayload that = (SodiumEncryptedPayload) o;
     return Arrays.equals(combinedKeyNonce, that.combinedKeyNonce)
         && Objects.equals(sender, that.sender)
         && Arrays.equals(cipherText, that.cipherText)

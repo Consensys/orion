@@ -1,9 +1,7 @@
-package net.consensys.athena.impl.enclave;
+package net.consensys.athena.impl.enclave.sodium;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import net.consensys.athena.impl.enclave.sodium.SodiumCombinedKey;
-import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Serializer;
 
@@ -13,7 +11,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-public class SimpleEncryptedPayloadTest {
+public class SodiumEncryptedPayloadTest {
 
   @Test
   public void testRoundTripSerialization() {
@@ -21,8 +19,8 @@ public class SimpleEncryptedPayloadTest {
     Map<PublicKey, Integer> combinedKeysOwners = new HashMap<>();
     //    PublicKey key = new SodiumPublicKey("fake remote publickey".getBytes());
     //    combinedKeysOwners.put(key, 1);
-    SimpleEncryptedPayload payload =
-        new SimpleEncryptedPayload(
+    SodiumEncryptedPayload payload =
+        new SodiumEncryptedPayload(
             new SodiumPublicKey("fakekey".getBytes()),
             "fake nonce".getBytes(),
             "fake combinedNonce".getBytes(),
@@ -32,9 +30,9 @@ public class SimpleEncryptedPayloadTest {
     Serializer serializer = new Serializer();
     byte[] bytes = serializer.serialize(ContentType.JSON, payload);
     assertEquals(
-        payload, serializer.deserialize(ContentType.JSON, SimpleEncryptedPayload.class, bytes));
+        payload, serializer.deserialize(ContentType.JSON, SodiumEncryptedPayload.class, bytes));
     bytes = serializer.serialize(ContentType.CBOR, payload);
     assertEquals(
-        payload, serializer.deserialize(ContentType.CBOR, SimpleEncryptedPayload.class, bytes));
+        payload, serializer.deserialize(ContentType.CBOR, SodiumEncryptedPayload.class, bytes));
   }
 }

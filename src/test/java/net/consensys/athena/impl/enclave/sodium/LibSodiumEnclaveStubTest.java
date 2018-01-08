@@ -1,4 +1,4 @@
-package net.consensys.athena.impl.enclave;
+package net.consensys.athena.impl.enclave.sodium;
 
 import static org.junit.Assert.*;
 

@@ -1,10 +1,8 @@
-package net.consensys.athena.impl.enclave;
+package net.consensys.athena.impl.enclave.sodium;
 
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.HashAlgorithm;
-import net.consensys.athena.impl.enclave.sodium.SodiumCombinedKey;
-import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 
 import java.security.PublicKey;
 import java.util.HashMap;
@@ -56,7 +54,7 @@ public class LibSodiumEnclaveStub implements Enclave {
     SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[0];
     byte[] combinedKeyNonce = {};
     byte[] nonce = {};
-    return new SimpleEncryptedPayload(
+    return new SodiumEncryptedPayload(
         (SodiumPublicKey) senderKey,
         nonce,
         combinedKeyNonce,
