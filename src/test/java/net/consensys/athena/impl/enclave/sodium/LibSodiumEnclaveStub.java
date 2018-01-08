@@ -4,7 +4,9 @@ import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.HashAlgorithm;
 
+import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
+import java.util.Base64;
 import java.util.HashMap;
 
 public class LibSodiumEnclaveStub implements Enclave {
@@ -41,7 +43,7 @@ public class LibSodiumEnclaveStub implements Enclave {
 
   @Override
   public PublicKey readKey(String b64) {
-    return null; //TODO
+    return new SodiumPublicKey(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
   }
 
   @Override

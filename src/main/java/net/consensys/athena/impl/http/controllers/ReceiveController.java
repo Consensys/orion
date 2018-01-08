@@ -36,7 +36,7 @@ public class ReceiveController implements Handler<RoutingContext> {
 
     Optional<EncryptedPayload> encryptedPayload = storage.get(receiveRequest.key);
     if (!encryptedPayload.isPresent()) {
-      routingContext.fail(new RuntimeException(("unable to retrieve payload")));
+      routingContext.fail(404);
       return;
     }
 

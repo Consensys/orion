@@ -74,6 +74,7 @@ public abstract class ControllerTest {
   protected SodiumEncryptedPayload mockPayload() {
     SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes());
     Map<PublicKey, Integer> combinedKeysOwners = new HashMap<>();
+
     SodiumEncryptedPayload encryptedPayload =
         new SodiumEncryptedPayload(
             new SodiumPublicKey("fakekey".getBytes()),

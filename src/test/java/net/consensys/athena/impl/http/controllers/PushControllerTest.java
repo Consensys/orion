@@ -10,7 +10,6 @@ import net.consensys.athena.impl.http.data.ContentType;
 import java.util.Optional;
 
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
@@ -19,18 +18,18 @@ public class PushControllerTest extends ControllerTest {
 
   @Test
   public void testPayloadIsStored(TestContext context) {
-    final Async asyncPush = context.async();
+    final Async async = context.async();
     // ref to storage
     final Storage storage = routes.getStorage();
-
-    HttpClient httpClient = vertx.createHttpClient();
 
     // build & serialize our payload
     SodiumEncryptedPayload encryptedPayload = mockPayload();
 
     // PUSH operation, sending an encrypted payload
     Buffer toSend = Buffer.buffer(serializer.serialize(ContentType.CBOR, encryptedPayload));
-    httpClient
+
+    vertx
+        .createHttpClient()
         .post(
             httpServerPort,
             "localhost",
@@ -50,7 +49,7 @@ public class PushControllerTest extends ControllerTest {
                     context.assertTrue(data.isPresent());
                     context.assertEquals(encryptedPayload, data.get());
 
-                    asyncPush.complete();
+                    async.complete();
                   });
             })
         .end(toSend);
