@@ -3,8 +3,8 @@ package net.consensys.athena.impl.network;
 import net.consensys.athena.api.network.NetworkDiscovery;
 import net.consensys.athena.api.network.NetworkNodes;
 
-import java.net.URL;
 import java.io.IOException;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;

@@ -7,7 +7,7 @@ import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageKeyBuilder;
-import net.consensys.athena.impl.enclave.CesarEnclave;
+import net.consensys.athena.impl.enclave.LibSodiumEnclaveStub;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveRequest;
 import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveResponse;
 import net.consensys.athena.impl.http.data.ApiError;
@@ -28,7 +28,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Test;
 
 public class ReceiveControllerTest {
-  private final Enclave enclave = new CesarEnclave();
+  private final Enclave enclave = new LibSodiumEnclaveStub();
   private final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
   private final Storage<EncryptedPayload> storage =
       new EncryptedPayloadStorage(new MemoryStorage(), keyBuilder);

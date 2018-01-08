@@ -5,9 +5,7 @@ import static java.util.Optional.empty;
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.network.*;
-import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.impl.cmd.AthenaArguments;
-import net.consensys.athena.impl.config.MemoryConfig;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
 import net.consensys.athena.impl.http.data.Serializer;
@@ -30,7 +28,7 @@ public class Athena {
 
   private static final Logger log = LogManager.getLogger();
 
-  private static NetworkNodesRepository networkNodes;
+  private static MemoryNetworkNodes networkNodes;
   private static NetworkDiscovery networkDiscovery;
   private static final Serializer serializer = new Serializer();
 
@@ -60,6 +58,7 @@ public class Athena {
 
         networkNodes = new MemoryNetworkNodes(config);
 
+        //TODO - remove this and put it into a test config.
         try {
           networkNodes.addNodeURL(new URL("http://localhost:9001"));
         } catch (Exception ex) {
