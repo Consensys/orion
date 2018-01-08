@@ -69,7 +69,7 @@ public class Athena {
         new HttpServerSettings(config.socket(), Optional.of((int) config.port()), empty(), null);
 
     VertxServer httpServer = new VertxServer(vertx, routes.getRouter(), httpSettings);
-    httpServer.start();
+    vertx.deployVerticle(httpServer);
   }
 
   private void runGenerateKeyPairs() {

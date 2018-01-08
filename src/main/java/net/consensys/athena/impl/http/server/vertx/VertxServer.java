@@ -2,12 +2,13 @@ package net.consensys.athena.impl.http.server.vertx;
 
 import net.consensys.athena.impl.http.server.HttpServerSettings;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
 
-public class VertxServer {
+public class VertxServer extends AbstractVerticle {
   private final HttpServer httpServer;
   private final Router router;
 
@@ -22,7 +23,13 @@ public class VertxServer {
     this.router = router;
   }
 
-  public void start() {
+  @Override
+  public void start() throws Exception {
     httpServer.requestHandler(router::accept).listen();
+  }
+
+  @Override
+  public void stop() throws Exception {
+    httpServer.close();
   }
 }

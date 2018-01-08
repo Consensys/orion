@@ -14,7 +14,7 @@ public class HttpServerSettings {
   private Optional<File> domainSocketPath;
   private Optional<Integer> httpsPort;
 
-  // legacy ?
+  // TODO remove legacy ?
   private static final int DEFAULT_BOSS_THREAD_COUNT = 1;
   private static final int DEFAULT_WORKER_THREAD_COUNT = 4;
   private final Serializer serializer;
