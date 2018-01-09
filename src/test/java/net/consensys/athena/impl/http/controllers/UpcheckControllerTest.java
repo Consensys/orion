@@ -15,9 +15,8 @@ public class UpcheckControllerTest extends ControllerTest {
 
     Request request = new Request.Builder().get().url(baseUrl + AthenaRoutes.UPCHECK).build();
 
-    try (Response resp = httpClient.newCall(request).execute()) {
-      assertEquals(200, resp.code());
-      assertEquals("I'm up!", resp.body().string());
-    }
+    Response resp = httpClient.newCall(request).execute();
+    assertEquals(200, resp.code());
+    assertEquals("I'm up!", resp.body().string());
   }
 }

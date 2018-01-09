@@ -36,14 +36,14 @@ public class PushControllerTest extends ControllerTest {
 
     Request request = new Request.Builder().post(body).url(baseUrl + AthenaRoutes.PUSH).build();
 
-    try (Response resp = httpClient.newCall(request).execute()) {
-      assertEquals(200, resp.code());
-      String digest = resp.body().string();
-      assertTrue(digest.length() > 0);
-      // we should be able to read that from storage
-      Optional<EncryptedPayload> data = storage.get(digest);
-      assertTrue(data.isPresent());
-      assertEquals(encryptedPayload, data.get());
-    }
+    Response resp = httpClient.newCall(request).execute();
+
+    assertEquals(200, resp.code());
+    String digest = resp.body().string();
+    assertTrue(digest.length() > 0);
+    // we should be able to read that from storage
+    Optional<EncryptedPayload> data = storage.get(digest);
+    assertTrue(data.isPresent());
+    assertEquals(encryptedPayload, data.get());
   }
 }

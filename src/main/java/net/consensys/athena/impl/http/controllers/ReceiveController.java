@@ -3,11 +3,11 @@ package net.consensys.athena.impl.http.controllers;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
+import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.athena.impl.http.data.Base64;
 import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Serializer;
 
-import java.security.PublicKey;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -55,11 +55,11 @@ public class ReceiveController implements Handler<RoutingContext> {
 
   static class ReceiveRequest {
     public String key;
-    public PublicKey publicKey;
+    public SodiumPublicKey publicKey;
 
     @JsonCreator
     public ReceiveRequest(
-        @JsonProperty("key") String key, @JsonProperty("publicKey") PublicKey publicKey) {
+        @JsonProperty("key") String key, @JsonProperty("publicKey") SodiumPublicKey publicKey) {
       this.key = key;
       this.publicKey = publicKey;
     }
@@ -68,7 +68,8 @@ public class ReceiveController implements Handler<RoutingContext> {
   static class ReceiveResponse {
     public String payload;
 
-    ReceiveResponse(String payload) {
+    @JsonCreator
+    ReceiveResponse(@JsonProperty("payload") String payload) {
       this.payload = payload;
     }
   }

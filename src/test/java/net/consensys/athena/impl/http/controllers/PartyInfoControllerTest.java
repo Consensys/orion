@@ -22,13 +22,12 @@ public class PartyInfoControllerTest extends ControllerTest {
 
     Request request = new Request.Builder().get().url(baseUrl + AthenaRoutes.PARTYINFO).build();
 
-    try (Response resp = httpClient.newCall(request).execute()) {
-      assertEquals(200, resp.code());
+    Response resp = httpClient.newCall(request).execute();
+    assertEquals(200, resp.code());
 
-      NetworkNodes partyInfoResponse =
-          serializer.deserialize(ContentType.CBOR, MemoryNetworkNodes.class, resp.body().bytes());
+    NetworkNodes partyInfoResponse =
+        serializer.deserialize(ContentType.CBOR, MemoryNetworkNodes.class, resp.body().bytes());
 
-      assertEquals(networkNodes, partyInfoResponse);
-    }
+    assertEquals(networkNodes, partyInfoResponse);
   }
 }
