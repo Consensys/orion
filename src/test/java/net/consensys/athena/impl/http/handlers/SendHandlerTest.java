@@ -18,7 +18,6 @@ import net.consensys.athena.impl.http.handler.send.SendRequest;
 import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.utils.Base64;
 
-import java.io.IOException;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +40,7 @@ public class SendHandlerTest extends HandlerTest {
 
   @Override
   @Before
-  public void setUp() throws IOException {
+  public void setUp() throws Exception {
     super.setUp();
     // dirty; needed to avoid java.lang.RuntimeException: Please set the absolute path of the libsodium libary by calling SodiumLibrary.setLibraryPath(path)
     new LibSodiumEnclave(config, memoryKeyStore);
