@@ -8,6 +8,7 @@ import net.consensys.athena.impl.enclave.sodium.SodiumPublicKeyDeserializer;
 import java.net.URL;
 import java.security.PublicKey;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,15 +52,6 @@ public class MemoryNetworkNodes implements NetworkNodes {
   }
 
   /**
-   * Add the URL of a node to the nodeURLs list.
-   *
-   * @param node URL of new node
-   */
-  public void addNodeURL(URL node) {
-    this.nodeURLs.add(node);
-  }
-
-  /**
    * Add a node's URL and PublcKey to the nodeURLs and nodePKs lists
    *
    * @param nodePk PublicKey of new node
@@ -90,16 +82,26 @@ public class MemoryNetworkNodes implements NetworkNodes {
     return nodePKs;
   }
 
-  public URL getUrl() {
-    return url;
-  }
-
-  public Set<URL> getNodeURLs() {
-    return nodeURLs;
-  }
-
-  public Map<PublicKey, URL> getNodePKs() {
-    return nodePKs;
+  @Override
+  public boolean merge(NetworkNodes other) {
+    // TODO If we don't have the public key of the node, we shouldn't add it, should we ?
+    //    for (URL nodeUrl: other.nodeURLs()) {
+    //      if (!this.nodeURLs.contains(nodeUrl)) {
+    //        nodeURLs.add(nodeUrl);
+    //      }
+    //    }
+    // note; not using map.putAll() as we don't want a malicious peer to overwrite ours nodes.
+    // TODO ; how do we manage a node on the network that updates its URL?  do we check certs ?
+    boolean thisChanged = false;
+    Iterator it = other.nodePKs().entrySet().iterator();
+    while (it.hasNext()) {
+      Map.Entry pair = (Map.Entry) it.next();
+      if (!nodePKs.containsKey(pair.getKey())) {
+        thisChanged = true;
+        addNode((PublicKey) pair.getKey(), (URL) pair.getValue());
+      }
+    }
+    return thisChanged;
   }
 
   @Override

@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import net.consensys.athena.api.cmd.AthenaRoutes;
 import net.consensys.athena.api.network.NetworkNodes;
+import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
 
@@ -17,8 +18,9 @@ public class PartyInfoHandlerTest extends HandlerTest {
 
   @Test
   public void testSuccessfulProcessingOfRequest() throws Exception {
-    networkNodes.addNodeURL(new URL("http://127.0.0.1:9001/"));
-    networkNodes.addNodeURL(new URL("http://127.0.0.1:9002/"));
+
+    networkNodes.addNode(new SodiumPublicKey("pk1".getBytes()), new URL("http://127.0.0.1:9001/"));
+    networkNodes.addNode(new SodiumPublicKey("pk2".getBytes()), new URL("http://127.0.0.1:9002/"));
 
     Request request = new Request.Builder().get().url(baseUrl + AthenaRoutes.PARTYINFO).build();
 

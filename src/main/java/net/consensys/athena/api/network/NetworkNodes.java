@@ -30,4 +30,6 @@ public interface NetworkNodes {
    * @return
    */
   Map<PublicKey, URL> nodePKs();
+
+  boolean merge(NetworkNodes other);
 }
