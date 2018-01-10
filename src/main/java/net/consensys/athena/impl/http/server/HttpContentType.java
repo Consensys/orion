@@ -25,4 +25,9 @@ public enum HttpContentType {
     }
     throw new NoSuchElementException();
   }
+
+  @Override
+  public String toString() {
+    return httpHeaderValue;
+  }
 }

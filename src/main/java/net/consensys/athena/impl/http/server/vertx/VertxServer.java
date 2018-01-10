@@ -41,7 +41,18 @@ public class VertxServer {
     return resultFuture;
   }
 
-  public void stop() {
-    httpServer.close();
+  public Future<Boolean> stop() {
+    CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
+
+    httpServer.close(
+        result -> {
+          if (result.succeeded()) {
+            resultFuture.complete(true);
+          } else {
+            resultFuture.completeExceptionally(result.cause());
+          }
+        });
+
+    return resultFuture;
   }
 }

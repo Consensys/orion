@@ -1,5 +1,7 @@
 package net.consensys.athena.api.cmd;
 
+import static net.consensys.athena.impl.http.server.HttpContentType.*;
+
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.network.NetworkNodes;
@@ -12,7 +14,6 @@ import net.consensys.athena.impl.http.handler.push.PushHandler;
 import net.consensys.athena.impl.http.handler.receive.ReceiveHandler;
 import net.consensys.athena.impl.http.handler.send.SendHandler;
 import net.consensys.athena.impl.http.handler.upcheck.UpcheckHandler;
-import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.http.server.vertx.HttpErrorHandler;
 import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
@@ -66,34 +67,31 @@ public class AthenaRoutes {
         .handler(ResponseContentTypeHandler.create())
         .failureHandler(new HttpErrorHandler(serializer));
 
-    router
-        .get(UPCHECK)
-        .produces(HttpContentType.TEXT.httpHeaderValue)
-        .handler(new UpcheckHandler());
+    router.get(UPCHECK).produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
     router
         .post(SEND)
-        .produces(HttpContentType.JSON.httpHeaderValue)
+        .produces(JSON.httpHeaderValue)
+        .consumes(JSON.httpHeaderValue)
         .handler(new SendHandler(enclave, storage, networkNodes, serializer));
 
     router
         .post(RECIEVE)
-        .produces(HttpContentType.JSON.httpHeaderValue)
-        .handler(BodyHandler.create())
+        .produces(JSON.httpHeaderValue)
+        .consumes(JSON.httpHeaderValue)
         .handler(new ReceiveHandler(enclave, storage, serializer));
 
-    router.post(DELETE).handler(BodyHandler.create()).handler(new DeleteHandler(storage));
+    router.post(DELETE).handler(new DeleteHandler(storage));
 
     router
         .get(PARTYINFO)
-        .produces(HttpContentType.JSON.httpHeaderValue)
-        .handler(BodyHandler.create())
+        .produces(CBOR.httpHeaderValue)
         .handler(new PartyInfoHandler(networkNodes, serializer));
 
     router
         .post(PUSH)
-        .produces(HttpContentType.TEXT.httpHeaderValue)
-        .handler(BodyHandler.create())
+        .produces(TEXT.httpHeaderValue)
+        .consumes(CBOR.httpHeaderValue)
         .handler(new PushHandler(storage, serializer));
   }
 

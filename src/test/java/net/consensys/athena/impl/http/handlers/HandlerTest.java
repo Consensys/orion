@@ -87,8 +87,8 @@ public abstract class HandlerTest {
   }
 
   @After
-  public void tearDown() {
-    vertxServer.stop();
+  public void tearDown() throws Exception {
+    vertxServer.stop().get();
     vertx.close();
   }
 

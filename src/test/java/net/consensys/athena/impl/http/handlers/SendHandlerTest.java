@@ -3,6 +3,7 @@ package net.consensys.athena.impl.http.handlers;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
+import static net.consensys.athena.impl.http.server.HttpContentType.CBOR;
 import static org.junit.Assert.assertArrayEquals;
 
 import net.consensys.athena.api.cmd.AthenaRoutes;
@@ -67,7 +68,8 @@ public class SendHandlerTest extends HandlerTest {
     // execute request
     Response resp = httpClient.newCall(request).execute();
 
-    assertEquals(500, resp.code());
+    // produces 404 because no content = no content-type = no matching with a "consumes(CBOR)" route.
+    assertEquals(404, resp.code());
   }
 
   @Test
@@ -158,15 +160,12 @@ public class SendHandlerTest extends HandlerTest {
       assertEquals("POST", recordedRequest.getMethod());
 
       // check header
-      assertTrue(
-          recordedRequest.getHeader("Content-Type").contains(HttpContentType.CBOR.httpHeaderValue));
+      assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
 
       // ensure cipher text is same.
       SodiumEncryptedPayload receivedPayload =
           serializer.deserialize(
-              HttpContentType.CBOR,
-              SodiumEncryptedPayload.class,
-              recordedRequest.getBody().readByteArray());
+              CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
       assertArrayEquals(receivedPayload.getCipherText(), encryptedPayload.getCipherText());
     }
   }
