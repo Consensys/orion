@@ -23,9 +23,9 @@ import org.apache.logging.log4j.Logger;
 public class NetworkDiscovery extends AbstractVerticle {
   private static final Logger log = LogManager.getLogger();
 
+  public static int httpClientTimeoutMs = 1500;
   private static long refreshDelayMs = 1000;
   private static long maxRefreshDelayMs = 60000;
-  public static int connectionTimeoutMs = 1500;
 
   private final OkHttpClient httpClient;
 
@@ -39,8 +39,8 @@ public class NetworkDiscovery extends AbstractVerticle {
     this.discoverers = new ConcurrentHashMap<>();
     this.httpClient =
         new OkHttpClient.Builder()
-            .connectTimeout(connectionTimeoutMs, TimeUnit.MILLISECONDS)
-            .readTimeout(connectionTimeoutMs, TimeUnit.MILLISECONDS)
+            .connectTimeout(httpClientTimeoutMs, TimeUnit.MILLISECONDS)
+            .readTimeout(httpClientTimeoutMs, TimeUnit.MILLISECONDS)
             .build();
   }
 
@@ -49,8 +49,12 @@ public class NetworkDiscovery extends AbstractVerticle {
     updateDiscoverers();
   }
 
-  // note; this should be called from the same vertx event loop
+  /**
+   * Should be called from the same vertx event loop either when NetworkDiscovery is deployed (via
+   * start() method) or when a merge occurs in one of the Discoverer (same event loop)
+   */
   protected void updateDiscoverers() {
+    // for each peer that we know, we start a Discoverer (on timer)
     for (URL nodeUrl : nodes.getNodeURLs()) {
       if (!discoverers.containsKey(nodeUrl)) {
         Discoverer d = new Discoverer(nodeUrl);
@@ -64,6 +68,10 @@ public class NetworkDiscovery extends AbstractVerticle {
     return discoverers;
   }
 
+  /**
+   * Discoverer handle() is fired by a timer Its job is to call /partyInfo periodically on a
+   * specified URL and merge results if needed in NetworkDiscovery state
+   */
   class Discoverer implements Handler<Long> {
     final Request request;
     public URL nodeUrl;
@@ -78,20 +86,16 @@ public class NetworkDiscovery extends AbstractVerticle {
 
     @Override
     public void handle(Long timerId) {
+      // This is called on timer event, in the event loop of the Verticle (NetworkDiscovery)
+      // we call /partyInfo API on the peer and update NetworkDiscovery state if needed
       vertx.executeBlocking(
           future -> {
-            // executes in the worker pool.
-            Optional<NetworkNodes> result = remotePartyInfo();
+            // executes outside the event loop (vertx worker pool).
+            Optional<NetworkNodes> result = getPeerPartyInfo();
             future.complete(result);
           },
           res -> {
             // executes in the event loop.
-            Optional<NetworkNodes> result = (Optional<NetworkNodes>) res.result();
-            if (result.isPresent() && nodes.merge(result.get())) {
-              // we merged something new, let's start discovery on this new nodes
-              log.info("merged new nodes from {} discoverer", nodeUrl);
-              NetworkDiscovery.this.updateDiscoverers();
-            }
 
             // let's re-fire the timer.
             currentRefreshDelay = (long) ((double) currentRefreshDelay * 1.05);
@@ -99,11 +103,19 @@ public class NetworkDiscovery extends AbstractVerticle {
               currentRefreshDelay = maxRefreshDelayMs;
             }
             vertx.setTimer(currentRefreshDelay, this);
+
+            // process the result, and merge new nodes if any
+            Optional<NetworkNodes> result = (Optional<NetworkNodes>) res.result();
+            if (result.isPresent() && nodes.merge(result.get())) {
+              // we merged something new, let's start discovery on this new nodes
+              log.info("merged new nodes from {} discoverer", nodeUrl);
+              NetworkDiscovery.this.updateDiscoverers();
+            }
           });
     }
 
-    // calls http endpoint PartyInfo; returns Optional.empty() if error.
-    Optional<NetworkNodes> remotePartyInfo() {
+    /** calls http endpoint PartyInfo; returns Optional.empty() if error. */
+    private Optional<NetworkNodes> getPeerPartyInfo() {
       try {
         log.debug("calling partyInfo on {}", nodeUrl);
         attempts++;
