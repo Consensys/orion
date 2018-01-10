@@ -10,7 +10,7 @@
 //import ResendHandler;
 //import SendController;
 //import UpcheckController;
-//import net.consensys.athena.impl.http.data.Serializer;
+//import net.consensys.athena.impl.utils.Serializer;
 //import net.consensys.athena.impl.http.server.Controller;
 //import net.consensys.athena.impl.network.MemoryNetworkNodes;
 //

@@ -11,10 +11,10 @@ import net.consensys.athena.impl.cmd.AthenaArguments;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
-import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.HttpServerSettings;
 import net.consensys.athena.impl.http.server.vertx.VertxServer;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
+import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.*;
 import java.util.Optional;

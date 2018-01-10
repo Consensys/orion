@@ -5,9 +5,9 @@ import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.api.storage.Storage;
-import net.consensys.athena.impl.http.data.Base64;
-import net.consensys.athena.impl.http.data.ContentType;
-import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.http.server.HttpContentType;
+import net.consensys.athena.impl.utils.Base64;
+import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.IOException;
 import java.net.URL;
@@ -37,7 +37,7 @@ public class SendController implements Handler<RoutingContext> {
   private final Serializer serializer;
 
   private final OkHttpClient httpClient = new OkHttpClient();
-  private final MediaType CBOR = MediaType.parse(ContentType.CBOR.httpHeaderValue);
+  private final MediaType CBOR = MediaType.parse(HttpContentType.CBOR.httpHeaderValue);
 
   public SendController(
       Enclave enclave, Storage storage, NetworkNodes networkNodes, Serializer serializer) {
@@ -52,7 +52,7 @@ public class SendController implements Handler<RoutingContext> {
   public void handle(RoutingContext routingContext) {
     SendRequest sendRequest =
         serializer.deserialize(
-            ContentType.JSON, SendRequest.class, routingContext.getBody().getBytes());
+            HttpContentType.JSON, SendRequest.class, routingContext.getBody().getBytes());
 
     if (!sendRequest.isValid()) {
       throw new IllegalArgumentException();
@@ -98,7 +98,7 @@ public class SendController implements Handler<RoutingContext> {
     }
 
     Buffer responseData =
-        Buffer.buffer(serializer.serialize(ContentType.JSON, new SendResponse(digest)));
+        Buffer.buffer(serializer.serialize(HttpContentType.JSON, new SendResponse(digest)));
     routingContext.response().end(responseData);
   }
 
@@ -112,7 +112,8 @@ public class SendController implements Handler<RoutingContext> {
           new URL(recipientURL, AthenaRoutes.PUSH); // TODO @gbotrel reverse routing would be nice
 
       // serialize payload and build RequestBody. we also strip non relevant combinedKeys
-      byte[] payload = serializer.serialize(ContentType.CBOR, encryptedPayload.stripFor(recipient));
+      byte[] payload =
+          serializer.serialize(HttpContentType.CBOR, encryptedPayload.stripFor(recipient));
       RequestBody body = RequestBody.create(CBOR, payload);
 
       // build request

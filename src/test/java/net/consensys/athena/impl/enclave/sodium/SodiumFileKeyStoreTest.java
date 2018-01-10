@@ -9,8 +9,8 @@ import net.consensys.athena.api.enclave.EnclaveException;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.impl.config.MemoryConfig;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
-import net.consensys.athena.impl.http.data.Base64;
-import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.utils.Base64;
+import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.File;
 import java.io.InputStream;

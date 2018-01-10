@@ -1,6 +1,6 @@
 package net.consensys.athena.impl.http.server;
 
-import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.File;
 import java.util.Optional;

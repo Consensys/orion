@@ -3,7 +3,7 @@
 //import static org.junit.Assert.assertEquals;
 //import static org.junit.Assert.assertNotNull;
 //
-//import net.consensys.athena.impl.http.data.ContentType;
+//import net.consensys.athena.impl.http.server.HttpContentType;
 //import net.consensys.athena.impl.http.data.EmptyPayload;
 //import net.consensys.athena.impl.http.data.Request;
 //import net.consensys.athena.impl.http.data.Result;
@@ -114,9 +114,9 @@
 //    // fake http request with payload
 //    FullHttpRequest fakeHttpRequest =
 //        new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/failing");
-//    byte[] payload = serializer.serialize(ContentType.CBOR, new MockDummyPayload(42, "toto"));
+//    byte[] payload = serializer.serialize(HttpContentType.CBOR, new MockDummyPayload(42, "toto"));
 //    fakeHttpRequest = fakeHttpRequest.replace(Unpooled.copiedBuffer(payload));
-//    fakeHttpRequest.headers().add(HttpHeaderNames.CONTENT_TYPE, ContentType.CBOR.httpHeaderValue);
+//    fakeHttpRequest.headers().add(HttpHeaderNames.CONTENT_TYPE, HttpContentType.CBOR.httpHeaderValue);
 //
 //    // let our channel process it, and ensure we got a result
 //    ch.writeInbound(fakeHttpRequest);
@@ -137,7 +137,7 @@
 //  //    // fake http request with payload
 //  //    FullHttpRequest fakeHttpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET,
 //  //        "/failing");
-//  //    byte[] payload = serializer.serialize(ContentType.CBOR, new MockDummyPayload(42, "toto"));
+//  //    byte[] payload = serializer.serialize(HttpContentType.CBOR, new MockDummyPayload(42, "toto"));
 //  //    fakeHttpRequest = fakeHttpRequest.replace(Unpooled.copiedBuffer(payload));
 //  //
 //  //    // let our channel process it, and ensure we got a result
@@ -177,7 +177,7 @@
 //  @Override
 //  public Result handle(Request request) {
 //    HttpHeaders extraHeaders = new DefaultHttpHeaders().add("extra", "header");
-//    return new ResultImpl(ContentType.JSON, Optional.empty(), HttpResponseStatus.OK, extraHeaders);
+//    return new ResultImpl(HttpContentType.JSON, Optional.empty(), HttpResponseStatus.OK, extraHeaders);
 //  }
 //
 //  @Override

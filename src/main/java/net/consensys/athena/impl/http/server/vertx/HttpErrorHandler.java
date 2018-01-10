@@ -1,8 +1,8 @@
 package net.consensys.athena.impl.http.server.vertx;
 
-import net.consensys.athena.impl.http.data.ContentType;
-import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.http.server.HttpError;
+import net.consensys.athena.impl.utils.Serializer;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -30,8 +30,10 @@ public class HttpErrorHandler implements Handler<RoutingContext> {
 
     if (failureContext.failure() != null) {
       HttpError httpError = new HttpError(failureContext.failure().getMessage());
-      Buffer buffer = Buffer.buffer(serializer.serialize(ContentType.JSON, httpError));
-      response.putHeader(HttpHeaders.CONTENT_TYPE, ContentType.JSON.httpHeaderValue).end(buffer);
+      Buffer buffer = Buffer.buffer(serializer.serialize(HttpContentType.JSON, httpError));
+      response
+          .putHeader(HttpHeaders.CONTENT_TYPE, HttpContentType.JSON.httpHeaderValue)
+          .end(buffer);
     } else {
       response.end();
     }

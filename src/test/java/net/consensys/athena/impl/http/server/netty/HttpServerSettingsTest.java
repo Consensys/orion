@@ -5,8 +5,8 @@ import static java.util.Optional.of;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.HttpServerSettings;
+import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.File;
 

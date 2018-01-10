@@ -1,8 +1,8 @@
 package net.consensys.athena.impl.http.handler.partyinfo;
 
 import net.consensys.athena.api.network.NetworkNodes;
-import net.consensys.athena.impl.http.data.ContentType;
-import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.http.server.HttpContentType;
+import net.consensys.athena.impl.utils.Serializer;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -24,7 +24,7 @@ public class PartyInfoHandler implements Handler<RoutingContext> {
 
   @Override
   public void handle(RoutingContext routingContext) {
-    Buffer toReturn = Buffer.buffer(serializer.serialize(ContentType.CBOR, networkNodes));
+    Buffer toReturn = Buffer.buffer(serializer.serialize(HttpContentType.CBOR, networkNodes));
     routingContext.response().end(toReturn);
   }
 }

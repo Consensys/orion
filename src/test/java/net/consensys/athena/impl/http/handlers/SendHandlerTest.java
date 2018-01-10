@@ -12,9 +12,9 @@ import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
-import net.consensys.athena.impl.http.data.Base64;
-import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.handler.send.SendRequest;
+import net.consensys.athena.impl.http.server.HttpContentType;
+import net.consensys.athena.impl.utils.Base64;
 
 import java.io.IOException;
 import java.net.URL;
@@ -51,7 +51,7 @@ public class SendHandlerTest extends HandlerTest {
   public void testInvalidRequest() throws Exception {
     SendRequest sendRequest = new SendRequest(null, "me", null);
 
-    Request request = buildPostRequest(AthenaRoutes.SEND, ContentType.JSON, sendRequest);
+    Request request = buildPostRequest(AthenaRoutes.SEND, HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -81,7 +81,7 @@ public class SendHandlerTest extends HandlerTest {
     // build our sendRequest
     SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer));
 
-    Request request = buildPostRequest(AthenaRoutes.SEND, ContentType.JSON, sendRequest);
+    Request request = buildPostRequest(AthenaRoutes.SEND, HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -107,7 +107,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // build our sendRequest
     SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer));
-    Request request = buildPostRequest(AthenaRoutes.SEND, ContentType.JSON, sendRequest);
+    Request request = buildPostRequest(AthenaRoutes.SEND, HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -141,7 +141,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // build our sendRequest
     SendRequest sendRequest = buildFakeRequest(fakePeers, toEncrypt);
-    Request request = buildPostRequest(AthenaRoutes.SEND, ContentType.JSON, sendRequest);
+    Request request = buildPostRequest(AthenaRoutes.SEND, HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -159,12 +159,12 @@ public class SendHandlerTest extends HandlerTest {
 
       // check header
       assertTrue(
-          recordedRequest.getHeader("Content-Type").contains(ContentType.CBOR.httpHeaderValue));
+          recordedRequest.getHeader("Content-Type").contains(HttpContentType.CBOR.httpHeaderValue));
 
       // ensure cipher text is same.
       SodiumEncryptedPayload receivedPayload =
           serializer.deserialize(
-              ContentType.CBOR,
+              HttpContentType.CBOR,
               SodiumEncryptedPayload.class,
               recordedRequest.getBody().readByteArray());
       assertArrayEquals(receivedPayload.getCipherText(), encryptedPayload.getCipherText());

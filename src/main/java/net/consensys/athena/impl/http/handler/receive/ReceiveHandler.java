@@ -3,9 +3,9 @@ package net.consensys.athena.impl.http.handler.receive;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
-import net.consensys.athena.impl.http.data.Base64;
-import net.consensys.athena.impl.http.data.ContentType;
-import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.http.server.HttpContentType;
+import net.consensys.athena.impl.utils.Base64;
+import net.consensys.athena.impl.utils.Serializer;
 
 import java.util.Optional;
 
@@ -29,7 +29,7 @@ public class ReceiveHandler implements Handler<RoutingContext> {
   public void handle(RoutingContext routingContext) {
     ReceiveRequest receiveRequest =
         serializer.deserialize(
-            ContentType.JSON, ReceiveRequest.class, routingContext.getBody().getBytes());
+            HttpContentType.JSON, ReceiveRequest.class, routingContext.getBody().getBytes());
 
     Optional<EncryptedPayload> encryptedPayload = storage.get(receiveRequest.key);
     if (!encryptedPayload.isPresent()) {
@@ -45,7 +45,7 @@ public class ReceiveHandler implements Handler<RoutingContext> {
     Buffer toReturn =
         Buffer.buffer(
             serializer.serialize(
-                ContentType.JSON, new ReceiveResponse(Base64.encode(decryptedPayload))));
+                HttpContentType.JSON, new ReceiveResponse(Base64.encode(decryptedPayload))));
 
     routingContext.response().end(toReturn);
   }

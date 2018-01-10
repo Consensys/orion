@@ -6,18 +6,18 @@ import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageEngine;
 import net.consensys.athena.api.storage.StorageKeyBuilder;
-import net.consensys.athena.impl.http.data.ContentType;
-import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.handler.delete.DeleteHandler;
 import net.consensys.athena.impl.http.handler.partyinfo.PartyInfoHandler;
 import net.consensys.athena.impl.http.handler.push.PushHandler;
 import net.consensys.athena.impl.http.handler.receive.ReceiveHandler;
 import net.consensys.athena.impl.http.handler.send.SendController;
 import net.consensys.athena.impl.http.handler.upcheck.UpcheckController;
+import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.http.server.vertx.HttpErrorHandler;
 import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.file.MapDbStorage;
+import net.consensys.athena.impl.utils.Serializer;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
@@ -66,16 +66,19 @@ public class AthenaRoutes {
         .handler(ResponseContentTypeHandler.create())
         .failureHandler(new HttpErrorHandler(serializer));
 
-    router.get(UPCHECK).produces(ContentType.TEXT.httpHeaderValue).handler(new UpcheckController());
+    router
+        .get(UPCHECK)
+        .produces(HttpContentType.TEXT.httpHeaderValue)
+        .handler(new UpcheckController());
 
     router
         .post(SEND)
-        .produces(ContentType.JSON.httpHeaderValue)
+        .produces(HttpContentType.JSON.httpHeaderValue)
         .handler(new SendController(enclave, storage, networkNodes, serializer));
 
     router
         .post(RECIEVE)
-        .produces(ContentType.JSON.httpHeaderValue)
+        .produces(HttpContentType.JSON.httpHeaderValue)
         .handler(BodyHandler.create())
         .handler(new ReceiveHandler(enclave, storage, serializer));
 
@@ -83,13 +86,13 @@ public class AthenaRoutes {
 
     router
         .get(PARTYINFO)
-        .produces(ContentType.JSON.httpHeaderValue)
+        .produces(HttpContentType.JSON.httpHeaderValue)
         .handler(BodyHandler.create())
         .handler(new PartyInfoHandler(networkNodes, serializer));
 
     router
         .post(PUSH)
-        .produces(ContentType.TEXT.httpHeaderValue)
+        .produces(HttpContentType.TEXT.httpHeaderValue)
         .handler(BodyHandler.create())
         .handler(new PushHandler(storage, serializer));
   }

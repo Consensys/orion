@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import net.consensys.athena.api.cmd.AthenaRoutes;
 import net.consensys.athena.api.network.NetworkNodes;
-import net.consensys.athena.impl.http.data.ContentType;
+import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
 
 import java.net.URL;
@@ -26,7 +26,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
     assertEquals(200, resp.code());
 
     NetworkNodes partyInfoResponse =
-        serializer.deserialize(ContentType.CBOR, MemoryNetworkNodes.class, resp.body().bytes());
+        serializer.deserialize(HttpContentType.CBOR, MemoryNetworkNodes.class, resp.body().bytes());
 
     assertEquals(networkNodes, partyInfoResponse);
   }

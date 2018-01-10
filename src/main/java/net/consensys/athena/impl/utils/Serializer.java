@@ -1,4 +1,6 @@
-package net.consensys.athena.impl.http.data;
+package net.consensys.athena.impl.utils;
+
+import net.consensys.athena.impl.http.server.HttpContentType;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +23,7 @@ public class Serializer {
     jsonObjectMapper.setSerializationInclusion(Include.NON_NULL);
   }
 
-  public byte[] serialize(ContentType contentType, Object obj) {
+  public byte[] serialize(HttpContentType contentType, Object obj) {
     try {
       switch (contentType) {
         case JSON:
@@ -38,7 +40,7 @@ public class Serializer {
     }
   }
 
-  public <T> T deserialize(ContentType contentType, Class<T> valueType, byte[] bytes) {
+  public <T> T deserialize(HttpContentType contentType, Class<T> valueType, byte[] bytes) {
     try {
       switch (contentType) {
         case JSON:
@@ -58,7 +60,7 @@ public class Serializer {
     }
   }
 
-  public void writeFile(ContentType contentType, File file, Object obj) {
+  public void writeFile(HttpContentType contentType, File file, Object obj) {
     try {
       getMapperOrThrows(contentType).writeValue(file, obj);
     } catch (IOException io) {
@@ -66,7 +68,7 @@ public class Serializer {
     }
   }
 
-  public <T> T readFile(ContentType contentType, File file, Class<T> valueType) {
+  public <T> T readFile(HttpContentType contentType, File file, Class<T> valueType) {
     try {
       return getMapperOrThrows(contentType).readValue(file, valueType);
     } catch (IOException io) {
@@ -74,11 +76,12 @@ public class Serializer {
     }
   }
 
-  public <T> T roundTrip(ContentType contentType, Class<T> valueType, Object obj) {
+  public <T> T roundTrip(HttpContentType contentType, Class<T> valueType, Object obj) {
     return deserialize(contentType, valueType, serialize(contentType, obj));
   }
 
-  private ObjectMapper getMapperOrThrows(ContentType contentType) throws SerializationException {
+  private ObjectMapper getMapperOrThrows(HttpContentType contentType)
+      throws SerializationException {
     switch (contentType) {
       case JSON:
         return jsonObjectMapper;

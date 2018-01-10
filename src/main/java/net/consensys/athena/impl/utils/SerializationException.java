@@ -1,4 +1,4 @@
-package net.consensys.athena.impl.http.data;
+package net.consensys.athena.impl.utils;
 
 public class SerializationException extends RuntimeException {
 

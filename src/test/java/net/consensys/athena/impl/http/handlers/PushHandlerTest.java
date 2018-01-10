@@ -8,7 +8,7 @@ import net.consensys.athena.api.cmd.AthenaRoutes;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
-import net.consensys.athena.impl.http.data.ContentType;
+import net.consensys.athena.impl.http.server.HttpContentType;
 
 import java.util.Optional;
 
@@ -31,8 +31,8 @@ public class PushHandlerTest extends HandlerTest {
     // PUSH operation, sending an encrypted payload
     RequestBody body =
         RequestBody.create(
-            MediaType.parse(ContentType.CBOR.httpHeaderValue),
-            serializer.serialize(ContentType.CBOR, encryptedPayload));
+            MediaType.parse(HttpContentType.CBOR.httpHeaderValue),
+            serializer.serialize(HttpContentType.CBOR, encryptedPayload));
 
     Request request = new Request.Builder().post(body).url(baseUrl + AthenaRoutes.PUSH).build();
 
@@ -52,9 +52,9 @@ public class PushHandlerTest extends HandlerTest {
     SodiumEncryptedPayload pushRequest = mockPayload();
     assertEquals(
         pushRequest,
-        serializer.roundTrip(ContentType.CBOR, SodiumEncryptedPayload.class, pushRequest));
+        serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, pushRequest));
     assertEquals(
         pushRequest,
-        serializer.roundTrip(ContentType.JSON, SodiumEncryptedPayload.class, pushRequest));
+        serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, pushRequest));
   }
 }

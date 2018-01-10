@@ -11,10 +11,10 @@ import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
-import net.consensys.athena.impl.http.data.Base64;
-import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.handler.receive.ReceiveRequest;
 import net.consensys.athena.impl.http.handler.receive.ReceiveResponse;
+import net.consensys.athena.impl.http.server.HttpContentType;
+import net.consensys.athena.impl.utils.Base64;
 
 import java.security.PublicKey;
 import java.util.Optional;
@@ -53,7 +53,7 @@ public class ReceiveHandlerTest extends HandlerTest {
 
     // Receive operation, sending a ReceivePayload request
     ReceiveRequest receiveRequest = new ReceiveRequest(key, recipientKey);
-    Request request = buildPostRequest(AthenaRoutes.RECIEVE, ContentType.JSON, receiveRequest);
+    Request request = buildPostRequest(AthenaRoutes.RECIEVE, HttpContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -61,7 +61,7 @@ public class ReceiveHandlerTest extends HandlerTest {
     assertEquals(200, resp.code());
 
     ReceiveResponse receiveResponse =
-        serializer.deserialize(ContentType.JSON, ReceiveResponse.class, resp.body().bytes());
+        serializer.deserialize(HttpContentType.JSON, ReceiveResponse.class, resp.body().bytes());
 
     byte[] decodedPayload = Base64.decode(receiveResponse.payload);
     assertArrayEquals(toEncrypt, decodedPayload);
@@ -72,7 +72,7 @@ public class ReceiveHandlerTest extends HandlerTest {
     // Receive operation, sending a ReceivePayload request
     ReceiveRequest receiveRequest = new ReceiveRequest("notForMe", null);
 
-    Request request = buildPostRequest(AthenaRoutes.RECIEVE, ContentType.JSON, receiveRequest);
+    Request request = buildPostRequest(AthenaRoutes.RECIEVE, HttpContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -85,18 +85,18 @@ public class ReceiveHandlerTest extends HandlerTest {
     ReceiveResponse receiveResponse = new ReceiveResponse("some payload");
     assertEquals(
         receiveResponse,
-        serializer.roundTrip(ContentType.CBOR, ReceiveResponse.class, receiveResponse));
+        serializer.roundTrip(HttpContentType.CBOR, ReceiveResponse.class, receiveResponse));
     assertEquals(
         receiveResponse,
-        serializer.roundTrip(ContentType.JSON, ReceiveResponse.class, receiveResponse));
+        serializer.roundTrip(HttpContentType.JSON, ReceiveResponse.class, receiveResponse));
 
     SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     ReceiveRequest receiveRequest = new ReceiveRequest("some key", senderKey);
     assertEquals(
         receiveRequest,
-        serializer.roundTrip(ContentType.CBOR, ReceiveRequest.class, receiveRequest));
+        serializer.roundTrip(HttpContentType.CBOR, ReceiveRequest.class, receiveRequest));
     assertEquals(
         receiveRequest,
-        serializer.roundTrip(ContentType.JSON, ReceiveRequest.class, receiveRequest));
+        serializer.roundTrip(HttpContentType.JSON, ReceiveRequest.class, receiveRequest));
   }
 }

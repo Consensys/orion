@@ -10,11 +10,11 @@ import net.consensys.athena.impl.enclave.sodium.SodiumCombinedKey;
 import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.athena.impl.helpers.CesarEnclave;
-import net.consensys.athena.impl.http.data.ContentType;
-import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.http.server.HttpServerSettings;
 import net.consensys.athena.impl.http.server.vertx.VertxServer;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
+import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -112,7 +112,7 @@ public abstract class HandlerTest {
     return encryptedPayload;
   }
 
-  protected Request buildPostRequest(String path, ContentType contentType, Object payload) {
+  protected Request buildPostRequest(String path, HttpContentType contentType, Object payload) {
     RequestBody body =
         RequestBody.create(
             MediaType.parse(contentType.httpHeaderValue),

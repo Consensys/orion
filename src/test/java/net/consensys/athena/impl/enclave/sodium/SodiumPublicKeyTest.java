@@ -1,15 +1,14 @@
 package net.consensys.athena.impl.enclave.sodium;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.*;
 
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.impl.config.MemoryConfig;
-import net.consensys.athena.impl.http.data.Base64;
-import net.consensys.athena.impl.http.data.ContentType;
-import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.http.server.HttpContentType;
+import net.consensys.athena.impl.utils.Base64;
+import net.consensys.athena.impl.utils.Serializer;
 
 import java.security.PublicKey;
 import java.util.Optional;
@@ -34,10 +33,10 @@ public class SodiumPublicKeyTest {
   public void testRoundTripSerialization() {
     SodiumPublicKey key = new SodiumPublicKey("fake encoded".getBytes());
     Serializer serializer = new Serializer();
-    byte[] bytes = serializer.serialize(ContentType.JSON, key);
-    assertEquals(key, serializer.deserialize(ContentType.JSON, SodiumPublicKey.class, bytes));
-    bytes = serializer.serialize(ContentType.CBOR, key);
-    assertEquals(key, serializer.deserialize(ContentType.CBOR, SodiumPublicKey.class, bytes));
+    byte[] bytes = serializer.serialize(HttpContentType.JSON, key);
+    assertEquals(key, serializer.deserialize(HttpContentType.JSON, SodiumPublicKey.class, bytes));
+    bytes = serializer.serialize(HttpContentType.CBOR, key);
+    assertEquals(key, serializer.deserialize(HttpContentType.CBOR, SodiumPublicKey.class, bytes));
   }
 
   @Test

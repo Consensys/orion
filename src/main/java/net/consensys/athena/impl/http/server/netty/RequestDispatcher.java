@@ -3,12 +3,12 @@
 //import static java.util.Optional.empty;
 //import static net.consensys.athena.impl.http.data.Result.internalServerError;
 //
-//import net.consensys.athena.impl.http.data.ContentType;
+//import net.consensys.athena.impl.http.server.HttpContentType;
 //import net.consensys.athena.impl.http.data.EmptyPayload;
 //import net.consensys.athena.impl.http.data.Request;
 //import net.consensys.athena.impl.http.data.RequestImpl;
 //import net.consensys.athena.impl.http.data.Result;
-//import net.consensys.athena.impl.http.data.Serializer;
+//import net.consensys.athena.impl.utils.Serializer;
 //import net.consensys.athena.impl.http.server.Controller;
 //import net.consensys.athena.impl.http.server.Router;
 //
@@ -106,7 +106,7 @@
 //    }
 //
 //    // deserialize the bytes into expected type by controller
-//    ContentType cType = ContentType.fromHttpContentType(contentType);
+//    HttpContentType cType = HttpContentType.fromHttpContentType(contentType);
 //    Object payload = serializer.deserialize(cType, controller.expectedRequest(), requestPayload);
 //    return new RequestImpl(Optional.of(payload));
 //  }
@@ -134,7 +134,7 @@
 //    }
 //
 //    // default; use controller specified content type
-//    ContentType contentType = result.defaultContentType();
+//    HttpContentType contentType = result.defaultContentType();
 //
 //    // accept header is specified and doesn't support controller default
 //    if (acceptHeader != null && !acceptHeader.contains(contentType.httpHeaderValue)) {

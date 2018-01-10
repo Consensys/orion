@@ -1,10 +1,10 @@
-package net.consensys.athena.impl.http.data;
+package net.consensys.athena.impl.http.server;
 
 import java.util.NoSuchElementException;
 
 import io.netty.handler.codec.http.HttpHeaderValues;
 
-public enum ContentType {
+public enum HttpContentType {
   JSON(HttpHeaderValues.APPLICATION_JSON.toString()),
   BINARY(HttpHeaderValues.BINARY.toString()),
   TEXT(HttpHeaderValues.TEXT_PLAIN.toString() + "; charset=utf-8"),
@@ -13,12 +13,12 @@ public enum ContentType {
 
   public final String httpHeaderValue;
 
-  ContentType(String httpHeaderValue) {
+  HttpContentType(String httpHeaderValue) {
     this.httpHeaderValue = httpHeaderValue;
   }
 
-  public static ContentType fromHttpContentType(String contentType) {
-    for (ContentType cType : ContentType.values()) {
+  public static HttpContentType fromHttpHeader(String contentType) {
+    for (HttpContentType cType : HttpContentType.values()) {
       if (cType.httpHeaderValue.equalsIgnoreCase(contentType)) {
         return cType;
       }

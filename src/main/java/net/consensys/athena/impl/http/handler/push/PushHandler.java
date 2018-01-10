@@ -3,8 +3,8 @@ package net.consensys.athena.impl.http.handler.push;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
-import net.consensys.athena.impl.http.data.ContentType;
-import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.http.server.HttpContentType;
+import net.consensys.athena.impl.utils.Serializer;
 
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
@@ -26,7 +26,9 @@ public class PushHandler implements Handler<RoutingContext> {
   public void handle(RoutingContext routingContext) {
     EncryptedPayload pushRequest =
         serializer.deserialize(
-            ContentType.CBOR, SodiumEncryptedPayload.class, routingContext.getBody().getBytes());
+            HttpContentType.CBOR,
+            SodiumEncryptedPayload.class,
+            routingContext.getBody().getBytes());
 
     // we receive a EncryptedPayload and
     String digest = storage.put(pushRequest);
