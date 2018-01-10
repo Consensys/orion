@@ -1,4 +1,4 @@
-package net.consensys.athena.impl.http.controllers;
+package net.consensys.athena.impl.http.handler.partyinfo;
 
 import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.impl.http.data.ContentType;
@@ -12,12 +12,12 @@ import io.vertx.ext.web.RoutingContext;
  * Used as a part of the network discovery process. Look up the binary list of constellation nodes
  * that a node has knowledge of.
  */
-public class PartyInfoController implements Handler<RoutingContext> {
+public class PartyInfoHandler implements Handler<RoutingContext> {
 
   private final NetworkNodes networkNodes;
   private final Serializer serializer;
 
-  public PartyInfoController(NetworkNodes networkNodes, Serializer serializer) {
+  public PartyInfoHandler(NetworkNodes networkNodes, Serializer serializer) {
     this.networkNodes = networkNodes;
     this.serializer = serializer;
   }

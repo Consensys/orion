@@ -3,13 +3,13 @@
 //import static org.junit.Assert.*;
 //
 //import net.consensys.athena.impl.config.MemoryConfig;
-//import net.consensys.athena.impl.http.controllers.DeleteController;
-//import net.consensys.athena.impl.http.controllers.PartyInfoController;
-//import net.consensys.athena.impl.http.controllers.PushController;
-//import net.consensys.athena.impl.http.controllers.ReceiveController;
-//import net.consensys.athena.impl.http.controllers.ResendController;
-//import net.consensys.athena.impl.http.controllers.SendController;
-//import net.consensys.athena.impl.http.controllers.UpcheckController;
+//import DeleteHandler;
+//import PartyInfoHandler;
+//import PushHandler;
+//import ReceiveHandler;
+//import ResendHandler;
+//import SendController;
+//import UpcheckController;
 //import net.consensys.athena.impl.http.data.Serializer;
 //import net.consensys.athena.impl.http.server.Controller;
 //import net.consensys.athena.impl.network.MemoryNetworkNodes;
@@ -41,13 +41,13 @@
 //        new Object[][] {
 //          {"Upcheck", "/upcheck", UpcheckController.class},
 //          {"SendRaw", "/sendraw", SendController.class},
-//          {"ReceiveRaw", "/receiveraw", ReceiveController.class},
+//          {"ReceiveRaw", "/receiveraw", ReceiveHandler.class},
 //          {"Send", "/send", SendController.class},
-//          {"Receive", "/receive", ReceiveController.class},
-//          {"Delete", "/delete", DeleteController.class},
-//          {"Resend", "/resend", ResendController.class},
-//          {"NetworkNodes", "/partyinfo", PartyInfoController.class},
-//          {"Push", "/push", PushController.class},
+//          {"Receive", "/receive", ReceiveHandler.class},
+//          {"Delete", "/delete", DeleteHandler.class},
+//          {"Resend", "/resend", ResendHandler.class},
+//          {"NetworkNodes", "/partyinfo", PartyInfoHandler.class},
+//          {"Push", "/push", PushHandler.class},
 //        });
 //  }
 //

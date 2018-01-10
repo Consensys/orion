@@ -1,4 +1,4 @@
-package net.consensys.athena.impl.http.controllers;
+package net.consensys.athena.impl.http.handler.upcheck;
 
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;

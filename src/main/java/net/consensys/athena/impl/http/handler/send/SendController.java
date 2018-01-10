@@ -1,4 +1,4 @@
-package net.consensys.athena.impl.http.controllers;
+package net.consensys.athena.impl.http.handler.send;
 
 import net.consensys.athena.api.cmd.AthenaRoutes;
 import net.consensys.athena.api.enclave.Enclave;
@@ -10,18 +10,12 @@ import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Serializer;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URL;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
@@ -139,44 +133,6 @@ public class SendController implements Handler<RoutingContext> {
       return response.code() == 200 && response.body().string().equals(digest);
     } catch (IOException io) {
       throw new RuntimeException(io);
-    }
-  }
-
-  public static class SendRequest implements Serializable {
-    public String payload; // b64 encoded
-    public String from; // b64 encoded
-    public String[] to; // b64 encoded
-
-    @JsonCreator
-    public SendRequest(
-        @JsonProperty("payload") String payload,
-        @JsonProperty("from") String from,
-        @JsonProperty("to") String[] to) {
-      this.payload = payload;
-      this.from = from;
-      this.to = to;
-    }
-
-    @JsonIgnore
-    public boolean isValid() {
-      if (Stream.of(payload, from, to).anyMatch(Objects::isNull)) {
-        return false;
-      }
-      for (int i = 0; i < to.length; i++) {
-        if (to[i].length() <= 0) {
-          return false;
-        }
-      }
-      return payload.length() > 0 && from.length() > 0 && to.length > 0;
-    }
-  }
-
-  static class SendResponse {
-    public String key; // b64 digest key result from encrypted payload storage operation
-
-    @JsonCreator
-    public SendResponse(@JsonProperty("key") String key) {
-      this.key = key;
     }
   }
 }

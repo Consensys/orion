@@ -1,5 +1,5 @@
 
-package net.consensys.athena.impl.http.controllers;
+package net.consensys.athena.impl.http.handlers;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -12,9 +12,9 @@ import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
-import net.consensys.athena.impl.http.controllers.SendController.SendRequest;
 import net.consensys.athena.impl.http.data.Base64;
 import net.consensys.athena.impl.http.data.ContentType;
+import net.consensys.athena.impl.http.handler.send.SendRequest;
 
 import java.io.IOException;
 import java.net.URL;

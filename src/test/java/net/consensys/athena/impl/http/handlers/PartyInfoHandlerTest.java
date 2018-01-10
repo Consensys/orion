@@ -1,4 +1,4 @@
-package net.consensys.athena.impl.http.controllers;
+package net.consensys.athena.impl.http.handlers;
 
 import static org.junit.Assert.assertEquals;
 
@@ -13,7 +13,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.junit.Test;
 
-public class PartyInfoControllerTest extends ControllerTest {
+public class PartyInfoHandlerTest extends ControllerTest {
 
   @Test
   public void testSuccessfulProcessingOfRequest() throws Exception {

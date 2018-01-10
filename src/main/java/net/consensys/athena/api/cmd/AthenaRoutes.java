@@ -6,14 +6,14 @@ import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageEngine;
 import net.consensys.athena.api.storage.StorageKeyBuilder;
-import net.consensys.athena.impl.http.controllers.DeleteController;
-import net.consensys.athena.impl.http.controllers.PartyInfoController;
-import net.consensys.athena.impl.http.controllers.PushController;
-import net.consensys.athena.impl.http.controllers.ReceiveController;
-import net.consensys.athena.impl.http.controllers.SendController;
-import net.consensys.athena.impl.http.controllers.UpcheckController;
 import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.http.handler.delete.DeleteHandler;
+import net.consensys.athena.impl.http.handler.partyinfo.PartyInfoHandler;
+import net.consensys.athena.impl.http.handler.push.PushHandler;
+import net.consensys.athena.impl.http.handler.receive.ReceiveHandler;
+import net.consensys.athena.impl.http.handler.send.SendController;
+import net.consensys.athena.impl.http.handler.upcheck.UpcheckController;
 import net.consensys.athena.impl.http.server.vertx.ApiErrorHandler;
 import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
@@ -77,21 +77,21 @@ public class AthenaRoutes {
         .post(RECIEVE)
         .produces(ContentType.JSON.httpHeaderValue)
         .handler(BodyHandler.create())
-        .handler(new ReceiveController(enclave, storage, serializer));
+        .handler(new ReceiveHandler(enclave, storage, serializer));
 
-    router.post(DELETE).handler(BodyHandler.create()).handler(new DeleteController(storage));
+    router.post(DELETE).handler(BodyHandler.create()).handler(new DeleteHandler(storage));
 
     router
         .get(PARTYINFO)
         .produces(ContentType.JSON.httpHeaderValue)
         .handler(BodyHandler.create())
-        .handler(new PartyInfoController(networkNodes, serializer));
+        .handler(new PartyInfoHandler(networkNodes, serializer));
 
     router
         .post(PUSH)
         .produces(ContentType.TEXT.httpHeaderValue)
         .handler(BodyHandler.create())
-        .handler(new PushController(storage, serializer));
+        .handler(new PushHandler(storage, serializer));
   }
 
   public Storage getStorage() {

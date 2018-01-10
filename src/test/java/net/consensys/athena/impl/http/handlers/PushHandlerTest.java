@@ -1,5 +1,5 @@
 
-package net.consensys.athena.impl.http.controllers;
+package net.consensys.athena.impl.http.handlers;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -18,7 +18,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.junit.Test;
 
-public class PushControllerTest extends ControllerTest {
+public class PushHandlerTest extends ControllerTest {
 
   @Test
   public void testPayloadIsStored() throws Exception {

@@ -1,4 +1,4 @@
-package net.consensys.athena.impl.http.controllers;
+package net.consensys.athena.impl.http.handler.push;
 
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
@@ -12,12 +12,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /** used to push a payload to a node. */
-public class PushController implements Handler<RoutingContext> {
+public class PushHandler implements Handler<RoutingContext> {
   private static final Logger log = LogManager.getLogger();
   private final Storage storage;
   private final Serializer serializer;
 
-  public PushController(Storage storage, Serializer serializer) {
+  public PushHandler(Storage storage, Serializer serializer) {
     this.serializer = serializer;
     this.storage = storage;
   }

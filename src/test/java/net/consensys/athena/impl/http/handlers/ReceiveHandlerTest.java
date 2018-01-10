@@ -1,4 +1,4 @@
-package net.consensys.athena.impl.http.controllers;
+package net.consensys.athena.impl.http.handlers;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -11,10 +11,10 @@ import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
-import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveRequest;
-import net.consensys.athena.impl.http.controllers.ReceiveController.ReceiveResponse;
 import net.consensys.athena.impl.http.data.Base64;
 import net.consensys.athena.impl.http.data.ContentType;
+import net.consensys.athena.impl.http.handler.receive.ReceiveRequest;
+import net.consensys.athena.impl.http.handler.receive.ReceiveResponse;
 
 import java.security.PublicKey;
 import java.util.Optional;
@@ -24,7 +24,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.junit.Test;
 
-public class ReceiveControllerTest extends ControllerTest {
+public class ReceiveHandlerTest extends ControllerTest {
   private KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());;
   private final SodiumMemoryKeyStore memoryKeyStore = new SodiumMemoryKeyStore();
 
