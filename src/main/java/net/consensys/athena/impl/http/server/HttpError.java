@@ -1,11 +1,11 @@
-package net.consensys.athena.impl.http.data;
+package net.consensys.athena.impl.http.server;
 
 import java.util.Objects;
 
-public final class ApiError {
+public final class HttpError {
   public final String error;
 
-  public ApiError(String error) {
+  public HttpError(String error) {
     this.error = error;
   }
 
@@ -17,8 +17,8 @@ public final class ApiError {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    ApiError apiError = (ApiError) o;
-    return Objects.equals(error, apiError.error);
+    HttpError httpError = (HttpError) o;
+    return Objects.equals(error, httpError.error);
   }
 
   @Override

@@ -1,8 +1,8 @@
 package net.consensys.athena.impl.http.server.vertx;
 
-import net.consensys.athena.impl.http.data.ApiError;
 import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.http.server.HttpError;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -10,9 +10,9 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 
-public class ApiErrorHandler implements Handler<RoutingContext> {
+public class HttpErrorHandler implements Handler<RoutingContext> {
 
-  public ApiErrorHandler(Serializer serializer) {
+  public HttpErrorHandler(Serializer serializer) {
     this.serializer = serializer;
   }
 
@@ -29,8 +29,8 @@ public class ApiErrorHandler implements Handler<RoutingContext> {
     HttpServerResponse response = failureContext.response().setStatusCode(statusCode);
 
     if (failureContext.failure() != null) {
-      ApiError apiError = new ApiError(failureContext.failure().getMessage());
-      Buffer buffer = Buffer.buffer(serializer.serialize(ContentType.JSON, apiError));
+      HttpError httpError = new HttpError(failureContext.failure().getMessage());
+      Buffer buffer = Buffer.buffer(serializer.serialize(ContentType.JSON, httpError));
       response.putHeader(HttpHeaders.CONTENT_TYPE, ContentType.JSON.httpHeaderValue).end(buffer);
     } else {
       response.end();

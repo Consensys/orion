@@ -14,7 +14,7 @@ import net.consensys.athena.impl.http.handler.push.PushHandler;
 import net.consensys.athena.impl.http.handler.receive.ReceiveHandler;
 import net.consensys.athena.impl.http.handler.send.SendController;
 import net.consensys.athena.impl.http.handler.upcheck.UpcheckController;
-import net.consensys.athena.impl.http.server.vertx.ApiErrorHandler;
+import net.consensys.athena.impl.http.server.vertx.HttpErrorHandler;
 import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.file.MapDbStorage;
@@ -64,7 +64,7 @@ public class AthenaRoutes {
         .handler(BodyHandler.create())
         .handler(LoggerHandler.create())
         .handler(ResponseContentTypeHandler.create())
-        .failureHandler(new ApiErrorHandler(serializer));
+        .failureHandler(new HttpErrorHandler(serializer));
 
     router.get(UPCHECK).produces(ContentType.TEXT.httpHeaderValue).handler(new UpcheckController());
 

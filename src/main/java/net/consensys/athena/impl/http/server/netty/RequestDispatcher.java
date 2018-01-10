@@ -54,7 +54,7 @@
 //      // process http request
 //      result = controller.handle(request);
 //    } catch (RuntimeException e) {
-//      // if an exception occurred, return a formatted ApiError
+//      // if an exception occurred, return a formatted HttpError
 //      log.error(e.getMessage());
 //      result = internalServerError(e.getMessage());
 //    }
