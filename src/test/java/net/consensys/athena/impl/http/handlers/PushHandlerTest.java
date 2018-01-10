@@ -18,7 +18,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.junit.Test;
 
-public class PushHandlerTest extends ControllerTest {
+public class PushHandlerTest extends HandlerTest {
 
   @Test
   public void testPayloadIsStored() throws Exception {
@@ -45,5 +45,16 @@ public class PushHandlerTest extends ControllerTest {
     Optional<EncryptedPayload> data = storage.get(digest);
     assertTrue(data.isPresent());
     assertEquals(encryptedPayload, data.get());
+  }
+
+  @Test
+  public void testRoundTripSerialization() {
+    SodiumEncryptedPayload pushRequest = mockPayload();
+    assertEquals(
+        pushRequest,
+        serializer.roundTrip(ContentType.CBOR, SodiumEncryptedPayload.class, pushRequest));
+    assertEquals(
+        pushRequest,
+        serializer.roundTrip(ContentType.JSON, SodiumEncryptedPayload.class, pushRequest));
   }
 }

@@ -34,7 +34,7 @@ import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SendControllerTest extends ControllerTest {
+public class SendHandlerTest extends HandlerTest {
 
   private final KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());;
   private final SodiumMemoryKeyStore memoryKeyStore = new SodiumMemoryKeyStore();

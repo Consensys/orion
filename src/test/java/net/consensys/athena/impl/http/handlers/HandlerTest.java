@@ -32,7 +32,7 @@ import okhttp3.RequestBody;
 import org.junit.After;
 import org.junit.Before;
 
-public abstract class ControllerTest {
+public abstract class HandlerTest {
   protected final Serializer serializer = new Serializer();
 
   // http client

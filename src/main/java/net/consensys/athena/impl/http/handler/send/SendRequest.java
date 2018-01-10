@@ -1,6 +1,7 @@
 package net.consensys.athena.impl.http.handler.send;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -34,5 +35,26 @@ public class SendRequest implements Serializable {
       }
     }
     return payload.length() > 0 && from.length() > 0 && to.length > 0;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof SendRequest)) {
+      return false;
+    }
+    SendRequest that = (SendRequest) o;
+    return Objects.equals(payload, that.payload)
+        && Objects.equals(from, that.from)
+        && Arrays.equals(to, that.to);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = Objects.hash(payload, from);
+    result = 31 * result + Arrays.hashCode(to);
+    return result;
   }
 }

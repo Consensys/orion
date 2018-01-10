@@ -8,7 +8,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.junit.Test;
 
-public class UpcheckControllerTest extends ControllerTest {
+public class UpcheckHandlerTest extends HandlerTest {
 
   @Test
   public void testMyApplication() throws Exception {

@@ -13,7 +13,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.junit.Test;
 
-public class PartyInfoHandlerTest extends ControllerTest {
+public class PartyInfoHandlerTest extends HandlerTest {
 
   @Test
   public void testSuccessfulProcessingOfRequest() throws Exception {

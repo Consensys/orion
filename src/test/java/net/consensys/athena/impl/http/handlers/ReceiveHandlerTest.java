@@ -24,7 +24,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.junit.Test;
 
-public class ReceiveHandlerTest extends ControllerTest {
+public class ReceiveHandlerTest extends HandlerTest {
   private KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());;
   private final SodiumMemoryKeyStore memoryKeyStore = new SodiumMemoryKeyStore();
 
@@ -78,5 +78,25 @@ public class ReceiveHandlerTest extends ControllerTest {
     Response resp = httpClient.newCall(request).execute();
 
     assertEquals(404, resp.code());
+  }
+
+  @Test
+  public void testRoundTripSerialization() {
+    ReceiveResponse receiveResponse = new ReceiveResponse("some payload");
+    assertEquals(
+        receiveResponse,
+        serializer.roundTrip(ContentType.CBOR, ReceiveResponse.class, receiveResponse));
+    assertEquals(
+        receiveResponse,
+        serializer.roundTrip(ContentType.JSON, ReceiveResponse.class, receiveResponse));
+
+    SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
+    ReceiveRequest receiveRequest = new ReceiveRequest("some key", senderKey);
+    assertEquals(
+        receiveRequest,
+        serializer.roundTrip(ContentType.CBOR, ReceiveRequest.class, receiveRequest));
+    assertEquals(
+        receiveRequest,
+        serializer.roundTrip(ContentType.JSON, ReceiveRequest.class, receiveRequest));
   }
 }

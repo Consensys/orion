@@ -74,6 +74,10 @@ public class Serializer {
     }
   }
 
+  public <T> T roundTrip(ContentType contentType, Class<T> valueType, Object obj) {
+    return deserialize(contentType, valueType, serialize(contentType, obj));
+  }
+
   private ObjectMapper getMapperOrThrows(ContentType contentType) throws SerializationException {
     switch (contentType) {
       case JSON:
