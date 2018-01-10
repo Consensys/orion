@@ -27,7 +27,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /** Send a base64 encoded payload to encrypt. */
-public class SendController implements Handler<RoutingContext> {
+public class SendHandler implements Handler<RoutingContext> {
   private static final Logger log = LogManager.getLogger();
 
   private final Enclave enclave;
@@ -39,7 +39,7 @@ public class SendController implements Handler<RoutingContext> {
   private final OkHttpClient httpClient = new OkHttpClient();
   private final MediaType CBOR = MediaType.parse(HttpContentType.CBOR.httpHeaderValue);
 
-  public SendController(
+  public SendHandler(
       Enclave enclave, Storage storage, NetworkNodes networkNodes, Serializer serializer) {
     this.enclave = enclave;
     this.storage = storage;

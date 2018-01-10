@@ -10,8 +10,8 @@ import net.consensys.athena.impl.http.handler.delete.DeleteHandler;
 import net.consensys.athena.impl.http.handler.partyinfo.PartyInfoHandler;
 import net.consensys.athena.impl.http.handler.push.PushHandler;
 import net.consensys.athena.impl.http.handler.receive.ReceiveHandler;
-import net.consensys.athena.impl.http.handler.send.SendController;
-import net.consensys.athena.impl.http.handler.upcheck.UpcheckController;
+import net.consensys.athena.impl.http.handler.send.SendHandler;
+import net.consensys.athena.impl.http.handler.upcheck.UpcheckHandler;
 import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.http.server.vertx.HttpErrorHandler;
 import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
@@ -69,12 +69,12 @@ public class AthenaRoutes {
     router
         .get(UPCHECK)
         .produces(HttpContentType.TEXT.httpHeaderValue)
-        .handler(new UpcheckController());
+        .handler(new UpcheckHandler());
 
     router
         .post(SEND)
         .produces(HttpContentType.JSON.httpHeaderValue)
-        .handler(new SendController(enclave, storage, networkNodes, serializer));
+        .handler(new SendHandler(enclave, storage, networkNodes, serializer));
 
     router
         .post(RECIEVE)

@@ -8,8 +8,8 @@
 //import PushHandler;
 //import ReceiveHandler;
 //import ResendHandler;
-//import SendController;
-//import UpcheckController;
+//import SendHandler;
+//import UpcheckHandler;
 //import net.consensys.athena.impl.utils.Serializer;
 //import net.consensys.athena.impl.http.server.Controller;
 //import net.consensys.athena.impl.network.MemoryNetworkNodes;
@@ -39,10 +39,10 @@
 //    //see the controllers for a brief description of what the controller does.
 //    return Arrays.asList(
 //        new Object[][] {
-//          {"Upcheck", "/upcheck", UpcheckController.class},
-//          {"SendRaw", "/sendraw", SendController.class},
+//          {"Upcheck", "/upcheck", UpcheckHandler.class},
+//          {"SendRaw", "/sendraw", SendHandler.class},
 //          {"ReceiveRaw", "/receiveraw", ReceiveHandler.class},
-//          {"Send", "/send", SendController.class},
+//          {"Send", "/send", SendHandler.class},
 //          {"Receive", "/receive", ReceiveHandler.class},
 //          {"Delete", "/delete", DeleteHandler.class},
 //          {"Resend", "/resend", ResendHandler.class},
