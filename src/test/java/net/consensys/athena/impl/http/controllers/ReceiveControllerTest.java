@@ -20,9 +20,7 @@ import java.security.PublicKey;
 import java.util.Optional;
 import java.util.Random;
 
-import okhttp3.MediaType;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.junit.Test;
 
@@ -55,12 +53,7 @@ public class ReceiveControllerTest extends ControllerTest {
 
     // Receive operation, sending a ReceivePayload request
     ReceiveRequest receiveRequest = new ReceiveRequest(key, recipientKey);
-    RequestBody body =
-        RequestBody.create(
-            MediaType.parse(ContentType.JSON.httpHeaderValue),
-            serializer.serialize(ContentType.JSON, receiveRequest));
-
-    Request request = new Request.Builder().post(body).url(baseUrl + AthenaRoutes.RECIEVE).build();
+    Request request = buildPostRequest(AthenaRoutes.RECIEVE, ContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -78,12 +71,8 @@ public class ReceiveControllerTest extends ControllerTest {
   public void testResponseWhenKeyNotFound() throws Exception {
     // Receive operation, sending a ReceivePayload request
     ReceiveRequest receiveRequest = new ReceiveRequest("notForMe", null);
-    RequestBody body =
-        RequestBody.create(
-            MediaType.parse(ContentType.JSON.httpHeaderValue),
-            serializer.serialize(ContentType.JSON, receiveRequest));
 
-    Request request = new Request.Builder().post(body).url(baseUrl + AthenaRoutes.RECIEVE).build();
+    Request request = buildPostRequest(AthenaRoutes.RECIEVE, ContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();

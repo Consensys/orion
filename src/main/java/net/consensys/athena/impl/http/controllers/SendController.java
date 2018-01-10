@@ -1,5 +1,6 @@
 package net.consensys.athena.impl.http.controllers;
 
+import net.consensys.athena.api.cmd.AthenaRoutes;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.network.NetworkNodes;
@@ -9,6 +10,7 @@ import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Serializer;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URL;
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -18,8 +20,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -52,11 +56,9 @@ public class SendController implements Handler<RoutingContext> {
 
   @Override
   public void handle(RoutingContext routingContext) {
-    //    SendRequest sendRequest =
-    //        serializer.deserialize(
-    //            ContentType.JSON, SendRequest.class, routingContext.getBody().getBytes());
-
-    SendRequest sendRequest = routingContext.get("request");
+    SendRequest sendRequest =
+        serializer.deserialize(
+            ContentType.JSON, SendRequest.class, routingContext.getBody().getBytes());
 
     if (!sendRequest.isValid()) {
       throw new IllegalArgumentException();
@@ -101,11 +103,9 @@ public class SendController implements Handler<RoutingContext> {
       return;
     }
 
-    //    Buffer responseData =
-    //        Buffer.buffer(serializer.serialize(ContentType.JSON, new SendResponse(digest)));
-    //    routingContext.response().end(responseData);
-    routingContext.put("response", new SendResponse(digest));
-    routingContext.next();
+    Buffer responseData =
+        Buffer.buffer(serializer.serialize(ContentType.JSON, new SendResponse(digest)));
+    routingContext.response().end(responseData);
   }
 
   private Response pushToPeer(EncryptedPayload encryptedPayload, PublicKey recipient) {
@@ -114,7 +114,8 @@ public class SendController implements Handler<RoutingContext> {
       if (recipientURL == null) {
         throw new RuntimeException("couldn't find peer URL");
       }
-      URL pushURL = new URL(recipientURL, "/push"); // TODO @gbotrel reverse routing would be nice
+      URL pushURL =
+          new URL(recipientURL, AthenaRoutes.PUSH); // TODO @gbotrel reverse routing would be nice
 
       // serialize payload and build RequestBody. we also strip non relevant combinedKeys
       byte[] payload = serializer.serialize(ContentType.CBOR, encryptedPayload.stripFor(recipient));
@@ -141,10 +142,10 @@ public class SendController implements Handler<RoutingContext> {
     }
   }
 
-  public static class SendRequest {
-    String payload; // b64 encoded
-    String from; // b64 encoded
-    String[] to; // b64 encoded
+  public static class SendRequest implements Serializable {
+    public String payload; // b64 encoded
+    public String from; // b64 encoded
+    public String[] to; // b64 encoded
 
     @JsonCreator
     public SendRequest(
@@ -156,6 +157,7 @@ public class SendController implements Handler<RoutingContext> {
       this.to = to;
     }
 
+    @JsonIgnore
     public boolean isValid() {
       if (Stream.of(payload, from, to).anyMatch(Objects::isNull)) {
         return false;
@@ -170,9 +172,10 @@ public class SendController implements Handler<RoutingContext> {
   }
 
   static class SendResponse {
-    String key; // b64 digest key result from encrypted payload storage operation
+    public String key; // b64 digest key result from encrypted payload storage operation
 
-    public SendResponse(String key) {
+    @JsonCreator
+    public SendResponse(@JsonProperty("key") String key) {
       this.key = key;
     }
   }

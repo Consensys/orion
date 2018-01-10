@@ -10,6 +10,7 @@ import net.consensys.athena.impl.enclave.sodium.SodiumCombinedKey;
 import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.athena.impl.helpers.CesarEnclave;
+import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.HttpServerSettings;
 import net.consensys.athena.impl.http.server.vertx.VertxServer;
@@ -24,7 +25,10 @@ import java.util.Optional;
 
 import io.vertx.core.Vertx;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 import org.junit.After;
 import org.junit.Before;
 
@@ -106,5 +110,18 @@ public abstract class ControllerTest {
             combinedKeysOwners);
 
     return encryptedPayload;
+  }
+
+  protected Request buildPostRequest(String path, ContentType contentType, Object payload) {
+    RequestBody body =
+        RequestBody.create(
+            MediaType.parse(contentType.httpHeaderValue),
+            serializer.serialize(contentType, payload));
+
+    if (path.startsWith("/")) {
+      path = path.substring(1, path.length());
+    }
+
+    return new Request.Builder().post(body).url(baseUrl + path).build();
   }
 }

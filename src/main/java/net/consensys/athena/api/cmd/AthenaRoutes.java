@@ -11,13 +11,10 @@ import net.consensys.athena.impl.http.controllers.PartyInfoController;
 import net.consensys.athena.impl.http.controllers.PushController;
 import net.consensys.athena.impl.http.controllers.ReceiveController;
 import net.consensys.athena.impl.http.controllers.SendController;
-import net.consensys.athena.impl.http.controllers.SendController.SendRequest;
 import net.consensys.athena.impl.http.controllers.UpcheckController;
 import net.consensys.athena.impl.http.data.ContentType;
 import net.consensys.athena.impl.http.data.Serializer;
 import net.consensys.athena.impl.http.server.vertx.ApiErrorHandler;
-import net.consensys.athena.impl.http.server.vertx.RequestSerializationHandler;
-import net.consensys.athena.impl.http.server.vertx.ResponseSerializationHandler;
 import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.athena.impl.storage.file.MapDbStorage;
@@ -74,9 +71,7 @@ public class AthenaRoutes {
     router
         .post(SEND)
         .produces(ContentType.JSON.httpHeaderValue)
-        .handler(new RequestSerializationHandler(serializer, ContentType.JSON, SendRequest.class))
-        .handler(new SendController(enclave, storage, networkNodes, serializer))
-        .handler(new ResponseSerializationHandler(serializer, ContentType.JSON));
+        .handler(new SendController(enclave, storage, networkNodes, serializer));
 
     router
         .post(RECIEVE)
