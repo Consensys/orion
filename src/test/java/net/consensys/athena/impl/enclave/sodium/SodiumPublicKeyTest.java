@@ -2,7 +2,6 @@ package net.consensys.athena.impl.enclave.sodium;
 
 import static junit.framework.TestCase.assertEquals;
 
-
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.enclave.KeyStore;
@@ -10,7 +9,6 @@ import net.consensys.athena.impl.config.MemoryConfig;
 import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.utils.Base64;
 import net.consensys.athena.impl.utils.Serializer;
-
 
 import java.security.PublicKey;
 import java.util.Optional;
@@ -54,6 +52,4 @@ public class SodiumPublicKeyTest {
 
     assertEquals(fakePK, rebuiltKey);
   }
-
-
 }
