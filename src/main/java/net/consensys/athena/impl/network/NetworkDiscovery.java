@@ -6,6 +6,7 @@ import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.utils.Serializer;
 
 import java.net.URL;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,7 +25,7 @@ public class NetworkDiscovery extends AbstractVerticle {
 
   private static long refreshDelayMs = 1000;
   private static long maxRefreshDelayMs = 60000;
-  private static int connectionTimeoutMs = 1500;
+  public static int connectionTimeoutMs = 1500;
 
   private final OkHttpClient httpClient;
 
@@ -39,6 +40,7 @@ public class NetworkDiscovery extends AbstractVerticle {
     this.httpClient =
         new OkHttpClient.Builder()
             .connectTimeout(connectionTimeoutMs, TimeUnit.MILLISECONDS)
+            .readTimeout(connectionTimeoutMs, TimeUnit.MILLISECONDS)
             .build();
   }
 
@@ -49,7 +51,7 @@ public class NetworkDiscovery extends AbstractVerticle {
 
   // note; this should be called from the same vertx event loop
   protected void updateDiscoverers() {
-    for (URL nodeUrl : nodes.nodeURLs()) {
+    for (URL nodeUrl : nodes.getNodeURLs()) {
       if (!discoverers.containsKey(nodeUrl)) {
         Discoverer d = new Discoverer(nodeUrl);
         discoverers.put(nodeUrl, d);
@@ -58,10 +60,16 @@ public class NetworkDiscovery extends AbstractVerticle {
     }
   }
 
+  public Map<URL, Discoverer> getDiscoverers() {
+    return discoverers;
+  }
+
   class Discoverer implements Handler<Long> {
-    final URL nodeUrl;
     final Request request;
-    long currentRefreshDelay = refreshDelayMs;
+    public URL nodeUrl;
+    public long currentRefreshDelay = refreshDelayMs;
+    public Instant lastUpdate = Instant.MIN;
+    public long attempts = 0;
 
     Discoverer(URL nodeUrl) {
       this.nodeUrl = nodeUrl;
@@ -98,21 +106,25 @@ public class NetworkDiscovery extends AbstractVerticle {
     Optional<NetworkNodes> remotePartyInfo() {
       try {
         log.debug("calling partyInfo on {}", nodeUrl);
+        attempts++;
         // call http endpoint
         Response resp = httpClient.newCall(request).execute();
 
-        // deserialize response
-        NetworkNodes partyInfoResponse =
-            serializer.deserialize(
-                HttpContentType.CBOR, MemoryNetworkNodes.class, resp.body().bytes());
+        if (resp.code() == 200) {
+          lastUpdate = Instant.now();
+          // deserialize response
+          NetworkNodes partyInfoResponse =
+              serializer.deserialize(
+                  HttpContentType.CBOR, MemoryNetworkNodes.class, resp.body().bytes());
 
-        // return
-        return Optional.of(partyInfoResponse);
+          return Optional.of(partyInfoResponse);
+        }
+
       } catch (Exception io) {
-        log.error("calling partyInfo on {} failed {}", nodeUrl, io.getMessage());
         // timeout or connectivity issue / serialization issue
-        return Optional.empty();
+        log.error("calling partyInfo on {} failed {}", nodeUrl, io.getMessage());
       }
+      return Optional.empty();
     }
   }
 }

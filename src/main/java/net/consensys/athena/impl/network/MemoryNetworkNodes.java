@@ -5,6 +5,7 @@ import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKeyDeserializer;
 
+import java.io.Serializable;
 import java.net.URL;
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -18,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-public class MemoryNetworkNodes implements NetworkNodes {
+public class MemoryNetworkNodes implements NetworkNodes, Serializable {
 
   private URL url;
   private CopyOnWriteArraySet<URL> nodeURLs;
@@ -63,12 +64,12 @@ public class MemoryNetworkNodes implements NetworkNodes {
   }
 
   @Override
-  public URL url() {
+  public URL getUrl() {
     return url;
   }
 
   @Override
-  public Set<URL> nodeURLs() {
+  public Set<URL> getNodeURLs() {
     return nodeURLs;
   }
 
@@ -78,7 +79,7 @@ public class MemoryNetworkNodes implements NetworkNodes {
   }
 
   @Override
-  public Map<PublicKey, URL> nodePKs() {
+  public Map<PublicKey, URL> getNodePKs() {
     return nodePKs;
   }
 
@@ -93,7 +94,7 @@ public class MemoryNetworkNodes implements NetworkNodes {
     // note; not using map.putAll() as we don't want a malicious peer to overwrite ours nodes.
     // TODO ; how do we manage a node on the network that updates its URL?  do we check certs ?
     boolean thisChanged = false;
-    Iterator it = other.nodePKs().entrySet().iterator();
+    Iterator it = other.getNodePKs().entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry pair = (Map.Entry) it.next();
       if (!nodePKs.containsKey(pair.getKey())) {

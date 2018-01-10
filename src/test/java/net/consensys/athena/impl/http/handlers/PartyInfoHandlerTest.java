@@ -32,4 +32,16 @@ public class PartyInfoHandlerTest extends HandlerTest {
 
     assertEquals(networkNodes, partyInfoResponse);
   }
+
+  @Test
+  public void testRoundTripSerialization() throws Exception {
+    MemoryNetworkNodes networkNodes = new MemoryNetworkNodes();
+    networkNodes.addNode(new SodiumPublicKey("fake".getBytes()), new URL("http://localhost/"));
+    assertEquals(
+        networkNodes,
+        serializer.roundTrip(HttpContentType.CBOR, MemoryNetworkNodes.class, networkNodes));
+    assertEquals(
+        networkNodes,
+        serializer.roundTrip(HttpContentType.JSON, MemoryNetworkNodes.class, networkNodes));
+  }
 }

@@ -13,12 +13,12 @@ import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
+import net.consensys.athena.impl.helpers.FakePeer;
 import net.consensys.athena.impl.http.handler.send.SendRequest;
 import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.utils.Base64;
 
 import java.io.IOException;
-import java.net.URL;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,7 +30,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,7 +74,9 @@ public class SendHandlerTest extends HandlerTest {
   @Test
   public void testSendFailsWhenBadResponseFromPeer() throws Exception {
     // create fake peer
-    FakePeer fakePeer = new FakePeer(new MockResponse().setResponseCode(500));
+    FakePeer fakePeer =
+        new FakePeer(
+            new MockResponse().setResponseCode(500), memoryKeyStore.generateKeyPair(keyConfig));
 
     // add peer push URL to networkNodes
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
@@ -102,7 +103,10 @@ public class SendHandlerTest extends HandlerTest {
   @Test
   public void testSendFailsWhenBadDigestFromPeer() throws Exception {
     // create fake peer
-    FakePeer fakePeer = new FakePeer(new MockResponse().setBody("not the best digest"));
+    FakePeer fakePeer =
+        new FakePeer(
+            new MockResponse().setBody("not the best digest"),
+            memoryKeyStore.generateKeyPair(keyConfig));
 
     // add peer push URL to networkNodes
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
@@ -135,7 +139,9 @@ public class SendHandlerTest extends HandlerTest {
     // create fake peers
     List<FakePeer> fakePeers = new ArrayList<>(5);
     for (int i = 0; i < 5; i++) {
-      FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
+      FakePeer fakePeer =
+          new FakePeer(
+              new MockResponse().setBody(digest), memoryKeyStore.generateKeyPair(keyConfig));
       // add peer push URL to networkNodes
       networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
       fakePeers.add(fakePeer);
@@ -190,21 +196,5 @@ public class SendHandlerTest extends HandlerTest {
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
     return buildFakeRequest(forPeers, toEncrypt);
-  }
-
-  class FakePeer {
-    final MockWebServer server;
-    final PublicKey publicKey;
-
-    public FakePeer(MockResponse response) throws IOException {
-      server = new MockWebServer();
-      publicKey = memoryKeyStore.generateKeyPair(keyConfig);
-      server.enqueue(response);
-      server.start();
-    }
-
-    URL getURL() {
-      return server.url("").url();
-    }
   }
 }
