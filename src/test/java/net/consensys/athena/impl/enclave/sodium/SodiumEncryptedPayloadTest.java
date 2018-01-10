@@ -28,11 +28,9 @@ public class SodiumEncryptedPayloadTest {
             "fake ciphertext".getBytes(),
             combinedKeysOwners);
     Serializer serializer = new Serializer();
-    byte[] bytes = serializer.serialize(HttpContentType.JSON, payload);
     assertEquals(
-        payload, serializer.deserialize(HttpContentType.JSON, SodiumEncryptedPayload.class, bytes));
-    bytes = serializer.serialize(HttpContentType.CBOR, payload);
+        payload, serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, payload));
     assertEquals(
-        payload, serializer.deserialize(HttpContentType.CBOR, SodiumEncryptedPayload.class, bytes));
+        payload, serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, payload));
   }
 }
