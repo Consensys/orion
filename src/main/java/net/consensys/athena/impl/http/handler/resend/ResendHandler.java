@@ -5,7 +5,6 @@ import net.consensys.athena.api.storage.Storage;
 
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * ask to resend a single transaction or all transactions. Useful in situations where a
@@ -22,6 +21,6 @@ public class ResendHandler implements Handler<RoutingContext> {
 
   @Override
   public void handle(RoutingContext routingContext) {
-    throw new NotImplementedException();
+    throw new UnsupportedOperationException("This handler has not been implemented yet");
   }
 }
