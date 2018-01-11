@@ -38,6 +38,7 @@ dependencies {
   // logger
   compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.10.0'
   compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
+
 }
 
 task run(type: JavaExec) {
@@ -57,3 +58,27 @@ spotless {
   }
 }
 
+// acceptance tests
+sourceSets {
+  acceptanceTest {
+
+    java.srcDir file('src/acceptanceTest/java')
+    resources.srcDir file('src/acceptanceTest/resources')
+    compileClasspath += main.output + test.output + configurations.testRuntime
+    runtimeClasspath += output + compileClasspath
+  }
+}
+
+task acceptanceTest(type: Test) {
+  description = 'Runs the acceptance tests'
+  group = 'verification'
+  testClassesDir = sourceSets.acceptanceTest.output.classesDir
+  classpath = sourceSets.acceptanceTest.runtimeClasspath
+  reports.junitXml.destination = '$buildDir/acceptance-test-results'
+  reports.html.destination = '$buildDir/reports/acceptanceTest'
+  dependsOn(test)
+}
+
+check {
+  dependsOn(acceptanceTest)
+}
