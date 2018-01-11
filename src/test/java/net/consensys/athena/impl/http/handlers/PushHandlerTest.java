@@ -7,9 +7,14 @@ import static org.junit.Assert.assertTrue;
 import net.consensys.athena.api.cmd.AthenaRoutes;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
+import net.consensys.athena.impl.enclave.sodium.SodiumCombinedKey;
 import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
+import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.athena.impl.http.server.HttpContentType;
 
+import java.security.PublicKey;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import okhttp3.MediaType;
@@ -56,5 +61,21 @@ public class PushHandlerTest extends HandlerTest {
     assertEquals(
         pushRequest,
         serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, pushRequest));
+  }
+
+  protected SodiumEncryptedPayload mockPayload() {
+    SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes());
+    Map<PublicKey, Integer> combinedKeysOwners = new HashMap<>();
+
+    SodiumEncryptedPayload encryptedPayload =
+        new SodiumEncryptedPayload(
+            new SodiumPublicKey("fakekey".getBytes()),
+            "fake nonce".getBytes(),
+            "fake combinedNonce".getBytes(),
+            new SodiumCombinedKey[] {sodiumCombinedKey},
+            "fake ciphertext".getBytes(),
+            combinedKeysOwners);
+
+    return encryptedPayload;
   }
 }

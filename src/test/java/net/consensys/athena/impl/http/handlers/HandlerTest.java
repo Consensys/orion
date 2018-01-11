@@ -6,9 +6,6 @@ import net.consensys.athena.api.cmd.AthenaRoutes;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.impl.config.MemoryConfig;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
-import net.consensys.athena.impl.enclave.sodium.SodiumCombinedKey;
-import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
-import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.athena.impl.helpers.CesarEnclave;
 import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.http.server.HttpServerSettings;
@@ -18,9 +15,6 @@ import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.security.PublicKey;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import io.vertx.core.Vertx;
@@ -94,22 +88,6 @@ public abstract class HandlerTest {
 
   protected Enclave buildEnclave() {
     return new CesarEnclave();
-  }
-
-  protected SodiumEncryptedPayload mockPayload() {
-    SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes());
-    Map<PublicKey, Integer> combinedKeysOwners = new HashMap<>();
-
-    SodiumEncryptedPayload encryptedPayload =
-        new SodiumEncryptedPayload(
-            new SodiumPublicKey("fakekey".getBytes()),
-            "fake nonce".getBytes(),
-            "fake combinedNonce".getBytes(),
-            new SodiumCombinedKey[] {sodiumCombinedKey},
-            "fake ciphertext".getBytes(),
-            combinedKeysOwners);
-
-    return encryptedPayload;
   }
 
   protected Request buildPostRequest(String path, HttpContentType contentType, Object payload) {
