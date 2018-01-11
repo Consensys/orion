@@ -4,7 +4,7 @@ import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.api.storage.StorageEngine;
 import net.consensys.athena.api.storage.StorageKeyBuilder;
-import net.consensys.athena.impl.http.data.Base64;
+import net.consensys.athena.impl.utils.Base64;
 
 import java.util.Optional;
 

@@ -8,9 +8,9 @@ import net.consensys.athena.impl.enclave.sodium.storage.ArgonOptions;
 import net.consensys.athena.impl.enclave.sodium.storage.PrivateKeyData;
 import net.consensys.athena.impl.enclave.sodium.storage.SodiumArgon2Sbox;
 import net.consensys.athena.impl.enclave.sodium.storage.StoredPrivateKey;
-import net.consensys.athena.impl.http.data.Base64;
-import net.consensys.athena.impl.http.data.ContentType;
-import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.http.server.HttpContentType;
+import net.consensys.athena.impl.utils.Base64;
+import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -64,7 +64,7 @@ public class SodiumFileKeyStore implements KeyStore {
 
   private PrivateKey readPrivateKey(File privateKeyFile, Optional<String> password) {
     StoredPrivateKey storedPrivateKey =
-        serializer.readFile(ContentType.JSON, privateKeyFile, StoredPrivateKey.class);
+        serializer.readFile(HttpContentType.JSON, privateKeyFile, StoredPrivateKey.class);
 
     byte[] decoded;
     switch (storedPrivateKey.getType()) {
@@ -135,7 +135,7 @@ public class SodiumFileKeyStore implements KeyStore {
   }
 
   private void storePrivateKey(StoredPrivateKey privKey, File privateFile) {
-    serializer.writeFile(ContentType.JSON, privateFile, privKey);
+    serializer.writeFile(HttpContentType.JSON, privateFile, privKey);
   }
 
   private void storePublicKey(byte[] publicKey, File publicFile) {

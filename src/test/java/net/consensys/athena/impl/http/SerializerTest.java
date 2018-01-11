@@ -12,8 +12,8 @@ import net.consensys.athena.impl.enclave.sodium.SodiumCombinedKey;
 import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
-import net.consensys.athena.impl.http.data.ContentType;
-import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.http.server.HttpContentType;
+import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -30,16 +30,18 @@ public class SerializerTest {
   @Test
   public void testJsonSerialization() throws Exception {
     DummyObject dummyObjectOriginal = new DummyObject();
-    byte[] bytes = serializer.serialize(ContentType.JSON, dummyObjectOriginal);
-    DummyObject dummyObject = serializer.deserialize(ContentType.JSON, DummyObject.class, bytes);
+    byte[] bytes = serializer.serialize(HttpContentType.JSON, dummyObjectOriginal);
+    DummyObject dummyObject =
+        serializer.deserialize(HttpContentType.JSON, DummyObject.class, bytes);
     assert (dummyObject.equals(dummyObjectOriginal));
   }
 
   @Test
   public void testCBORSerialization() throws Exception {
     DummyObject dummyObjectOriginal = new DummyObject();
-    byte[] bytes = serializer.serialize(ContentType.CBOR, dummyObjectOriginal);
-    DummyObject dummyObject = serializer.deserialize(ContentType.CBOR, DummyObject.class, bytes);
+    byte[] bytes = serializer.serialize(HttpContentType.CBOR, dummyObjectOriginal);
+    DummyObject dummyObject =
+        serializer.deserialize(HttpContentType.CBOR, DummyObject.class, bytes);
     assert (dummyObject.equals(dummyObjectOriginal));
   }
 
@@ -67,9 +69,9 @@ public class SerializerTest {
 
     SodiumEncryptedPayload processed =
         serializer.deserialize(
-            ContentType.CBOR,
+            HttpContentType.CBOR,
             SodiumEncryptedPayload.class,
-            serializer.serialize(ContentType.CBOR, original));
+            serializer.serialize(HttpContentType.CBOR, original));
 
     assertEquals(original, processed);
   }
