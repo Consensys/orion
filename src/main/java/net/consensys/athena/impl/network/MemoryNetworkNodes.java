@@ -9,7 +9,6 @@ import java.io.Serializable;
 import java.net.URL;
 import java.security.PublicKey;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -85,23 +84,16 @@ public class MemoryNetworkNodes implements NetworkNodes, Serializable {
 
   @Override
   public boolean merge(NetworkNodes other) {
-    // TODO If we don't have the public key of the node, we shouldn't add it, should we ?
-    //    for (URL nodeUrl: other.nodeURLs()) {
-    //      if (!this.nodeURLs.contains(nodeUrl)) {
-    //        nodeURLs.add(nodeUrl);
-    //      }
-    //    }
     // note; not using map.putAll() as we don't want a malicious peer to overwrite ours nodes.
-    // TODO ; how do we manage a node on the network that updates its URL?  do we check certs ?
     boolean thisChanged = false;
-    Iterator it = other.getNodePKs().entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry pair = (Map.Entry) it.next();
-      if (!nodePKs.containsKey(pair.getKey())) {
+
+    for (Map.Entry<PublicKey, URL> entry : other.getNodePKs().entrySet()) {
+      if (!nodePKs.containsKey(entry.getKey())) {
         thisChanged = true;
-        addNode((PublicKey) pair.getKey(), (URL) pair.getValue());
+        addNode(entry.getKey(), entry.getValue());
       }
     }
+
     return thisChanged;
   }
 
