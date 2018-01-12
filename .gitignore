@@ -16,5 +16,3 @@ routerdb
 /out
 *.db.test
 routerdb.wal.0
-*.key
-*.pub

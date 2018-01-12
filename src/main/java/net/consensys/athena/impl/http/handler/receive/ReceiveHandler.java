@@ -3,6 +3,7 @@ package net.consensys.athena.impl.http.handler.receive;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
+import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.utils.Base64;
 import net.consensys.athena.impl.utils.Serializer;
@@ -39,7 +40,8 @@ public class ReceiveHandler implements Handler<RoutingContext> {
 
     // Haskell doc: let's check if receipients is set = it's a payload that we sent. TODO @gbotrel
     // if not, it's a payload sent to us
-    byte[] decryptedPayload = enclave.decrypt(encryptedPayload.get(), receiveRequest.publicKey);
+    SodiumPublicKey sodiumPublicKey = new SodiumPublicKey(Base64.decode(receiveRequest.publicKey));
+    byte[] decryptedPayload = enclave.decrypt(encryptedPayload.get(), sodiumPublicKey);
 
     // build a ReceiveResponse
     Buffer toReturn =

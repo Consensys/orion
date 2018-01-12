@@ -1,7 +1,5 @@
 package net.consensys.athena.impl.http.handler.receive;
 
-import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
-
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -10,11 +8,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ReceiveRequest implements Serializable {
   public String key;
-  public SodiumPublicKey publicKey;
+  public String publicKey; // b64 encoded
 
   @JsonCreator
   public ReceiveRequest(
-      @JsonProperty("key") String key, @JsonProperty("publicKey") SodiumPublicKey publicKey) {
+      @JsonProperty("key") String key, @JsonProperty("publicKey") String publicKey) {
     this.key = key;
     this.publicKey = publicKey;
   }
