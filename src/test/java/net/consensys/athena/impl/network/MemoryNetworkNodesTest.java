@@ -3,8 +3,8 @@ package net.consensys.athena.impl.network;
 import static org.junit.Assert.*;
 
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
-import net.consensys.athena.impl.http.data.ContentType;
-import net.consensys.athena.impl.http.data.Serializer;
+import net.consensys.athena.impl.http.server.HttpContentType;
+import net.consensys.athena.impl.utils.Serializer;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,9 +24,11 @@ public class MemoryNetworkNodesTest {
     MemoryNetworkNodes nodes =
         new MemoryNetworkNodes(new URL("http://some.server:8080/"), urls, pks);
     Serializer serializer = new Serializer();
-    byte[] bytes = serializer.serialize(ContentType.JSON, nodes);
-    assertEquals(nodes, serializer.deserialize(ContentType.JSON, MemoryNetworkNodes.class, bytes));
-    bytes = serializer.serialize(ContentType.CBOR, nodes);
-    assertEquals(nodes, serializer.deserialize(ContentType.CBOR, MemoryNetworkNodes.class, bytes));
+    byte[] bytes = serializer.serialize(HttpContentType.JSON, nodes);
+    assertEquals(
+        nodes, serializer.deserialize(HttpContentType.JSON, MemoryNetworkNodes.class, bytes));
+    bytes = serializer.serialize(HttpContentType.CBOR, nodes);
+    assertEquals(
+        nodes, serializer.deserialize(HttpContentType.CBOR, MemoryNetworkNodes.class, bytes));
   }
 }

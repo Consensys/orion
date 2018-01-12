@@ -2,7 +2,7 @@ package net.consensys.athena.impl.enclave.sodium.storage;
 
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.EnclaveException;
-import net.consensys.athena.impl.http.data.Base64;
+import net.consensys.athena.impl.utils.Base64;
 
 import com.muquit.libsodiumjna.SodiumLibrary;
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;

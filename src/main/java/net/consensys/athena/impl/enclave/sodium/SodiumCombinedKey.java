@@ -2,12 +2,13 @@ package net.consensys.athena.impl.enclave.sodium;
 
 import net.consensys.athena.api.enclave.CombinedKey;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class SodiumCombinedKey implements CombinedKey {
+public class SodiumCombinedKey implements CombinedKey, Serializable {
 
   byte[] encoded;
 

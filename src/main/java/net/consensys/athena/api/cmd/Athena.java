@@ -1,23 +1,26 @@
 package net.consensys.athena.api.cmd;
 
+import static io.vertx.core.Vertx.vertx;
 import static java.util.Optional.empty;
 
 import net.consensys.athena.api.config.Config;
+import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.impl.cmd.AthenaArguments;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
+import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
-import net.consensys.athena.impl.http.data.Serializer;
-import net.consensys.athena.impl.http.server.netty.DefaultNettyServer;
-import net.consensys.athena.impl.http.server.netty.NettyServer;
-import net.consensys.athena.impl.http.server.netty.NettySettings;
+import net.consensys.athena.impl.http.server.HttpServerSettings;
+import net.consensys.athena.impl.http.server.vertx.VertxServer;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
+import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.*;
 import java.util.Optional;
 import java.util.Scanner;
 
+import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -25,41 +28,54 @@ public class Athena {
 
   private static final Logger log = LogManager.getLogger();
 
-  private static NetworkNodes networkNodes;
   private static final Serializer serializer = new Serializer();
+  private static final Vertx vertx = vertx();
+
+  private Config config;
+  private AthenaArguments arguments;
 
   public static void main(String[] args) throws Exception {
+    log.info("starting athena");
     Athena athena = new Athena();
     athena.run(args);
   }
 
-  public void run(String[] args) throws FileNotFoundException, InterruptedException {
-    log.info("starting athena");
-    AthenaArguments arguments = new AthenaArguments(args);
+  public void run(String[] args) throws FileNotFoundException {
+    // parsing arguments
+    arguments = new AthenaArguments(args);
 
-    if (!arguments.argumentExit()) {
-      Config config = loadConfig(arguments.configFileName());
-
-      if (arguments.keysToGenerate().isPresent()) {
-        generateKeys(arguments, config);
-
-      } else {
-        networkNodes = new MemoryNetworkNodes(config);
-        try {
-          NettyServer server = startServer(config);
-          joinServer(server);
-        } catch (InterruptedException ie) {
-          log.error(ie.getMessage());
-          throw ie;
-        } finally {
-          log.warn("netty server stopped");
-        }
-      }
+    if (arguments.argumentExit()) {
+      return;
     }
+
+    // load config file
+    config = loadConfig(arguments.configFileName());
+
+    // generate key pair and exit
+    if (arguments.keysToGenerate().isPresent()) {
+      runGenerateKeyPairs();
+      return;
+    }
+
+    // start our API server
+    runApiServer();
   }
 
-  private void generateKeys(AthenaArguments arguments, Config config) {
-    log.info("Generating Key Pairs");
+  private void runApiServer() {
+    NetworkNodes networkNodes = new MemoryNetworkNodes(config);
+    Enclave enclave = new LibSodiumEnclave(config, new SodiumFileKeyStore(config, serializer));
+
+    AthenaRoutes routes = new AthenaRoutes(vertx, networkNodes, serializer, enclave);
+
+    HttpServerSettings httpSettings =
+        new HttpServerSettings(config.socket(), Optional.of((int) config.port()), empty(), null);
+
+    VertxServer httpServer = new VertxServer(vertx, routes.getRouter(), httpSettings);
+    httpServer.start();
+  }
+
+  private void runGenerateKeyPairs() {
+    log.info("generating Key Pairs");
 
     SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
 
@@ -92,24 +108,5 @@ public class Athena {
     TomlConfigBuilder configBuilder = new TomlConfigBuilder();
 
     return configBuilder.build(configAsStream);
-  }
-
-  private void joinServer(NettyServer server) throws InterruptedException {
-    server.join();
-  }
-
-  NettyServer startServer(Config config) throws InterruptedException {
-    NettySettings settings =
-        new NettySettings(
-            config.socket(),
-            Optional.of((int) config.port()),
-            empty(),
-            new AthenaRouter(networkNodes, config, serializer),
-            serializer);
-    NettyServer server = new DefaultNettyServer(settings);
-
-    log.info("starting netty server");
-    server.start();
-    return server;
   }
 }

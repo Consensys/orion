@@ -1,7 +1,7 @@
 package net.consensys.athena.impl.enclave.sodium;
 
 import net.consensys.athena.api.enclave.EnclaveException;
-import net.consensys.athena.impl.http.data.Base64;
+import net.consensys.athena.impl.utils.Base64;
 
 import java.io.BufferedReader;
 import java.io.File;

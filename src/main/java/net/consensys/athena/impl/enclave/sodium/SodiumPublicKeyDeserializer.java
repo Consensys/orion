@@ -1,6 +1,6 @@
 package net.consensys.athena.impl.enclave.sodium;
 
-import net.consensys.athena.impl.http.data.Base64;
+import net.consensys.athena.impl.utils.Base64;
 
 import java.io.IOException;
 
