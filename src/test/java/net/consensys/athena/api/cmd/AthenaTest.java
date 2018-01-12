@@ -9,7 +9,9 @@ import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.http.server.netty.NettyServer;
 import net.consensys.athena.impl.http.server.netty.NettySettings;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -63,10 +65,15 @@ public class AthenaTest {
   public void testGenerateKeysArgumentProvided() throws Exception {
     //Test "--generatekeys" option
     String[] args1 = {"--generatekeys", "testkey1"};
+    String input = "\n";
+    InputStream in = new ByteArrayInputStream(input.getBytes());
+    System.setIn(in);
     athena.run(args1);
 
     File privateKey1 = new File("testkey1.key");
     File publicKey1 = new File("testkey1.pub");
+    assertTrue(privateKey1.exists());
+    assertTrue(publicKey1.exists());
     if (privateKey1.exists()) {
       privateKey1.delete();
     }
@@ -76,12 +83,24 @@ public class AthenaTest {
 
     //Test "--g" option and multiple key files
     args1 = new String[] {"-g", "testkey2,testkey3"};
+
+    String input2 = "\n\n";
+    InputStream in2 = new ByteArrayInputStream(input2.getBytes());
+    System.setIn(in2);
+
     athena.run(args1);
 
     File privateKey2 = new File("testkey2.key");
     File publicKey2 = new File("testkey2.pub");
     File privateKey3 = new File("testkey3.key");
     File publicKey3 = new File("testkey3.pub");
+
+    assertTrue(privateKey2.exists());
+    assertTrue(publicKey2.exists());
+
+    assertTrue(privateKey3.exists());
+    assertTrue(publicKey3.exists());
+
     if (privateKey2.exists()) {
       privateKey2.delete();
     }

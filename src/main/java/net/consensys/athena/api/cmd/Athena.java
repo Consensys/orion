@@ -16,6 +16,7 @@ import net.consensys.athena.impl.network.MemoryNetworkNodes;
 
 import java.io.*;
 import java.util.Optional;
+import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,14 +41,7 @@ public class Athena {
       Config config = loadConfig(arguments.configFileName());
 
       if (arguments.keysToGenerate().isPresent()) {
-        log.info("Generating Key Pairs");
-
-        SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
-
-        for (int i = 0; i < arguments.keysToGenerate().get().length; i++) {
-          keyStore.generateKeyPair(
-              new KeyConfig(arguments.keysToGenerate().get()[i], Optional.empty()));
-        }
+        generateKeys(arguments, config);
 
       } else {
         networkNodes = new MemoryNetworkNodes(config);
@@ -61,6 +55,27 @@ public class Athena {
           log.warn("netty server stopped");
         }
       }
+    }
+  }
+
+  private void generateKeys(AthenaArguments arguments, Config config) {
+    log.info("Generating Key Pairs");
+
+    SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
+
+    Scanner scanner = new Scanner(System.in);
+
+    for (int i = 0; i < arguments.keysToGenerate().get().length; i++) {
+
+      //Prompt for Password from user
+      System.out.format("Enter password for key pair [%s] : ", arguments.keysToGenerate().get()[i]);
+      String pwd = scanner.nextLine().trim();
+      Optional<String> password = pwd.length() > 0 ? Optional.of(pwd) : Optional.empty();
+
+      log.debug(
+          "Password for key [" + arguments.keysToGenerate().get()[i] + "] - [" + password + "]");
+
+      keyStore.generateKeyPair(new KeyConfig(arguments.keysToGenerate().get()[i], password));
     }
   }
 
