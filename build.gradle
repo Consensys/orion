@@ -9,6 +9,18 @@ repositories {
   jcenter()
 }
 
+//// acceptance tests
+sourceSets {
+  acceptance {
+    java.srcDir file('src/acceptance/java')
+    resources.srcDir file('src/acceptance/resources')
+    compileClasspath += main.output + test.output + configurations.testRuntime + main.compileClasspath + test.compileClasspath
+    runtimeClasspath += output + compileClasspath
+  }
+}
+
+
+
 dependencies {
   compile 'io.netty:netty-codec-http:4.1.17.Final'
   compile 'io.netty:netty-handler:4.1.17.Final'
@@ -39,6 +51,7 @@ dependencies {
   compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.10.0'
   compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
 
+
 }
 
 task run(type: JavaExec) {
@@ -50,6 +63,21 @@ task run(type: JavaExec) {
     args project.getProperty('args').split()
   }
 }
+
+task acceptanceTest(type: Test) {
+  description = 'Runs the acceptance tests'
+  group = 'verification'
+  setTestClassesDirs(sourceSets.acceptance.output.getClassesDirs())
+  classpath = sourceSets.acceptance.runtimeClasspath
+  reports.junitXml.setDestination(file("$buildDir/acceptance-results"))
+  reports.html.setDestination(file("$buildDir/reports/acceptance"))
+  dependsOn(test)
+}
+
+check {
+  dependsOn(acceptanceTest)
+}
+
 spotless {
   java {
     removeUnusedImports()
@@ -58,27 +86,3 @@ spotless {
   }
 }
 
-// acceptance tests
-sourceSets {
-  acceptanceTest {
-
-    java.srcDir file('src/acceptanceTest/java')
-    resources.srcDir file('src/acceptanceTest/resources')
-    compileClasspath += main.output + test.output + configurations.testRuntime
-    runtimeClasspath += output + compileClasspath
-  }
-}
-
-task acceptanceTest(type: Test) {
-  description = 'Runs the acceptance tests'
-  group = 'verification'
-  setTestClassesDirs(sourceSets.acceptanceTest.output.getClassesDirs())
-  classpath = sourceSets.acceptanceTest.runtimeClasspath
-  reports.junitXml.setDestination(file("$buildDir/acceptance-test-results"))
-  reports.html.setDestination(file("$buildDir/reports/acceptanceTest"))
-  dependsOn(test)
-}
-
-check {
-  dependsOn(acceptanceTest)
-}
