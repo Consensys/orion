@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import net.consensys.athena.api.cmd.AthenaRoutes;
 import net.consensys.athena.api.network.NetworkNodes;
-import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
 
