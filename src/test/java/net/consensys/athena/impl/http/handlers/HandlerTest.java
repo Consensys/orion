@@ -13,7 +13,7 @@ import net.consensys.athena.impl.http.server.vertx.VertxServer;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
 import net.consensys.athena.impl.utils.Serializer;
 
-import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.Optional;
 
@@ -44,7 +44,7 @@ public abstract class HandlerTest {
   protected AthenaRoutes routes;
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() throws Exception {
     // athena dependencies, reset them all between tests
     config = new MemoryConfig();
     config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
@@ -70,14 +70,14 @@ public abstract class HandlerTest {
     baseUrl =
         new HttpUrl.Builder()
             .scheme("http")
-            .host("localhost")
+            .host(InetAddress.getLocalHost().getHostAddress())
             .port(httpServerPort)
             .build()
             .toString();
 
     // deploy our server
     vertxServer = new VertxServer(vertx, routes.getRouter(), httpSettings);
-    vertxServer.start();
+    vertxServer.start().get();
   }
 
   @After

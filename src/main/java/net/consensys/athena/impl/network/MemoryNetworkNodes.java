@@ -5,6 +5,7 @@ import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.athena.impl.enclave.sodium.SodiumPublicKeyDeserializer;
 
+import java.io.Serializable;
 import java.net.URL;
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -17,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-public class MemoryNetworkNodes implements NetworkNodes {
+public class MemoryNetworkNodes implements NetworkNodes, Serializable {
 
   private URL url;
   private CopyOnWriteArraySet<URL> nodeURLs;
@@ -51,15 +52,6 @@ public class MemoryNetworkNodes implements NetworkNodes {
   }
 
   /**
-   * Add the URL of a node to the nodeURLs list.
-   *
-   * @param node URL of new node
-   */
-  public void addNodeURL(URL node) {
-    this.nodeURLs.add(node);
-  }
-
-  /**
    * Add a node's URL and PublcKey to the nodeURLs and nodePKs lists
    *
    * @param nodePk PublicKey of new node
@@ -71,12 +63,12 @@ public class MemoryNetworkNodes implements NetworkNodes {
   }
 
   @Override
-  public URL url() {
+  public URL getUrl() {
     return url;
   }
 
   @Override
-  public Set<URL> nodeURLs() {
+  public Set<URL> getNodeURLs() {
     return nodeURLs;
   }
 
@@ -86,20 +78,23 @@ public class MemoryNetworkNodes implements NetworkNodes {
   }
 
   @Override
-  public Map<PublicKey, URL> nodePKs() {
-    return nodePKs;
-  }
-
-  public URL getUrl() {
-    return url;
-  }
-
-  public Set<URL> getNodeURLs() {
-    return nodeURLs;
-  }
-
   public Map<PublicKey, URL> getNodePKs() {
     return nodePKs;
+  }
+
+  @Override
+  public boolean merge(NetworkNodes other) {
+    // note; not using map.putAll() as we don't want a malicious peer to overwrite ours nodes.
+    boolean thisChanged = false;
+
+    for (Map.Entry<PublicKey, URL> entry : other.getNodePKs().entrySet()) {
+      if (!nodePKs.containsKey(entry.getKey())) {
+        thisChanged = true;
+        addNode(entry.getKey(), entry.getValue());
+      }
+    }
+
+    return thisChanged;
   }
 
   @Override

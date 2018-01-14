@@ -42,7 +42,7 @@ public class SendHandlerTest extends HandlerTest {
 
   @Override
   @Before
-  public void setUp() throws IOException {
+  public void setUp() throws Exception {
     super.setUp();
     // dirty; needed to avoid java.lang.RuntimeException: Please set the absolute path of the libsodium libary by calling SodiumLibrary.setLibraryPath(path)
     new LibSodiumEnclave(config, memoryKeyStore);
