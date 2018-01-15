@@ -1,8 +1,6 @@
 package net.consensys.athena.api.cmd;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.impl.enclave.sodium.storage.StoredPrivateKey;
@@ -81,7 +79,7 @@ public class AthenaTest {
       publicKey1.delete();
     }
 
-    //Test "--g" option and multiple key files
+    //Test "-g" option and multiple key files
     args1 = new String[] {"-g", "testkey2,testkey3"};
 
     String input2 = "\n\n";
@@ -135,6 +133,8 @@ public class AthenaTest {
       assertEquals(StoredPrivateKey.UNLOCKED, storedPrivateKey.getType());
 
       privateKey1.delete();
+    } else {
+      fail("Key was not created");
     }
 
     if (publicKey1.exists()) {
@@ -162,6 +162,8 @@ public class AthenaTest {
       assertEquals(StoredPrivateKey.ARGON2_SBOX, storedPrivateKey.getType());
 
       privateKey1.delete();
+    } else {
+      fail("Key was not created");
     }
 
     if (publicKey1.exists()) {
