@@ -20,15 +20,17 @@ public class AthenaArgumentsTest {
           + "\t--help\tprint this help message\n";
 
   private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+  private PrintStream originalSystemOut;
 
   @Before
   public void setupOutputStream() {
+    originalSystemOut = System.out;
     System.setOut(new PrintStream(outContent));
   }
 
   @After
   public void cleanUpOutputStream() {
-    System.setOut(null);
+    System.setOut(originalSystemOut);
   }
 
   @Test
