@@ -97,4 +97,11 @@ class DummyObject implements Serializable {
     DummyObject that = (DummyObject) o;
     return age == that.age && Objects.equals(name, that.name);
   }
+
+  @Override
+  public int hashCode() {
+    int result = name.hashCode();
+    result = 31 * result + age;
+    return result;
+  }
 }
