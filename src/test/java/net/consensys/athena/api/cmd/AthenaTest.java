@@ -5,6 +5,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import net.consensys.athena.api.config.Config;
+import net.consensys.athena.impl.enclave.sodium.storage.StoredPrivateKey;
+import net.consensys.athena.impl.http.server.HttpContentType;
+import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -109,6 +112,60 @@ public class AthenaTest {
     }
     if (publicKey3.exists()) {
       publicKey3.delete();
+    }
+  }
+
+  @Test
+  public void testGenerateUnlockedKey() throws Exception {
+
+    String[] args1 = {"--generatekeys", "testkey1"};
+    String input = "\n";
+    InputStream in = new ByteArrayInputStream(input.getBytes());
+    System.setIn(in);
+    athena.run(args1);
+
+    File privateKey1 = new File("testkey1.key");
+    File publicKey1 = new File("testkey1.pub");
+
+    if (privateKey1.exists()) {
+      Serializer serializer = new Serializer();
+      StoredPrivateKey storedPrivateKey =
+          serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
+
+      assertEquals(StoredPrivateKey.UNLOCKED, storedPrivateKey.getType());
+
+      privateKey1.delete();
+    }
+
+    if (publicKey1.exists()) {
+      publicKey1.delete();
+    }
+  }
+
+  @Test
+  public void testGenerateLockedKey() throws Exception {
+
+    String[] args1 = {"--generatekeys", "testkey1"};
+    String input = "abc\n";
+    InputStream in = new ByteArrayInputStream(input.getBytes());
+    System.setIn(in);
+    athena.run(args1);
+
+    File privateKey1 = new File("testkey1.key");
+    File publicKey1 = new File("testkey1.pub");
+
+    if (privateKey1.exists()) {
+      Serializer serializer = new Serializer();
+      StoredPrivateKey storedPrivateKey =
+          serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
+
+      assertEquals(StoredPrivateKey.ARGON2_SBOX, storedPrivateKey.getType());
+
+      privateKey1.delete();
+    }
+
+    if (publicKey1.exists()) {
+      publicKey1.delete();
     }
   }
 }
