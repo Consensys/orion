@@ -50,7 +50,7 @@ public class AthenaArguments {
     System.out.println("where options include:");
     System.out.println("\t-g");
     System.out.println(
-        "\t--generatekeys <names>\n\t\tgenerate key pairs for each of the names supplied.\n\t\twhere <names> are a comma-seperated list ");
+        "\t--generatekeys <names>\n\t\tgenerate key pairs for each of the names supplied.\n\t\twhere <names> are a comma-seperated list");
     System.out.println("\t-h");
     System.out.println("\t--help\tprint this help message");
   }
