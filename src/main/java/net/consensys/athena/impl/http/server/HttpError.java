@@ -23,7 +23,6 @@ public final class HttpError {
 
   @Override
   public int hashCode() {
-
     return Objects.hash(error);
   }
 }
