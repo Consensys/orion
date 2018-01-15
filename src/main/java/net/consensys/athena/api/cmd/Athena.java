@@ -14,9 +14,13 @@ import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
 import net.consensys.athena.impl.http.server.HttpServerSettings;
 import net.consensys.athena.impl.http.server.vertx.VertxServer;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
+import net.consensys.athena.impl.network.NetworkDiscovery;
 import net.consensys.athena.impl.utils.Serializer;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -72,6 +76,22 @@ public class Athena {
 
     VertxServer httpServer = new VertxServer(vertx, routes.getRouter(), httpSettings);
     httpServer.start();
+
+    NetworkDiscovery discovery = new NetworkDiscovery(networkNodes, serializer);
+    vertx.deployVerticle(discovery);
+
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread(
+                () -> {
+                  try {
+                    httpServer.stop().get();
+                  } catch (Exception e) {
+
+                  } finally {
+                    vertx.close();
+                  }
+                }));
   }
 
   private void runGenerateKeyPairs(Config config, String[] keysToGenerate) {
