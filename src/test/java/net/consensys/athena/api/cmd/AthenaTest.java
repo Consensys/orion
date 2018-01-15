@@ -54,12 +54,6 @@ public class AthenaTest {
   }
 
   @Test
-  public void testGenerateKeysArgumentWithNoKeyNamesProvided() throws Exception {
-    String[] args1 = {"--generatekeys"};
-    athena.run(args1);
-  }
-
-  @Test
   public void testGenerateKeysArgumentProvided() throws Exception {
     //Test "--generatekeys" option
     String[] args1 = {"--generatekeys", "testkey1"};
