@@ -1,5 +1,6 @@
 package net.consensys.athena.impl.enclave.sodium;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -129,18 +130,26 @@ public class SodiumFileKeyStoreTest {
       keyStore = new SodiumFileKeyStore(config, serializer);
       keyStore.generateKeyPair(new KeyConfig(keyPrefix, Optional.empty()));
 
+      // Load the a config using the generated key, and confirm that it is valid.
+      // this shows that the key was stored and that we could load it.
       MemoryConfig config = new MemoryConfig();
       config.setPrivateKeys(new File[] {new File("keys/generated.key")});
       config.setPublicKeys(new File[] {new File("keys/generated.pub")});
       keyStore = new SodiumFileKeyStore(config, serializer);
+      PublicKey fromStore = keyStore.nodeKeys()[0];
+      assertNotNull(keyStore.getPrivateKey(fromStore));
     } finally {
       File privateKey = new File(keyPrefix + ".key");
       File publicKey = new File(keyPrefix + ".pub");
       if (privateKey.exists()) {
         privateKey.delete();
+      } else {
+        fail("private key did not get created");
       }
       if (publicKey.exists()) {
         publicKey.delete();
+      } else {
+        fail("public key did not get created");
       }
     }
   }
@@ -152,19 +161,27 @@ public class SodiumFileKeyStoreTest {
       keyStore = new SodiumFileKeyStore(config, serializer);
       keyStore.generateKeyPair(new KeyConfig(keyPrefix, Optional.of("yolo")));
 
+      // Load the a config using the generated key, and confirm that it is valid.
+      // this shows that the key was stored and that we could load it.
       MemoryConfig config = new MemoryConfig();
       config.setPasswords(new File("keys/password.txt"));
       config.setPrivateKeys(new File[] {new File("keys/generated_password.key")});
       config.setPublicKeys(new File[] {new File("keys/generated_password.pub")});
       keyStore = new SodiumFileKeyStore(config, serializer);
+      PublicKey fromStore = keyStore.nodeKeys()[0];
+      assertNotNull(keyStore.getPrivateKey(fromStore));
     } finally {
       File privateKey = new File(keyPrefix + ".key");
       File publicKey = new File(keyPrefix + ".pub");
       if (privateKey.exists()) {
         privateKey.delete();
+      } else {
+        fail("private key did not get created");
       }
       if (publicKey.exists()) {
         publicKey.delete();
+      } else {
+        fail("public key did not get created");
       }
     }
   }
