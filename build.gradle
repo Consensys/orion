@@ -42,6 +42,7 @@ dependencies {
 
 task run(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
+  standardInput = System.in
 
   main = 'net.consensys.athena.api.cmd.Athena'
   if (project.hasProperty("args")) {

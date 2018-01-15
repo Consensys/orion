@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Optional;
+import java.util.Scanner;
 
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
@@ -34,8 +35,8 @@ public class Athena {
   private static final Serializer serializer = new Serializer();
   private static final Vertx vertx = vertx();
 
-  private Config config;
-  private AthenaArguments arguments;
+  //private Config config;
+  //private AthenaArguments arguments;
 
   public static void main(String[] args) throws Exception {
     log.info("starting athena");
@@ -45,26 +46,26 @@ public class Athena {
 
   public void run(String[] args) throws FileNotFoundException {
     // parsing arguments
-    arguments = new AthenaArguments(args);
+    AthenaArguments arguments = new AthenaArguments(args);
 
     if (arguments.argumentExit()) {
       return;
     }
 
     // load config file
-    config = loadConfig(arguments.configFileName());
+    Config config = loadConfig(arguments.configFileName());
 
     // generate key pair and exit
     if (arguments.keysToGenerate().isPresent()) {
-      runGenerateKeyPairs();
+      runGenerateKeyPairs(config, arguments.keysToGenerate().get());
       return;
     }
 
     // start our API server
-    runApiServer();
+    runApiServer(config);
   }
 
-  private void runApiServer() {
+  private void runApiServer(Config config) {
     NetworkNodes networkNodes = new MemoryNetworkNodes(config);
     Enclave enclave = new LibSodiumEnclave(config, new SodiumFileKeyStore(config, serializer));
 
@@ -93,14 +94,23 @@ public class Athena {
                 }));
   }
 
-  private void runGenerateKeyPairs() {
+  private void runGenerateKeyPairs(Config config, String[] keysToGenerate) {
     log.info("generating Key Pairs");
 
     SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
 
-    for (int i = 0; i < arguments.keysToGenerate().get().length; i++) {
-      keyStore.generateKeyPair(
-          new KeyConfig(arguments.keysToGenerate().get()[i], Optional.empty()));
+    Scanner scanner = new Scanner(System.in);
+
+    for (String keyName : keysToGenerate) {
+
+      //Prompt for Password from user
+      System.out.format("Enter password for key pair [%s] : ", keyName);
+      String pwd = scanner.nextLine().trim();
+      Optional<String> password = pwd.length() > 0 ? Optional.of(pwd) : Optional.empty();
+
+      log.debug("Password for key [" + keyName + "] - [" + password + "]");
+
+      keyStore.generateKeyPair(new KeyConfig(keyName, password));
     }
   }
 
