@@ -4,33 +4,115 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
 import net.consensys.athena.api.cmd.Athena;
+import net.consensys.athena.api.config.Config;
+import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.http.AthenaClient;
 
+import java.io.ByteArrayInputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.nio.charset.StandardCharsets;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class SendReceiveTest {
 
   private static final byte[] originalPayload = "a wonderful transaction".getBytes();
 
-  private final String singleNodeConfig =
-      getClass().getClassLoader().getResource("singlenode.conf").getPath();
-  private final String node1Config =
-      getClass().getClassLoader().getResource("node1.conf").getPath();
-  private final String node2Config =
-      getClass().getClassLoader().getResource("node2.conf").getPath();
+  private static String singleNodeBaseUrl;
+  private static String node1BaseUrl;
+  private static String node2BaseUrl;
 
-  private static final String singleNodeBaseUrl = "http://127.0.0.1:9001";
-  private static final String node1BaseUrl = "http://127.0.0.1:9002";
-  private static final String node2BaseUrl = "http://127.0.0.1:9003";
+  private static Config configSingleNode;
+  private static Config configNode1;
+  private static Config configNode2;
 
   private static final String pk1b64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
   private static final String pk2b64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
+
+  @BeforeClass
+  public static void setUp() throws Exception {
+    final String hostBaseUrl = "http://" + InetAddress.getLocalHost().getHostAddress() + ":";
+
+    // generate base urls
+    int node1Port = getFreePort();
+    int node2Port = getFreePort();
+    int singleNodePort = getFreePort();
+    node1BaseUrl = hostBaseUrl + Integer.toString(node1Port) + "/";
+    node2BaseUrl = hostBaseUrl + Integer.toString(node2Port) + "/";
+    singleNodeBaseUrl = hostBaseUrl + Integer.toString(singleNodePort) + "/";
+
+    // Single node config
+    String confString =
+        new StringBuilder()
+            .append("url = \"")
+            .append(singleNodeBaseUrl)
+            .append("\"\nport = ")
+            .append(singleNodePort)
+            .append("\nothernodes = [\"")
+            .append(singleNodeBaseUrl)
+            .append(
+                "\"]\n"
+                    + "publickeys = [\"src/acceptance/resources/key1.pub\", \"src/acceptance/resources/key2.pub\"]\n"
+                    + "privatekeys = [\"src/acceptance/resources/key1.key\", \"src/acceptance/resources/key2.key\"]")
+            .toString();
+
+    configSingleNode =
+        new TomlConfigBuilder()
+            .build(new ByteArrayInputStream(confString.getBytes(StandardCharsets.UTF_8.name())));
+
+    // node1 config
+    confString =
+        new StringBuilder()
+            .append("url = \"")
+            .append(node1BaseUrl)
+            .append("\"\nport = ")
+            .append(node1Port)
+            .append("\nothernodes = [\"")
+            .append(node2BaseUrl)
+            .append(
+                "\"]\n"
+                    + "publickeys = [\"src/acceptance/resources/key1.pub\"]\n"
+                    + "privatekeys = [\"src/acceptance/resources/key1.key\"]")
+            .toString();
+
+    configNode1 =
+        new TomlConfigBuilder()
+            .build(new ByteArrayInputStream(confString.getBytes(StandardCharsets.UTF_8.name())));
+
+    // node2 config
+    confString =
+        new StringBuilder()
+            .append("url = \"")
+            .append(node2BaseUrl)
+            .append("\"\nport = ")
+            .append(node2Port)
+            .append("\nothernodes = [\"")
+            .append(node1BaseUrl)
+            .append(
+                "\"]\n"
+                    + "publickeys = [\"src/acceptance/resources/key2.pub\"]\n"
+                    + "privatekeys = [\"src/acceptance/resources/key2.key\"]")
+            .toString();
+
+    configNode2 =
+        new TomlConfigBuilder()
+            .build(new ByteArrayInputStream(confString.getBytes(StandardCharsets.UTF_8.name())));
+  }
+
+  private static int getFreePort() throws Exception {
+    ServerSocket socket = new ServerSocket(0);
+    int toReturn = socket.getLocalPort();
+    socket.close();
+    return toReturn;
+  }
 
   @Test
   public void testSingleNode() throws Exception {
     // setup a single node with 2 public keys
     Athena athena = new Athena();
-    athena.run(new String[] {singleNodeConfig});
+    athena.run(configSingleNode);
     AthenaClient athenaClient = new AthenaClient(singleNodeBaseUrl);
 
     // ensure the node is awake
@@ -49,11 +131,11 @@ public class SendReceiveTest {
   @Test
   public void testTwoNodes() throws Exception {
     // setup our 2 nodes
-    new Athena().run(new String[] {node1Config});
+    new Athena().run(configNode1);
     AthenaClient node1 = new AthenaClient(node1BaseUrl);
     assertTrue(node1.upCheck());
 
-    new Athena().run(new String[] {node2Config});
+    new Athena().run(configNode2);
     AthenaClient node2 = new AthenaClient(node2BaseUrl);
     assertTrue(node2.upCheck());
 

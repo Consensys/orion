@@ -57,15 +57,15 @@ public class Athena {
 
     // generate key pair and exit
     if (arguments.keysToGenerate().isPresent()) {
-      runGenerateKeyPairs(config, arguments.keysToGenerate().get());
+      generateKeyPairs(config, arguments.keysToGenerate().get());
       return;
     }
 
     // start our API server
-    runApiServer(config);
+    run(config);
   }
 
-  private void runApiServer(Config config) {
+  public void run(Config config) {
     SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
     NetworkNodes networkNodes = new MemoryNetworkNodes(config, keyStore.nodeKeys());
     Enclave enclave = new LibSodiumEnclave(config, keyStore);
@@ -95,7 +95,7 @@ public class Athena {
                 }));
   }
 
-  private void runGenerateKeyPairs(Config config, String[] keysToGenerate) {
+  private void generateKeyPairs(Config config, String[] keysToGenerate) {
     log.info("generating Key Pairs");
 
     SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);

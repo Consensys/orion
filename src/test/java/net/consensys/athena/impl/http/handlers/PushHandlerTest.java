@@ -43,6 +43,7 @@ public class PushHandlerTest extends HandlerTest {
 
     Response resp = httpClient.newCall(request).execute();
 
+    System.out.println(resp.body().string());
     assertEquals(200, resp.code());
     String digest = resp.body().string();
     assertTrue(digest.length() > 0);
