@@ -29,7 +29,7 @@ public class MemoryNetworkNodes implements NetworkNodes, Serializable {
     nodePKs = new ConcurrentHashMap<>();
   }
 
-  public MemoryNetworkNodes(Config config) {
+  public MemoryNetworkNodes(Config config, PublicKey[] publicKeys) {
     url = config.url();
     if (config.otherNodes().length > 0) {
       nodeURLs = new CopyOnWriteArraySet<>(Arrays.asList(config.otherNodes()));
@@ -38,6 +38,11 @@ public class MemoryNetworkNodes implements NetworkNodes, Serializable {
     }
 
     nodePKs = new ConcurrentHashMap<>();
+
+    // adding my publickey(s) so /partyinfo returns my info when called.
+    for (int i = 0; i < publicKeys.length; i++) {
+      nodePKs.put(publicKeys[i], url);
+    }
   }
 
   @JsonCreator

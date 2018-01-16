@@ -66,8 +66,9 @@ public class Athena {
   }
 
   private void runApiServer(Config config) {
-    NetworkNodes networkNodes = new MemoryNetworkNodes(config);
-    Enclave enclave = new LibSodiumEnclave(config, new SodiumFileKeyStore(config, serializer));
+    SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
+    NetworkNodes networkNodes = new MemoryNetworkNodes(config, keyStore.nodeKeys());
+    Enclave enclave = new LibSodiumEnclave(config, keyStore);
 
     AthenaRoutes routes = new AthenaRoutes(vertx, networkNodes, serializer, enclave);
 

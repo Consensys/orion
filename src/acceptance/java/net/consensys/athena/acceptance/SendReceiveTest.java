@@ -111,7 +111,6 @@ public class SendReceiveTest {
     Request httpSendRequest =
         new Request.Builder().post(sendBody).url(node1BaseUrl + AthenaRoutes.SEND).build();
     Response httpSendResponse = httpClient.newCall(httpSendRequest).execute();
-    System.out.println(httpSendResponse.body().string());
     assertEquals(200, httpSendResponse.code());
     // deserialize the response
     SendResponse sendResponse =
