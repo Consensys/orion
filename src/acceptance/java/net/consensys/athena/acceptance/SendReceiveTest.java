@@ -13,6 +13,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 
+import okhttp3.HttpUrl;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -33,15 +34,31 @@ public class SendReceiveTest {
 
   @BeforeClass
   public static void setUp() throws Exception {
-    final String hostBaseUrl = "http://" + InetAddress.getLocalHost().getHostAddress() + ":";
-
     // generate base urls
     int node1Port = getFreePort();
     int node2Port = getFreePort();
     int singleNodePort = getFreePort();
-    node1BaseUrl = hostBaseUrl + Integer.toString(node1Port) + "/";
-    node2BaseUrl = hostBaseUrl + Integer.toString(node2Port) + "/";
-    singleNodeBaseUrl = hostBaseUrl + Integer.toString(singleNodePort) + "/";
+    node1BaseUrl =
+        new HttpUrl.Builder()
+            .scheme("http")
+            .host(InetAddress.getLocalHost().getHostAddress())
+            .port(node1Port)
+            .build()
+            .toString();
+    node2BaseUrl =
+        new HttpUrl.Builder()
+            .scheme("http")
+            .host(InetAddress.getLocalHost().getHostAddress())
+            .port(node2Port)
+            .build()
+            .toString();
+    singleNodeBaseUrl =
+        new HttpUrl.Builder()
+            .scheme("http")
+            .host(InetAddress.getLocalHost().getHostAddress())
+            .port(singleNodePort)
+            .build()
+            .toString();
 
     // Single node config
     String confString =
