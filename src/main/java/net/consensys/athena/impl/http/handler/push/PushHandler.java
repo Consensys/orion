@@ -1,5 +1,6 @@
 package net.consensys.athena.impl.http.handler.push;
 
+import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.http.server.HttpContentType;
@@ -23,7 +24,7 @@ public class PushHandler implements Handler<RoutingContext> {
 
   @Override
   public void handle(RoutingContext routingContext) {
-    SodiumEncryptedPayload pushRequest =
+    EncryptedPayload pushRequest =
         serializer.deserialize(
             HttpContentType.CBOR,
             SodiumEncryptedPayload.class,
