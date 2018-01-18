@@ -23,6 +23,8 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
@@ -33,15 +35,28 @@ public class Athena {
   private static final Logger log = LogManager.getLogger();
 
   private static final Serializer serializer = new Serializer();
-  private static final Vertx vertx = vertx();
 
-  //private Config config;
-  //private AthenaArguments arguments;
+  private final Vertx vertx = vertx();
 
   public static void main(String[] args) throws Exception {
     log.info("starting athena");
     Athena athena = new Athena();
     athena.run(args);
+  }
+
+  public void stop() throws InterruptedException, ExecutionException {
+    CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
+
+    vertx.close(
+        result -> {
+          if (result.succeeded()) {
+            resultFuture.complete(true);
+          } else {
+            resultFuture.completeExceptionally(result.cause());
+          }
+        });
+
+    resultFuture.get();
   }
 
   public void run(String[] args) throws FileNotFoundException {
@@ -86,11 +101,9 @@ public class Athena {
             new Thread(
                 () -> {
                   try {
-                    httpServer.stop().get();
+                    stop();
                   } catch (Exception e) {
-
-                  } finally {
-                    vertx.close();
+                    log.error(e.getMessage());
                   }
                 }));
   }

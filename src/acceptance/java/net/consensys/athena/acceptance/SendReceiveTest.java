@@ -145,20 +145,24 @@ public class SendReceiveTest {
     // call receive on the node
     byte[] receivedPayload =
         athenaClient.receive(digest, pk2b64).orElseThrow(AssertionFailedError::new);
-    ;
 
     // ensure we retrieved what we originally sent.
     assertArrayEquals(originalPayload, receivedPayload);
+
+    // stop
+    athena.stop();
   }
 
   @Test
   public void testTwoNodes() throws Exception {
     // setup our 2 nodes
-    new Athena().run(configNode1);
+    Athena athenaLauncher1 = new Athena();
+    athenaLauncher1.run(configNode1);
     AthenaClient node1 = new AthenaClient(node1BaseUrl);
     assertTrue(node1.upCheck());
 
-    new Athena().run(configNode2);
+    Athena athenaLauncher2 = new Athena();
+    athenaLauncher2.run(configNode2);
     AthenaClient node2 = new AthenaClient(node2BaseUrl);
     assertTrue(node2.upCheck());
 
@@ -170,13 +174,15 @@ public class SendReceiveTest {
         node1
             .send(originalPayload, pk1b64, new String[] {pk2b64})
             .orElseThrow(AssertionFailedError::new);
-    ;
 
     // call receive on the node 2
     byte[] receivedPayload = node2.receive(digest, pk2b64).orElseThrow(AssertionFailedError::new);
-    ;
 
     // ensure we retrieved what we originally sent.
     assertArrayEquals(originalPayload, receivedPayload);
+
+    // stop
+    athenaLauncher1.stop();
+    athenaLauncher2.stop();
   }
 }
