@@ -5,9 +5,6 @@ import net.consensys.athena.impl.utils.Serializer;
 import java.io.File;
 import java.util.Optional;
 
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.kqueue.KQueue;
-
 public class HttpServerSettings {
 
   private Optional<Integer> httpPort;
@@ -40,14 +37,6 @@ public class HttpServerSettings {
 
   public boolean isDomainSocket() {
     return domainSocketPath.isPresent();
-  }
-
-  public boolean isEpoll() {
-    return Epoll.isAvailable();
-  }
-
-  public boolean isKQueue() {
-    return KQueue.isAvailable();
   }
 
   public Optional<Integer> getHttpPort() {
