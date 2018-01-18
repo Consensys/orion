@@ -11,14 +11,19 @@ import net.consensys.athena.impl.utils.Base64;
 import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class AthenaClient {
+  private static final Logger log = LogManager.getLogger();
+
   private final OkHttpClient httpClient = new OkHttpClient();
   private final Serializer serializer = new Serializer();
 
@@ -40,7 +45,7 @@ public class AthenaClient {
     }
   }
 
-  public String send(byte[] payload, String from, String[] to) {
+  public Optional<String> send(byte[] payload, String from, String[] to) {
     // create the okHttp Request object
     SendRequest sendRequest = new SendRequest(Base64.encode(payload), from, to);
     RequestBody sendBody =
@@ -53,19 +58,21 @@ public class AthenaClient {
     // executes the request
     try (Response httpSendResponse = httpClient.newCall(httpSendRequest).execute()) {
       if (httpSendResponse.code() != 200) {
-        throw new RuntimeException("send operation failed: " + httpSendResponse.code());
+        log.error("send operation failed " + httpSendResponse.code());
+        return Optional.empty();
       }
 
       // deserialize the response
       SendResponse sendResponse =
           serializer.deserialize(JSON, SendResponse.class, httpSendResponse.body().bytes());
-      return sendResponse.key;
+      return Optional.of(sendResponse.key);
     } catch (IOException io) {
-      throw new RuntimeException(io);
+      log.error(io.getMessage());
+      return Optional.empty();
     }
   }
 
-  public byte[] receive(String digest, String publicKey) {
+  public Optional<byte[]> receive(String digest, String publicKey) {
     // create the okHttp Request object
     ReceiveRequest receiveRequest = new ReceiveRequest(digest, publicKey);
     RequestBody receiveBody =
@@ -78,17 +85,19 @@ public class AthenaClient {
     // executes the request
     try (Response httpReceiveResponse = httpClient.newCall(httpReceiveRequest).execute()) {
       if (httpReceiveResponse.code() != 200) {
-        throw new RuntimeException("receive operation failed: " + httpReceiveResponse.code());
+        log.error("receive operation failed " + httpReceiveResponse.code());
+        return Optional.empty();
       }
 
       // deserialize the response
       ReceiveResponse receiveResponse =
           serializer.deserialize(JSON, ReceiveResponse.class, httpReceiveResponse.body().bytes());
 
-      return Base64.decode(receiveResponse.payload);
+      return Optional.of(Base64.decode(receiveResponse.payload));
 
     } catch (IOException io) {
-      throw new RuntimeException(io);
+      log.error(io.getMessage());
+      return Optional.empty();
     }
   }
 }

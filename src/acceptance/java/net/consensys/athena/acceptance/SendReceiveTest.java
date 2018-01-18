@@ -13,6 +13,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 
+import junit.framework.AssertionFailedError;
 import okhttp3.HttpUrl;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -136,10 +137,15 @@ public class SendReceiveTest {
     assertTrue(athenaClient.upCheck());
 
     // send something to the node (from pk1 to pk2)
-    String digest = athenaClient.send(originalPayload, pk1b64, new String[] {pk2b64});
+    String digest =
+        athenaClient
+            .send(originalPayload, pk1b64, new String[] {pk2b64})
+            .orElseThrow(AssertionFailedError::new);
 
     // call receive on the node
-    byte[] receivedPayload = athenaClient.receive(digest, pk2b64);
+    byte[] receivedPayload =
+        athenaClient.receive(digest, pk2b64).orElseThrow(AssertionFailedError::new);
+    ;
 
     // ensure we retrieved what we originally sent.
     assertArrayEquals(originalPayload, receivedPayload);
@@ -160,10 +166,15 @@ public class SendReceiveTest {
     Thread.sleep(1000);
 
     // send a transaction from node1 to node2
-    String digest = node1.send(originalPayload, pk1b64, new String[] {pk2b64});
+    String digest =
+        node1
+            .send(originalPayload, pk1b64, new String[] {pk2b64})
+            .orElseThrow(AssertionFailedError::new);
+    ;
 
     // call receive on the node 2
-    byte[] receivedPayload = node2.receive(digest, pk2b64);
+    byte[] receivedPayload = node2.receive(digest, pk2b64).orElseThrow(AssertionFailedError::new);
+    ;
 
     // ensure we retrieved what we originally sent.
     assertArrayEquals(originalPayload, receivedPayload);
