@@ -72,8 +72,8 @@ public class SendReceiveTest {
             .append(singleNodeBaseUrl)
             .append(
                 "\"]\n"
-                    + "publickeys = [\"src/acceptance/resources/key1.pub\", \"src/acceptance/resources/key2.pub\"]\n"
-                    + "privatekeys = [\"src/acceptance/resources/key1.key\", \"src/acceptance/resources/key2.key\"]")
+                    + "publickeys = [\"src/test-acceptance/resources/key1.pub\", \"src/test-acceptance/resources/key2.pub\"]\n"
+                    + "privatekeys = [\"src/test-acceptance/resources/key1.key\", \"src/test-acceptance/resources/key2.key\"]")
             .toString();
 
     configSingleNode =
@@ -91,8 +91,8 @@ public class SendReceiveTest {
             .append(node2BaseUrl)
             .append(
                 "\"]\n"
-                    + "publickeys = [\"src/acceptance/resources/key1.pub\"]\n"
-                    + "privatekeys = [\"src/acceptance/resources/key1.key\"]")
+                    + "publickeys = [\"src/test-acceptance/resources/key1.pub\"]\n"
+                    + "privatekeys = [\"src/test-acceptance/resources/key1.key\"]")
             .toString();
 
     configNode1 =
@@ -110,8 +110,8 @@ public class SendReceiveTest {
             .append(node1BaseUrl)
             .append(
                 "\"]\n"
-                    + "publickeys = [\"src/acceptance/resources/key2.pub\"]\n"
-                    + "privatekeys = [\"src/acceptance/resources/key2.key\"]")
+                    + "publickeys = [\"src/test-acceptance/resources/key2.pub\"]\n"
+                    + "privatekeys = [\"src/test-acceptance/resources/key2.key\"]")
             .toString();
 
     configNode2 =

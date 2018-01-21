@@ -12,8 +12,8 @@ repositories {
 //// acceptance tests
 sourceSets {
   acceptance {
-    java.srcDir file('src/acceptance/java')
-    resources.srcDir file('src/acceptance/resources')
+    java.srcDir file('src/test-acceptance/java')
+    resources.srcDir file('src/test-acceptance/resources')
     compileClasspath += main.output + test.output + configurations.testRuntime + main.compileClasspath + test.compileClasspath
     runtimeClasspath += output + compileClasspath
   }
