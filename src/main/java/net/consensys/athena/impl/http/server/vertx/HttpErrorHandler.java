@@ -9,8 +9,11 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class HttpErrorHandler implements Handler<RoutingContext> {
+  private static final Logger log = LogManager.getLogger();
 
   public HttpErrorHandler(Serializer serializer) {
     this.serializer = serializer;
@@ -31,6 +34,9 @@ public class HttpErrorHandler implements Handler<RoutingContext> {
     if (failureContext.failure() != null) {
       HttpError httpError = new HttpError(failureContext.failure().getMessage());
       Buffer buffer = Buffer.buffer(serializer.serialize(HttpContentType.JSON, httpError));
+
+      log.error(failureContext.currentRoute().getPath() + " failed " + httpError);
+
       response
           .putHeader(HttpHeaders.CONTENT_TYPE, HttpContentType.JSON.httpHeaderValue)
           .end(buffer);

@@ -25,4 +25,9 @@ public final class HttpError {
   public int hashCode() {
     return Objects.hash(error);
   }
+
+  @Override
+  public String toString() {
+    return "HttpError{" + "error='" + error + '\'' + '}';
+  }
 }

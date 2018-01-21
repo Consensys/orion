@@ -51,15 +51,15 @@ dependencies {
 
 }
 
-task run(type: JavaExec) {
-  classpath = sourceSets.main.runtimeClasspath
-  standardInput = System.in
-
-  main = 'net.consensys.athena.api.cmd.Athena'
-  if (project.hasProperty("args")) {
-    args project.getProperty('args').split()
-  }
-}
+//task run(type: JavaExec) {
+//  classpath = sourceSets.main.runtimeClasspath
+//  standardInput = System.in
+//
+//  main = 'net.consensys.athena.api.cmd.Athena'
+//  if (project.hasProperty("args")) {
+//    args project.getProperty('args').split()
+//  }
+//}
 
 task acceptanceTest(type: Test) {
   description = 'Runs the acceptance tests'
@@ -81,5 +81,38 @@ spotless {
     googleJavaFormat()
     importOrder 'net.consensys', 'java', ''
   }
+}
+
+jar { enabled = false }
+apply plugin: 'application'
+mainClassName = "net.consensys.athena.api.cmd.Athena"
+applicationDefaultJvmArgs = [
+                '-Dlog4j.configurationFile=/home/vagrant/athena/athena/lib/log4j2.xml',
+                "-Dvertx.disableFileCPResolving=true",
+        ]
+
+tasks.withType(CreateStartScripts) {
+  classpath += files('src/main/resources/log4j.xml', 'src/main/resources/log4j2.xml')
+}
+
+distributions {
+  main {
+    contents {
+      from('src/main/resources/log4j.xml') {
+        into 'lib'
+      }
+      from('src/main/resources/log4j2.xml') {
+        into 'lib'
+      }
+    }
+  }
+}
+
+distTar {
+  doFirst {
+    delete fileTree(dir:'build/distributions', include: '*.tar.gz')
+  }
+  compression = Compression.GZIP
+  extension = 'tar.gz'
 }
 

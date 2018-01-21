@@ -57,4 +57,18 @@ public class SendRequest implements Serializable {
     result = 31 * result + Arrays.hashCode(to);
     return result;
   }
+
+  @Override
+  public String toString() {
+    return "SendRequest{"
+        + "payload='"
+        + payload
+        + '\''
+        + ", from='"
+        + from
+        + '\''
+        + ", to="
+        + Arrays.toString(to)
+        + '}';
+  }
 }

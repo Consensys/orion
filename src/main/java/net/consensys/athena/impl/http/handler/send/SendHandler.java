@@ -54,6 +54,8 @@ public class SendHandler implements Handler<RoutingContext> {
         serializer.deserialize(
             HttpContentType.JSON, SendRequest.class, routingContext.getBody().getBytes());
 
+    log.trace(sendRequest);
+
     if (!sendRequest.isValid()) {
       throw new IllegalArgumentException();
     }
