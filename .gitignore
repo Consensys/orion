@@ -16,3 +16,4 @@ routerdb
 /out
 *.db.test
 routerdb.wal.0
+version.txt
