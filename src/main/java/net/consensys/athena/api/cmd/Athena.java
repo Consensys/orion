@@ -17,10 +17,9 @@ import net.consensys.athena.impl.network.MemoryNetworkNodes;
 import net.consensys.athena.impl.network.NetworkDiscovery;
 import net.consensys.athena.impl.utils.Serializer;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -31,12 +30,10 @@ import org.apache.logging.log4j.Logger;
 public class Athena {
 
   private static final Logger log = LogManager.getLogger();
+  public static final String name = "athena";
 
   private static final Serializer serializer = new Serializer();
   private static final Vertx vertx = vertx();
-
-  //private Config config;
-  //private AthenaArguments arguments;
 
   public static void main(String[] args) throws Exception {
     log.info("starting athena");
@@ -49,6 +46,11 @@ public class Athena {
     AthenaArguments arguments = new AthenaArguments(args);
 
     if (arguments.argumentExit()) {
+      return;
+    }
+
+    if (arguments.displayVersion()) {
+      displayVersion();
       return;
     }
 
@@ -92,6 +94,17 @@ public class Athena {
                     vertx.close();
                   }
                 }));
+  }
+
+  private void displayVersion() {
+    try {
+      String filePath = Athena.class.getResource("/version.txt").getPath();
+
+      String contents = new String(Files.readAllBytes(Paths.get(filePath)));
+      System.out.println(contents);
+    } catch (Exception e) {
+      log.error("Read of Version file failed", e);
+    }
   }
 
   private void runGenerateKeyPairs(Config config, String[] keysToGenerate) {

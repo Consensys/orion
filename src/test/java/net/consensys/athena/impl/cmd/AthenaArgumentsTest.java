@@ -2,6 +2,8 @@ package net.consensys.athena.impl.cmd;
 
 import static org.junit.Assert.*;
 
+import net.consensys.athena.api.cmd.Athena;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
@@ -12,12 +14,16 @@ import org.junit.Test;
 public class AthenaArgumentsTest {
 
   private final String usageOut =
-      "Usage:  java -jar athena.jar [options] [config file]\n"
+      "Usage:  java -jar "
+          + Athena.name
+          + ".jar [options] [config file]\n"
           + "where options include:\n"
           + "\t-g\n"
           + "\t--generatekeys <names>\n\t\tgenerate key pairs for each of the names supplied.\n\t\twhere <names> are a comma-seperated list\n"
           + "\t-h\n"
-          + "\t--help\tprint this help message\n";
+          + "\t--help\tprint this help message\n"
+          + "\t-v\n"
+          + "\t--version\tprint version information\n";
 
   private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
   private PrintStream originalSystemOut;
@@ -52,6 +58,15 @@ public class AthenaArgumentsTest {
 
     assertEquals(usageOut, outContent.toString());
     assertTrue(arguments.argumentExit());
+  }
+
+  @Test
+  public void testVersionArgument() {
+    String[] args = {"-v"};
+
+    AthenaArguments arguments = new AthenaArguments(args);
+
+    assertTrue(arguments.displayVersion());
   }
 
   @Test

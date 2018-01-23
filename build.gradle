@@ -1,5 +1,6 @@
 plugins {
   id "com.diffplug.gradle.spotless" version "3.6.0"
+  id 'com.palantir.git-version' version '0.10.0'
 }
 
 apply plugin: 'java-library'
@@ -8,6 +9,8 @@ apply plugin: "jacoco"
 repositories {
   jcenter()
 }
+
+version = '0.1.0-' + versionDetails().gitHash[0..4] + '-' + getTimestamp()
 
 dependencies {
   compile 'io.netty:netty-codec-http:4.1.17.Final'
@@ -22,8 +25,8 @@ dependencies {
   testImplementation 'junit:junit:4.12'
 
   // vertx
-  implementation 'io.vertx:vertx-core:3.5.0'
-  implementation 'io.vertx:vertx-web:3.5.0'
+  compile 'io.vertx:vertx-core:3.5.0'
+  compile 'io.vertx:vertx-web:3.5.0'
 
   // http client
   implementation 'com.squareup.okhttp3:okhttp:3.9.1'
@@ -40,7 +43,22 @@ dependencies {
   compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
 }
 
+
+jar {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                'Implementation-Version': version,
+                'Main-Class': 'net.consensys.athena.api.cmd.Athena'
+        )
+    }
+}
+
+allprojects {
+    versionTxt()
+}
+
 task run(type: JavaExec) {
+  description = 'Run Athena. Use -Pargs="" to pass aruments'
   classpath = sourceSets.main.runtimeClasspath
   standardInput = System.in
 
@@ -57,3 +75,13 @@ spotless {
   }
 }
 
+def getTimestamp() {
+    def date = new Date()
+    return date.format('yyyy-MM-dd-HH-mm-ss-SSS')
+}
+
+def versionTxt()  {
+    new File("$projectDir/src/main/resources/version.txt").text = """Application-name: $project.name
+Version: $version
+"""
+}
