@@ -9,7 +9,7 @@ repositories {
   jcenter()
 }
 
-//// acceptance tests
+// added source sets (acceptance and integratioon tests)
 sourceSets {
   acceptance {
     java.srcDir file('src/test-acceptance/java')
@@ -17,6 +17,8 @@ sourceSets {
     compileClasspath += main.output + test.output + configurations.testRuntime + main.compileClasspath + test.compileClasspath
     runtimeClasspath += output + compileClasspath
   }
+
+
 }
 
 
@@ -51,15 +53,15 @@ dependencies {
 
 }
 
-task run(type: JavaExec) {
-  classpath = sourceSets.main.runtimeClasspath
-  standardInput = System.in
-
-  main = 'net.consensys.athena.api.cmd.Athena'
-  if (project.hasProperty("args")) {
-    args project.getProperty('args').split()
-  }
-}
+//task run(type: JavaExec) {
+//  classpath = sourceSets.main.runtimeClasspath
+//  standardInput = System.in
+//
+//  main = 'net.consensys.athena.api.cmd.Athena'
+//  if (project.hasProperty("args")) {
+//    args project.getProperty('args').split()
+//  }
+//}
 
 task acceptanceTest(type: Test) {
   description = 'Runs the acceptance tests'
@@ -70,6 +72,7 @@ task acceptanceTest(type: Test) {
   reports.html.setDestination(file("$buildDir/reports/acceptance"))
   dependsOn(test)
 }
+
 
 check {
   dependsOn(acceptanceTest)
@@ -84,13 +87,14 @@ spotless {
 }
 
 //jar { enabled = false }
-//apply plugin: 'application'
-//mainClassName = "net.consensys.athena.api.cmd.Athena"
-//applicationDefaultJvmArgs = [
-//                '-Dlog4j.configurationFile=/home/vagrant/athena/athena/lib/log4j2.xml',
-//                "-Dvertx.disableFileCPResolving=true",
-//        ]
-//
+apply plugin: 'application'
+mainClassName = "net.consensys.athena.api.cmd.Athena"
+applicationDefaultJvmArgs = [
+                '-Dlog4j.configurationFile=log4j2.xml',
+                "-Dvertx.disableFileCPResolving=true",
+                "-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory"
+        ]
+
 //tasks.withType(CreateStartScripts) {
 //  classpath += files('src/main/resources/log4j.xml', 'src/main/resources/log4j2.xml')
 //}
@@ -107,12 +111,12 @@ spotless {
 //    }
 //  }
 //}
-//
-//distTar {
-//  doFirst {
-//    delete fileTree(dir:'build/distributions', include: '*.tar.gz')
-//  }
-//  compression = Compression.GZIP
-//  extension = 'tar.gz'
-//}
+
+distTar {
+  doFirst {
+    delete fileTree(dir:'build/distributions', include: '*.tar.gz')
+  }
+  compression = Compression.GZIP
+  extension = 'tar.gz'
+}
 

@@ -10,9 +10,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SendRequest implements Serializable {
-  public String payload; // b64 encoded
-  public String from; // b64 encoded
-  public String[] to; // b64 encoded
+  public final String payload; // b64 encoded
+  public final String from; // b64 encoded
+  public final String[] to; // b64 encoded
 
   @JsonCreator
   public SendRequest(

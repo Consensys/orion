@@ -58,6 +58,7 @@ public class SodiumFileKeyStore implements KeyStore {
       }
       PublicKey publicKey = readPublicKey(publicKeyFile);
       PrivateKey privateKey = readPrivateKey(privateKeyFile, password);
+
       cache.put(publicKey, privateKey);
     }
   }

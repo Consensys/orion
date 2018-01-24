@@ -68,6 +68,7 @@ public class SendReceiveTest {
             .append(singleNodeBaseUrl)
             .append("\"\nport = ")
             .append(singleNodePort)
+            .append("\nstorage = \"dir:storage/acceptance/node-simple\"")
             .append("\nothernodes = [\"")
             .append(singleNodeBaseUrl)
             .append(
@@ -87,6 +88,7 @@ public class SendReceiveTest {
             .append(node1BaseUrl)
             .append("\"\nport = ")
             .append(node1Port)
+            .append("\nstorage = \"dir:storage/acceptance/node1\"")
             .append("\nothernodes = [\"")
             .append(node2BaseUrl)
             .append(
@@ -106,6 +108,7 @@ public class SendReceiveTest {
             .append(node2BaseUrl)
             .append("\"\nport = ")
             .append(node2Port)
+            .append("\nstorage = \"dir:storage/acceptance/node2\"")
             .append("\nothernodes = [\"")
             .append(node1BaseUrl)
             .append(

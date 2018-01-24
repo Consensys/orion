@@ -54,13 +54,13 @@ public class SendHandler implements Handler<RoutingContext> {
         serializer.deserialize(
             HttpContentType.JSON, SendRequest.class, routingContext.getBody().getBytes());
 
-    log.trace(sendRequest);
+    log.debug(sendRequest);
 
     if (!sendRequest.isValid()) {
       throw new IllegalArgumentException();
     }
 
-    log.trace("reading public keys from SendRequest object");
+    log.debug("reading public keys from SendRequest object");
     // read provided public keys
     PublicKey fromKey = enclave.readKey(sendRequest.from);
     List<PublicKey> toKeys =
@@ -75,15 +75,15 @@ public class SendHandler implements Handler<RoutingContext> {
     byte[] rawPayload = Base64.decode(sendRequest.payload);
 
     // encrypting payload
-    log.trace("encrypting payload from SendRequest object");
+    log.debug("encrypting payload from SendRequest object");
     EncryptedPayload encryptedPayload = enclave.encrypt(rawPayload, fromKey, arrToKeys);
 
     // storing payload
-    log.trace("storing payload");
+    log.debug("storing payload");
     String digest = storage.put(encryptedPayload);
 
     // propagate payload
-    log.trace("propagating payload");
+    log.debug("propagating payload");
     boolean propagated =
         toKeys
             .stream()

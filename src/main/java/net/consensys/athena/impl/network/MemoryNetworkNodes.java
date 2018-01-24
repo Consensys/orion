@@ -93,9 +93,10 @@ public class MemoryNetworkNodes implements NetworkNodes, Serializable {
     boolean thisChanged = false;
 
     for (Map.Entry<PublicKey, URL> entry : other.getNodePKs().entrySet()) {
-      if (!nodePKs.containsKey(entry.getKey())) {
+      if (nodePKs.putIfAbsent(entry.getKey(), entry.getValue()) == null) {
+        // putIfAbsent returns null if there was no mapping associated with the provided key
         thisChanged = true;
-        addNode(entry.getKey(), entry.getValue());
+        nodeURLs.add(entry.getValue());
       }
     }
 

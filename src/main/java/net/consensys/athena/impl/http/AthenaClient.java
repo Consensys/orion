@@ -31,10 +31,15 @@ public class AthenaClient {
   private final Request upRequest;
 
   public AthenaClient(String baseUrl) {
-    this.baseUrl = baseUrl;
+    if (baseUrl.endsWith("/")) {
+      this.baseUrl = baseUrl;
+    } else {
+      this.baseUrl = baseUrl + "/";
+    }
 
     // setup immutable upCheck request
-    upRequest = new Request.Builder().get().url(baseUrl + AthenaRoutes.UPCHECK).build();
+    upRequest =
+        new Request.Builder().get().url(baseUrl + AthenaRoutes.UPCHECK.substring(1)).build();
   }
 
   public boolean upCheck() {
@@ -53,7 +58,7 @@ public class AthenaClient {
             MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, sendRequest));
 
     Request httpSendRequest =
-        new Request.Builder().post(sendBody).url(baseUrl + AthenaRoutes.SEND).build();
+        new Request.Builder().post(sendBody).url(baseUrl + AthenaRoutes.SEND.substring(1)).build();
 
     // executes the request
     try (Response httpSendResponse = httpClient.newCall(httpSendRequest).execute()) {
@@ -80,7 +85,10 @@ public class AthenaClient {
             MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, receiveRequest));
 
     Request httpReceiveRequest =
-        new Request.Builder().post(receiveBody).url(baseUrl + AthenaRoutes.RECIEVE).build();
+        new Request.Builder()
+            .post(receiveBody)
+            .url(baseUrl + AthenaRoutes.RECIEVE.substring(1))
+            .build();
 
     // executes the request
     try (Response httpReceiveResponse = httpClient.newCall(httpReceiveRequest).execute()) {

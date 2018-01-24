@@ -4,6 +4,8 @@ import static java.util.Optional.empty;
 
 import net.consensys.athena.api.cmd.AthenaRoutes;
 import net.consensys.athena.api.enclave.Enclave;
+import net.consensys.athena.api.enclave.EncryptedPayload;
+import net.consensys.athena.api.storage.StorageEngine;
 import net.consensys.athena.impl.config.MemoryConfig;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.athena.impl.helpers.CesarEnclave;
@@ -11,6 +13,7 @@ import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.http.server.HttpServerSettings;
 import net.consensys.athena.impl.http.server.vertx.VertxServer;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
+import net.consensys.athena.impl.storage.file.MapDbStorage;
 import net.consensys.athena.impl.utils.Serializer;
 
 import java.net.InetAddress;
@@ -43,6 +46,8 @@ public abstract class HandlerTest {
   protected VertxServer vertxServer;
   protected AthenaRoutes routes;
 
+  private StorageEngine<EncryptedPayload> storageEngine;
+
   @Before
   public void setUp() throws Exception {
     // athena dependencies, reset them all between tests
@@ -51,7 +56,8 @@ public abstract class HandlerTest {
     networkNodes = new MemoryNetworkNodes();
     enclave = buildEnclave();
 
-    routes = new AthenaRoutes(vertx, networkNodes, serializer, enclave);
+    storageEngine = new MapDbStorage("routerdb");
+    routes = new AthenaRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
 
     // create our vertx object
     vertx = Vertx.vertx();
@@ -84,6 +90,7 @@ public abstract class HandlerTest {
   public void tearDown() throws Exception {
     vertxServer.stop().get();
     vertx.close();
+    storageEngine.close();
   }
 
   protected Enclave buildEnclave() {

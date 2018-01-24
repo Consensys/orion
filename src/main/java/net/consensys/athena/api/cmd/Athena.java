@@ -5,8 +5,10 @@ import static java.util.Optional.empty;
 
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.Enclave;
+import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.network.NetworkNodes;
+import net.consensys.athena.api.storage.StorageEngine;
 import net.consensys.athena.impl.cmd.AthenaArguments;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
@@ -15,6 +17,7 @@ import net.consensys.athena.impl.http.server.HttpServerSettings;
 import net.consensys.athena.impl.http.server.vertx.VertxServer;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
 import net.consensys.athena.impl.network.NetworkDiscovery;
+import net.consensys.athena.impl.storage.file.MapDbStorage;
 import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.File;
@@ -37,6 +40,7 @@ public class Athena {
   private static final Serializer serializer = new Serializer();
 
   private final Vertx vertx = vertx();
+  private StorageEngine<EncryptedPayload> storageEngine;
 
   public static void main(String[] args) throws Exception {
     log.info("starting athena");
@@ -44,7 +48,7 @@ public class Athena {
     athena.run(args);
   }
 
-  public void stop() throws InterruptedException, ExecutionException {
+  public void stop() {
     CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
 
     vertx.close(
@@ -56,10 +60,19 @@ public class Athena {
           }
         });
 
-    resultFuture.get();
+    try {
+      resultFuture.get();
+
+    } catch (InterruptedException | ExecutionException io) {
+      log.error(io.getMessage());
+    }
+
+    if (storageEngine != null) {
+      storageEngine.close();
+    }
   }
 
-  public void run(String[] args) throws FileNotFoundException {
+  public void run(String... args) throws FileNotFoundException {
     // parsing arguments
     AthenaArguments arguments = new AthenaArguments(args);
 
@@ -85,7 +98,27 @@ public class Athena {
     NetworkNodes networkNodes = new MemoryNetworkNodes(config, keyStore.nodeKeys());
     Enclave enclave = new LibSodiumEnclave(config, keyStore);
 
-    AthenaRoutes routes = new AthenaRoutes(vertx, networkNodes, serializer, enclave);
+    // storage path
+    String storagePath = config.workDir().orElse(new File(".")).getPath() + "/";
+    String configStorage = config.storage();
+    if (configStorage.startsWith("dir:")) {
+      storagePath += configStorage.substring(4) + "/";
+    }
+
+    // if path doesn't exist, create it.
+    File dirStoragePath = new File(storagePath);
+    log.info("using storage path {}", storagePath);
+    if (!dirStoragePath.exists()) {
+      log.warn("storage path {} doesn't exist, creating...", storagePath);
+      if (!dirStoragePath.mkdirs()) {
+        log.error("couldn't create storage path {}", storagePath);
+        System.exit(-1);
+      }
+    }
+
+    // create our storage engine
+    storageEngine = new MapDbStorage(storagePath + "routerdb");
+    AthenaRoutes routes = new AthenaRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
 
     HttpServerSettings httpSettings =
         new HttpServerSettings(config.socket(), Optional.of((int) config.port()), empty(), null);
@@ -96,16 +129,7 @@ public class Athena {
     NetworkDiscovery discovery = new NetworkDiscovery(networkNodes, serializer);
     vertx.deployVerticle(discovery);
 
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread(
-                () -> {
-                  try {
-                    stop();
-                  } catch (Exception e) {
-                    log.error(e.getMessage());
-                  }
-                }));
+    Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
   }
 
   private void generateKeyPairs(Config config, String[] keysToGenerate) {

@@ -13,9 +13,12 @@ import java.util.Optional;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /** Retrieve a base 64 encoded payload. */
 public class ReceiveHandler implements Handler<RoutingContext> {
+  private static final Logger log = LogManager.getLogger();
   private final Enclave enclave;
   private final Storage storage;
   private final Serializer serializer;
@@ -28,19 +31,23 @@ public class ReceiveHandler implements Handler<RoutingContext> {
 
   @Override
   public void handle(RoutingContext routingContext) {
+    log.trace("receive handler called");
     ReceiveRequest receiveRequest =
         serializer.deserialize(
             HttpContentType.JSON, ReceiveRequest.class, routingContext.getBody().getBytes());
 
+    log.debug("got receive request {}", receiveRequest);
+
     Optional<EncryptedPayload> encryptedPayload = storage.get(receiveRequest.key);
     if (!encryptedPayload.isPresent()) {
+      log.info("unable to find payload with key {}", receiveRequest.key);
       routingContext.fail(404);
       return;
     }
 
     // Haskell doc: let's check if receipients is set = it's a payload that we sent. TODO @gbotrel
     // if not, it's a payload sent to us
-    SodiumPublicKey sodiumPublicKey = new SodiumPublicKey(Base64.decode(receiveRequest.publicKey));
+    SodiumPublicKey sodiumPublicKey = new SodiumPublicKey(Base64.decode(receiveRequest.to));
     byte[] decryptedPayload = enclave.decrypt(encryptedPayload.get(), sodiumPublicKey);
 
     // build a ReceiveResponse

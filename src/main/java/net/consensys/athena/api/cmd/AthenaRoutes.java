@@ -17,7 +17,6 @@ import net.consensys.athena.impl.http.handler.upcheck.UpcheckHandler;
 import net.consensys.athena.impl.http.server.vertx.HttpErrorHandler;
 import net.consensys.athena.impl.storage.EncryptedPayloadStorage;
 import net.consensys.athena.impl.storage.Sha512_256StorageKeyBuilder;
-import net.consensys.athena.impl.storage.file.MapDbStorage;
 import net.consensys.athena.impl.utils.Serializer;
 
 import io.vertx.core.Vertx;
@@ -36,9 +35,6 @@ public class AthenaRoutes {
   public static final String DELETE = "/delete";
   public static final String PUSH = "/push";
 
-  private static final StorageEngine<EncryptedPayload> STORAGE_ENGINE =
-      new MapDbStorage("routerdb");
-
   private final Enclave enclave;
   private final Serializer serializer;
   private final Storage storage;
@@ -47,11 +43,16 @@ public class AthenaRoutes {
   private final Router router;
 
   public AthenaRoutes(
-      Vertx vertx, NetworkNodes networkNodes, Serializer serializer, Enclave enclave) {
+      Vertx vertx,
+      NetworkNodes networkNodes,
+      Serializer serializer,
+      Enclave enclave,
+      StorageEngine<EncryptedPayload> storageEngine) {
     // controller dependencies
     this.enclave = enclave;
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
-    this.storage = new EncryptedPayloadStorage(STORAGE_ENGINE, keyBuilder);
+
+    this.storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
     this.serializer = serializer;
     this.networkNodes = networkNodes;
 
@@ -60,10 +61,13 @@ public class AthenaRoutes {
 
     // sets response content-type from Accept header
     // and handle errors
+
+    LoggerHandler loggerHandler = LoggerHandler.create();
+
     router
         .route()
         .handler(BodyHandler.create())
-        .handler(LoggerHandler.create())
+        .handler(loggerHandler)
         .handler(ResponseContentTypeHandler.create())
         .failureHandler(new HttpErrorHandler(serializer));
 
@@ -84,8 +88,9 @@ public class AthenaRoutes {
     router.post(DELETE).handler(new DeleteHandler(storage));
 
     router
-        .get(PARTYINFO)
+        .post(PARTYINFO)
         .produces(CBOR.httpHeaderValue)
+        .consumes(CBOR.httpHeaderValue)
         .handler(new PartyInfoHandler(networkNodes, serializer));
 
     router
