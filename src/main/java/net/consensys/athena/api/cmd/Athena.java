@@ -72,7 +72,8 @@ public class Athena {
     }
   }
 
-  public void run(String... args) throws FileNotFoundException {
+  public void run(String... args)
+      throws FileNotFoundException, ExecutionException, InterruptedException {
     // parsing arguments
     AthenaArguments arguments = new AthenaArguments(args);
 
@@ -93,7 +94,7 @@ public class Athena {
     run(config);
   }
 
-  public void run(Config config) {
+  public void run(Config config) throws ExecutionException, InterruptedException {
     SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
     NetworkNodes networkNodes = new MemoryNetworkNodes(config, keyStore.nodeKeys());
     Enclave enclave = new LibSodiumEnclave(config, keyStore);
@@ -124,7 +125,7 @@ public class Athena {
         new HttpServerSettings(config.socket(), Optional.of((int) config.port()), empty(), null);
 
     VertxServer httpServer = new VertxServer(vertx, routes.getRouter(), httpSettings);
-    httpServer.start();
+    httpServer.start().get();
 
     NetworkDiscovery discovery = new NetworkDiscovery(networkNodes, serializer);
     vertx.deployVerticle(discovery);
