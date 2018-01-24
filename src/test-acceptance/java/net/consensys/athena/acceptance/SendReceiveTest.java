@@ -9,7 +9,6 @@ import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.http.AthenaClient;
 
 import java.io.ByteArrayInputStream;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 
@@ -40,23 +39,13 @@ public class SendReceiveTest {
     int node2Port = getFreePort();
     int singleNodePort = getFreePort();
     node1BaseUrl =
-        new HttpUrl.Builder()
-            .scheme("http")
-            .host(InetAddress.getLocalHost().getHostAddress())
-            .port(node1Port)
-            .build()
-            .toString();
+        new HttpUrl.Builder().scheme("http").host("127.0.0.1").port(node1Port).build().toString();
     node2BaseUrl =
-        new HttpUrl.Builder()
-            .scheme("http")
-            .host(InetAddress.getLocalHost().getHostAddress())
-            .port(node2Port)
-            .build()
-            .toString();
+        new HttpUrl.Builder().scheme("http").host("127.0.0.1").port(node2Port).build().toString();
     singleNodeBaseUrl =
         new HttpUrl.Builder()
             .scheme("http")
-            .host(InetAddress.getLocalHost().getHostAddress())
+            .host("127.0.0.1")
             .port(singleNodePort)
             .build()
             .toString();
