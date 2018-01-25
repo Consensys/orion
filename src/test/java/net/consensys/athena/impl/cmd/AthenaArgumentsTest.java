@@ -14,9 +14,9 @@ import org.junit.Test;
 public class AthenaArgumentsTest {
 
   private final String usageOut =
-      "Usage:  java -jar "
+      "Usage: "
           + Athena.name
-          + ".jar [options] [config file]\n"
+          + " [options] [config file]\n"
           + "where options include:\n"
           + "\t-g\n"
           + "\t--generatekeys <names>\n\t\tgenerate key pairs for each of the names supplied.\n\t\twhere <names> are a comma-seperated list\n"

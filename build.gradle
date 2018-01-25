@@ -4,13 +4,21 @@ plugins {
 }
 
 apply plugin: 'java-library'
+apply plugin: 'application'
 apply plugin: "jacoco"
 
-repositories {
-  jcenter()
-}
-
+mainClassName = 'net.consensys.athena.api.cmd.Athena'
 version = '0.1.0-' + versionDetails().gitHash[0..4] + '-' + getTimestamp()
+applicationDefaultJvmArgs = [
+        '-Dlog4j.configurationFile=log4j2.xml',
+        "-Dvertx.disableFileCPResolving=true",
+        "-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory"
+]
+
+
+repositories {
+    jcenter()
+}
 
 dependencies {
   compile 'io.netty:netty-codec-http:4.1.17.Final'
@@ -25,8 +33,8 @@ dependencies {
   testImplementation 'junit:junit:4.12'
 
   // vertx
-  compile 'io.vertx:vertx-core:3.5.0'
-  compile 'io.vertx:vertx-web:3.5.0'
+  implementation 'io.vertx:vertx-core:3.5.0'
+  implementation 'io.vertx:vertx-web:3.5.0'
 
   // http client
   implementation 'com.squareup.okhttp3:okhttp:3.9.1'
@@ -43,8 +51,8 @@ dependencies {
   compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
 }
 
-
 jar {
+    versionTxt()
     manifest {
         attributes('Implementation-Title': project.name,
                 'Implementation-Version': version,
@@ -53,20 +61,16 @@ jar {
     }
 }
 
-allprojects {
-    versionTxt()
-}
 
-task run(type: JavaExec) {
-  description = 'Run Athena. Use -Pargs="" to pass aruments'
-  classpath = sourceSets.main.runtimeClasspath
+run {
+  description = 'Run Athena. Use -Pargs="" to pass arguments'
   standardInput = System.in
 
-  main = 'net.consensys.athena.api.cmd.Athena'
   if (project.hasProperty("args")) {
     args project.getProperty('args').split()
   }
 }
+
 spotless {
   java {
     removeUnusedImports()
@@ -75,11 +79,27 @@ spotless {
   }
 }
 
+distTar {
+    doFirst {
+        delete fileTree(dir:'build/distributions', include: '*.tar.gz')
+    }
+    compression = Compression.GZIP
+    extension = 'tar.gz'
+}
+
+distZip {
+    doFirst {
+        delete fileTree(dir:'build/distributions', include: '*.zip')
+    }
+}
+
+// Generate the Timestamp for the version
 def getTimestamp() {
     def date = new Date()
     return date.format('yyyy-MM-dd-HH-mm-ss-SSS')
 }
 
+// Create the version.txt file
 def versionTxt()  {
     new File("$projectDir/src/main/resources/version.txt").text = """Application-name: $project.name
 Version: $version

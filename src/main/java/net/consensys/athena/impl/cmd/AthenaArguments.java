@@ -53,7 +53,7 @@ public class AthenaArguments {
   }
 
   private void displayHelp() {
-    System.out.println("Usage:  java -jar " + Athena.name + ".jar [options] [config file]");
+    System.out.println("Usage: " + Athena.name + " [options] [config file]");
     System.out.println("where options include:");
     System.out.println("\t-g");
     System.out.println(
