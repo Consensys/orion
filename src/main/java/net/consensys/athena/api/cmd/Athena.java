@@ -101,7 +101,7 @@ public class Athena {
       String contents = buffer.lines().collect(Collectors.joining("\n"));
       System.out.println(contents);
     } catch (IOException e) {
-      log.error(e);
+      log.error("Read of Version file failed", e);
     }
   }
 
