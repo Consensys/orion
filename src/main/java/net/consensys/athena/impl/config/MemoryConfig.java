@@ -10,7 +10,7 @@ import java.util.Optional;
 public class MemoryConfig implements Config {
 
   private URL url;
-  private long port = Long.MIN_VALUE;
+  private int port = Integer.MIN_VALUE;
   private Optional<File> workDir = Optional.empty();
   private Optional<File> socket = Optional.empty();
   private URL[] otherNodes = new URL[] {};
@@ -40,7 +40,7 @@ public class MemoryConfig implements Config {
     this.url = url;
   }
 
-  public void setPort(long port) {
+  public void setPort(int port) {
     this.port = port;
   }
 
@@ -158,7 +158,7 @@ public class MemoryConfig implements Config {
   }
 
   @Override
-  public long port() {
+  public int port() {
     return port;
   }
 

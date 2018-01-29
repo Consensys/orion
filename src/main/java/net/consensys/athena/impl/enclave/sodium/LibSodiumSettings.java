@@ -6,6 +6,8 @@ import com.sun.jna.Platform;
 
 public class LibSodiumSettings {
 
+  private LibSodiumSettings() {}
+
   public static String defaultLibSodiumPath() {
     if (Platform.isMac()) {
       return "/usr/local/lib/libsodium.dylib";

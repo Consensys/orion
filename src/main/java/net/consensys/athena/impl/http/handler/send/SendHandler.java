@@ -110,8 +110,7 @@ public class SendHandler implements Handler<RoutingContext> {
       if (recipientURL == null) {
         throw new RuntimeException("couldn't find peer URL");
       }
-      URL pushURL =
-          new URL(recipientURL, AthenaRoutes.PUSH); // TODO @gbotrel reverse routing would be nice
+      URL pushURL = new URL(recipientURL, AthenaRoutes.PUSH);
 
       // serialize payload and build RequestBody. we also strip non relevant combinedKeys
       byte[] payload =
@@ -125,9 +124,6 @@ public class SendHandler implements Handler<RoutingContext> {
       return httpClient.newCall(req).execute();
     } catch (IOException io) {
       throw new RuntimeException(io);
-      // TODO @gbotrel / reviewer --> in case of network exception, shall we throw RuntimeException
-      // or return the following response ?
-      //      return new Response.Builder().code(418).build();
     }
   }
 

@@ -77,8 +77,7 @@ public class Serializer {
     return deserialize(contentType, valueType, serialize(contentType, obj));
   }
 
-  private ObjectMapper getMapperOrThrows(HttpContentType contentType)
-      throws SerializationException {
+  private ObjectMapper getMapperOrThrows(HttpContentType contentType) {
     switch (contentType) {
       case JSON:
         return jsonObjectMapper;

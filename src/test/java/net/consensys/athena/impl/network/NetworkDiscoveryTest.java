@@ -81,7 +81,7 @@ public class NetworkDiscoveryTest {
         networkDiscovery.getDiscoverers().get(fakePeer.getURL());
     assertNotNull(discoverer);
 
-    Thread.sleep(3 * (discoverer.currentRefreshDelay + NetworkDiscovery.httpClientTimeoutMs));
+    Thread.sleep(3 * (discoverer.currentRefreshDelay + NetworkDiscovery.HTTP_CLIENT_TIMEOUT_MS));
 
     // ensure we didn't do any update, and we tried at least 2 times
     assertEquals(Instant.MIN, discoverer.lastUpdate);
@@ -126,7 +126,7 @@ public class NetworkDiscoveryTest {
     assertNotNull(knownPeerDiscoverer);
 
     Thread.sleep(
-        3 * (knownPeerDiscoverer.currentRefreshDelay + NetworkDiscovery.httpClientTimeoutMs));
+        3 * (knownPeerDiscoverer.currentRefreshDelay + NetworkDiscovery.HTTP_CLIENT_TIMEOUT_MS));
 
     // ensure knownPeer responded and that his party info was called at least twice
     assertTrue(knownPeerDiscoverer.lastUpdate.isAfter(discoveryStart));

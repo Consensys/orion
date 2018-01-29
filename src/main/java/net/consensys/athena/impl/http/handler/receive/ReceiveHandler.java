@@ -45,8 +45,6 @@ public class ReceiveHandler implements Handler<RoutingContext> {
       return;
     }
 
-    // Haskell doc: let's check if receipients is set = it's a payload that we sent. TODO @gbotrel
-    // if not, it's a payload sent to us
     SodiumPublicKey sodiumPublicKey = new SodiumPublicKey(Base64.decode(receiveRequest.to));
     byte[] decryptedPayload = enclave.decrypt(encryptedPayload.get(), sodiumPublicKey);
 

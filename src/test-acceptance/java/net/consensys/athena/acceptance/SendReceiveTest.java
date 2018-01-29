@@ -29,8 +29,10 @@ public class SendReceiveTest {
   private static Config configNode1;
   private static Config configNode2;
 
-  private static final String pk1b64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
-  private static final String pk2b64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
+  private static final String PK_1_B_64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
+  private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
+
+  private static final String HOST_NAME = "127.0.0.1";
 
   @BeforeClass
   public static void setUp() throws Exception {
@@ -39,13 +41,13 @@ public class SendReceiveTest {
     int node2Port = getFreePort();
     int singleNodePort = getFreePort();
     node1BaseUrl =
-        new HttpUrl.Builder().scheme("http").host("127.0.0.1").port(node1Port).build().toString();
+        new HttpUrl.Builder().scheme("http").host(HOST_NAME).port(node1Port).build().toString();
     node2BaseUrl =
-        new HttpUrl.Builder().scheme("http").host("127.0.0.1").port(node2Port).build().toString();
+        new HttpUrl.Builder().scheme("http").host(HOST_NAME).port(node2Port).build().toString();
     singleNodeBaseUrl =
         new HttpUrl.Builder()
             .scheme("http")
-            .host("127.0.0.1")
+            .host(HOST_NAME)
             .port(singleNodePort)
             .build()
             .toString();
@@ -131,12 +133,12 @@ public class SendReceiveTest {
     // send something to the node (from pk1 to pk2)
     String digest =
         athenaClient
-            .send(originalPayload, pk1b64, new String[] {pk2b64})
+            .send(originalPayload, PK_1_B_64, new String[] {PK_2_B_64})
             .orElseThrow(AssertionFailedError::new);
 
     // call receive on the node
     byte[] receivedPayload =
-        athenaClient.receive(digest, pk2b64).orElseThrow(AssertionFailedError::new);
+        athenaClient.receive(digest, PK_2_B_64).orElseThrow(AssertionFailedError::new);
 
     // ensure we retrieved what we originally sent.
     assertArrayEquals(originalPayload, receivedPayload);
@@ -164,11 +166,12 @@ public class SendReceiveTest {
     // send a transaction from node1 to node2
     String digest =
         node1
-            .send(originalPayload, pk1b64, new String[] {pk2b64})
+            .send(originalPayload, PK_1_B_64, new String[] {PK_2_B_64})
             .orElseThrow(AssertionFailedError::new);
 
     // call receive on the node 2
-    byte[] receivedPayload = node2.receive(digest, pk2b64).orElseThrow(AssertionFailedError::new);
+    byte[] receivedPayload =
+        node2.receive(digest, PK_2_B_64).orElseThrow(AssertionFailedError::new);
 
     // ensure we retrieved what we originally sent.
     assertArrayEquals(originalPayload, receivedPayload);

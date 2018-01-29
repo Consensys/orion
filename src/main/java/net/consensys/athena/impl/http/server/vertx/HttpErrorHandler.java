@@ -23,9 +23,6 @@ public class HttpErrorHandler implements Handler<RoutingContext> {
 
   @Override
   public void handle(RoutingContext failureContext) {
-    // TODO here we should do some clean error management, error codes, etc.
-    // check the exeception type ...
-
     int statusCode = failureContext.statusCode();
     statusCode = statusCode < 0 ? 500 : statusCode;
 
@@ -36,6 +33,7 @@ public class HttpErrorHandler implements Handler<RoutingContext> {
       Buffer buffer = Buffer.buffer(serializer.serialize(HttpContentType.JSON, httpError));
 
       log.error(failureContext.currentRoute().getPath() + " failed " + httpError);
+      log.error(failureContext.failure().getStackTrace());
 
       response
           .putHeader(HttpHeaders.CONTENT_TYPE, HttpContentType.JSON.httpHeaderValue)

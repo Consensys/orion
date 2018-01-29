@@ -1,7 +1,5 @@
 package net.consensys.athena.impl.http.server.vertx;
 
-import net.consensys.athena.impl.http.server.HttpServerSettings;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -14,13 +12,7 @@ public class VertxServer {
   private final HttpServer httpServer;
   private final Router router;
 
-  public VertxServer(Vertx vertx, Router router, HttpServerSettings httpSettings) {
-    // vertx http server
-    // TODO manage optiosn & settings (https, domain socketn ...)
-
-    HttpServerOptions serverOptions = new HttpServerOptions();
-    serverOptions.setPort(httpSettings.getHttpPort().get());
-
+  public VertxServer(Vertx vertx, Router router, HttpServerOptions serverOptions) {
     this.httpServer = vertx.createHttpServer(serverOptions);
     this.router = router;
   }

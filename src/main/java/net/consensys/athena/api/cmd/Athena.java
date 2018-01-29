@@ -1,7 +1,6 @@
 package net.consensys.athena.api.cmd;
 
 import static io.vertx.core.Vertx.vertx;
-import static java.util.Optional.empty;
 
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.Enclave;
@@ -13,7 +12,6 @@ import net.consensys.athena.impl.cmd.AthenaArguments;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
-import net.consensys.athena.impl.http.server.HttpServerSettings;
 import net.consensys.athena.impl.http.server.vertx.VertxServer;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
 import net.consensys.athena.impl.network.NetworkDiscovery;
@@ -34,6 +32,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -131,15 +130,18 @@ public class Athena {
     storageEngine = new MapDbStorage(storagePath + "routerdb");
     AthenaRoutes routes = new AthenaRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
 
-    HttpServerSettings httpSettings =
-        new HttpServerSettings(config.socket(), Optional.of((int) config.port()), empty(), null);
+    // build vertx http server
+    HttpServerOptions serverOptions = new HttpServerOptions();
+    serverOptions.setPort(config.port());
 
-    VertxServer httpServer = new VertxServer(vertx, routes.getRouter(), httpSettings);
+    VertxServer httpServer = new VertxServer(vertx, routes.getRouter(), serverOptions);
     httpServer.start().get();
 
+    // start network discovery of other peers
     NetworkDiscovery discovery = new NetworkDiscovery(networkNodes, serializer);
     vertx.deployVerticle(discovery);
 
+    // set shutdown hook
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
   }
 

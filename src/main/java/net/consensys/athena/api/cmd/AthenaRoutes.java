@@ -36,9 +36,7 @@ public class AthenaRoutes {
   public static final String PUSH = "/push";
 
   private final Enclave enclave;
-  private final Serializer serializer;
   private final Storage storage;
-  private final NetworkNodes networkNodes;
 
   private final Router router;
 
@@ -53,8 +51,6 @@ public class AthenaRoutes {
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
 
     this.storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
-    this.serializer = serializer;
-    this.networkNodes = networkNodes;
 
     // Vertx router
     router = Router.router(vertx);

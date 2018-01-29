@@ -22,7 +22,7 @@ public interface Config {
    *
    * @return Port to listen on for the public API
    */
-  long port();
+  int port();
 
   /**
    * Path at which to locate the lib sodium shared library.

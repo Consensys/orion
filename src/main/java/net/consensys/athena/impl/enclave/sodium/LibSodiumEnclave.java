@@ -18,12 +18,9 @@ import java.util.HashMap;
 
 import com.muquit.libsodiumjna.SodiumLibrary;
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 public class LibSodiumEnclave implements Enclave {
-  private static final Logger log = LogManager.getLogger();
 
   static {
     Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
@@ -63,7 +60,6 @@ public class LibSodiumEnclave implements Enclave {
       if (!(senderKey instanceof SodiumPublicKey)) {
         throw new EnclaveException("SodiumEnclave needs SodiumPublicKey");
       }
-      SodiumPublicKey sodiumSenderKey = (SodiumPublicKey) senderKey;
       PrivateKey senderPrivateKey = keyStore.getPrivateKey(senderKey);
       if (senderPrivateKey == null) {
         throw new EnclaveException("No StoredPrivateKey found in keystore");

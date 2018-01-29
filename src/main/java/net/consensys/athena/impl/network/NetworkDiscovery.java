@@ -26,9 +26,9 @@ import org.apache.logging.log4j.Logger;
 public class NetworkDiscovery extends AbstractVerticle {
   private static final Logger log = LogManager.getLogger();
 
-  public static int httpClientTimeoutMs = 1500;
-  private static long refreshDelayMs = 1000;
-  private static long maxRefreshDelayMs = 60000;
+  public static final int HTTP_CLIENT_TIMEOUT_MS = 1500;
+  private static final long REFRESH_DELAY_MS = 1000;
+  private static final long MAX_REFRESH_DELAY_MS = 60000;
 
   private final OkHttpClient httpClient;
 
@@ -42,8 +42,8 @@ public class NetworkDiscovery extends AbstractVerticle {
     this.discoverers = new HashMap<>();
     this.httpClient =
         new OkHttpClient.Builder()
-            .connectTimeout(httpClientTimeoutMs, TimeUnit.MILLISECONDS)
-            .readTimeout(httpClientTimeoutMs, TimeUnit.MILLISECONDS)
+            .connectTimeout(HTTP_CLIENT_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+            .readTimeout(HTTP_CLIENT_TIMEOUT_MS, TimeUnit.MILLISECONDS)
             .build();
   }
 
@@ -62,7 +62,7 @@ public class NetworkDiscovery extends AbstractVerticle {
       if (!discoverers.containsKey(nodeUrl)) {
         Discoverer d = new Discoverer(nodeUrl);
         discoverers.put(nodeUrl, d);
-        vertx.setTimer(refreshDelayMs, d);
+        vertx.setTimer(REFRESH_DELAY_MS, d);
       }
     }
   }
@@ -77,7 +77,7 @@ public class NetworkDiscovery extends AbstractVerticle {
    */
   class Discoverer implements Handler<Long> {
     private URL nodeUrl;
-    public long currentRefreshDelay = refreshDelayMs;
+    public long currentRefreshDelay = REFRESH_DELAY_MS;
     public Instant lastUpdate = Instant.MIN;
     public long attempts = 0;
 
@@ -100,8 +100,8 @@ public class NetworkDiscovery extends AbstractVerticle {
 
             // let's re-fire the timer.
             currentRefreshDelay = (long) ((double) currentRefreshDelay * 2.0);
-            if (currentRefreshDelay > maxRefreshDelayMs) {
-              currentRefreshDelay = maxRefreshDelayMs;
+            if (currentRefreshDelay > MAX_REFRESH_DELAY_MS) {
+              currentRefreshDelay = MAX_REFRESH_DELAY_MS;
             }
             vertx.setTimer(currentRefreshDelay, this);
 
