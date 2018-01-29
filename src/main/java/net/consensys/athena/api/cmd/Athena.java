@@ -18,10 +18,9 @@ import net.consensys.athena.impl.network.NetworkDiscovery;
 import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
@@ -97,12 +96,11 @@ public class Athena {
   }
 
   private void displayVersion() {
-    try {
-      String filePath = Athena.class.getResource("/version.txt").getPath();
-
-      String contents = new String(Files.readAllBytes(Paths.get(filePath)));
+    try (InputStream versionAsStream = Athena.class.getResourceAsStream("/version.txt");
+        BufferedReader buffer = new BufferedReader(new InputStreamReader(versionAsStream)); ) {
+      String contents = buffer.lines().collect(Collectors.joining("\n"));
       System.out.println(contents);
-    } catch (Exception e) {
+    } catch (IOException e) {
       log.error("Read of Version file failed", e);
     }
   }
