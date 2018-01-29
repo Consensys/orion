@@ -1,5 +1,7 @@
 package net.consensys.athena.impl.cmd;
 
+import net.consensys.athena.api.cmd.Athena;
+
 import java.util.Optional;
 
 public class AthenaArguments {
@@ -7,6 +9,7 @@ public class AthenaArguments {
 
   private Optional<String> configFileName = Optional.empty();
   private Optional<String[]> keysToGenerate = Optional.empty();
+  private boolean displayVersion = false;
 
   public AthenaArguments(String[] args) {
 
@@ -26,10 +29,39 @@ public class AthenaArguments {
           String keys = args[i];
           keysToGenerate = Optional.of(keys.split(","));
           break;
+        case "--help":
+        case "-h":
+          argumentExit = true;
+          break;
+        case "--version":
+        case "-v":
+          displayVersion = true;
+          break;
         default:
-          configFileName = Optional.of(args[i]);
+          if (args[i].startsWith("-")) {
+            System.out.printf("Invalid option: %s\n", args[i]);
+            argumentExit = true;
+          } else {
+            configFileName = Optional.of(args[i]);
+          }
       }
     }
+
+    if (argumentExit) {
+      displayHelp();
+    }
+  }
+
+  private void displayHelp() {
+    System.out.println("Usage: " + Athena.name + " [options] [config file]");
+    System.out.println("where options include:");
+    System.out.println("\t-g");
+    System.out.println(
+        "\t--generatekeys <names>\n\t\tgenerate key pairs for each of the names supplied.\n\t\twhere <names> are a comma-seperated list");
+    System.out.println("\t-h");
+    System.out.println("\t--help\tprint this help message");
+    System.out.println("\t-v");
+    System.out.println("\t--version\tprint version information");
   }
 
   public boolean argumentExit() {
@@ -42,5 +74,9 @@ public class AthenaArguments {
 
   public Optional<String[]> keysToGenerate() {
     return keysToGenerate;
+  }
+
+  public boolean displayVersion() {
+    return displayVersion;
   }
 }

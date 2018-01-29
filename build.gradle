@@ -1,12 +1,17 @@
 plugins {
   id "com.diffplug.gradle.spotless" version "3.6.0"
+  id 'com.palantir.git-version' version '0.10.0'
 }
 
 apply plugin: 'java-library'
+apply plugin: 'application'
 apply plugin: "jacoco"
 
+mainClassName = 'net.consensys.athena.api.cmd.Athena'
+version = '0.1.0-' + versionDetails().gitHash[0..4] + '-' + getTimestamp()
+
 repositories {
-  jcenter()
+    jcenter()
 }
 
 // added source sets (acceptance and integratioon tests)
@@ -52,11 +57,21 @@ dependencies {
 
 }
 
-task run(type: JavaExec) {
-  classpath = sourceSets.main.runtimeClasspath
+jar {
+    versionTxt()
+    manifest {
+        attributes('Implementation-Title': project.name,
+                'Implementation-Version': version,
+                'Main-Class': 'net.consensys.athena.api.cmd.Athena'
+        )
+    }
+}
+
+
+run {
+  description = 'Run Athena. Use -Pargs="" to pass arguments'
   standardInput = System.in
 
-  main = 'net.consensys.athena.api.cmd.Athena'
   if (project.hasProperty("args")) {
     args project.getProperty('args').split()
   }
@@ -85,22 +100,30 @@ spotless {
   }
 }
 
-//jar { enabled = false }
-//apply plugin: 'application'
-//mainClassName = "net.consensys.athena.api.cmd.Athena"
-//applicationDefaultJvmArgs = [
-//                '-Dlog4j.configurationFile=log4j2.xml',
-//                "-Dvertx.disableFileCPResolving=true",
-//                "-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory"
-//        ]
-//
-//
-//
-//distTar {
-//  doFirst {
-//    delete fileTree(dir:'build/distributions', include: '*.tar.gz')
-//  }
-//  compression = Compression.GZIP
-//  extension = 'tar.gz'
-//}
-//
+
+distTar {
+    doFirst {
+        delete fileTree(dir:'build/distributions', include: '*.tar.gz')
+    }
+    compression = Compression.GZIP
+    extension = 'tar.gz'
+}
+
+distZip {
+    doFirst {
+        delete fileTree(dir:'build/distributions', include: '*.zip')
+    }
+}
+
+// Generate the Timestamp for the version
+def getTimestamp() {
+    def date = new Date()
+    return date.format('yyyy-MM-dd-HH-mm-ss-SSS')
+}
+
+// Create the version.txt file
+def versionTxt()  {
+    new File("$projectDir/src/main/resources/version.txt").text = """Application-name: $project.name
+Version: $version
+"""
+}
