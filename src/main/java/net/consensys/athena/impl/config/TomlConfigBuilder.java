@@ -34,7 +34,7 @@ public class TomlConfigBuilder {
       errorMsg.append("Error: value for key 'url' in config must be specified\n");
     }
 
-    setInt(toIntExact(toml.getLong("port")), memoryConfig::setPort);
+    setInt(toml.getLong("port"), memoryConfig::setPort);
 
     setFile(toml.getString("workdir"), memoryConfig::setWorkDir);
     setFile(toml.getString("socket"), memoryConfig::setSocket);
@@ -60,7 +60,7 @@ public class TomlConfigBuilder {
     setFile(toml.getString("tlsclientkey"), memoryConfig::setTlsClientKey);
     setString(toml.getString("tlsclienttrust"), memoryConfig::setTlsClientTrust);
     setFile(toml.getString("tlsknownservers"), memoryConfig::setTlsKnownServers);
-    setInt(toIntExact(toml.getLong("verbosity")), memoryConfig::setVerbosity);
+    setInt(toml.getLong("verbosity"), memoryConfig::setVerbosity);
 
     // Validations
     if (memoryConfig.port() == Integer.MIN_VALUE) {
@@ -128,6 +128,12 @@ public class TomlConfigBuilder {
   private void setInt(Integer value, Consumer<Integer> setter) {
     if (value != null) {
       setter.accept(value);
+    }
+  }
+
+  private void setInt(Long value, Consumer<Integer> setter) {
+    if (value != null) {
+      setter.accept(toIntExact(value));
     }
   }
 
