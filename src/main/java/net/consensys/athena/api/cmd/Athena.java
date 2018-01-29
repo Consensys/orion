@@ -96,9 +96,8 @@ public class Athena {
   }
 
   private void displayVersion() {
-    try(
-    InputStream versionAsStream = Athena.class.getResourceAsStream("/version.txt");
-    BufferedReader buffer = new BufferedReader(new InputStreamReader(versionAsStream)); ) {
+    try (InputStream versionAsStream = Athena.class.getResourceAsStream("/version.txt");
+        BufferedReader buffer = new BufferedReader(new InputStreamReader(versionAsStream)); ) {
       String contents = buffer.lines().collect(Collectors.joining("\n"));
       System.out.println(contents);
     } catch (IOException e) {
