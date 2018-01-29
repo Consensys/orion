@@ -3,19 +3,6 @@ package net.consensys.athena.api.cmd;
 import static io.vertx.core.Vertx.vertx;
 import static java.util.Optional.empty;
 
-import io.vertx.core.Vertx;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Optional;
-import java.util.Scanner;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
@@ -32,6 +19,21 @@ import net.consensys.athena.impl.network.MemoryNetworkNodes;
 import net.consensys.athena.impl.network.NetworkDiscovery;
 import net.consensys.athena.impl.storage.file.MapDbStorage;
 import net.consensys.athena.impl.utils.Serializer;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Optional;
+import java.util.Scanner;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
+import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
