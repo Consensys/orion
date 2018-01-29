@@ -1,5 +1,6 @@
 package net.consensys.athena.impl.enclave;
 
+import net.consensys.athena.api.enclave.EnclaveException;
 import net.consensys.athena.api.enclave.HashAlgorithm;
 
 import java.security.MessageDigest;
@@ -19,7 +20,7 @@ public class Hasher {
       digest.update(input);
       return digest.digest();
     } catch (NoSuchAlgorithmException e) {
-      throw new RuntimeException(e);
+      throw new EnclaveException(e);
     }
   }
 }

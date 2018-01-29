@@ -52,7 +52,7 @@ public class ReceiveHandlerTest extends HandlerTest {
     String key = storage.put(originalPayload);
 
     // Receive operation, sending a ReceivePayload request
-    ReceiveRequest receiveRequest = new ReceiveRequest(key, recipientKey);
+    ReceiveRequest receiveRequest = new ReceiveRequest(key, recipientKey.toString());
     Request request = buildPostRequest(AthenaRoutes.RECIEVE, HttpContentType.JSON, receiveRequest);
 
     // execute request
@@ -91,7 +91,7 @@ public class ReceiveHandlerTest extends HandlerTest {
         serializer.roundTrip(HttpContentType.JSON, ReceiveResponse.class, receiveResponse));
 
     SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
-    ReceiveRequest receiveRequest = new ReceiveRequest("some key", senderKey);
+    ReceiveRequest receiveRequest = new ReceiveRequest("some key", senderKey.toString());
     assertEquals(
         receiveRequest,
         serializer.roundTrip(HttpContentType.CBOR, ReceiveRequest.class, receiveRequest));

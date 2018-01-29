@@ -1,21 +1,24 @@
 package net.consensys.athena.impl.network;
 
+import static net.consensys.athena.impl.http.server.HttpContentType.CBOR;
+
 import net.consensys.athena.api.cmd.AthenaRoutes;
 import net.consensys.athena.api.network.NetworkNodes;
-import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.utils.Serializer;
 
 import java.net.URL;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,9 +26,9 @@ import org.apache.logging.log4j.Logger;
 public class NetworkDiscovery extends AbstractVerticle {
   private static final Logger log = LogManager.getLogger();
 
-  public static int httpClientTimeoutMs = 1500;
-  private static long refreshDelayMs = 1000;
-  private static long maxRefreshDelayMs = 60000;
+  public static final int HTTP_CLIENT_TIMEOUT_MS = 1500;
+  private static final long REFRESH_DELAY_MS = 1000;
+  private static final long MAX_REFRESH_DELAY_MS = 60000;
 
   private final OkHttpClient httpClient;
 
@@ -36,11 +39,11 @@ public class NetworkDiscovery extends AbstractVerticle {
   public NetworkDiscovery(NetworkNodes nodes, Serializer serializer) {
     this.serializer = serializer;
     this.nodes = nodes;
-    this.discoverers = new ConcurrentHashMap<>();
+    this.discoverers = new HashMap<>();
     this.httpClient =
         new OkHttpClient.Builder()
-            .connectTimeout(httpClientTimeoutMs, TimeUnit.MILLISECONDS)
-            .readTimeout(httpClientTimeoutMs, TimeUnit.MILLISECONDS)
+            .connectTimeout(HTTP_CLIENT_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+            .readTimeout(HTTP_CLIENT_TIMEOUT_MS, TimeUnit.MILLISECONDS)
             .build();
   }
 
@@ -59,7 +62,7 @@ public class NetworkDiscovery extends AbstractVerticle {
       if (!discoverers.containsKey(nodeUrl)) {
         Discoverer d = new Discoverer(nodeUrl);
         discoverers.put(nodeUrl, d);
-        vertx.setTimer(refreshDelayMs, d);
+        vertx.setTimer(REFRESH_DELAY_MS, d);
       }
     }
   }
@@ -73,15 +76,13 @@ public class NetworkDiscovery extends AbstractVerticle {
    * specified URL and merge results if needed in NetworkDiscovery state
    */
   class Discoverer implements Handler<Long> {
-    final Request request;
-    public URL nodeUrl;
-    public long currentRefreshDelay = refreshDelayMs;
+    private URL nodeUrl;
+    public long currentRefreshDelay = REFRESH_DELAY_MS;
     public Instant lastUpdate = Instant.MIN;
     public long attempts = 0;
 
     Discoverer(URL nodeUrl) {
       this.nodeUrl = nodeUrl;
-      this.request = new Request.Builder().get().url(nodeUrl + AthenaRoutes.PARTYINFO).build();
     }
 
     @Override
@@ -98,9 +99,9 @@ public class NetworkDiscovery extends AbstractVerticle {
             // executes in the event loop.
 
             // let's re-fire the timer.
-            currentRefreshDelay = (long) ((double) currentRefreshDelay * 1.05);
-            if (currentRefreshDelay > maxRefreshDelayMs) {
-              currentRefreshDelay = maxRefreshDelayMs;
+            currentRefreshDelay = (long) ((double) currentRefreshDelay * 2.0);
+            if (currentRefreshDelay > MAX_REFRESH_DELAY_MS) {
+              currentRefreshDelay = MAX_REFRESH_DELAY_MS;
             }
             vertx.setTimer(currentRefreshDelay, this);
 
@@ -109,25 +110,38 @@ public class NetworkDiscovery extends AbstractVerticle {
             if (result.isPresent() && nodes.merge(result.get())) {
               // we merged something new, let's start discovery on this new nodes
               log.info("merged new nodes from {} discoverer", nodeUrl);
-              NetworkDiscovery.this.updateDiscoverers();
             }
+
+            // each timer tick, we update our discoverers
+            // merging nodes can occur in this timer or in /partyinfo handler
+            NetworkDiscovery.this.updateDiscoverers();
           });
     }
 
     /** calls http endpoint PartyInfo; returns Optional.empty() if error. */
     private Optional<NetworkNodes> getPeerPartyInfo() {
       try {
-        log.debug("calling partyInfo on {}", nodeUrl);
+        log.trace("calling partyInfo on {}", nodeUrl);
         attempts++;
+
+        // prepare /partyinfo payload (our known peers)
+        RequestBody partyInfoBody =
+            RequestBody.create(
+                MediaType.parse(CBOR.httpHeaderValue), serializer.serialize(CBOR, nodes));
+
         // call http endpoint
+        Request request =
+            new Request.Builder()
+                .post(partyInfoBody)
+                .url(nodeUrl + AthenaRoutes.PARTYINFO.substring(1))
+                .build();
         Response resp = httpClient.newCall(request).execute();
 
         if (resp.code() == 200) {
           lastUpdate = Instant.now();
           // deserialize response
           NetworkNodes partyInfoResponse =
-              serializer.deserialize(
-                  HttpContentType.CBOR, MemoryNetworkNodes.class, resp.body().bytes());
+              serializer.deserialize(CBOR, MemoryNetworkNodes.class, resp.body().bytes());
 
           return Optional.of(partyInfoResponse);
         }

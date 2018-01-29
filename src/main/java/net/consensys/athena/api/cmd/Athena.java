@@ -1,28 +1,38 @@
 package net.consensys.athena.api.cmd;
 
 import static io.vertx.core.Vertx.vertx;
-import static java.util.Optional.empty;
 
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.Enclave;
+import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.network.NetworkNodes;
+import net.consensys.athena.api.storage.StorageEngine;
 import net.consensys.athena.impl.cmd.AthenaArguments;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
-import net.consensys.athena.impl.http.server.HttpServerSettings;
 import net.consensys.athena.impl.http.server.vertx.VertxServer;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
 import net.consensys.athena.impl.network.NetworkDiscovery;
+import net.consensys.athena.impl.storage.file.MapDbStorage;
 import net.consensys.athena.impl.utils.Serializer;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,7 +42,9 @@ public class Athena {
   public static final String name = "athena";
 
   private static final Serializer serializer = new Serializer();
-  private static final Vertx vertx = vertx();
+
+  private final Vertx vertx = vertx();
+  private StorageEngine<EncryptedPayload> storageEngine;
 
   public static void main(String[] args) throws Exception {
     log.info("starting athena");
@@ -40,7 +52,32 @@ public class Athena {
     athena.run(args);
   }
 
-  public void run(String[] args) throws FileNotFoundException {
+  public void stop() {
+    CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
+
+    vertx.close(
+        result -> {
+          if (result.succeeded()) {
+            resultFuture.complete(true);
+          } else {
+            resultFuture.completeExceptionally(result.cause());
+          }
+        });
+
+    try {
+      resultFuture.get();
+
+    } catch (InterruptedException | ExecutionException io) {
+      log.error(io.getMessage());
+    }
+
+    if (storageEngine != null) {
+      storageEngine.close();
+    }
+  }
+
+  public void run(String... args)
+      throws FileNotFoundException, ExecutionException, InterruptedException {
     // parsing arguments
     AthenaArguments arguments = new AthenaArguments(args);
 
@@ -58,41 +95,54 @@ public class Athena {
 
     // generate key pair and exit
     if (arguments.keysToGenerate().isPresent()) {
-      runGenerateKeyPairs(config, arguments.keysToGenerate().get());
+      generateKeyPairs(config, arguments.keysToGenerate().get());
       return;
     }
 
     // start our API server
-    runApiServer(config);
+    run(config);
   }
 
-  private void runApiServer(Config config) {
-    NetworkNodes networkNodes = new MemoryNetworkNodes(config);
-    Enclave enclave = new LibSodiumEnclave(config, new SodiumFileKeyStore(config, serializer));
+  public void run(Config config) throws ExecutionException, InterruptedException {
+    SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
+    NetworkNodes networkNodes = new MemoryNetworkNodes(config, keyStore.nodeKeys());
+    Enclave enclave = new LibSodiumEnclave(config, keyStore);
 
-    AthenaRoutes routes = new AthenaRoutes(vertx, networkNodes, serializer, enclave);
+    // storage path
+    String storagePath = config.workDir().orElse(new File(".")).getPath() + "/";
+    String configStorage = config.storage();
+    if (configStorage.startsWith("dir:")) {
+      storagePath += configStorage.substring(4) + "/";
+    }
 
-    HttpServerSettings httpSettings =
-        new HttpServerSettings(config.socket(), Optional.of((int) config.port()), empty(), null);
+    // if path doesn't exist, create it.
+    File dirStoragePath = new File(storagePath);
+    log.info("using storage path {}", storagePath);
+    if (!dirStoragePath.exists()) {
+      log.warn("storage path {} doesn't exist, creating...", storagePath);
+      if (!dirStoragePath.mkdirs()) {
+        log.error("couldn't create storage path {}", storagePath);
+        System.exit(-1);
+      }
+    }
 
-    VertxServer httpServer = new VertxServer(vertx, routes.getRouter(), httpSettings);
-    httpServer.start();
+    // create our storage engine
+    storageEngine = new MapDbStorage(storagePath + "routerdb");
+    AthenaRoutes routes = new AthenaRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
 
+    // build vertx http server
+    HttpServerOptions serverOptions = new HttpServerOptions();
+    serverOptions.setPort(config.port());
+
+    VertxServer httpServer = new VertxServer(vertx, routes.getRouter(), serverOptions);
+    httpServer.start().get();
+
+    // start network discovery of other peers
     NetworkDiscovery discovery = new NetworkDiscovery(networkNodes, serializer);
     vertx.deployVerticle(discovery);
 
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread(
-                () -> {
-                  try {
-                    httpServer.stop().get();
-                  } catch (Exception e) {
-
-                  } finally {
-                    vertx.close();
-                  }
-                }));
+    // set shutdown hook
+    Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
   }
 
   private void displayVersion() {
@@ -105,7 +155,7 @@ public class Athena {
     }
   }
 
-  private void runGenerateKeyPairs(Config config, String[] keysToGenerate) {
+  private void generateKeyPairs(Config config, String[] keysToGenerate) {
     log.info("generating Key Pairs");
 
     SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);

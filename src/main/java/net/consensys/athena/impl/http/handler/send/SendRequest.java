@@ -10,9 +10,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SendRequest implements Serializable {
-  public String payload; // b64 encoded
-  public String from; // b64 encoded
-  public String[] to; // b64 encoded
+  public final String payload; // b64 encoded
+  public final String from; // b64 encoded
+  public final String[] to; // b64 encoded
 
   @JsonCreator
   public SendRequest(
@@ -56,5 +56,19 @@ public class SendRequest implements Serializable {
     int result = Objects.hash(payload, from);
     result = 31 * result + Arrays.hashCode(to);
     return result;
+  }
+
+  @Override
+  public String toString() {
+    return "SendRequest{"
+        + "payload='"
+        + payload
+        + '\''
+        + ", from='"
+        + from
+        + '\''
+        + ", to="
+        + Arrays.toString(to)
+        + '}';
   }
 }

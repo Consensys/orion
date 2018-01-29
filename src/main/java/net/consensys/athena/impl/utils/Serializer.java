@@ -48,10 +48,7 @@ public class Serializer {
         case CBOR:
           return cborObjectMapper.readValue(bytes, valueType);
         case TEXT:
-          if (valueType != String.class) {
-            throw new SerializationException(new NotSerializableException());
-          }
-          return (T) new String(bytes, StandardCharsets.UTF_8);
+          return valueType.cast(new String(bytes, StandardCharsets.UTF_8));
         default:
           throw new SerializationException(new NotSerializableException());
       }
@@ -80,8 +77,7 @@ public class Serializer {
     return deserialize(contentType, valueType, serialize(contentType, obj));
   }
 
-  private ObjectMapper getMapperOrThrows(HttpContentType contentType)
-      throws SerializationException {
+  private ObjectMapper getMapperOrThrows(HttpContentType contentType) {
     switch (contentType) {
       case JSON:
         return jsonObjectMapper;

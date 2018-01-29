@@ -10,7 +10,7 @@ import java.util.Optional;
 public class MemoryConfig implements Config {
 
   private URL url;
-  private long port = Long.MIN_VALUE;
+  private int port = Integer.MIN_VALUE;
   private Optional<File> workDir = Optional.empty();
   private Optional<File> socket = Optional.empty();
   private URL[] otherNodes = new URL[] {};
@@ -40,7 +40,7 @@ public class MemoryConfig implements Config {
     this.url = url;
   }
 
-  public void setPort(long port) {
+  public void setPort(int port) {
     this.port = port;
   }
 
@@ -58,10 +58,22 @@ public class MemoryConfig implements Config {
 
   public void setPublicKeys(File[] publicKeys) {
     this.publicKeys = publicKeys;
+    if (workDir.isPresent()) {
+      // TODO quick dirty fix unsafe, to remove (@gbotrel / @brett)
+      for (int i = 0; i < publicKeys.length; i++) {
+        publicKeys[i] = new File(workDir.get(), publicKeys[i].getPath());
+      }
+    }
   }
 
   public void setPrivateKeys(File[] privateKeys) {
     this.privateKeys = privateKeys;
+    if (workDir.isPresent()) {
+      // TODO quick dirty fix unsafe, to remove (@gbotrel / @brett)
+      for (int i = 0; i < privateKeys.length; i++) {
+        privateKeys[i] = new File(workDir.get(), privateKeys[i].getPath());
+      }
+    }
   }
 
   public void setAlwaysSendTo(File[] alwaysSendTo) {
@@ -146,7 +158,7 @@ public class MemoryConfig implements Config {
   }
 
   @Override
-  public long port() {
+  public int port() {
     return port;
   }
 

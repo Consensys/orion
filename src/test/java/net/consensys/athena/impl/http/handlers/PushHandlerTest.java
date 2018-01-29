@@ -6,15 +6,14 @@ import static org.junit.Assert.assertTrue;
 
 import net.consensys.athena.api.cmd.AthenaRoutes;
 import net.consensys.athena.api.enclave.EncryptedPayload;
+import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.storage.Storage;
-import net.consensys.athena.impl.enclave.sodium.SodiumCombinedKey;
+import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
-import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
+import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.athena.impl.http.server.HttpContentType;
 
 import java.security.PublicKey;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import okhttp3.MediaType;
@@ -25,13 +24,16 @@ import org.junit.Test;
 
 public class PushHandlerTest extends HandlerTest {
 
+  private final KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());;
+  private final SodiumMemoryKeyStore memoryKeyStore = new SodiumMemoryKeyStore();
+
   @Test
   public void testPayloadIsStored() throws Exception {
     // ref to storage
     final Storage storage = routes.getStorage();
 
     // build & serialize our payload
-    SodiumEncryptedPayload encryptedPayload = mockPayload();
+    EncryptedPayload encryptedPayload = mockPayload();
 
     // PUSH operation, sending an encrypted payload
     RequestBody body =
@@ -46,6 +48,7 @@ public class PushHandlerTest extends HandlerTest {
     assertEquals(200, resp.code());
     String digest = resp.body().string();
     assertTrue(digest.length() > 0);
+
     // we should be able to read that from storage
     Optional<EncryptedPayload> data = storage.get(digest);
     assertTrue(data.isPresent());
@@ -54,7 +57,7 @@ public class PushHandlerTest extends HandlerTest {
 
   @Test
   public void testRoundTripSerialization() {
-    SodiumEncryptedPayload pushRequest = mockPayload();
+    EncryptedPayload pushRequest = mockPayload();
     assertEquals(
         pushRequest,
         serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, pushRequest));
@@ -63,19 +66,10 @@ public class PushHandlerTest extends HandlerTest {
         serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, pushRequest));
   }
 
-  protected SodiumEncryptedPayload mockPayload() {
-    SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes());
-    Map<PublicKey, Integer> combinedKeysOwners = new HashMap<>();
-
-    SodiumEncryptedPayload encryptedPayload =
-        new SodiumEncryptedPayload(
-            new SodiumPublicKey("fakekey".getBytes()),
-            "fake nonce".getBytes(),
-            "fake combinedNonce".getBytes(),
-            new SodiumCombinedKey[] {sodiumCombinedKey},
-            "fake ciphertext".getBytes(),
-            combinedKeysOwners);
-
-    return encryptedPayload;
+  protected EncryptedPayload mockPayload() {
+    LibSodiumEnclave sEnclave = new LibSodiumEnclave(config, memoryKeyStore);
+    PublicKey k1 = memoryKeyStore.generateKeyPair(keyConfig);
+    PublicKey k2 = memoryKeyStore.generateKeyPair(keyConfig);
+    return sEnclave.encrypt("something important".getBytes(), k1, new PublicKey[] {k2});
   }
 }

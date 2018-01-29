@@ -5,16 +5,12 @@ import net.consensys.athena.api.storage.StorageEngine;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
 
 public class MapDbStorage<T> implements StorageEngine<T> {
-
-  private static final Logger log = LogManager.getLogger();
 
   private final DB db;
   private final HTreeMap<byte[], T> storageData;

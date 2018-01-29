@@ -58,6 +58,7 @@ public class SodiumFileKeyStore implements KeyStore {
       }
       PublicKey publicKey = readPublicKey(publicKeyFile);
       PrivateKey privateKey = readPrivateKey(privateKeyFile, password);
+
       cache.put(publicKey, privateKey);
     }
   }
@@ -72,6 +73,9 @@ public class SodiumFileKeyStore implements KeyStore {
         decoded = Base64.decode(storedPrivateKey.getData().getBytes());
         break;
       case StoredPrivateKey.ARGON2_SBOX:
+        if (!password.isPresent()) {
+          throw new EnclaveException("missing password to read private key");
+        }
         decoded = new SodiumArgon2Sbox(config).decrypt(storedPrivateKey, password.get());
         break;
       default:
@@ -185,12 +189,12 @@ public class SodiumFileKeyStore implements KeyStore {
 
   public PublicKey[] alwaysSendTo() {
     File[] alwaysSendTo = config.alwaysSendTo();
-    return Arrays.stream(alwaysSendTo).map(file -> readPublicKey(file)).toArray(PublicKey[]::new);
+    return Arrays.stream(alwaysSendTo).map(this::readPublicKey).toArray(PublicKey[]::new);
   }
 
   @Override
   public PublicKey[] nodeKeys() {
     File[] publicKeys = config.publicKeys();
-    return Arrays.stream(publicKeys).map(file -> readPublicKey(file)).toArray(PublicKey[]::new);
+    return Arrays.stream(publicKeys).map(this::readPublicKey).toArray(PublicKey[]::new);
   }
 }

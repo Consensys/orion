@@ -1,5 +1,6 @@
 package net.consensys.athena.impl.http.handlers;
 
+import static net.consensys.athena.impl.http.server.HttpContentType.CBOR;
 import static org.junit.Assert.assertEquals;
 
 import net.consensys.athena.api.cmd.AthenaRoutes;
@@ -10,7 +11,9 @@ import net.consensys.athena.impl.network.MemoryNetworkNodes;
 
 import java.net.URL;
 
+import okhttp3.MediaType;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.junit.Test;
 
@@ -22,7 +25,14 @@ public class PartyInfoHandlerTest extends HandlerTest {
     networkNodes.addNode(new SodiumPublicKey("pk1".getBytes()), new URL("http://127.0.0.1:9001/"));
     networkNodes.addNode(new SodiumPublicKey("pk2".getBytes()), new URL("http://127.0.0.1:9002/"));
 
-    Request request = new Request.Builder().get().url(baseUrl + AthenaRoutes.PARTYINFO).build();
+    // prepare /partyinfo payload (our known peers)
+    RequestBody partyInfoBody =
+        RequestBody.create(
+            MediaType.parse(CBOR.httpHeaderValue), serializer.serialize(CBOR, networkNodes));
+
+    // call http endpoint
+    Request request =
+        new Request.Builder().post(partyInfoBody).url(baseUrl + AthenaRoutes.PARTYINFO).build();
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());

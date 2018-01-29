@@ -54,11 +54,13 @@ public class SendHandler implements Handler<RoutingContext> {
         serializer.deserialize(
             HttpContentType.JSON, SendRequest.class, routingContext.getBody().getBytes());
 
+    log.debug(sendRequest);
+
     if (!sendRequest.isValid()) {
       throw new IllegalArgumentException();
     }
 
-    log.trace("reading public keys from SendRequest object");
+    log.debug("reading public keys from SendRequest object");
     // read provided public keys
     PublicKey fromKey = enclave.readKey(sendRequest.from);
     List<PublicKey> toKeys =
@@ -73,15 +75,15 @@ public class SendHandler implements Handler<RoutingContext> {
     byte[] rawPayload = Base64.decode(sendRequest.payload);
 
     // encrypting payload
-    log.trace("encrypting payload from SendRequest object");
+    log.debug("encrypting payload from SendRequest object");
     EncryptedPayload encryptedPayload = enclave.encrypt(rawPayload, fromKey, arrToKeys);
 
     // storing payload
-    log.trace("storing payload");
+    log.debug("storing payload");
     String digest = storage.put(encryptedPayload);
 
     // propagate payload
-    log.trace("propagating payload");
+    log.debug("propagating payload");
     boolean propagated =
         toKeys
             .stream()
@@ -108,8 +110,7 @@ public class SendHandler implements Handler<RoutingContext> {
       if (recipientURL == null) {
         throw new RuntimeException("couldn't find peer URL");
       }
-      URL pushURL =
-          new URL(recipientURL, AthenaRoutes.PUSH); // TODO @gbotrel reverse routing would be nice
+      URL pushURL = new URL(recipientURL, AthenaRoutes.PUSH);
 
       // serialize payload and build RequestBody. we also strip non relevant combinedKeys
       byte[] payload =
@@ -123,9 +124,6 @@ public class SendHandler implements Handler<RoutingContext> {
       return httpClient.newCall(req).execute();
     } catch (IOException io) {
       throw new RuntimeException(io);
-      // TODO @gbotrel / reviewer --> in case of network exception, shall we throw RuntimeException
-      // or return the following response ?
-      //      return new Response.Builder().code(418).build();
     }
   }
 

@@ -14,11 +14,21 @@ repositories {
     jcenter()
 }
 
+// added source sets (acceptance and integratioon tests)
+sourceSets {
+  acceptance {
+    java.srcDir file('src/test-acceptance/java')
+    resources.srcDir file('src/test-acceptance/resources')
+    compileClasspath += main.output + test.output + configurations.testRuntime + main.compileClasspath + test.compileClasspath
+    runtimeClasspath += output + compileClasspath
+  }
+
+
+}
+
+
 dependencies {
-  compile 'io.netty:netty-codec-http:4.1.17.Final'
-  compile 'io.netty:netty-handler:4.1.17.Final'
-  compile 'io.netty:netty-transport-native-epoll:4.1.17.Final:linux-x86_64'
-  compile 'io.netty:netty-transport-native-kqueue:4.1.17.Final:osx-x86_64'
+
   compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.58'
   compile 'com.moandjiezana.toml:toml4j:0.7.2'
 
@@ -43,6 +53,8 @@ dependencies {
   // logger
   compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.10.0'
   compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
+
+
 }
 
 jar {
@@ -65,6 +77,21 @@ run {
   }
 }
 
+task acceptanceTest(type: Test) {
+  description = 'Runs the acceptance tests'
+  group = 'verification'
+  setTestClassesDirs(sourceSets.acceptance.output.getClassesDirs())
+  classpath = sourceSets.acceptance.runtimeClasspath
+  reports.junitXml.setDestination(file("$buildDir/acceptance-results"))
+  reports.html.setDestination(file("$buildDir/reports/acceptance"))
+  dependsOn(test)
+}
+
+
+check {
+  dependsOn(acceptanceTest)
+}
+
 spotless {
   java {
     removeUnusedImports()
@@ -72,6 +99,7 @@ spotless {
     importOrder 'net.consensys', 'java', ''
   }
 }
+
 
 distTar {
     doFirst {
