@@ -58,22 +58,10 @@ public class MemoryConfig implements Config {
 
   public void setPublicKeys(File[] publicKeys) {
     this.publicKeys = publicKeys;
-    if (workDir.isPresent()) {
-      // TODO quick dirty fix unsafe, to remove (@gbotrel / @brett)
-      for (int i = 0; i < publicKeys.length; i++) {
-        publicKeys[i] = new File(workDir.get(), publicKeys[i].getPath());
-      }
-    }
   }
 
   public void setPrivateKeys(File[] privateKeys) {
     this.privateKeys = privateKeys;
-    if (workDir.isPresent()) {
-      // TODO quick dirty fix unsafe, to remove (@gbotrel / @brett)
-      for (int i = 0; i < privateKeys.length; i++) {
-        privateKeys[i] = new File(workDir.get(), privateKeys[i].getPath());
-      }
-    }
   }
 
   public void setAlwaysSendTo(File[] alwaysSendTo) {

@@ -53,7 +53,7 @@ public class ReceiveHandlerTest extends HandlerTest {
 
     // Receive operation, sending a ReceivePayload request
     ReceiveRequest receiveRequest = new ReceiveRequest(key, recipientKey.toString());
-    Request request = buildPostRequest(AthenaRoutes.RECIEVE, HttpContentType.JSON, receiveRequest);
+    Request request = buildPostRequest(AthenaRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -72,7 +72,7 @@ public class ReceiveHandlerTest extends HandlerTest {
     // Receive operation, sending a ReceivePayload request
     ReceiveRequest receiveRequest = new ReceiveRequest("notForMe", null);
 
-    Request request = buildPostRequest(AthenaRoutes.RECIEVE, HttpContentType.JSON, receiveRequest);
+    Request request = buildPostRequest(AthenaRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();

@@ -30,7 +30,7 @@ public class AthenaRoutes {
   // route paths
   public static final String UPCHECK = "/upcheck";
   public static final String SEND = "/send";
-  public static final String RECIEVE = "/receive";
+  public static final String RECEIVE = "/receive";
   public static final String PARTYINFO = "/partyinfo";
   public static final String DELETE = "/delete";
   public static final String PUSH = "/push";
@@ -76,7 +76,7 @@ public class AthenaRoutes {
         .handler(new SendHandler(enclave, storage, networkNodes, serializer));
 
     router
-        .post(RECIEVE)
+        .post(RECEIVE)
         .produces(JSON.httpHeaderValue)
         .consumes(JSON.httpHeaderValue)
         .handler(new ReceiveHandler(enclave, storage, serializer));
