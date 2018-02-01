@@ -87,7 +87,7 @@ public class AthenaClient {
     Request httpReceiveRequest =
         new Request.Builder()
             .post(receiveBody)
-            .url(baseUrl + AthenaRoutes.RECIEVE.substring(1))
+            .url(baseUrl + AthenaRoutes.RECEIVE.substring(1))
             .build();
 
     // executes the request

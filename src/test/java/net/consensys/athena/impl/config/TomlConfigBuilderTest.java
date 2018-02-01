@@ -36,29 +36,30 @@ public class TomlConfigBuilderTest {
     assertEquals(3, testConf.verbosity());
 
     // Optionals
-    expectedFile = new File("data");
+    final String expectedWorkdir = "data";
+    expectedFile = new File(expectedWorkdir);
     assertTrue(testConf.workDir().isPresent());
     assertEquals(expectedFile, testConf.workDir().get());
 
-    expectedFile = new File("athena.ipc");
+    expectedFile = new File(expectedWorkdir, "athena.ipc");
     assertTrue(testConf.socket().isPresent());
     assertEquals(expectedFile, testConf.socket().get());
 
-    expectedFile = new File("keys/password.txt");
+    expectedFile = new File(expectedWorkdir, "keys/password.txt");
     assertTrue(testConf.passwords().isPresent());
     assertEquals(expectedFile, testConf.passwords().get());
 
     // File Arrays
     expectedFilesArray = new File[1];
-    expectedFilesArray[0] = new File("data/keys/tm1.pub");
+    expectedFilesArray[0] = new File(expectedWorkdir, "keys/tm1.pub");
     assertArrayEquals(expectedFilesArray, testConf.publicKeys());
 
     expectedFilesArray = new File[1];
-    expectedFilesArray[0] = new File("data/keys/tm1.key");
+    expectedFilesArray[0] = new File(expectedWorkdir, "keys/tm1.key");
     assertArrayEquals(expectedFilesArray, testConf.privateKeys());
 
     expectedFilesArray = new File[1];
-    expectedFilesArray[0] = new File("keys/tm1.pub");
+    expectedFilesArray[0] = new File(expectedWorkdir, "keys/tm1.pub");
     assertArrayEquals(expectedFilesArray, testConf.alwaysSendTo());
 
     expectedFilesArray = new File[0];
@@ -77,22 +78,22 @@ public class TomlConfigBuilderTest {
     assertArrayEquals(expectedStringArray, testConf.ipWhitelist());
 
     // Files
-    expectedFile = new File("server-cert.pem");
+    expectedFile = new File(expectedWorkdir, "server-cert.pem");
     assertEquals(expectedFile, testConf.tlsServerCert());
 
-    expectedFile = new File("server-key.pem");
+    expectedFile = new File(expectedWorkdir, "server-key.pem");
     assertEquals(expectedFile, testConf.tlsServerKey());
 
-    expectedFile = new File("known-clients");
+    expectedFile = new File(expectedWorkdir, "known-clients");
     assertEquals(expectedFile, testConf.tlsKnownClients());
 
-    expectedFile = new File("client-cert.pem");
+    expectedFile = new File(expectedWorkdir, "client-cert.pem");
     assertEquals(expectedFile, testConf.tlsClientCert());
 
-    expectedFile = new File("client-key.pem");
+    expectedFile = new File(expectedWorkdir, "client-key.pem");
     assertEquals(expectedFile, testConf.tlsClientKey());
 
-    expectedFile = new File("known-servers");
+    expectedFile = new File(expectedWorkdir, "known-servers");
     assertEquals(expectedFile, testConf.tlsKnownServers());
 
     assertEquals("/somepath", testConf.libSodiumPath());
