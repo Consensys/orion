@@ -1,5 +1,7 @@
 package net.consensys.athena.impl.http.handler.send;
 
+import net.consensys.athena.impl.utils.Base64;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
@@ -10,23 +12,53 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SendRequest implements Serializable {
-  public final String payload; // b64 encoded
-  public final String from; // b64 encoded
-  public final String[] to; // b64 encoded
+  private final String from; // b64 encoded
+  private final String[] to; // b64 encoded
+  private final byte[] rawPayload;
+
+  @JsonProperty("from")
+  public String from() {
+    return from;
+  }
+
+  @JsonProperty("to")
+  public String[] to() {
+    return to;
+  }
+
+  @JsonProperty("payload")
+  public String payload() {
+    if (rawPayload == null) {
+      return null;
+    }
+    return Base64.encode(rawPayload);
+  }
 
   @JsonCreator
   public SendRequest(
       @JsonProperty("payload") String payload,
       @JsonProperty("from") String from,
       @JsonProperty("to") String[] to) {
-    this.payload = payload;
+    this(decodePayload(payload), from, to);
+  }
+
+  private static byte[] decodePayload(String payload) {
+    if (payload != null) {
+      return Base64.decode(payload);
+    } else {
+      return new byte[0];
+    }
+  }
+
+  public SendRequest(byte[] rawPayload, String from, String[] to) {
+    this.rawPayload = rawPayload;
     this.from = from;
     this.to = to;
   }
 
   @JsonIgnore
   public boolean isValid() {
-    if (Stream.of(payload, from, to).anyMatch(Objects::isNull)) {
+    if (Stream.of(rawPayload, from, to).anyMatch(Objects::isNull)) {
       return false;
     }
     for (int i = 0; i < to.length; i++) {
@@ -34,7 +66,7 @@ public class SendRequest implements Serializable {
         return false;
       }
     }
-    return payload.length() > 0 && from.length() > 0 && to.length > 0;
+    return rawPayload.length >= 0 && from.length() > 0 && to.length > 0;
   }
 
   @Override
@@ -46,14 +78,15 @@ public class SendRequest implements Serializable {
       return false;
     }
     SendRequest that = (SendRequest) o;
-    return Objects.equals(payload, that.payload)
+    return Arrays.equals(rawPayload, that.rawPayload)
         && Objects.equals(from, that.from)
         && Arrays.equals(to, that.to);
   }
 
   @Override
   public int hashCode() {
-    int result = Objects.hash(payload, from);
+    int result = Objects.hash(from);
+    result = 31 * result + Arrays.hashCode(rawPayload);
     result = 31 * result + Arrays.hashCode(to);
     return result;
   }
@@ -62,7 +95,7 @@ public class SendRequest implements Serializable {
   public String toString() {
     return "SendRequest{"
         + "payload='"
-        + payload
+        + Base64.encode(rawPayload)
         + '\''
         + ", from='"
         + from
@@ -70,5 +103,9 @@ public class SendRequest implements Serializable {
         + ", to="
         + Arrays.toString(to)
         + '}';
+  }
+
+  public byte[] rawPayload() {
+    return rawPayload;
   }
 }

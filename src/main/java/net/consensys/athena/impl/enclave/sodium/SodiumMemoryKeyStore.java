@@ -7,7 +7,9 @@ import net.consensys.athena.api.enclave.KeyStore;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.muquit.libsodiumjna.SodiumKeyPair;
@@ -16,7 +18,8 @@ import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 
 public class SodiumMemoryKeyStore implements KeyStore {
 
-  Map<PublicKey, PrivateKey> store = new HashMap<>();
+  private Map<PublicKey, PrivateKey> store = new HashMap<>();
+  private List<PublicKey> nodeKeys = new ArrayList<>();
 
   public SodiumMemoryKeyStore(Config config) {
     SodiumLibrary.setLibraryPath(config.libSodiumPath());
@@ -45,8 +48,12 @@ public class SodiumMemoryKeyStore implements KeyStore {
     return new PublicKey[0];
   }
 
+  public void addNodeKey(PublicKey key) {
+    nodeKeys.add(key);
+  }
+
   @Override
   public PublicKey[] nodeKeys() {
-    return new PublicKey[0];
+    return nodeKeys.toArray(new PublicKey[nodeKeys.size()]);
   }
 }

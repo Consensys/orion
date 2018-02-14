@@ -31,6 +31,8 @@ public class AthenaRoutes {
   public static final String UPCHECK = "/upcheck";
   public static final String SEND = "/send";
   public static final String RECEIVE = "/receive";
+  public static final String SEND_RAW = "/sendraw";
+  public static final String RECEIVE_RAW = "/receiveraw";
   public static final String PARTYINFO = "/partyinfo";
   public static final String DELETE = "/delete";
   public static final String PUSH = "/push";
@@ -73,13 +75,23 @@ public class AthenaRoutes {
         .post(SEND)
         .produces(JSON.httpHeaderValue)
         .consumes(JSON.httpHeaderValue)
-        .handler(new SendHandler(enclave, storage, networkNodes, serializer));
+        .handler(new SendHandler(enclave, storage, networkNodes, serializer, JSON));
+    router
+        .post(SEND_RAW)
+        .produces(BINARY.httpHeaderValue)
+        .consumes(BINARY.httpHeaderValue)
+        .handler(new SendHandler(enclave, storage, networkNodes, serializer, BINARY));
 
     router
         .post(RECEIVE)
         .produces(JSON.httpHeaderValue)
         .consumes(JSON.httpHeaderValue)
-        .handler(new ReceiveHandler(enclave, storage, serializer));
+        .handler(new ReceiveHandler(enclave, storage, serializer, JSON));
+    router
+        .post(RECEIVE_RAW)
+        .produces(BINARY.httpHeaderValue)
+        .consumes(BINARY.httpHeaderValue)
+        .handler(new ReceiveHandler(enclave, storage, serializer, BINARY));
 
     router.post(DELETE).handler(new DeleteHandler(storage));
 

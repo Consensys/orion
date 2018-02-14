@@ -1,5 +1,7 @@
 package net.consensys.athena.impl.http.handler.receive;
 
+import static net.consensys.athena.impl.http.server.HttpContentType.JSON;
+
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.Storage;
@@ -8,6 +10,7 @@ import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.utils.Base64;
 import net.consensys.athena.impl.utils.Serializer;
 
+import java.security.PublicKey;
 import java.util.Optional;
 
 import io.vertx.core.Handler;
@@ -22,37 +25,55 @@ public class ReceiveHandler implements Handler<RoutingContext> {
   private final Enclave enclave;
   private final Storage storage;
   private final Serializer serializer;
+  private final HttpContentType contentType;
 
-  public ReceiveHandler(Enclave enclave, Storage storage, Serializer serializer) {
+  public ReceiveHandler(
+      Enclave enclave, Storage storage, Serializer serializer, HttpContentType contentType) {
     this.enclave = enclave;
     this.storage = storage;
     this.serializer = serializer;
+    this.contentType = contentType;
   }
 
   @Override
   public void handle(RoutingContext routingContext) {
     log.trace("receive handler called");
-    ReceiveRequest receiveRequest =
-        serializer.deserialize(
-            HttpContentType.JSON, ReceiveRequest.class, routingContext.getBody().getBytes());
+    ReceiveRequest receiveRequest;
+    String key;
+    PublicKey to = null;
+    if (contentType == JSON) {
+      receiveRequest =
+          serializer.deserialize(JSON, ReceiveRequest.class, routingContext.getBody().getBytes());
+      log.debug("got receive request {}", receiveRequest);
+      key = receiveRequest.key;
+      if (receiveRequest.to != null) {
+        to = new SodiumPublicKey(Base64.decode(receiveRequest.to));
+      }
+    } else {
+      key = routingContext.request().getHeader("c11n-key");
+    }
+    if (to == null) {
+      to = enclave.nodeKeys()[0];
+    }
 
-    log.debug("got receive request {}", receiveRequest);
-
-    Optional<EncryptedPayload> encryptedPayload = storage.get(receiveRequest.key);
+    Optional<EncryptedPayload> encryptedPayload = storage.get(key);
     if (!encryptedPayload.isPresent()) {
-      log.info("unable to find payload with key {}", receiveRequest.key);
+      log.info("unable to find payload with key {}", key);
       routingContext.fail(404);
       return;
     }
 
-    SodiumPublicKey sodiumPublicKey = new SodiumPublicKey(Base64.decode(receiveRequest.to));
-    byte[] decryptedPayload = enclave.decrypt(encryptedPayload.get(), sodiumPublicKey);
+    byte[] decryptedPayload = enclave.decrypt(encryptedPayload.get(), to);
 
     // build a ReceiveResponse
-    Buffer toReturn =
-        Buffer.buffer(
-            serializer.serialize(
-                HttpContentType.JSON, new ReceiveResponse(Base64.encode(decryptedPayload))));
+    Buffer toReturn;
+    if (contentType == JSON) {
+      toReturn =
+          Buffer.buffer(
+              serializer.serialize(JSON, new ReceiveResponse(Base64.encode(decryptedPayload))));
+    } else {
+      toReturn = Buffer.buffer(decryptedPayload);
+    }
 
     routingContext.response().end(toReturn);
   }

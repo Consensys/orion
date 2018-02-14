@@ -1,12 +1,13 @@
 package net.consensys.athena.impl.http.handler.send;
 
+import static net.consensys.athena.impl.http.server.HttpContentType.JSON;
+
 import net.consensys.athena.api.cmd.AthenaRoutes;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.network.NetworkNodes;
 import net.consensys.athena.api.storage.Storage;
 import net.consensys.athena.impl.http.server.HttpContentType;
-import net.consensys.athena.impl.utils.Base64;
 import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.IOException;
@@ -35,26 +36,35 @@ public class SendHandler implements Handler<RoutingContext> {
   private final List<PublicKey> nodeKeys;
   private final NetworkNodes networkNodes;
   private final Serializer serializer;
+  private final HttpContentType contentType;
 
   private final OkHttpClient httpClient = new OkHttpClient();
   private final MediaType CBOR = MediaType.parse(HttpContentType.CBOR.httpHeaderValue);
 
   public SendHandler(
-      Enclave enclave, Storage storage, NetworkNodes networkNodes, Serializer serializer) {
+      Enclave enclave,
+      Storage storage,
+      NetworkNodes networkNodes,
+      Serializer serializer,
+      HttpContentType contentType) {
     this.enclave = enclave;
     this.storage = storage;
     this.nodeKeys = Arrays.asList(enclave.nodeKeys());
     this.networkNodes = networkNodes;
     this.serializer = serializer;
+    this.contentType = contentType;
   }
 
   @Override
   public void handle(RoutingContext routingContext) {
-    SendRequest sendRequest =
-        serializer.deserialize(
-            HttpContentType.JSON, SendRequest.class, routingContext.getBody().getBytes());
-
-    log.debug(sendRequest);
+    final SendRequest sendRequest;
+    if (contentType == JSON) {
+      sendRequest =
+          serializer.deserialize(JSON, SendRequest.class, routingContext.getBody().getBytes());
+    } else {
+      sendRequest = binaryRequest(routingContext);
+    }
+    log.debug(sendRequest.rawPayload());
 
     if (!sendRequest.isValid()) {
       throw new IllegalArgumentException();
@@ -62,9 +72,9 @@ public class SendHandler implements Handler<RoutingContext> {
 
     log.debug("reading public keys from SendRequest object");
     // read provided public keys
-    PublicKey fromKey = enclave.readKey(sendRequest.from);
+    PublicKey fromKey = enclave.readKey(sendRequest.from());
     List<PublicKey> toKeys =
-        Arrays.stream(sendRequest.to).map(enclave::readKey).collect(Collectors.toList());
+        Arrays.stream(sendRequest.to()).map(enclave::readKey).collect(Collectors.toList());
 
     // toKeys = toKeys + [nodeAlwaysSendTo] --> default pub key to always send to
     toKeys.addAll(Arrays.asList(enclave.alwaysSendTo()));
@@ -72,8 +82,7 @@ public class SendHandler implements Handler<RoutingContext> {
     arrToKeys = toKeys.toArray(arrToKeys);
 
     // convert payload from b64 to bytes
-    byte[] rawPayload = Base64.decode(sendRequest.payload);
-
+    byte[] rawPayload = sendRequest.rawPayload();
     // encrypting payload
     log.debug("encrypting payload from SendRequest object");
     EncryptedPayload encryptedPayload = enclave.encrypt(rawPayload, fromKey, arrToKeys);
@@ -99,9 +108,19 @@ public class SendHandler implements Handler<RoutingContext> {
       return;
     }
 
-    Buffer responseData =
-        Buffer.buffer(serializer.serialize(HttpContentType.JSON, new SendResponse(digest)));
+    Buffer responseData;
+    if (contentType == JSON) {
+      responseData = Buffer.buffer(serializer.serialize(JSON, new SendResponse(digest)));
+    } else {
+      responseData = Buffer.buffer(digest);
+    }
     routingContext.response().end(responseData);
+  }
+
+  private SendRequest binaryRequest(RoutingContext routingContext) {
+    String from = routingContext.request().getHeader("c11n-from");
+    String[] to = routingContext.request().getHeader("c11n-to").split(",");
+    return new SendRequest(routingContext.getBody().getBytes(), from, to);
   }
 
   private Response pushToPeer(EncryptedPayload encryptedPayload, PublicKey recipient) {
