@@ -9,11 +9,18 @@ import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.http.AthenaClient;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
 
 import junit.framework.AssertionFailedError;
 import okhttp3.HttpUrl;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -33,6 +40,15 @@ public class SendReceiveTest {
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
 
   private static final String HOST_NAME = "127.0.0.1";
+
+  @AfterClass
+  public static void tearDown() throws Exception {
+    Path rootPath = Paths.get("database");
+    Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS)
+        .sorted(Comparator.reverseOrder())
+        .map(Path::toFile)
+        .forEach(File::delete);
+  }
 
   @BeforeClass
   public static void setUp() throws Exception {
@@ -59,7 +75,7 @@ public class SendReceiveTest {
             .append(singleNodeBaseUrl)
             .append("\"\nport = ")
             .append(singleNodePort)
-            .append("\nstorage = \"dir:storage/acceptance/node-simple\"")
+            .append("\nstorage = \"leveldb:database/node0\"")
             .append("\nothernodes = [\"")
             .append(singleNodeBaseUrl)
             .append(
@@ -79,7 +95,7 @@ public class SendReceiveTest {
             .append(node1BaseUrl)
             .append("\"\nport = ")
             .append(node1Port)
-            .append("\nstorage = \"dir:storage/acceptance/node1\"")
+            .append("\nstorage = \"leveldb:database/node1\"")
             .append("\nothernodes = [\"")
             .append(node2BaseUrl)
             .append(
@@ -99,7 +115,7 @@ public class SendReceiveTest {
             .append(node2BaseUrl)
             .append("\"\nport = ")
             .append(node2Port)
-            .append("\nstorage = \"dir:storage/acceptance/node2\"")
+            .append("\nstorage = \"leveldb:database/node2\"")
             .append("\nothernodes = [\"")
             .append(node1BaseUrl)
             .append(

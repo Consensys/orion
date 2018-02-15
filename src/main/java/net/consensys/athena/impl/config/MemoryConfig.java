@@ -18,7 +18,7 @@ public class MemoryConfig implements Config {
   private File[] privateKeys = new File[] {};
   private File[] alwaysSendTo = new File[] {};
   private Optional<File> passwords = Optional.empty();
-  private String storage = "dir:storage";
+  private String storage = "leveldb";
   private String[] ipWhitelist = new String[] {};
   private String tls = "strict";
   private File tlsServerCert = new File("tls-server-cert.pem");

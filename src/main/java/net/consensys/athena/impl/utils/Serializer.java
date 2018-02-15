@@ -17,15 +17,14 @@ public class Serializer {
   private final ObjectMapper cborObjectMapper;
 
   public Serializer() {
-    cborObjectMapper = new ObjectMapper(new CBORFactory());
-    setupObjectMapper(cborObjectMapper);
-    jsonObjectMapper = new ObjectMapper();
-    setupObjectMapper(jsonObjectMapper);
+    cborObjectMapper = setupObjectMapper(new ObjectMapper(new CBORFactory()));
+    jsonObjectMapper = setupObjectMapper(new ObjectMapper());
   }
 
-  private void setupObjectMapper(ObjectMapper objectMapper) {
+  private ObjectMapper setupObjectMapper(ObjectMapper objectMapper) {
     objectMapper.setSerializationInclusion(Include.NON_NULL);
     objectMapper.registerModule(new Jdk8Module());
+    return objectMapper;
   }
 
   public byte[] serialize(HttpContentType contentType, Object obj) {

@@ -15,10 +15,10 @@ import java.security.PublicKey;
 import java.security.Security;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.Optional;
 
 import com.muquit.libsodiumjna.SodiumLibrary;
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
-import org.jetbrains.annotations.NotNull;
 
 public class LibSodiumEnclave implements Enclave {
 
@@ -74,17 +74,13 @@ public class LibSodiumEnclave implements Enclave {
           combinedKeys(recipients, senderPrivateKey, secretKey, nonce);
 
       // store mapping between combined keys and recipients
-      HashMap<PublicKey, Integer> combinedKeysMapping = new HashMap<>();
-      for (int i = 0; i < recipients.length; i++) {
-        combinedKeysMapping.put(recipients[i], i);
-      }
       return new SodiumEncryptedPayload(
           (SodiumPublicKey) senderKey,
           secretNonce,
           nonce,
           combinedKeys,
           cipherText,
-          combinedKeysMapping);
+          Optional.of(combinedKeysMapping(recipients)));
     } catch (SodiumLibraryException e) {
       throw new EnclaveException(e);
     }
@@ -127,7 +123,14 @@ public class LibSodiumEnclave implements Enclave {
     return SodiumLibrary.randomBytes(nonceBytesLength);
   }
 
-  @NotNull
+  private HashMap<SodiumPublicKey, Integer> combinedKeysMapping(PublicKey[] recipients) {
+    HashMap<SodiumPublicKey, Integer> combinedKeysMapping = new HashMap<>();
+    for (int i = 0; i < recipients.length; i++) {
+      combinedKeysMapping.put((SodiumPublicKey) recipients[i], i);
+    }
+    return combinedKeysMapping;
+  }
+
   private SodiumCombinedKey[] combinedKeys(
       PublicKey[] recipients, PrivateKey senderPrivateKey, byte[] secretKey, byte[] nonce)
       throws SodiumLibraryException {

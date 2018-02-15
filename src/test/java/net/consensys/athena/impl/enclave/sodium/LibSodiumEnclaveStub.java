@@ -7,7 +7,6 @@ import net.consensys.athena.api.enclave.HashAlgorithm;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.util.Base64;
-import java.util.HashMap;
 
 public class LibSodiumEnclaveStub implements Enclave {
 
@@ -57,11 +56,6 @@ public class LibSodiumEnclaveStub implements Enclave {
     byte[] combinedKeyNonce = {};
     byte[] nonce = {};
     return new SodiumEncryptedPayload(
-        (SodiumPublicKey) senderKey,
-        nonce,
-        combinedKeyNonce,
-        combinedKeys,
-        ciphterText,
-        new HashMap<>());
+        (SodiumPublicKey) senderKey, nonce, combinedKeyNonce, combinedKeys, ciphterText);
   }
 }

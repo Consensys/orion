@@ -6,6 +6,7 @@ import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.storage.StorageEngine;
 import net.consensys.athena.impl.config.MemoryConfig;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumSettings;
+import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.helpers.CesarEnclave;
 import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.http.server.vertx.VertxServer;
@@ -70,7 +71,7 @@ public abstract class HandlerTest {
     networkNodes = new MemoryNetworkNodes(http.url());
     enclave = buildEnclave();
 
-    storageEngine = new MapDbStorage("routerdb");
+    storageEngine = new MapDbStorage(SodiumEncryptedPayload.class, "routerdb", serializer);
     routes = new AthenaRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
 
     // create our vertx object

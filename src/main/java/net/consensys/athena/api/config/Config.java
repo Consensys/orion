@@ -111,14 +111,12 @@ public interface Config {
    * Storage engine used to save payloads and related information. Options:
    *
    * <ul>
-   *   <li>bdb:path - BerkeleyDB
-   *   <li>dir:path - Directory/file storage, can be used with e.g. FUSE-mounted file systems.
-   *   <li>leveldb:path - LevelDB - experimental
+   *   <li>leveldb:path - LevelDB
+   *   <li>mapdb:path - MapDB
    *   <li>memory - Contents are cleared when Athena exits
-   *   <li>sqlite:path - SQLite - experimental
    * </ul>
    *
-   * <strong>Default:</strong> "dir:storage"
+   * <strong>Default:</strong> "leveldb"
    *
    * @return Storage string specifying a storage engine and/or storage path
    */

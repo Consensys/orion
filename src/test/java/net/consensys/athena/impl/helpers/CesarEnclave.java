@@ -12,6 +12,7 @@ import java.security.PublicKey;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class CesarEnclave implements Enclave {
 
@@ -76,12 +77,12 @@ public class CesarEnclave implements Enclave {
     byte[] nonce = {};
 
     SodiumCombinedKey[] combinedKeys;
-    Map<PublicKey, Integer> combinedKeysOwners = new HashMap<>();
+    Map<SodiumPublicKey, Integer> combinedKeysOwners = new HashMap<>();
 
     if (recipients != null && recipients.length > 0) {
       combinedKeys = new SodiumCombinedKey[recipients.length];
       for (int i = 0; i < recipients.length; i++) {
-        combinedKeysOwners.put(recipients[i], i);
+        combinedKeysOwners.put((SodiumPublicKey) recipients[i], i);
         combinedKeys[i] = new SodiumCombinedKey(recipients[i].getEncoded());
       }
 
@@ -94,6 +95,6 @@ public class CesarEnclave implements Enclave {
         combinedKeyNonce,
         combinedKeys,
         ciphterText,
-        combinedKeysOwners);
+        Optional.of(combinedKeysOwners));
   }
 }

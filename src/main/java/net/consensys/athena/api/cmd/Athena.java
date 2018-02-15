@@ -3,6 +3,7 @@ package net.consensys.athena.api.cmd;
 import static io.vertx.core.Vertx.vertx;
 
 import net.consensys.athena.api.config.Config;
+import net.consensys.athena.api.config.ConfigException;
 import net.consensys.athena.api.enclave.Enclave;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.KeyConfig;
@@ -11,11 +12,13 @@ import net.consensys.athena.api.storage.StorageEngine;
 import net.consensys.athena.impl.cmd.AthenaArguments;
 import net.consensys.athena.impl.config.TomlConfigBuilder;
 import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
+import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.enclave.sodium.SodiumFileKeyStore;
 import net.consensys.athena.impl.http.server.vertx.VertxServer;
 import net.consensys.athena.impl.network.MemoryNetworkNodes;
 import net.consensys.athena.impl.network.NetworkDiscovery;
 import net.consensys.athena.impl.storage.file.MapDbStorage;
+import net.consensys.athena.impl.storage.leveldb.LevelDbStorage;
 import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.BufferedReader;
@@ -127,7 +130,7 @@ public class Athena {
     }
 
     // create our storage engine
-    storageEngine = new MapDbStorage(storagePath + "routerdb");
+    storageEngine = createStorageEngine(config, storagePath);
     AthenaRoutes routes = new AthenaRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
 
     // build vertx http server
@@ -143,6 +146,23 @@ public class Athena {
 
     // set shutdown hook
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+  }
+
+  private StorageEngine<EncryptedPayload> createStorageEngine(Config config, String storagePath) {
+    String storage = config.storage();
+    String dbPath = "routerdb";
+    String[] storageOptions = storage.split(":");
+    if (storageOptions.length > 1) {
+      dbPath = storageOptions[1];
+    }
+    new File(storagePath + dbPath).mkdirs();
+    if (storage.startsWith("mapdb")) {
+      return new MapDbStorage<>(SodiumEncryptedPayload.class, storagePath + dbPath, serializer);
+    } else if (storage.startsWith("leveldb")) {
+      return new LevelDbStorage<>(SodiumEncryptedPayload.class, storagePath + dbPath, serializer);
+    } else {
+      throw new ConfigException("unsupported storage mechanism: " + storage);
+    }
   }
 
   private void displayVersion() {
