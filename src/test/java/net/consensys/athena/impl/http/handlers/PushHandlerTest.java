@@ -16,6 +16,7 @@ import net.consensys.athena.impl.http.server.HttpContentType;
 import java.security.PublicKey;
 import java.util.Optional;
 
+import junit.framework.TestCase;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -64,6 +65,39 @@ public class PushHandlerTest extends HandlerTest {
     assertEquals(
         pushRequest,
         serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, pushRequest));
+  }
+
+  @Test
+  public void testPushWithInvalidContentType() throws Exception {
+    // build & serialize our payload
+    EncryptedPayload encryptedPayload = mockPayload();
+
+    // PUSH operation with invalid content type
+    RequestBody body =
+        RequestBody.create(
+            MediaType.parse(HttpContentType.JSON.httpHeaderValue),
+            serializer.serialize(HttpContentType.JSON, encryptedPayload));
+
+    Request request = new Request.Builder().post(body).url(baseUrl + AthenaRoutes.PUSH).build();
+
+    Response resp = httpClient.newCall(request).execute();
+
+    assertEquals(404, resp.code());
+  }
+
+  @Test
+  public void testPushWithInvalidBody() throws Exception {
+    RequestBody body =
+        RequestBody.create(MediaType.parse(HttpContentType.CBOR.httpHeaderValue), "foo");
+
+    Request request = new Request.Builder().post(body).url(baseUrl + AthenaRoutes.PUSH).build();
+
+    Response resp = httpClient.newCall(request).execute();
+
+    // produces 500 because serialisation error
+    TestCase.assertEquals(500, resp.code());
+    // checks if the failure reason was with de-serialisation
+    TestCase.assertTrue(resp.body().string().contains("com.fasterxml.jackson"));
   }
 
   protected EncryptedPayload mockPayload() {

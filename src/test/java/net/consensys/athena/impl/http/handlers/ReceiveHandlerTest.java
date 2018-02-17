@@ -1,5 +1,6 @@
 package net.consensys.athena.impl.http.handlers;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -20,6 +21,7 @@ import java.security.PublicKey;
 import java.util.Optional;
 import java.util.Random;
 
+import junit.framework.TestCase;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.junit.Test;
@@ -42,17 +44,7 @@ public class ReceiveHandlerTest extends HandlerTest {
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    // encrypt a payload
-    SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
-    SodiumPublicKey recipientKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
-    EncryptedPayload originalPayload =
-        enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {recipientKey});
-
-    // store it
-    String key = storage.put(originalPayload);
-
-    // Receive operation, sending a ReceivePayload request
-    ReceiveRequest receiveRequest = new ReceiveRequest(key, recipientKey.toString());
+    ReceiveRequest receiveRequest = buildReceiveRequest(storage, toEncrypt);
     Request request = buildPostRequest(AthenaRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
 
     // execute request
@@ -98,5 +90,49 @@ public class ReceiveHandlerTest extends HandlerTest {
     assertEquals(
         receiveRequest,
         serializer.roundTrip(HttpContentType.JSON, ReceiveRequest.class, receiveRequest));
+  }
+
+  @Test
+  public void testReceiveWithInvalidContentType() throws Exception {
+    // generate random byte content
+    byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    // build receive request with payload
+    ReceiveRequest receiveRequest = buildReceiveRequest(routes.getStorage(), toEncrypt);
+    Request request = buildPostRequest(AthenaRoutes.RECEIVE, HttpContentType.CBOR, receiveRequest);
+
+    // execute request
+    Response resp = httpClient.newCall(request).execute();
+
+    assertEquals(404, resp.code());
+  }
+
+  @Test
+  public void testReceiveWithInvalidBody() throws Exception {
+    Request request =
+        buildPostRequest(AthenaRoutes.RECEIVE, HttpContentType.JSON, "{\"foo\": \"bar\"}");
+
+    // execute request
+    Response resp = httpClient.newCall(request).execute();
+
+    // produces 500 because serialisation error
+    TestCase.assertEquals(500, resp.code());
+    // checks if the failure reason was with de-serialisation
+    assertTrue(resp.body().string().contains("com.fasterxml.jackson"));
+  }
+
+  private ReceiveRequest buildReceiveRequest(Storage storage, byte[] toEncrypt) {
+    // encrypt a payload
+    SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
+    SodiumPublicKey recipientKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
+    EncryptedPayload originalPayload =
+        enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {recipientKey});
+
+    // store it
+    String key = storage.put(originalPayload);
+
+    // Receive operation, sending a ReceivePayload request
+    return new ReceiveRequest(key, recipientKey.toString());
   }
 }

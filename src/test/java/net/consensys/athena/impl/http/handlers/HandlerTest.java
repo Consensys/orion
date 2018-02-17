@@ -95,10 +95,11 @@ public abstract class HandlerTest {
   }
 
   protected Request buildPostRequest(String path, HttpContentType contentType, Object payload) {
-    RequestBody body =
-        RequestBody.create(
-            MediaType.parse(contentType.httpHeaderValue),
-            serializer.serialize(contentType, payload));
+    return buildPostRequest(path, contentType, serializer.serialize(contentType, payload));
+  }
+
+  protected Request buildPostRequest(String path, HttpContentType contentType, byte[] payload) {
+    RequestBody body = RequestBody.create(MediaType.parse(contentType.httpHeaderValue), payload);
 
     if (path.startsWith("/")) {
       path = path.substring(1, path.length());

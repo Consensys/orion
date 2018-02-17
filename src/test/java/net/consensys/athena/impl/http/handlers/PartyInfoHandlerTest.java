@@ -1,6 +1,8 @@
 package net.consensys.athena.impl.http.handlers;
 
+import static junit.framework.TestCase.assertTrue;
 import static net.consensys.athena.impl.http.server.HttpContentType.CBOR;
+import static net.consensys.athena.impl.http.server.HttpContentType.JSON;
 import static org.junit.Assert.assertEquals;
 
 import net.consensys.athena.api.cmd.AthenaRoutes;
@@ -11,6 +13,7 @@ import net.consensys.athena.impl.network.MemoryNetworkNodes;
 
 import java.net.URL;
 
+import junit.framework.TestCase;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -21,7 +24,6 @@ public class PartyInfoHandlerTest extends HandlerTest {
 
   @Test
   public void testSuccessfulProcessingOfRequest() throws Exception {
-
     networkNodes.addNode(new SodiumPublicKey("pk1".getBytes()), new URL("http://127.0.0.1:9001/"));
     networkNodes.addNode(new SodiumPublicKey("pk2".getBytes()), new URL("http://127.0.0.1:9002/"));
 
@@ -53,5 +55,37 @@ public class PartyInfoHandlerTest extends HandlerTest {
     assertEquals(
         networkNodes,
         serializer.roundTrip(HttpContentType.JSON, MemoryNetworkNodes.class, networkNodes));
+  }
+
+  @Test
+  public void testPartyInfoWithInvalidContentType() throws Exception {
+    networkNodes.addNode(new SodiumPublicKey("pk1".getBytes()), new URL("http://127.0.0.1:9001/"));
+    networkNodes.addNode(new SodiumPublicKey("pk2".getBytes()), new URL("http://127.0.0.1:9002/"));
+
+    // prepare /partyinfo payload (our known peers) with invalid content type (json)
+    RequestBody partyInfoBody =
+        RequestBody.create(
+            MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, networkNodes));
+
+    Request request =
+        new Request.Builder().post(partyInfoBody).url(baseUrl + AthenaRoutes.PARTYINFO).build();
+
+    Response resp = httpClient.newCall(request).execute();
+    assertEquals(404, resp.code());
+  }
+
+  @Test
+  public void testPartyInfoWithInvalidBody() throws Exception {
+    RequestBody partyInfoBody = RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), "foo");
+
+    Request request =
+        new Request.Builder().post(partyInfoBody).url(baseUrl + AthenaRoutes.PARTYINFO).build();
+
+    Response resp = httpClient.newCall(request).execute();
+
+    // produces 500 because serialisation error
+    TestCase.assertEquals(500, resp.code());
+    // checks if the failure reason was with de-serialisation
+    assertTrue(resp.body().string().contains("com.fasterxml.jackson"));
   }
 }
