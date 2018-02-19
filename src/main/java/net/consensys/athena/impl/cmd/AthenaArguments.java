@@ -56,8 +56,9 @@ public class AthenaArguments {
     System.out.println("Usage: " + Athena.name + " [options] [config file]");
     System.out.println("where options include:");
     System.out.println("\t-g");
-    System.out.println(
-        "\t--generatekeys <names>\n\t\tgenerate key pairs for each of the names supplied.\n\t\twhere <names> are a comma-seperated list");
+    System.out.println("\t--generatekeys <names>");
+    System.out.println("\t\tgenerate key pairs for each of the names supplied.");
+    System.out.println("\t\twhere <names> are a comma-seperated list");
     System.out.println("\t-h");
     System.out.println("\t--help\tprint this help message");
     System.out.println("\t-v");

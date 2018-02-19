@@ -14,16 +14,17 @@ import org.junit.Test;
 public class AthenaArgumentsTest {
 
   private final String usageOut =
-      "Usage: "
-          + Athena.name
-          + " [options] [config file]\n"
-          + "where options include:\n"
-          + "\t-g\n"
-          + "\t--generatekeys <names>\n\t\tgenerate key pairs for each of the names supplied.\n\t\twhere <names> are a comma-seperated list\n"
-          + "\t-h\n"
-          + "\t--help\tprint this help message\n"
-          + "\t-v\n"
-          + "\t--version\tprint version information\n";
+      String.format(
+          "Usage: "
+              + Athena.name
+              + " [options] [config file]%n"
+              + "where options include:%n"
+              + "\t-g%n"
+              + "\t--generatekeys <names>%n\t\tgenerate key pairs for each of the names supplied.%n\t\twhere <names> are a comma-seperated list%n"
+              + "\t-h%n"
+              + "\t--help\tprint this help message%n"
+              + "\t-v%n"
+              + "\t--version\tprint version information%n");
 
   private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
   private PrintStream originalSystemOut;
@@ -41,7 +42,7 @@ public class AthenaArgumentsTest {
 
   @Test
   public void testGenerateKeysArgumentWithNoKeyNamesProvided() {
-    String errorMsg = "Error: Missing key names to generate.\n";
+    String errorMsg = String.format("Error: Missing key names to generate.%n");
     String[] args = {"-g"};
 
     AthenaArguments arguments = new AthenaArguments(args);
