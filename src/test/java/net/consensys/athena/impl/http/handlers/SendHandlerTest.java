@@ -68,7 +68,7 @@ public class SendHandlerTest extends HandlerTest {
     // execute request
     Response resp = httpClient.newCall(request).execute();
 
-    // produces 404 because no content = no content-type = no matching with a "consumes(CBOR)" route.
+    // produces 404 because no content = no content-type = no matching with a "consumes(JSON)" route.
     assertEquals(404, resp.code());
   }
 
@@ -168,6 +168,35 @@ public class SendHandlerTest extends HandlerTest {
               CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
       assertArrayEquals(receivedPayload.getCipherText(), encryptedPayload.getCipherText());
     }
+  }
+
+  @Test
+  public void testSendWithInvalidContentType() throws Exception {
+    String b64String = Base64.encode("foo".getBytes());
+
+    // build our sendRequest
+    SendRequest sendRequest = new SendRequest(b64String, b64String, new String[] {b64String});
+    // CBOR type is not available
+    Request request = buildPostRequest(AthenaRoutes.SEND, HttpContentType.CBOR, sendRequest);
+
+    // execute request
+    Response resp = httpClient.newCall(request).execute();
+
+    // produces 404 because there is no route for the content type in the request.
+    assertEquals(404, resp.code());
+  }
+
+  @Test
+  public void testSendWithInvalidBody() throws Exception {
+    Request requestWithInvalidBody =
+        buildPostRequest(AthenaRoutes.SEND, HttpContentType.JSON, "{\"foo\": \"bar\"}");
+
+    Response resp = httpClient.newCall(requestWithInvalidBody).execute();
+
+    // produces 500 because serialisation error
+    assertEquals(500, resp.code());
+    // checks if the failure reason was with de-serialisation
+    assertTrue(resp.body().string().contains("com.fasterxml.jackson"));
   }
 
   private SendRequest buildFakeRequest(List<FakePeer> forPeers, byte[] toEncrypt) {

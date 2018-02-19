@@ -40,7 +40,7 @@ public class AthenaTest {
     Config config = athena.loadConfig(Optional.of("src/main/resources/sample.conf"));
     assertEquals(9001, config.port());
 
-    File expectedSocket = new File("athena.ipc");
+    File expectedSocket = new File("data/athena.ipc");
     assertTrue(config.socket().isPresent());
     assertEquals(expectedSocket, config.socket().get());
   }
