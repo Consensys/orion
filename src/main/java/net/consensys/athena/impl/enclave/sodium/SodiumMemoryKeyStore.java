@@ -1,5 +1,6 @@
 package net.consensys.athena.impl.enclave.sodium;
 
+import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.EnclaveException;
 import net.consensys.athena.api.enclave.KeyConfig;
 import net.consensys.athena.api.enclave.KeyStore;
@@ -16,6 +17,10 @@ import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 public class SodiumMemoryKeyStore implements KeyStore {
 
   Map<PublicKey, PrivateKey> store = new HashMap<>();
+
+  public SodiumMemoryKeyStore(Config config) {
+    SodiumLibrary.setLibraryPath(config.libSodiumPath());
+  }
 
   @Override
   public PrivateKey getPrivateKey(PublicKey publicKey) {

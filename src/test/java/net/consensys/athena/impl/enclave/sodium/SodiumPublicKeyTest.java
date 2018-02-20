@@ -17,15 +17,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class SodiumPublicKeyTest {
-  private final KeyStore memoryKeyStore = new SodiumMemoryKeyStore();
-  private KeyConfig keyConfig = new KeyConfig("ingore", Optional.empty());;
-
   private final MemoryConfig config = new MemoryConfig();
+
+  private KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
+  private KeyStore memoryKeyStore;
   private Enclave enclave;
 
   @Before
   public void setUp() throws Exception {
     config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
+    memoryKeyStore = new SodiumMemoryKeyStore(config);
     enclave = new LibSodiumEnclave(config, memoryKeyStore);
   }
 
