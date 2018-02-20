@@ -27,11 +27,12 @@ import okhttp3.Response;
 import org.junit.Test;
 
 public class ReceiveHandlerTest extends HandlerTest {
-  private KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());;
-  private final SodiumMemoryKeyStore memoryKeyStore = new SodiumMemoryKeyStore();
+  private KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
+  private SodiumMemoryKeyStore memoryKeyStore;
 
   @Override
   protected Enclave buildEnclave() {
+    memoryKeyStore = new SodiumMemoryKeyStore(config);
     return new LibSodiumEnclave(config, memoryKeyStore);
   }
 

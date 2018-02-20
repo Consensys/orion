@@ -21,8 +21,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class LibSodiumEnclaveTest {
-  KeyStore memoryKeyStore = new SodiumMemoryKeyStore();
   MemoryConfig config = new MemoryConfig();
+  KeyStore memoryKeyStore = new SodiumMemoryKeyStore(config);
   LibSodiumEnclave enclave;
 
   @Before

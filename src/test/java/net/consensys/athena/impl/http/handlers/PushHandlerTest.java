@@ -21,12 +21,18 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.junit.Before;
 import org.junit.Test;
 
 public class PushHandlerTest extends HandlerTest {
 
-  private final KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());;
-  private final SodiumMemoryKeyStore memoryKeyStore = new SodiumMemoryKeyStore();
+  private final KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
+  private SodiumMemoryKeyStore memoryKeyStore;
+
+  @Before
+  public void before() {
+    memoryKeyStore = new SodiumMemoryKeyStore(config);
+  }
 
   @Test
   public void testPayloadIsStored() throws Exception {

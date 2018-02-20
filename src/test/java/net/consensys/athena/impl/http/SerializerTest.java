@@ -49,7 +49,7 @@ public class SerializerTest {
   public void testSodiumEncryptedPayloadSerialization() throws Exception {
     MemoryConfig config = new MemoryConfig();
     config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
-    final KeyStore memoryKeyStore = new SodiumMemoryKeyStore();
+    final KeyStore memoryKeyStore = new SodiumMemoryKeyStore(config);
     KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
     ;
     Enclave enclave = new LibSodiumEnclave(config, memoryKeyStore);
