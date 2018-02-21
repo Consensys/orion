@@ -1,9 +1,14 @@
 package net.consensys.athena.impl.enclave.sodium.storage;
 
+import java.util.Optional;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Encapsulates the options to use with Argon encryption.
  *
- * <p>If we are using the lib sodium implementation, use: getOpsLimit and getMemLimit
+ * <p>If we are using the lib sodium implementation, use: opsLimit and memLimit
  *
  * <p>At the end of the day, this is an internal class, that is currently tightly coupled to the
  * SodiumFileKeyStore. It's just a tool to help with the json serialisation/deserialisation.
@@ -12,82 +17,79 @@ package net.consensys.athena.impl.enclave.sodium.storage;
  */
 public class ArgonOptions {
 
-  public static final int OPS_LIMIT_MODERATE = 3;
-  public static final int MEM_LIMIT_MODERATE = 268435456;
+  public static final Long OPS_LIMIT_MODERATE = new Long(3);
+  public static final Long MEM_LIMIT_MODERATE = new Long(268435456);
   public static final String VERSION = "1.3";
 
-  private String variant;
-  private Long memory;
-  private Integer iterations;
-  private Integer parallelism;
-  private String version;
-  private Long opsLimit;
-  private Long memLimit;
+  private final String variant;
+  private final String version;
+  private final Optional<Long> memory;
+  private final Optional<Integer> iterations;
+  private final Optional<Integer> parallelism;
+  private final Optional<Long> opsLimit;
+  private final Optional<Long> memLimit;
+
+  @JsonCreator
+  public ArgonOptions(
+      @JsonProperty("variant") String variant,
+      @JsonProperty("version") String version,
+      @JsonProperty("memory") Optional<Long> memory,
+      @JsonProperty("iterations") Optional<Integer> iterations,
+      @JsonProperty("parallelism") Optional<Integer> parallelism,
+      @JsonProperty("opsLimit") Optional<Long> opsLimit,
+      @JsonProperty("memLimit") Optional<Long> memLimit) {
+    this.variant = variant;
+    this.memory = memory;
+    this.iterations = iterations;
+    this.parallelism = parallelism;
+    this.version = version;
+    this.opsLimit = opsLimit;
+    this.memLimit = memLimit;
+  }
 
   /**
    * Argon variant to use. One of i, id
    *
    * @return the variant being used
    */
-  public String getVariant() {
+  @JsonProperty("variant")
+  public String variant() {
     return variant;
   }
 
-  public void setVariant(String variant) {
-    this.variant = variant;
-  }
-
-  /** @return amount of memory to use. */
-  public Long getMemory() {
-    return memory;
-  }
-
-  public void setMemory(long memory) {
-    this.memory = memory;
-  }
-
-  /** @return Number of iterations */
-  public Integer getIterations() {
-    return iterations;
-  }
-
-  public void setIterations(int iterations) {
-    this.iterations = iterations;
-  }
-
-  /** @return The amount of parrallisation. */
-  public Integer getParallelism() {
-    return parallelism;
-  }
-
-  public void setParallelism(int parallelism) {
-    this.parallelism = parallelism;
-  }
-
   /** @return version of argon2. */
-  public String getVersion() {
+  @JsonProperty("version")
+  public String version() {
     return version;
   }
 
-  public void setVersion(String version) {
-    this.version = version;
+  /** @return amount of memory to use. */
+  @JsonProperty("memory")
+  public Optional<Long> memory() {
+    return memory;
+  }
+
+  /** @return Number of iterations */
+  @JsonProperty("iterations")
+  public Optional<Integer> iterations() {
+    return iterations;
+  }
+
+  /** @return The amount of parrallisation. */
+  @JsonProperty("parallelism")
+  public Optional<Integer> parallelism() {
+    return parallelism;
   }
 
   /** @return Operation limit */
-  public Long getOpsLimit() {
+  @JsonProperty("opsLimit")
+  public Optional<Long> opsLimit() {
     return opsLimit;
   }
 
-  public void setOpsLimit(long opsLimit) {
-    this.opsLimit = opsLimit;
-  }
-
   /** @return Memory limit */
-  public Long getMemLimit() {
+  @JsonProperty("memLimit")
+  public Optional<Long> memLimit() {
     return memLimit;
-  }
-
-  public void setMemLimit(long memLimit) {
-    this.memLimit = memLimit;
   }
 }

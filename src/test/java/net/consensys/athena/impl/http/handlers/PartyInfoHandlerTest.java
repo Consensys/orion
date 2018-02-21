@@ -47,7 +47,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
 
   @Test
   public void testRoundTripSerialization() throws Exception {
-    MemoryNetworkNodes networkNodes = new MemoryNetworkNodes();
+    MemoryNetworkNodes networkNodes = new MemoryNetworkNodes(new URL("http://localhost:1234/"));
     networkNodes.addNode(new SodiumPublicKey("fake".getBytes()), new URL("http://localhost/"));
     assertEquals(
         networkNodes,

@@ -24,11 +24,11 @@ public class KeyConfig {
     this.password = password;
   }
 
-  public String getBasePath() {
+  public String basePath() {
     return basePath;
   }
 
-  public Optional<String> getPassword() {
+  public Optional<String> password() {
     return password;
   }
 }

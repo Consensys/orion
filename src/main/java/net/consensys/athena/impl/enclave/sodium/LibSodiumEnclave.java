@@ -60,7 +60,7 @@ public class LibSodiumEnclave implements Enclave {
       if (!(senderKey instanceof SodiumPublicKey)) {
         throw new EnclaveException("SodiumEnclave needs SodiumPublicKey");
       }
-      PrivateKey senderPrivateKey = keyStore.getPrivateKey(senderKey);
+      PrivateKey senderPrivateKey = keyStore.privateKey(senderKey);
       if (senderPrivateKey == null) {
         throw new EnclaveException("No StoredPrivateKey found in keystore");
       }
@@ -71,7 +71,7 @@ public class LibSodiumEnclave implements Enclave {
 
       byte[] nonce = nonce();
       SodiumCombinedKey[] combinedKeys =
-          getCombinedKeys(recipients, senderPrivateKey, secretKey, nonce);
+          combinedKeys(recipients, senderPrivateKey, secretKey, nonce);
 
       // store mapping between combined keys and recipients
       HashMap<PublicKey, Integer> combinedKeysMapping = new HashMap<>();
@@ -93,19 +93,19 @@ public class LibSodiumEnclave implements Enclave {
   @Override
   public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, PublicKey identity) {
     try {
-      PrivateKey privateKey = keyStore.getPrivateKey(identity);
+      PrivateKey privateKey = keyStore.privateKey(identity);
       if (privateKey == null) {
         throw new EnclaveException("No StoredPrivateKey found in keystore");
       }
-      CombinedKey key = ciphertextAndMetadata.getCombinedKeys()[0];
+      CombinedKey key = ciphertextAndMetadata.combinedKeys()[0];
       byte[] secretKey =
           SodiumLibrary.cryptoBoxOpenEasy(
               key.getEncoded(),
-              ciphertextAndMetadata.getCombinedKeyNonce(),
-              ciphertextAndMetadata.getSender().getEncoded(),
+              ciphertextAndMetadata.combinedKeyNonce(),
+              ciphertextAndMetadata.sender().getEncoded(),
               privateKey.getEncoded());
       return SodiumLibrary.cryptoSecretBoxOpenEasy(
-          ciphertextAndMetadata.getCipherText(), ciphertextAndMetadata.getNonce(), secretKey);
+          ciphertextAndMetadata.cipherText(), ciphertextAndMetadata.nonce(), secretKey);
     } catch (SodiumLibraryException e) {
       throw new EnclaveException(e);
     }
@@ -128,7 +128,7 @@ public class LibSodiumEnclave implements Enclave {
   }
 
   @NotNull
-  private SodiumCombinedKey[] getCombinedKeys(
+  private SodiumCombinedKey[] combinedKeys(
       PublicKey[] recipients, PrivateKey senderPrivateKey, byte[] secretKey, byte[] nonce)
       throws SodiumLibraryException {
     SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[recipients.length];

@@ -13,14 +13,14 @@ public interface NetworkNodes {
    *
    * @return URL of node
    */
-  URL getUrl();
+  URL url();
 
   /**
    * List of URLs of other nodes on the network
    *
    * @return
    */
-  Set<URL> getNodeURLs();
+  Set<URL> nodeURLs();
 
   URL urlForRecipient(PublicKey recipient);
 
@@ -29,7 +29,7 @@ public interface NetworkNodes {
    *
    * @return
    */
-  Map<PublicKey, URL> getNodePKs();
+  Map<PublicKey, URL> nodePKs();
 
   boolean merge(NetworkNodes other);
 }

@@ -9,6 +9,7 @@ import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.athena.impl.helpers.FakePeer;
 import net.consensys.athena.impl.utils.Serializer;
 
+import java.net.URL;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -28,9 +29,9 @@ public class NetworkDiscoveryTest {
   private MemoryNetworkNodes networkNodes;
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     vertx = Vertx.vertx();
-    networkNodes = new MemoryNetworkNodes();
+    networkNodes = new MemoryNetworkNodes(new URL("http://localhost1234/"));
   }
 
   @After
@@ -57,7 +58,7 @@ public class NetworkDiscoveryTest {
     NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, serializer);
     deployVerticle(networkDiscovery).get();
 
-    assertEquals(0, networkDiscovery.getDiscoverers().size());
+    assertEquals(0, networkDiscovery.discoverers().size());
   }
 
   @Test
@@ -74,11 +75,10 @@ public class NetworkDiscoveryTest {
     deployVerticle(networkDiscovery).get();
 
     // assert the discoverer started
-    assertEquals(1, networkDiscovery.getDiscoverers().size());
+    assertEquals(1, networkDiscovery.discoverers().size());
 
     // ensure the discoverer match our peer URL
-    NetworkDiscovery.Discoverer discoverer =
-        networkDiscovery.getDiscoverers().get(fakePeer.getURL());
+    NetworkDiscovery.Discoverer discoverer = networkDiscovery.discoverers().get(fakePeer.getURL());
     assertNotNull(discoverer);
 
     Thread.sleep(3 * (discoverer.currentRefreshDelay + NetworkDiscovery.HTTP_CLIENT_TIMEOUT_MS));
@@ -91,7 +91,8 @@ public class NetworkDiscoveryTest {
   @Test
   public void testNetworkDiscoveryWithMerge() throws Exception {
     // empty memory nodes, lets' say one peer is alone in his network
-    byte[] unknownPeerNetworkNodes = serializer.serialize(CBOR, new MemoryNetworkNodes());
+    byte[] unknownPeerNetworkNodes =
+        serializer.serialize(CBOR, new MemoryNetworkNodes(new URL("http://localhost/")));
     Buffer unknownPeerBody = new Buffer();
     unknownPeerBody.write(unknownPeerNetworkNodes);
     // create a peer that's not in our current network nodes
@@ -101,7 +102,7 @@ public class NetworkDiscoveryTest {
             new SodiumPublicKey("unknown.pk1".getBytes()));
 
     // create a peer that we know, and that knows the lonely unknown peer.
-    MemoryNetworkNodes knownPeerNetworkNodes = new MemoryNetworkNodes();
+    MemoryNetworkNodes knownPeerNetworkNodes = new MemoryNetworkNodes(new URL("http://localhost/"));
     knownPeerNetworkNodes.addNode(unknownPeer.publicKey, unknownPeer.getURL());
     Buffer knownPeerBody = new Buffer();
     knownPeerBody.write(serializer.serialize(CBOR, knownPeerNetworkNodes));
@@ -118,11 +119,11 @@ public class NetworkDiscoveryTest {
     deployVerticle(networkDiscovery).get();
 
     // assert the discoverer started, we should only have 1 discoverer for knownPeer
-    assertEquals(1, networkDiscovery.getDiscoverers().size());
+    assertEquals(1, networkDiscovery.discoverers().size());
 
     // ensure the discoverer match our peer URL
     NetworkDiscovery.Discoverer knownPeerDiscoverer =
-        networkDiscovery.getDiscoverers().get(knownPeer.getURL());
+        networkDiscovery.discoverers().get(knownPeer.getURL());
     assertNotNull(knownPeerDiscoverer);
 
     Thread.sleep(
@@ -133,12 +134,12 @@ public class NetworkDiscoveryTest {
     assertTrue(knownPeerDiscoverer.attempts >= 2);
 
     // ensure we now know unknownPeer
-    assertEquals(2, networkNodes.getNodePKs().size());
-    assertEquals(unknownPeer.getURL(), networkNodes.getNodePKs().get(unknownPeer.publicKey));
+    assertEquals(2, networkNodes.nodePKs().size());
+    assertEquals(unknownPeer.getURL(), networkNodes.nodePKs().get(unknownPeer.publicKey));
 
     // ensure unknown peer discoverer is set and being called
     NetworkDiscovery.Discoverer unknownPeerDiscoverer =
-        networkDiscovery.getDiscoverers().get(unknownPeer.getURL());
+        networkDiscovery.discoverers().get(unknownPeer.getURL());
     assertNotNull(unknownPeerDiscoverer);
 
     assertTrue(unknownPeerDiscoverer.lastUpdate.isAfter(discoveryStart));

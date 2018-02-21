@@ -36,7 +36,7 @@ public class SodiumFileKeyStoreTest {
 
   @Test
   public void testConfigLoadsRawKeys() throws Exception {
-    PrivateKey storedKey = keyStore.getPrivateKey(publicKey1);
+    PrivateKey storedKey = keyStore.privateKey(publicKey1);
     assertEquals(privateKey1, storedKey);
   }
 
@@ -90,7 +90,7 @@ public class SodiumFileKeyStoreTest {
     for (int i = 0; i < encodedPrivateKeys.length; i++) {
       PrivateKey privateKey = new SodiumPrivateKey(Base64.decode(encodedPrivateKeys[i]));
       PublicKey publicKey = new SodiumPublicKey(Base64.decode(encodedPublicKeys[i]));
-      PrivateKey storedKey = keyStore.getPrivateKey(publicKey);
+      PrivateKey storedKey = keyStore.privateKey(publicKey);
       assertEquals(privateKey, storedKey);
     }
   }
@@ -137,7 +137,7 @@ public class SodiumFileKeyStoreTest {
       config.setPublicKeys(new File[] {new File("keys/generated.pub")});
       keyStore = new SodiumFileKeyStore(config, serializer);
       PublicKey fromStore = keyStore.nodeKeys()[0];
-      assertNotNull(keyStore.getPrivateKey(fromStore));
+      assertNotNull(keyStore.privateKey(fromStore));
     } finally {
       File privateKey = new File(keyPrefix + ".key");
       File publicKey = new File(keyPrefix + ".pub");
@@ -169,7 +169,7 @@ public class SodiumFileKeyStoreTest {
       config.setPublicKeys(new File[] {new File("keys/generated_password.pub")});
       keyStore = new SodiumFileKeyStore(config, serializer);
       PublicKey fromStore = keyStore.nodeKeys()[0];
-      assertNotNull(keyStore.getPrivateKey(fromStore));
+      assertNotNull(keyStore.privateKey(fromStore));
     } finally {
       File privateKey = new File(keyPrefix + ".key");
       File publicKey = new File(keyPrefix + ".pub");

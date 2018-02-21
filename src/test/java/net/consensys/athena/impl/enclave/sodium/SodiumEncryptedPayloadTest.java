@@ -17,7 +17,7 @@ public class SodiumEncryptedPayloadTest {
   public void testRoundTripSerialization() {
     SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes());
     Map<PublicKey, Integer> combinedKeysOwners = new HashMap<>();
-    //    PublicKey key = new SodiumPublicKey("fake remote publickey".getBytes());
+    //    PublicKey key = new SodiumPublicKey("fake remote publickey".bytes());
     //    combinedKeysOwners.put(key, 1);
     SodiumEncryptedPayload payload =
         new SodiumEncryptedPayload(

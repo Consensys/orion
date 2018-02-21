@@ -58,7 +58,7 @@ public class NetworkDiscovery extends AbstractVerticle {
    */
   protected void updateDiscoverers() {
     // for each peer that we know, we start a Discoverer (on timer)
-    for (URL nodeUrl : nodes.getNodeURLs()) {
+    for (URL nodeUrl : nodes.nodeURLs()) {
       if (!discoverers.containsKey(nodeUrl)) {
         Discoverer d = new Discoverer(nodeUrl);
         discoverers.put(nodeUrl, d);
@@ -67,7 +67,7 @@ public class NetworkDiscovery extends AbstractVerticle {
     }
   }
 
-  public Map<URL, Discoverer> getDiscoverers() {
+  public Map<URL, Discoverer> discoverers() {
     return discoverers;
   }
 
@@ -92,7 +92,7 @@ public class NetworkDiscovery extends AbstractVerticle {
       vertx.executeBlocking(
           future -> {
             // executes outside the event loop (vertx worker pool).
-            Optional<NetworkNodes> result = getPeerPartyInfo();
+            Optional<NetworkNodes> result = peerPartyInfo();
             future.complete(result);
           },
           res -> {
@@ -119,7 +119,7 @@ public class NetworkDiscovery extends AbstractVerticle {
     }
 
     /** calls http endpoint PartyInfo; returns Optional.empty() if error. */
-    private Optional<NetworkNodes> getPeerPartyInfo() {
+    private Optional<NetworkNodes> peerPartyInfo() {
       try {
         log.trace("calling partyInfo on {}", nodeUrl);
         attempts++;

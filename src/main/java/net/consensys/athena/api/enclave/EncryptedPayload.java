@@ -3,15 +3,15 @@ package net.consensys.athena.api.enclave;
 import java.security.PublicKey;
 
 public interface EncryptedPayload {
-  PublicKey getSender();
+  PublicKey sender();
 
-  byte[] getCipherText();
+  byte[] cipherText();
 
-  byte[] getNonce();
+  byte[] nonce();
 
-  CombinedKey[] getCombinedKeys();
+  CombinedKey[] combinedKeys();
 
-  byte[] getCombinedKeyNonce();
+  byte[] combinedKeyNonce();
 
   EncryptedPayload stripFor(PublicKey key);
 }

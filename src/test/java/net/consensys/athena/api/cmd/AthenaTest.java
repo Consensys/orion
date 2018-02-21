@@ -124,7 +124,7 @@ public class AthenaTest {
       StoredPrivateKey storedPrivateKey =
           serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
 
-      assertEquals(StoredPrivateKey.UNLOCKED, storedPrivateKey.getType());
+      assertEquals(StoredPrivateKey.UNLOCKED, storedPrivateKey.type());
 
       privateKey1.delete();
     } else {
@@ -153,7 +153,7 @@ public class AthenaTest {
       StoredPrivateKey storedPrivateKey =
           serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
 
-      assertEquals(StoredPrivateKey.ARGON2_SBOX, storedPrivateKey.getType());
+      assertEquals(StoredPrivateKey.ARGON2_SBOX, storedPrivateKey.type());
 
       privateKey1.delete();
     } else {

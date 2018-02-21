@@ -15,7 +15,7 @@ public interface KeyStore {
    * @param publicKey PublicKey to get the private key for.
    * @return Return the public key.
    */
-  PrivateKey getPrivateKey(PublicKey publicKey);
+  PrivateKey privateKey(PublicKey publicKey);
 
   /**
    * Generate and put a new keypair, returning the public key for external use.

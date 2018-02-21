@@ -15,20 +15,20 @@ public class SodiumArgon2Sbox {
   }
 
   public byte[] decrypt(StoredPrivateKey storedPrivateKey, String password) {
-    ArgonOptions argonOptions = storedPrivateKey.getData().getAopts();
-    String asalt = storedPrivateKey.getData().getAsalt();
+    ArgonOptions argonOptions = storedPrivateKey.data().aopts().get();
+    String asalt = storedPrivateKey.data().asalt().get();
     int algorithm = lookupAlgorithm(argonOptions);
     try {
       byte[] pwhash =
           SodiumLibrary.cryptoPwhash(
               password.getBytes(),
               decode(asalt),
-              argonOptions.getOpsLimit(),
-              new NativeLong(argonOptions.getMemLimit()),
+              argonOptions.opsLimit().get(),
+              new NativeLong(argonOptions.memLimit().get()),
               algorithm);
       return SodiumLibrary.cryptoSecretBoxOpenEasy(
-          decode(storedPrivateKey.getData().getSbox()),
-          decode(storedPrivateKey.getData().getSnonce()),
+          decode(storedPrivateKey.data().sbox().get()),
+          decode(storedPrivateKey.data().snonce().get()),
           pwhash);
     } catch (SodiumLibraryException e) {
       throw new EnclaveException(e);
@@ -40,13 +40,13 @@ public class SodiumArgon2Sbox {
   }
 
   private int lookupAlgorithm(ArgonOptions argonOptions) {
-    switch (argonOptions.getVariant()) {
+    switch (argonOptions.variant()) {
       case "i":
         return SodiumLibrary.cryptoPwhashAlgArgon2i13();
       case "id":
         return SodiumLibrary.cryptoPwhashAlgArgon2id13();
       default:
-        throw new EnclaveException("Unsupported variant: " + argonOptions.getVariant());
+        throw new EnclaveException("Unsupported variant: " + argonOptions.variant());
     }
   }
 
@@ -65,8 +65,8 @@ public class SodiumArgon2Sbox {
           SodiumLibrary.cryptoPwhash(
               password.getBytes(),
               asalt,
-              argonOptions.getOpsLimit(),
-              new NativeLong(argonOptions.getMemLimit()),
+              argonOptions.opsLimit().get(),
+              new NativeLong(argonOptions.memLimit().get()),
               lookupAlgorithm(argonOptions));
       return SodiumLibrary.cryptoSecretBoxEasy(privateKey, snonce, pwhash);
 

@@ -1,5 +1,8 @@
 package net.consensys.athena.impl.enclave.sodium;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+
 import net.consensys.athena.api.config.Config;
 import net.consensys.athena.api.enclave.EnclaveException;
 import net.consensys.athena.api.enclave.KeyConfig;
@@ -52,7 +55,7 @@ public class SodiumFileKeyStore implements KeyStore {
     for (int i = 0; i < config.publicKeys().length; i++) {
       File publicKeyFile = config.publicKeys()[i];
       File privateKeyFile = config.privateKeys()[i];
-      Optional<String> password = Optional.empty();
+      Optional<String> password = empty();
       if (passwordList.isPresent()) {
         password = Optional.of(passwordList.get()[i]);
       }
@@ -68,9 +71,9 @@ public class SodiumFileKeyStore implements KeyStore {
         serializer.readFile(HttpContentType.JSON, privateKeyFile, StoredPrivateKey.class);
 
     byte[] decoded;
-    switch (storedPrivateKey.getType()) {
+    switch (storedPrivateKey.type()) {
       case StoredPrivateKey.UNLOCKED:
-        decoded = Base64.decode(storedPrivateKey.getData().getBytes());
+        decoded = Base64.decode(storedPrivateKey.data().bytes().get());
         break;
       case StoredPrivateKey.ARGON2_SBOX:
         if (!password.isPresent()) {
@@ -80,7 +83,7 @@ public class SodiumFileKeyStore implements KeyStore {
         break;
       default:
         throw new EnclaveException(
-            "Unable to support private key storage of type: " + storedPrivateKey.getType());
+            "Unable to support private key storage of type: " + storedPrivateKey.type());
     }
     return new SodiumPrivateKey(decoded);
   }
@@ -96,20 +99,20 @@ public class SodiumFileKeyStore implements KeyStore {
   }
 
   @Override
-  public PrivateKey getPrivateKey(PublicKey publicKey) {
+  public PrivateKey privateKey(PublicKey publicKey) {
     return cache.get(publicKey);
   }
 
   @Override
   public PublicKey generateKeyPair(KeyConfig config) {
-    String basePath = config.getBasePath();
-    Optional<String> password = config.getPassword();
+    String basePath = config.basePath();
+    Optional<String> password = config.password();
     return generateStoreAndCache(basePath, password);
   }
 
   private Optional<String[]> lookupPasswords() {
     Optional<File> passwords = config.passwords();
-    Optional<String[]> passwordList = Optional.empty();
+    Optional<String[]> passwordList = empty();
     if (passwords.isPresent()) {
       try {
         List<String> strings = Files.readAllLines(passwords.get().toPath());
@@ -153,38 +156,40 @@ public class SodiumFileKeyStore implements KeyStore {
   @NotNull
   private StoredPrivateKey createStoredPrivateKey(
       SodiumKeyPair keyPair, Optional<String> password) {
-    PrivateKeyData data = new PrivateKeyData();
+    PrivateKeyData data;
 
-    StoredPrivateKey privateKey = new StoredPrivateKey(data);
     if (password.isPresent()) {
-      privateKey.setType(StoredPrivateKey.ARGON2_SBOX);
       ArgonOptions argonOptions = defaultArgonOptions();
-      data.setAopts(argonOptions);
       SodiumArgon2Sbox sodiumArgon2Sbox = new SodiumArgon2Sbox(config);
-
       byte[] snonce = sodiumArgon2Sbox.generateSnonce();
-      data.setSnonce(Base64.encode(snonce));
       byte[] asalt = sodiumArgon2Sbox.generateAsalt();
-      data.setAsalt(Base64.encode(asalt));
-      byte[] encryptKey =
+      byte[] sbox =
           sodiumArgon2Sbox.encrypt(
               keyPair.getPrivateKey(), password.get(), asalt, snonce, argonOptions);
-      data.setSbox(Base64.encode(encryptKey));
+      data =
+          new PrivateKeyData(
+              empty(),
+              of(Base64.encode(asalt)),
+              of(argonOptions),
+              of(Base64.encode(snonce)),
+              of(Base64.encode(sbox)));
+      return new StoredPrivateKey(data, StoredPrivateKey.ARGON2_SBOX);
     } else {
-      data.setBytes(Base64.encode(keyPair.getPrivateKey()));
-      privateKey.setType(StoredPrivateKey.UNLOCKED);
+      data = new PrivateKeyData(Base64.encode(keyPair.getPrivateKey()));
+      return new StoredPrivateKey(data, StoredPrivateKey.UNLOCKED);
     }
-    return privateKey;
   }
 
   @NotNull
   private ArgonOptions defaultArgonOptions() {
-    ArgonOptions argonOptions = new ArgonOptions();
-    argonOptions.setVariant("i");
-    argonOptions.setOpsLimit(ArgonOptions.OPS_LIMIT_MODERATE);
-    argonOptions.setMemLimit(ArgonOptions.MEM_LIMIT_MODERATE);
-    argonOptions.setVersion(ArgonOptions.VERSION);
-    return argonOptions;
+    return new ArgonOptions(
+        "i",
+        ArgonOptions.VERSION,
+        empty(),
+        empty(),
+        empty(),
+        of(ArgonOptions.OPS_LIMIT_MODERATE),
+        of(ArgonOptions.MEM_LIMIT_MODERATE));
   }
 
   public PublicKey[] alwaysSendTo() {

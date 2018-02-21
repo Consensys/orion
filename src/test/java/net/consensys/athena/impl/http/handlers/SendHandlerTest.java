@@ -131,7 +131,7 @@ public class SendHandlerTest extends HandlerTest {
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
     String digest =
-        Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.getCipherText()));
+        Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
 
     // create fake peers
     List<FakePeer> fakePeers = new ArrayList<>(5);
@@ -167,7 +167,7 @@ public class SendHandlerTest extends HandlerTest {
       SodiumEncryptedPayload receivedPayload =
           serializer.deserialize(
               CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
-      assertArrayEquals(receivedPayload.getCipherText(), encryptedPayload.getCipherText());
+      assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
     }
   }
 

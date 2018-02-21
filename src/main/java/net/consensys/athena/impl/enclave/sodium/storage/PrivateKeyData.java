@@ -1,25 +1,36 @@
 package net.consensys.athena.impl.enclave.sodium.storage;
 
-public class PrivateKeyData {
-  private String bytes;
-  private String asalt;
-  private ArgonOptions aopts;
-  private String snonce;
-  private String sbox;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
-  public PrivateKeyData() {}
+import java.util.Optional;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class PrivateKeyData {
+  private final Optional<String> bytes;
+  private final Optional<String> asalt;
+  private final Optional<ArgonOptions> aopts;
+  private final Optional<String> snonce;
+  private final Optional<String> sbox;
 
   public PrivateKeyData(String bytes) {
-    this.bytes = bytes;
+    this(of(bytes), empty(), empty(), empty(), empty());
   }
 
-  /**
-   * Base64 encoded bytes
-   *
-   * @param bytes Base64 encoded bytes
-   */
-  public void setBytes(String bytes) {
+  @JsonCreator
+  public PrivateKeyData(
+      @JsonProperty("bytes") Optional<String> bytes,
+      @JsonProperty("asalt") Optional<String> asalt,
+      @JsonProperty("aopts") Optional<ArgonOptions> aopts,
+      @JsonProperty("snonce") Optional<String> snonce,
+      @JsonProperty("sbox") Optional<String> sbox) {
     this.bytes = bytes;
+    this.asalt = asalt;
+    this.aopts = aopts;
+    this.snonce = snonce;
+    this.sbox = sbox;
   }
 
   /**
@@ -27,46 +38,37 @@ public class PrivateKeyData {
    *
    * @return Base64 encoded bytes
    */
-  public String getBytes() {
+  @JsonProperty("bytes")
+  public Optional<String> bytes() {
     return bytes;
   }
 
   /** @return The base64 encoded salt to use with Argon */
-  public String getAsalt() {
+  @JsonProperty("asalt")
+  public Optional<String> asalt() {
     return asalt;
   }
 
-  public void setAsalt(String asalt) {
-    this.asalt = asalt;
-  }
-
   /** @return General options to use with Argon */
-  public ArgonOptions getAopts() {
+  @JsonProperty("aopts")
+  public Optional<ArgonOptions> aopts() {
     return aopts;
-  }
-
-  public void setAopts(ArgonOptions aopts) {
-    this.aopts = aopts;
   }
 
   /**
    * @return base64 encoded nonce to use with the secret box encryption, using the password
    *     generated key.
    */
-  public String getSnonce() {
+  @JsonProperty("snonce")
+  public Optional<String> snonce() {
     return snonce;
   }
 
-  public void setSnonce(String snonce) {
-    this.snonce = snonce;
-  }
-
   /** @return base64 encoded Secret box containing the password protected private key. */
-  public String getSbox() {
+  @JsonProperty("sbox")
+  public Optional<String> sbox() {
     return sbox;
   }
 
-  public void setSbox(String sbox) {
-    this.sbox = sbox;
-  }
+  public void aopts(ArgonOptions argonOptions) {}
 }
