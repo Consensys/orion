@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 public class Serializer {
   private final ObjectMapper jsonObjectMapper;
@@ -17,10 +18,14 @@ public class Serializer {
 
   public Serializer() {
     cborObjectMapper = new ObjectMapper(new CBORFactory());
-    cborObjectMapper.setSerializationInclusion(Include.NON_NULL);
-
+    setupObjectMapper(cborObjectMapper);
     jsonObjectMapper = new ObjectMapper();
-    jsonObjectMapper.setSerializationInclusion(Include.NON_NULL);
+    setupObjectMapper(jsonObjectMapper);
+  }
+
+  private void setupObjectMapper(ObjectMapper objectMapper) {
+    objectMapper.setSerializationInclusion(Include.NON_NULL);
+    objectMapper.registerModule(new Jdk8Module());
   }
 
   public byte[] serialize(HttpContentType contentType, Object obj) {

@@ -1,5 +1,8 @@
 package net.consensys.athena.impl.enclave.sodium.storage;
 
+import java.util.Optional;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -14,17 +17,35 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class ArgonOptions {
 
-  public static final int OPS_LIMIT_MODERATE = 3;
-  public static final int MEM_LIMIT_MODERATE = 268435456;
+  public static final Long OPS_LIMIT_MODERATE = new Long(3);
+  public static final Long MEM_LIMIT_MODERATE = new Long(268435456);
   public static final String VERSION = "1.3";
 
-  private String variant;
-  private Long memory;
-  private Integer iterations;
-  private Integer parallelism;
-  private String version;
-  private Long opsLimit;
-  private Long memLimit;
+  private final String variant;
+  private final String version;
+  private final Optional<Long> memory;
+  private final Optional<Integer> iterations;
+  private final Optional<Integer> parallelism;
+  private final Optional<Long> opsLimit;
+  private final Optional<Long> memLimit;
+
+  @JsonCreator
+  public ArgonOptions(
+      @JsonProperty("variant") String variant,
+      @JsonProperty("version") String version,
+      @JsonProperty("memory") Optional<Long> memory,
+      @JsonProperty("iterations") Optional<Integer> iterations,
+      @JsonProperty("parallelism") Optional<Integer> parallelism,
+      @JsonProperty("opsLimit") Optional<Long> opsLimit,
+      @JsonProperty("memLimit") Optional<Long> memLimit) {
+    this.variant = variant;
+    this.memory = memory;
+    this.iterations = iterations;
+    this.parallelism = parallelism;
+    this.version = version;
+    this.opsLimit = opsLimit;
+    this.memLimit = memLimit;
+  }
 
   /**
    * Argon variant to use. One of i, id
@@ -36,74 +57,39 @@ public class ArgonOptions {
     return variant;
   }
 
-  @JsonProperty("variant")
-  public void variant(String variant) {
-    this.variant = variant;
-  }
-
-  /** @return amount of memory to use. */
-  @JsonProperty("memory")
-  public Long memory() {
-    return memory;
-  }
-
-  @JsonProperty("memory")
-  public void memory(long memory) {
-    this.memory = memory;
-  }
-
-  /** @return Number of iterations */
-  @JsonProperty("iterations")
-  public Integer iterations() {
-    return iterations;
-  }
-
-  @JsonProperty("iterations")
-  public void iterations(int iterations) {
-    this.iterations = iterations;
-  }
-
-  /** @return The amount of parrallisation. */
-  @JsonProperty("parallelism")
-  public Integer parallelism() {
-    return parallelism;
-  }
-
-  @JsonProperty("parallelism")
-  public void parallelism(int parallelism) {
-    this.parallelism = parallelism;
-  }
-
   /** @return version of argon2. */
   @JsonProperty("version")
   public String version() {
     return version;
   }
 
-  @JsonProperty("version")
-  public void version(String version) {
-    this.version = version;
+  /** @return amount of memory to use. */
+  @JsonProperty("memory")
+  public Optional<Long> memory() {
+    return memory;
+  }
+
+  /** @return Number of iterations */
+  @JsonProperty("iterations")
+  public Optional<Integer> iterations() {
+    return iterations;
+  }
+
+  /** @return The amount of parrallisation. */
+  @JsonProperty("parallelism")
+  public Optional<Integer> parallelism() {
+    return parallelism;
   }
 
   /** @return Operation limit */
   @JsonProperty("opsLimit")
-  public Long opsLimit() {
+  public Optional<Long> opsLimit() {
     return opsLimit;
-  }
-
-  @JsonProperty("opsLimit")
-  public void opsLimit(long opsLimit) {
-    this.opsLimit = opsLimit;
   }
 
   /** @return Memory limit */
   @JsonProperty("memLimit")
-  public Long memLimit() {
+  public Optional<Long> memLimit() {
     return memLimit;
-  }
-
-  @JsonProperty("memLimit")
-  public void memLimit(long memLimit) {
-    this.memLimit = memLimit;
   }
 }

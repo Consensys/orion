@@ -9,6 +9,7 @@ import net.consensys.athena.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.athena.impl.helpers.FakePeer;
 import net.consensys.athena.impl.utils.Serializer;
 
+import java.net.URL;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -28,9 +29,9 @@ public class NetworkDiscoveryTest {
   private MemoryNetworkNodes networkNodes;
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     vertx = Vertx.vertx();
-    networkNodes = new MemoryNetworkNodes();
+    networkNodes = new MemoryNetworkNodes(new URL("http://localhost1234/"));
   }
 
   @After
@@ -90,7 +91,8 @@ public class NetworkDiscoveryTest {
   @Test
   public void testNetworkDiscoveryWithMerge() throws Exception {
     // empty memory nodes, lets' say one peer is alone in his network
-    byte[] unknownPeerNetworkNodes = serializer.serialize(CBOR, new MemoryNetworkNodes());
+    byte[] unknownPeerNetworkNodes =
+        serializer.serialize(CBOR, new MemoryNetworkNodes(new URL("http://localhost/")));
     Buffer unknownPeerBody = new Buffer();
     unknownPeerBody.write(unknownPeerNetworkNodes);
     // create a peer that's not in our current network nodes
@@ -100,7 +102,7 @@ public class NetworkDiscoveryTest {
             new SodiumPublicKey("unknown.pk1".getBytes()));
 
     // create a peer that we know, and that knows the lonely unknown peer.
-    MemoryNetworkNodes knownPeerNetworkNodes = new MemoryNetworkNodes();
+    MemoryNetworkNodes knownPeerNetworkNodes = new MemoryNetworkNodes(new URL("http://localhost/"));
     knownPeerNetworkNodes.addNode(unknownPeer.publicKey, unknownPeer.getURL());
     Buffer knownPeerBody = new Buffer();
     knownPeerBody.write(serializer.serialize(CBOR, knownPeerNetworkNodes));

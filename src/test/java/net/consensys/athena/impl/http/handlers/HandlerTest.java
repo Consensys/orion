@@ -19,6 +19,7 @@ import java.net.ServerSocket;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerOptions;
 import okhttp3.HttpUrl;
+import okhttp3.HttpUrl.Builder;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -47,10 +48,26 @@ public abstract class HandlerTest {
 
   @Before
   public void setUp() throws Exception {
+
+    // get a free httpServerPort
+    ServerSocket socket = new ServerSocket(0);
+    httpServerPort = socket.getLocalPort();
+    socket.close();
+
+    // Initialise the base HTTP url in two forms: String and OkHttp's HttpUrl object to allow for simpler composition
+    // of complex URLs with path parameters, query strings, etc.
+    HttpUrl http =
+        new Builder()
+            .scheme("http")
+            .host(InetAddress.getLocalHost().getHostAddress())
+            .port(httpServerPort)
+            .build();
+    baseUrl = http.toString();
+
     // athena dependencies, reset them all between tests
     config = new MemoryConfig();
     config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
-    networkNodes = new MemoryNetworkNodes();
+    networkNodes = new MemoryNetworkNodes(http.url());
     enclave = buildEnclave();
 
     storageEngine = new MapDbStorage("routerdb");
@@ -59,24 +76,9 @@ public abstract class HandlerTest {
     // create our vertx object
     vertx = Vertx.vertx();
 
-    // get a free httpServerPort
-    ServerSocket socket = new ServerSocket(0);
-    httpServerPort = socket.getLocalPort();
-    socket.close();
-
     // settings = HTTP server with provided httpServerPort
     HttpServerOptions httpServerOptions = new HttpServerOptions();
     httpServerOptions.setPort(httpServerPort);
-
-    // Initialise the base HTTP url in two forms: String and OkHttp's HttpUrl object to allow for simpler composition
-    // of complex URLs with path parameters, query strings, etc.
-    baseUrl =
-        new HttpUrl.Builder()
-            .scheme("http")
-            .host(InetAddress.getLocalHost().getHostAddress())
-            .port(httpServerPort)
-            .build()
-            .toString();
 
     // deploy our server
     vertxServer = new VertxServer(vertx, routes.getRouter(), httpServerOptions);

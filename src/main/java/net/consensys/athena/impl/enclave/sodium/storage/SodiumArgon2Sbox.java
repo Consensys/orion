@@ -15,19 +15,21 @@ public class SodiumArgon2Sbox {
   }
 
   public byte[] decrypt(StoredPrivateKey storedPrivateKey, String password) {
-    ArgonOptions argonOptions = storedPrivateKey.data().aopts();
-    String asalt = storedPrivateKey.data().asalt();
+    ArgonOptions argonOptions = storedPrivateKey.data().aopts().get();
+    String asalt = storedPrivateKey.data().asalt().get();
     int algorithm = lookupAlgorithm(argonOptions);
     try {
       byte[] pwhash =
           SodiumLibrary.cryptoPwhash(
               password.getBytes(),
               decode(asalt),
-              argonOptions.opsLimit(),
-              new NativeLong(argonOptions.memLimit()),
+              argonOptions.opsLimit().get(),
+              new NativeLong(argonOptions.memLimit().get()),
               algorithm);
       return SodiumLibrary.cryptoSecretBoxOpenEasy(
-          decode(storedPrivateKey.data().sbox()), decode(storedPrivateKey.data().snonce()), pwhash);
+          decode(storedPrivateKey.data().sbox().get()),
+          decode(storedPrivateKey.data().snonce().get()),
+          pwhash);
     } catch (SodiumLibraryException e) {
       throw new EnclaveException(e);
     }
@@ -63,8 +65,8 @@ public class SodiumArgon2Sbox {
           SodiumLibrary.cryptoPwhash(
               password.getBytes(),
               asalt,
-              argonOptions.opsLimit(),
-              new NativeLong(argonOptions.memLimit()),
+              argonOptions.opsLimit().get(),
+              new NativeLong(argonOptions.memLimit().get()),
               lookupAlgorithm(argonOptions));
       return SodiumLibrary.cryptoSecretBoxEasy(privateKey, snonce, pwhash);
 

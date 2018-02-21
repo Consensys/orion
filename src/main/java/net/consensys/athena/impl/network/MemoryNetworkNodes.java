@@ -20,14 +20,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 public class MemoryNetworkNodes implements NetworkNodes, Serializable {
 
-  private URL url;
+  private final URL url;
   private CopyOnWriteArraySet<URL> nodeURLs;
   private ConcurrentHashMap<PublicKey, URL> nodePKs;
-
-  public MemoryNetworkNodes() {
-    nodeURLs = new CopyOnWriteArraySet<>();
-    nodePKs = new ConcurrentHashMap<>();
-  }
 
   public MemoryNetworkNodes(Config config, PublicKey[] publicKeys) {
     url = config.url();
@@ -54,6 +49,10 @@ public class MemoryNetworkNodes implements NetworkNodes, Serializable {
     this.url = url;
     this.nodeURLs = new CopyOnWriteArraySet<>(nodeURLs);
     this.nodePKs = new ConcurrentHashMap<>(nodePKs);
+  }
+
+  public MemoryNetworkNodes(URL url) {
+    this(url, new CopyOnWriteArraySet<>(), new ConcurrentHashMap<>());
   }
 
   /**

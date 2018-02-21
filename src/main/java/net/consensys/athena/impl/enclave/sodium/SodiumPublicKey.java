@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SodiumPublicKey implements PublicKey {
 
-  private byte[] encoded;
+  private final byte[] encoded;
 
   @JsonCreator
   public SodiumPublicKey(@JsonProperty("encoded") byte[] encoded) {

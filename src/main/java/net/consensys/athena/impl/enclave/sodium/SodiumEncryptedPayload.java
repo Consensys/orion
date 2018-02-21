@@ -17,11 +17,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SodiumEncryptedPayload implements EncryptedPayload, Serializable {
 
-  private byte[] combinedKeyNonce;
-  private SodiumPublicKey sender;
-  private byte[] cipherText;
-  private byte[] nonce;
-  private SodiumCombinedKey[] combinedKeys;
+  private final byte[] combinedKeyNonce;
+  private final SodiumPublicKey sender;
+  private final byte[] cipherText;
+  private final byte[] nonce;
+  private final SodiumCombinedKey[] combinedKeys;
 
   @JsonIgnore private Map<PublicKey, Integer> combinedKeysOwners;
 
