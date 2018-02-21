@@ -7,7 +7,7 @@ apply plugin: 'java-library'
 apply plugin: 'application'
 apply plugin: "jacoco"
 
-mainClassName = 'net.consensys.athena.api.cmd.Athena'
+mainClassName = 'net.consensys.orion.api.cmd.Athena'
 version = '0.1.0-' + versionDetails().gitHash[0..4] + '-' + getTimestamp()
 
 repositories {
@@ -61,7 +61,7 @@ jar {
     manifest {
         attributes('Implementation-Title': project.name,
                 'Implementation-Version': version,
-                'Main-Class': 'net.consensys.athena.api.cmd.Athena'
+                'Main-Class': 'net.consensys.orion.api.cmd.Athena'
         )
     }
 }
