@@ -1,6 +1,7 @@
 package net.consensys.athena.impl.http.handlers;
 
 import static junit.framework.TestCase.assertTrue;
+import static net.consensys.athena.impl.http.server.HttpContentType.BINARY;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -22,7 +23,9 @@ import java.util.Optional;
 import java.util.Random;
 
 import junit.framework.TestCase;
+import okhttp3.MediaType;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.junit.Test;
 
@@ -33,6 +36,8 @@ public class ReceiveHandlerTest extends HandlerTest {
   @Override
   protected Enclave buildEnclave() {
     memoryKeyStore = new SodiumMemoryKeyStore(config);
+    SodiumPublicKey defaultNodeKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
+    memoryKeyStore.addNodeKey(defaultNodeKey);
     return new LibSodiumEnclave(config, memoryKeyStore);
   }
 
@@ -57,6 +62,41 @@ public class ReceiveHandlerTest extends HandlerTest {
         serializer.deserialize(HttpContentType.JSON, ReceiveResponse.class, resp.body().bytes());
 
     byte[] decodedPayload = Base64.decode(receiveResponse.payload);
+    assertArrayEquals(toEncrypt, decodedPayload);
+  }
+
+  @Test
+  public void testRawPayloadIsRetrieved() throws Exception {
+    // ref to storage
+    final Storage storage = routes.getStorage();
+
+    // generate random byte content
+    byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    // encrypt a payload
+    SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
+    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys());
+
+    // store it
+    String key = storage.put(originalPayload);
+    // Receive operation, sending a ReceivePayload request
+    RequestBody body = RequestBody.create(MediaType.parse(BINARY.httpHeaderValue), "");
+
+    Request request =
+        new Request.Builder()
+            .post(body)
+            .addHeader("Content-Type", BINARY.httpHeaderValue)
+            .addHeader("Accept", BINARY.httpHeaderValue)
+            .addHeader("c11n-key", key)
+            .url(baseUrl + "receiveraw")
+            .build();
+
+    // execute request
+    Response resp = httpClient.newCall(request).execute();
+    assertEquals(200, resp.code());
+
+    byte[] decodedPayload = resp.body().bytes();
     assertArrayEquals(toEncrypt, decodedPayload);
   }
 

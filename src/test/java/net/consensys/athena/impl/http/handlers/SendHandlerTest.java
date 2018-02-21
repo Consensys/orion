@@ -1,8 +1,8 @@
-
 package net.consensys.athena.impl.http.handlers;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
+import static net.consensys.athena.impl.http.server.HttpContentType.BINARY;
 import static net.consensys.athena.impl.http.server.HttpContentType.CBOR;
 import static org.junit.Assert.assertArrayEquals;
 
@@ -10,7 +10,6 @@ import net.consensys.athena.api.cmd.AthenaRoutes;
 import net.consensys.athena.api.enclave.EncryptedPayload;
 import net.consensys.athena.api.enclave.HashAlgorithm;
 import net.consensys.athena.api.enclave.KeyConfig;
-import net.consensys.athena.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.athena.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.athena.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.athena.impl.http.handler.send.SendRequest;
@@ -26,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -45,13 +45,11 @@ public class SendHandlerTest extends HandlerTest {
   public void setUp() throws Exception {
     super.setUp();
     memoryKeyStore = new SodiumMemoryKeyStore(config);
-    // dirty; needed to avoid java.lang.RuntimeException: Please set the absolute path of the libsodium libary by calling SodiumLibrary.setLibraryPath(path)
-    new LibSodiumEnclave(config, memoryKeyStore);
   }
 
   @Test
   public void testInvalidRequest() throws Exception {
-    SendRequest sendRequest = new SendRequest(null, "me", null);
+    SendRequest sendRequest = new SendRequest((byte[]) null, "me", null);
 
     Request request = buildPostRequest(AthenaRoutes.SEND, HttpContentType.JSON, sendRequest);
 
@@ -69,7 +67,8 @@ public class SendHandlerTest extends HandlerTest {
     // execute request
     Response resp = httpClient.newCall(request).execute();
 
-    // produces 404 because no content = no content-type = no matching with a "consumes(JSON)" route.
+    // produces 404 because no content = no content-type = no matching with a "consumes(CBOR)"
+    // route.
     assertEquals(404, resp.code());
   }
 
@@ -179,12 +178,83 @@ public class SendHandlerTest extends HandlerTest {
     SendRequest sendRequest = new SendRequest(b64String, b64String, new String[] {b64String});
     // CBOR type is not available
     Request request = buildPostRequest(AthenaRoutes.SEND, HttpContentType.CBOR, sendRequest);
-
-    // execute request
     Response resp = httpClient.newCall(request).execute();
 
     // produces 404 because there is no route for the content type in the request.
     assertEquals(404, resp.code());
+  }
+
+  @Test
+  public void testSendingWithARawBody() throws Exception {
+    // note: this closely mirrors the test "testPropagatedToMultiplePeers",
+    // using the raw version of the API.
+
+    byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    // encrypt it here to compute digest
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
+    String digest =
+        Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+
+    // create fake peers
+    List<FakePeer> fakePeers = new ArrayList<>(5);
+    for (int i = 0; i < 5; i++) {
+      FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
+      // add peer push URL to networkNodes
+      networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+      fakePeers.add(fakePeer);
+    }
+
+    // build the binary sendRequest
+    RequestBody body =
+        RequestBody.create(MediaType.parse(HttpContentType.BINARY.httpHeaderValue), toEncrypt);
+    PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
+
+    String from = Base64.encode(sender.getEncoded());
+
+    String[] to =
+        fakePeers
+            .stream()
+            .map(fp -> Base64.encode(fp.publicKey.getEncoded()))
+            .toArray(String[]::new);
+
+    Request request =
+        new Request.Builder()
+            .post(body)
+            .url(baseUrl + "sendraw")
+            .addHeader("c11n-from", from)
+            .addHeader("c11n-to", String.join(",", to))
+            .addHeader("Content-Type", BINARY.httpHeaderValue)
+            .addHeader("Accept", BINARY.httpHeaderValue)
+            .build();
+
+    // execute request
+    Response resp = httpClient.newCall(request).execute();
+
+    // ensure we got a 200 OK
+    assertEquals(200, resp.code());
+
+    // ensure we got the right body
+    assertEquals(digest, resp.body().string());
+
+    // ensure each pear actually got the EncryptedPayload
+    for (FakePeer fp : fakePeers) {
+      RecordedRequest recordedRequest = fp.server.takeRequest();
+
+      // check method and path
+      assertEquals("/push", recordedRequest.getPath());
+      assertEquals("POST", recordedRequest.getMethod());
+
+      // check header
+      assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
+
+      // ensure cipher text is same.
+      SodiumEncryptedPayload receivedPayload =
+          serializer.deserialize(
+              CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
+      assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
+    }
   }
 
   @Test
