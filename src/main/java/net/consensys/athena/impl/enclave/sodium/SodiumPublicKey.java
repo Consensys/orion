@@ -12,6 +12,10 @@ public class SodiumPublicKey implements PublicKey {
 
   private final byte[] encoded;
 
+  public SodiumPublicKey(String base64) {
+    this.encoded = Base64.decode(base64);
+  }
+
   @JsonCreator
   public SodiumPublicKey(@JsonProperty("encoded") byte[] encoded) {
     this.encoded = encoded;

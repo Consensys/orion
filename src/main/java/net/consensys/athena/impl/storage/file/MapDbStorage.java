@@ -1,6 +1,10 @@
 package net.consensys.athena.impl.storage.file;
 
+import static net.consensys.athena.impl.http.server.HttpContentType.CBOR;
+import static org.mapdb.Serializer.BYTE_ARRAY;
+
 import net.consensys.athena.api.storage.StorageEngine;
+import net.consensys.athena.impl.utils.Serializer;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -8,28 +12,36 @@ import java.util.Optional;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.HTreeMap;
-import org.mapdb.Serializer;
 
 public class MapDbStorage<T> implements StorageEngine<T> {
 
+  private final Class<? extends T> typeParameterClass;
   private final DB db;
-  private final HTreeMap<byte[], T> storageData;
+  private final Serializer serializer;
+  private final HTreeMap<byte[], byte[]> storageData;
 
-  public MapDbStorage(String path) {
+  public MapDbStorage(Class<? extends T> typeParameterClass, String path, Serializer serializer) {
+    this.typeParameterClass = typeParameterClass;
     db = DBMaker.fileDB(path).transactionEnable().make();
-    storageData = db.hashMap("storageData", Serializer.BYTE_ARRAY, Serializer.JAVA).createOrOpen();
+    this.serializer = serializer;
+    storageData = db.hashMap("storageData", BYTE_ARRAY, BYTE_ARRAY).createOrOpen();
   }
 
   @Override
   public void put(String key, T data) {
     // store data
-    storageData.put(key.getBytes(StandardCharsets.UTF_8), data);
+    storageData.put(key.getBytes(StandardCharsets.UTF_8), serializer.serialize(CBOR, data));
     db.commit();
   }
 
   @Override
   public Optional<T> get(String key) {
-    return Optional.ofNullable(storageData.get(key.getBytes(StandardCharsets.UTF_8)));
+    byte[] bytes = storageData.get(key.getBytes(StandardCharsets.UTF_8));
+    if (bytes == null) {
+      return Optional.empty();
+    }
+
+    return Optional.of(serializer.deserialize(CBOR, typeParameterClass, bytes));
   }
 
   @Override

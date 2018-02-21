@@ -1,10 +1,10 @@
 package net.consensys.athena.impl.storage.file;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+import net.consensys.athena.impl.utils.Serializer;
+
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.junit.After;
@@ -12,9 +12,10 @@ import org.junit.Test;
 
 public class MapDbStorageTest {
   String path = "db";
-  MapDbStorage<byte[]> storage = new MapDbStorage<>(path);
+  private Serializer serializer = new Serializer();
+  MapDbStorage<String> storage = new MapDbStorage<>(String.class, path, serializer);
 
-  final byte[] toStore = "data".getBytes(StandardCharsets.UTF_8);
+  final String toStore = "data";
 
   public MapDbStorageTest() throws UnsupportedEncodingException {}
 
@@ -28,7 +29,7 @@ public class MapDbStorageTest {
   @Test
   public void testStoreAndRetrieve() {
     storage.put("key", toStore);
-    assertArrayEquals(toStore, storage.get("key").get());
+    assertEquals(toStore, storage.get("key").get());
   }
 
   @Test
@@ -40,8 +41,8 @@ public class MapDbStorageTest {
   public void testStoreAndRetrieveAcrossSessions() {
     storage.put("key", toStore);
     storage.close();
-    MapDbStorage<byte[]> secondStorage = new MapDbStorage(path);
-    assertArrayEquals(toStore, secondStorage.get("key").get());
+    MapDbStorage<byte[]> secondStorage = new MapDbStorage(String.class, path, serializer);
+    assertEquals(toStore, secondStorage.get("key").get());
   }
 
   @Test

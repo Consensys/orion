@@ -116,7 +116,7 @@ public class TomlConfigBuilderTest {
     assertArrayEquals(expectedEmptyFilesArray, testConf.tlsServerChain());
     assertArrayEquals(expectedEmptyFilesArray, testConf.tlsClientChain());
 
-    assertEquals("dir:storage", testConf.storage());
+    assertEquals("leveldb", testConf.storage());
     assertEquals("strict", testConf.tls());
     assertEquals("tofu", testConf.tlsServerTrust());
     assertEquals("ca-or-tofu", testConf.tlsClientTrust());
@@ -169,7 +169,7 @@ public class TomlConfigBuilderTest {
               + "\tURL [htt://127.0.0.1:9000/] unknown protocol: htt\n"
               + "\tURL [10.1.1.1] no protocol: 10.1.1.1\n"
               + "Error: the number of keys specified for keys 'publickeys' and 'privatekeys' must be the same\n"
-              + "Error: value for key 'storage' type must start with: ['bdp:', 'dir:', 'leveldb:', 'sqllite:'] or be 'memory'\n"
+              + "Error: value for key 'storage' type must start with: ['leveldb', 'mapdb'] or be 'memory'\n"
               + "Error: value for key 'tls' status must be 'strict' or 'off'\n"
               + "Error: value for key 'tlsservertrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n"
               + "Error: value for key 'tlsclienttrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n"
@@ -193,26 +193,6 @@ public class TomlConfigBuilderTest {
           "Invalid Configuration Options\n"
               + "Error: value for key 'url' in config must be specified\n"
               + "Error: value for key 'port' in config must be specified\n";
-      assertEquals(message, e.getMessage());
-    }
-  }
-
-  @Test
-  public void testMissingStoragePathThrowException() throws Exception {
-
-    InputStream configAsStream =
-        this.getClass()
-            .getClassLoader()
-            .getResourceAsStream("fullConfigMissingStoragePathTest.toml");
-    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
-
-    try {
-      Config testConf = configBuilder.build(configAsStream);
-      fail("Expected Config Exception to be thrown");
-    } catch (ConfigException e) {
-      String message =
-          "Invalid Configuration Options\n"
-              + "Error: value for key 'storage' of types ['bdp:', 'dir:', 'leveldb:', 'sqllite:'] must specify a path\n";
       assertEquals(message, e.getMessage());
     }
   }
@@ -256,28 +236,12 @@ public class TomlConfigBuilderTest {
   @Test
   public void testStorageValidationTypes() throws Exception {
     TomlConfigBuilder configBuilder = new TomlConfigBuilder();
-    assertTrue(configBuilder.validateStorageTypes("bdp:path"));
-    assertTrue(configBuilder.validateStorageTypes("dir:path"));
     assertTrue(configBuilder.validateStorageTypes("leveldb:path"));
     assertTrue(configBuilder.validateStorageTypes("memory"));
-    assertTrue(configBuilder.validateStorageTypes("sqlite:path"));
+    assertTrue(configBuilder.validateStorageTypes("leveldb"));
+    assertTrue(configBuilder.validateStorageTypes("mapdb"));
 
     assertFalse(configBuilder.validateStorageTypes("memoryX"));
     assertFalse(configBuilder.validateStorageTypes("invalidStorage"));
-  }
-
-  @Test
-  public void testStorageValidationPathsExist() throws Exception {
-    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
-    assertTrue(configBuilder.validateStoragePathsExist("bdp:path"));
-    assertTrue(configBuilder.validateStoragePathsExist("dir:path"));
-    assertTrue(configBuilder.validateStoragePathsExist("leveldb:path"));
-    assertTrue(configBuilder.validateStoragePathsExist("memory"));
-    assertTrue(configBuilder.validateStoragePathsExist("sqlite:path"));
-
-    assertFalse(configBuilder.validateStoragePathsExist("bdp:"));
-    assertFalse(configBuilder.validateStoragePathsExist("dir:"));
-    assertFalse(configBuilder.validateStoragePathsExist("leveldb:"));
-    assertFalse(configBuilder.validateStoragePathsExist("sqlite:"));
   }
 }

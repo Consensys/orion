@@ -11,7 +11,6 @@ import net.consensys.athena.api.enclave.KeyStore;
 import net.consensys.athena.impl.config.MemoryConfig;
 
 import java.security.PublicKey;
-import java.util.HashMap;
 import java.util.Optional;
 
 import com.muquit.libsodiumjna.SodiumKeyPair;
@@ -101,12 +100,7 @@ public class LibSodiumEnclaveTest {
     try {
       EncryptedPayload payload =
           new SodiumEncryptedPayload(
-              sender,
-              new byte[] {},
-              new byte[] {},
-              new SodiumCombinedKey[] {},
-              new byte[] {},
-              new HashMap<>());
+              sender, new byte[] {}, new byte[] {}, new SodiumCombinedKey[] {}, new byte[] {});
       enclave.decrypt(payload, fake);
       fail("Should have thrown an Enclave Exception");
     } catch (EnclaveException e) {

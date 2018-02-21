@@ -16,7 +16,6 @@ import net.consensys.athena.impl.http.server.HttpContentType;
 import net.consensys.athena.impl.utils.Serializer;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
@@ -64,8 +63,7 @@ public class SerializerTest {
     new Random().nextBytes(toEncrypt);
 
     SodiumEncryptedPayload original =
-        new SodiumEncryptedPayload(
-            sender, nonce, combinedKeyNonce, combinedKeys, toEncrypt, new HashMap<>());
+        new SodiumEncryptedPayload(sender, nonce, combinedKeyNonce, combinedKeys, toEncrypt);
 
     SodiumEncryptedPayload processed =
         serializer.deserialize(

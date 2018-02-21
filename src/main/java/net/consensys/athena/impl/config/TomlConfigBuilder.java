@@ -84,12 +84,7 @@ public final class TomlConfigBuilder {
 
     if (!validateStorageTypes(memoryConfig.storage())) {
       errorMsg.append(
-          "Error: value for key 'storage' type must start with: ['bdp:', 'dir:', 'leveldb:', 'sqllite:'] or be 'memory'\n");
-    }
-
-    if (!validateStoragePathsExist(memoryConfig.storage())) {
-      errorMsg.append(
-          "Error: value for key 'storage' of types ['bdp:', 'dir:', 'leveldb:', 'sqllite:'] must specify a path\n");
+          "Error: value for key 'storage' type must start with: ['leveldb', 'mapdb'] or be 'memory'\n");
     }
 
     if (!validateTLS(memoryConfig.tls())) {
@@ -187,17 +182,7 @@ public final class TomlConfigBuilder {
 
   // If options change, error message must also be changed
   boolean validateStorageTypes(String storage) {
-    return storage.startsWith("bdp:")
-        || storage.startsWith("dir:")
-        || storage.startsWith("leveldb:")
-        || storage.equals("memory")
-        || storage.startsWith("sqlite:");
-  }
-
-  // If options change, error message must also be changed
-  boolean validateStoragePathsExist(String storage) {
-    String[] storageConfig = storage.split(":");
-    return !storage.contains(":") || storageConfig.length == 2;
+    return storage.startsWith("mapdb") || storage.startsWith("leveldb") || storage.equals("memory");
   }
 
   // If options change, error message must also be changed
