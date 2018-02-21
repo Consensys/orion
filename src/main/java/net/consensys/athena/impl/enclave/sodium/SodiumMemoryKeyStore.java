@@ -23,7 +23,7 @@ public class SodiumMemoryKeyStore implements KeyStore {
   }
 
   @Override
-  public PrivateKey getPrivateKey(PublicKey publicKey) {
+  public PrivateKey privateKey(PublicKey publicKey) {
     return store.get(publicKey);
   }
 

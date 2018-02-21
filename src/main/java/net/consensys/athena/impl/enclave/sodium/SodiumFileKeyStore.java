@@ -68,9 +68,9 @@ public class SodiumFileKeyStore implements KeyStore {
         serializer.readFile(HttpContentType.JSON, privateKeyFile, StoredPrivateKey.class);
 
     byte[] decoded;
-    switch (storedPrivateKey.getType()) {
+    switch (storedPrivateKey.type()) {
       case StoredPrivateKey.UNLOCKED:
-        decoded = Base64.decode(storedPrivateKey.getData().getBytes());
+        decoded = Base64.decode(storedPrivateKey.data().bytes());
         break;
       case StoredPrivateKey.ARGON2_SBOX:
         if (!password.isPresent()) {
@@ -80,7 +80,7 @@ public class SodiumFileKeyStore implements KeyStore {
         break;
       default:
         throw new EnclaveException(
-            "Unable to support private key storage of type: " + storedPrivateKey.getType());
+            "Unable to support private key storage of type: " + storedPrivateKey.type());
     }
     return new SodiumPrivateKey(decoded);
   }
@@ -96,14 +96,14 @@ public class SodiumFileKeyStore implements KeyStore {
   }
 
   @Override
-  public PrivateKey getPrivateKey(PublicKey publicKey) {
+  public PrivateKey privateKey(PublicKey publicKey) {
     return cache.get(publicKey);
   }
 
   @Override
   public PublicKey generateKeyPair(KeyConfig config) {
-    String basePath = config.getBasePath();
-    Optional<String> password = config.getPassword();
+    String basePath = config.basePath();
+    Optional<String> password = config.password();
     return generateStoreAndCache(basePath, password);
   }
 
@@ -157,22 +157,22 @@ public class SodiumFileKeyStore implements KeyStore {
 
     StoredPrivateKey privateKey = new StoredPrivateKey(data);
     if (password.isPresent()) {
-      privateKey.setType(StoredPrivateKey.ARGON2_SBOX);
+      privateKey.type(StoredPrivateKey.ARGON2_SBOX);
       ArgonOptions argonOptions = defaultArgonOptions();
-      data.setAopts(argonOptions);
+      data.aopts(argonOptions);
       SodiumArgon2Sbox sodiumArgon2Sbox = new SodiumArgon2Sbox(config);
 
       byte[] snonce = sodiumArgon2Sbox.generateSnonce();
-      data.setSnonce(Base64.encode(snonce));
+      data.snonce(Base64.encode(snonce));
       byte[] asalt = sodiumArgon2Sbox.generateAsalt();
-      data.setAsalt(Base64.encode(asalt));
+      data.asalt(Base64.encode(asalt));
       byte[] encryptKey =
           sodiumArgon2Sbox.encrypt(
               keyPair.getPrivateKey(), password.get(), asalt, snonce, argonOptions);
-      data.setSbox(Base64.encode(encryptKey));
+      data.sbox(Base64.encode(encryptKey));
     } else {
-      data.setBytes(Base64.encode(keyPair.getPrivateKey()));
-      privateKey.setType(StoredPrivateKey.UNLOCKED);
+      data.bytes(Base64.encode(keyPair.getPrivateKey()));
+      privateKey.type(StoredPrivateKey.UNLOCKED);
     }
     return privateKey;
   }
@@ -180,10 +180,10 @@ public class SodiumFileKeyStore implements KeyStore {
   @NotNull
   private ArgonOptions defaultArgonOptions() {
     ArgonOptions argonOptions = new ArgonOptions();
-    argonOptions.setVariant("i");
-    argonOptions.setOpsLimit(ArgonOptions.OPS_LIMIT_MODERATE);
-    argonOptions.setMemLimit(ArgonOptions.MEM_LIMIT_MODERATE);
-    argonOptions.setVersion(ArgonOptions.VERSION);
+    argonOptions.variant("i");
+    argonOptions.opsLimit(ArgonOptions.OPS_LIMIT_MODERATE);
+    argonOptions.memLimit(ArgonOptions.MEM_LIMIT_MODERATE);
+    argonOptions.version(ArgonOptions.VERSION);
     return argonOptions;
   }
 

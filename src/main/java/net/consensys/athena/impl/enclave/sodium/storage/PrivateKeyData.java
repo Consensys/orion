@@ -1,5 +1,7 @@
 package net.consensys.athena.impl.enclave.sodium.storage;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class PrivateKeyData {
   private String bytes;
   private String asalt;
@@ -18,7 +20,8 @@ public class PrivateKeyData {
    *
    * @param bytes Base64 encoded bytes
    */
-  public void setBytes(String bytes) {
+  @JsonProperty("bytes")
+  public void bytes(String bytes) {
     this.bytes = bytes;
   }
 
@@ -27,25 +30,30 @@ public class PrivateKeyData {
    *
    * @return Base64 encoded bytes
    */
-  public String getBytes() {
+  @JsonProperty("bytes")
+  public String bytes() {
     return bytes;
   }
 
   /** @return The base64 encoded salt to use with Argon */
-  public String getAsalt() {
+  @JsonProperty("asalt")
+  public String asalt() {
     return asalt;
   }
 
-  public void setAsalt(String asalt) {
+  @JsonProperty("asalt")
+  public void asalt(String asalt) {
     this.asalt = asalt;
   }
 
   /** @return General options to use with Argon */
-  public ArgonOptions getAopts() {
+  @JsonProperty("aopts")
+  public ArgonOptions aopts() {
     return aopts;
   }
 
-  public void setAopts(ArgonOptions aopts) {
+  @JsonProperty("aopts")
+  public void aopts(ArgonOptions aopts) {
     this.aopts = aopts;
   }
 
@@ -53,20 +61,24 @@ public class PrivateKeyData {
    * @return base64 encoded nonce to use with the secret box encryption, using the password
    *     generated key.
    */
-  public String getSnonce() {
+  @JsonProperty("snonce")
+  public String snonce() {
     return snonce;
   }
 
-  public void setSnonce(String snonce) {
+  @JsonProperty("snonce")
+  public void snonce(String snonce) {
     this.snonce = snonce;
   }
 
   /** @return base64 encoded Secret box containing the password protected private key. */
-  public String getSbox() {
+  @JsonProperty("sbox")
+  public String sbox() {
     return sbox;
   }
 
-  public void setSbox(String sbox) {
+  @JsonProperty("sbox")
+  public void sbox(String sbox) {
     this.sbox = sbox;
   }
 }

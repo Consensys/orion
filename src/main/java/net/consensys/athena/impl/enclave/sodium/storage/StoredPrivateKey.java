@@ -1,5 +1,7 @@
 package net.consensys.athena.impl.enclave.sodium.storage;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class StoredPrivateKey {
   public static final String UNLOCKED = "unlocked";
   public static final String ARGON2_SBOX = "sodiumargon2sbox";
@@ -13,19 +15,23 @@ public class StoredPrivateKey {
 
   public StoredPrivateKey() {}
 
-  public void setData(PrivateKeyData data) {
-    this.data = data;
-  }
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
-  public PrivateKeyData getData() {
+  @JsonProperty("data")
+  public PrivateKeyData data() {
     return data;
   }
 
-  public String getType() {
+  @JsonProperty("data")
+  public void data(PrivateKeyData data) {
+    this.data = data;
+  }
+
+  @JsonProperty("type")
+  public String type() {
     return type;
+  }
+
+  @JsonProperty("type")
+  public void type(String type) {
+    this.type = type;
   }
 }

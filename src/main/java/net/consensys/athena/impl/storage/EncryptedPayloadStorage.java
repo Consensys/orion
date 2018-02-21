@@ -22,7 +22,7 @@ public class EncryptedPayloadStorage implements Storage<EncryptedPayload> {
   @Override
   public String put(EncryptedPayload data) {
     // build key
-    String key = Base64.encode(keyBuilder.build(data.getCipherText()));
+    String key = Base64.encode(keyBuilder.build(data.cipherText()));
     storageEngine.put(key, data);
     return key;
   }

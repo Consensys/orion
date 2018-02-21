@@ -68,12 +68,14 @@ public class MemoryNetworkNodes implements NetworkNodes, Serializable {
   }
 
   @Override
-  public URL getUrl() {
+  @JsonProperty("url")
+  public URL url() {
     return url;
   }
 
   @Override
-  public Set<URL> getNodeURLs() {
+  @JsonProperty("nodeURLs")
+  public Set<URL> nodeURLs() {
     return nodeURLs;
   }
 
@@ -83,7 +85,8 @@ public class MemoryNetworkNodes implements NetworkNodes, Serializable {
   }
 
   @Override
-  public Map<PublicKey, URL> getNodePKs() {
+  @JsonProperty("nodePKs")
+  public Map<PublicKey, URL> nodePKs() {
     return nodePKs;
   }
 
@@ -92,7 +95,7 @@ public class MemoryNetworkNodes implements NetworkNodes, Serializable {
     // note; not using map.putAll() as we don't want a malicious peer to overwrite ours nodes.
     boolean thisChanged = false;
 
-    for (Map.Entry<PublicKey, URL> entry : other.getNodePKs().entrySet()) {
+    for (Map.Entry<PublicKey, URL> entry : other.nodePKs().entrySet()) {
       if (nodePKs.putIfAbsent(entry.getKey(), entry.getValue()) == null) {
         // putIfAbsent returns null if there was no mapping associated with the provided key
         thisChanged = true;

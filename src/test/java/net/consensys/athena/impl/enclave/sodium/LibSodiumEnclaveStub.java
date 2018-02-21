@@ -32,7 +32,7 @@ public class LibSodiumEnclaveStub implements Enclave {
 
   @Override
   public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, PublicKey publicKey) {
-    byte[] cipherText = ciphertextAndMetadata.getCipherText();
+    byte[] cipherText = ciphertextAndMetadata.cipherText();
     byte[] plainText = new byte[cipherText.length];
     for (int i = 0; i < cipherText.length; i++) {
       byte b = cipherText[i];

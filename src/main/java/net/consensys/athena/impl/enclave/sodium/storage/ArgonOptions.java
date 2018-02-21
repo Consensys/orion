@@ -1,9 +1,11 @@
 package net.consensys.athena.impl.enclave.sodium.storage;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Encapsulates the options to use with Argon encryption.
  *
- * <p>If we are using the lib sodium implementation, use: getOpsLimit and getMemLimit
+ * <p>If we are using the lib sodium implementation, use: opsLimit and memLimit
  *
  * <p>At the end of the day, this is an internal class, that is currently tightly coupled to the
  * SodiumFileKeyStore. It's just a tool to help with the json serialisation/deserialisation.
@@ -29,65 +31,79 @@ public class ArgonOptions {
    *
    * @return the variant being used
    */
-  public String getVariant() {
+  @JsonProperty("variant")
+  public String variant() {
     return variant;
   }
 
-  public void setVariant(String variant) {
+  @JsonProperty("variant")
+  public void variant(String variant) {
     this.variant = variant;
   }
 
   /** @return amount of memory to use. */
-  public Long getMemory() {
+  @JsonProperty("memory")
+  public Long memory() {
     return memory;
   }
 
-  public void setMemory(long memory) {
+  @JsonProperty("memory")
+  public void memory(long memory) {
     this.memory = memory;
   }
 
   /** @return Number of iterations */
-  public Integer getIterations() {
+  @JsonProperty("iterations")
+  public Integer iterations() {
     return iterations;
   }
 
-  public void setIterations(int iterations) {
+  @JsonProperty("iterations")
+  public void iterations(int iterations) {
     this.iterations = iterations;
   }
 
   /** @return The amount of parrallisation. */
-  public Integer getParallelism() {
+  @JsonProperty("parallelism")
+  public Integer parallelism() {
     return parallelism;
   }
 
-  public void setParallelism(int parallelism) {
+  @JsonProperty("parallelism")
+  public void parallelism(int parallelism) {
     this.parallelism = parallelism;
   }
 
   /** @return version of argon2. */
-  public String getVersion() {
+  @JsonProperty("version")
+  public String version() {
     return version;
   }
 
-  public void setVersion(String version) {
+  @JsonProperty("version")
+  public void version(String version) {
     this.version = version;
   }
 
   /** @return Operation limit */
-  public Long getOpsLimit() {
+  @JsonProperty("opsLimit")
+  public Long opsLimit() {
     return opsLimit;
   }
 
-  public void setOpsLimit(long opsLimit) {
+  @JsonProperty("opsLimit")
+  public void opsLimit(long opsLimit) {
     this.opsLimit = opsLimit;
   }
 
   /** @return Memory limit */
-  public Long getMemLimit() {
+  @JsonProperty("memLimit")
+  public Long memLimit() {
     return memLimit;
   }
 
-  public void setMemLimit(long memLimit) {
+  @JsonProperty("memLimit")
+  public void memLimit(long memLimit) {
     this.memLimit = memLimit;
   }
 }

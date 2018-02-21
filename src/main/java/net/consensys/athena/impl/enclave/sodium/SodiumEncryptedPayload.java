@@ -56,27 +56,32 @@ public class SodiumEncryptedPayload implements EncryptedPayload, Serializable {
   }
 
   @Override
-  public PublicKey getSender() {
+  @JsonProperty("sender")
+  public PublicKey sender() {
     return sender;
   }
 
   @Override
-  public byte[] getCipherText() {
+  @JsonProperty("cipherText")
+  public byte[] cipherText() {
     return cipherText;
   }
 
   @Override
-  public byte[] getNonce() {
+  @JsonProperty("nonce")
+  public byte[] nonce() {
     return nonce;
   }
 
   @Override
-  public CombinedKey[] getCombinedKeys() {
+  @JsonProperty("combinedKeys")
+  public CombinedKey[] combinedKeys() {
     return combinedKeys;
   }
 
   @Override
-  public byte[] getCombinedKeyNonce() {
+  @JsonProperty("combinedKeyNonce")
+  public byte[] combinedKeyNonce() {
     return combinedKeyNonce;
   }
 
