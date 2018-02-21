@@ -1,10 +1,10 @@
+*.db.test
+/keys.test
+/tests
 db
 routerdb
 routerdb.wal.0
 version.txt
-/keys.test
-/tests
-*.db.test
 
 
 ### Gradle ###
@@ -14,26 +14,26 @@ version.txt
 
 
 ### IntelliJ ###
+*.iml
 .idea
 build/
 out/
-*.iml
 
 
 ### Eclipse ###
-local.properties
-bin/
-target/
-tmp/
+*.bak
+*.swp
+*.tmp
+*~.nib
 .loadpath
 .metadata
 .prefs
 .recommenders
 .settings/
-*.bak
-*.swp
-*.tmp
-*~.nib
+bin/
+local.properties
+target/
+tmp/
 
 # Eclipse Core
 .project
