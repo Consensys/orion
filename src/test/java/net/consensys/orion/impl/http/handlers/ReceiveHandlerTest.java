@@ -5,7 +5,7 @@ import static net.consensys.orion.impl.http.server.HttpContentType.BINARY;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-import net.consensys.orion.api.cmd.AthenaRoutes;
+import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
@@ -51,7 +51,7 @@ public class ReceiveHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     ReceiveRequest receiveRequest = buildReceiveRequest(storage, toEncrypt);
-    Request request = buildPostRequest(AthenaRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
+    Request request = buildPostRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -105,7 +105,7 @@ public class ReceiveHandlerTest extends HandlerTest {
     // Receive operation, sending a ReceivePayload request
     ReceiveRequest receiveRequest = new ReceiveRequest("notForMe", null);
 
-    Request request = buildPostRequest(AthenaRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
+    Request request = buildPostRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -141,7 +141,7 @@ public class ReceiveHandlerTest extends HandlerTest {
 
     // build receive request with payload
     ReceiveRequest receiveRequest = buildReceiveRequest(routes.getStorage(), toEncrypt);
-    Request request = buildPostRequest(AthenaRoutes.RECEIVE, HttpContentType.CBOR, receiveRequest);
+    Request request = buildPostRequest(OrionRoutes.RECEIVE, HttpContentType.CBOR, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -152,7 +152,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   @Test
   public void testReceiveWithInvalidBody() throws Exception {
     Request request =
-        buildPostRequest(AthenaRoutes.RECEIVE, HttpContentType.JSON, "{\"foo\": \"bar\"}");
+        buildPostRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, "{\"foo\": \"bar\"}");
 
     // execute request
     Response resp = httpClient.newCall(request).execute();

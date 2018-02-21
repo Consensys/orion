@@ -2,7 +2,7 @@ package net.consensys.orion.impl.network;
 
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 
-import net.consensys.orion.api.cmd.AthenaRoutes;
+import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.network.NetworkNodes;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -133,7 +133,7 @@ public class NetworkDiscovery extends AbstractVerticle {
         Request request =
             new Request.Builder()
                 .post(partyInfoBody)
-                .url(nodeUrl + AthenaRoutes.PARTYINFO.substring(1))
+                .url(nodeUrl + OrionRoutes.PARTYINFO.substring(1))
                 .build();
         Response resp = httpClient.newCall(request).execute();
 

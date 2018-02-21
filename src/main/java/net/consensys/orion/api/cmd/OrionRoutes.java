@@ -25,7 +25,7 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.LoggerHandler;
 import io.vertx.ext.web.handler.ResponseContentTypeHandler;
 
-public class AthenaRoutes {
+public class OrionRoutes {
 
   // route paths
   public static final String UPCHECK = "/upcheck";
@@ -37,19 +37,17 @@ public class AthenaRoutes {
   public static final String DELETE = "/delete";
   public static final String PUSH = "/push";
 
-  private final Enclave enclave;
   private final Storage storage;
 
   private final Router router;
 
-  public AthenaRoutes(
+  public OrionRoutes(
       Vertx vertx,
       NetworkNodes networkNodes,
       Serializer serializer,
       Enclave enclave,
       StorageEngine<EncryptedPayload> storageEngine) {
     // controller dependencies
-    this.enclave = enclave;
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
 
     this.storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);

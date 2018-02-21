@@ -9,7 +9,7 @@ import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.network.NetworkNodes;
 import net.consensys.orion.api.storage.StorageEngine;
-import net.consensys.orion.impl.cmd.AthenaArguments;
+import net.consensys.orion.impl.cmd.OrionArguments;
 import net.consensys.orion.impl.config.TomlConfigBuilder;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
@@ -39,7 +39,7 @@ import io.vertx.core.http.HttpServerOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class Athena {
+public class Orion {
 
   private static final Logger log = LogManager.getLogger();
   public static final String name = "orion";
@@ -51,8 +51,8 @@ public class Athena {
 
   public static void main(String[] args) throws Exception {
     log.info("starting orion");
-    Athena athena = new Athena();
-    athena.run(args);
+    Orion orion = new Orion();
+    orion.run(args);
   }
 
   public void stop() {
@@ -82,7 +82,7 @@ public class Athena {
   public void run(String... args)
       throws FileNotFoundException, ExecutionException, InterruptedException {
     // parsing arguments
-    AthenaArguments arguments = new AthenaArguments(args);
+    OrionArguments arguments = new OrionArguments(args);
 
     if (arguments.argumentExit()) {
       return;
@@ -131,7 +131,7 @@ public class Athena {
 
     // create our storage engine
     storageEngine = createStorageEngine(config, storagePath);
-    AthenaRoutes routes = new AthenaRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
+    OrionRoutes routes = new OrionRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
 
     // build vertx http server
     HttpServerOptions serverOptions = new HttpServerOptions();
@@ -166,7 +166,7 @@ public class Athena {
   }
 
   private void displayVersion() {
-    try (InputStream versionAsStream = Athena.class.getResourceAsStream("/version.txt");
+    try (InputStream versionAsStream = Orion.class.getResourceAsStream("/version.txt");
         BufferedReader buffer = new BufferedReader(new InputStreamReader(versionAsStream)); ) {
       String contents = buffer.lines().collect(Collectors.joining("\n"));
       System.out.println(contents);
@@ -202,7 +202,7 @@ public class Athena {
       configAsStream = new FileInputStream(new File(configFileName.get()));
     } else {
       log.warn("no config file provided, using default.conf");
-      configAsStream = Athena.class.getResourceAsStream("/default.conf");
+      configAsStream = Orion.class.getResourceAsStream("/default.conf");
     }
 
     TomlConfigBuilder configBuilder = new TomlConfigBuilder();

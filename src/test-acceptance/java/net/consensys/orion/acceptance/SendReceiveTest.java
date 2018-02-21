@@ -3,10 +3,10 @@ package net.consensys.orion.acceptance;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
-import net.consensys.orion.api.cmd.Athena;
+import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.impl.config.TomlConfigBuilder;
-import net.consensys.orion.impl.http.AthenaClient;
+import net.consensys.orion.impl.http.OrionClient;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -139,41 +139,41 @@ public class SendReceiveTest {
   @Test
   public void testSingleNode() throws Exception {
     // setup a single node with 2 public keys
-    Athena athena = new Athena();
-    athena.run(configSingleNode);
-    AthenaClient athenaClient = new AthenaClient(singleNodeBaseUrl);
+    Orion orion = new Orion();
+    orion.run(configSingleNode);
+    OrionClient orionClient = new OrionClient(singleNodeBaseUrl);
 
     // ensure the node is awake
-    assertTrue(athenaClient.upCheck());
+    assertTrue(orionClient.upCheck());
 
     // send something to the node (from pk1 to pk2)
     String digest =
-        athenaClient
+        orionClient
             .send(originalPayload, PK_1_B_64, new String[] {PK_2_B_64})
             .orElseThrow(AssertionFailedError::new);
 
     // call receive on the node
     byte[] receivedPayload =
-        athenaClient.receive(digest, PK_2_B_64).orElseThrow(AssertionFailedError::new);
+        orionClient.receive(digest, PK_2_B_64).orElseThrow(AssertionFailedError::new);
 
     // ensure we retrieved what we originally sent.
     assertArrayEquals(originalPayload, receivedPayload);
 
     // stop
-    athena.stop();
+    orion.stop();
   }
 
   @Test
   public void testTwoNodes() throws Exception {
     // setup our 2 nodes
-    Athena athenaLauncher1 = new Athena();
-    athenaLauncher1.run(configNode1);
-    AthenaClient node1 = new AthenaClient(node1BaseUrl);
+    Orion orionLauncher1 = new Orion();
+    orionLauncher1.run(configNode1);
+    OrionClient node1 = new OrionClient(node1BaseUrl);
     assertTrue(node1.upCheck());
 
-    Athena athenaLauncher2 = new Athena();
-    athenaLauncher2.run(configNode2);
-    AthenaClient node2 = new AthenaClient(node2BaseUrl);
+    Orion orionLauncher2 = new Orion();
+    orionLauncher2.run(configNode2);
+    OrionClient node2 = new OrionClient(node2BaseUrl);
     assertTrue(node2.upCheck());
 
     // ensure network discovery ran on node 1
@@ -193,7 +193,7 @@ public class SendReceiveTest {
     assertArrayEquals(originalPayload, receivedPayload);
 
     // stop
-    athenaLauncher1.stop();
-    athenaLauncher2.stop();
+    orionLauncher1.stop();
+    orionLauncher2.stop();
   }
 }

@@ -4,7 +4,7 @@ package net.consensys.orion.impl.http.handlers;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import net.consensys.orion.api.cmd.AthenaRoutes;
+import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.storage.Storage;
@@ -48,7 +48,7 @@ public class PushHandlerTest extends HandlerTest {
             MediaType.parse(HttpContentType.CBOR.httpHeaderValue),
             serializer.serialize(HttpContentType.CBOR, encryptedPayload));
 
-    Request request = new Request.Builder().post(body).url(baseUrl + AthenaRoutes.PUSH).build();
+    Request request = new Request.Builder().post(body).url(baseUrl + OrionRoutes.PUSH).build();
 
     Response resp = httpClient.newCall(request).execute();
 
@@ -84,7 +84,7 @@ public class PushHandlerTest extends HandlerTest {
             MediaType.parse(HttpContentType.JSON.httpHeaderValue),
             serializer.serialize(HttpContentType.JSON, encryptedPayload));
 
-    Request request = new Request.Builder().post(body).url(baseUrl + AthenaRoutes.PUSH).build();
+    Request request = new Request.Builder().post(body).url(baseUrl + OrionRoutes.PUSH).build();
 
     Response resp = httpClient.newCall(request).execute();
 
@@ -96,7 +96,7 @@ public class PushHandlerTest extends HandlerTest {
     RequestBody body =
         RequestBody.create(MediaType.parse(HttpContentType.CBOR.httpHeaderValue), "foo");
 
-    Request request = new Request.Builder().post(body).url(baseUrl + AthenaRoutes.PUSH).build();
+    Request request = new Request.Builder().post(body).url(baseUrl + OrionRoutes.PUSH).build();
 
     Response resp = httpClient.newCall(request).execute();
 

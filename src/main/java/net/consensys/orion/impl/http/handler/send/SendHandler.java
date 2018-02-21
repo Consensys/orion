@@ -2,7 +2,7 @@ package net.consensys.orion.impl.http.handler.send;
 
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 
-import net.consensys.orion.api.cmd.AthenaRoutes;
+import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.network.NetworkNodes;
@@ -129,7 +129,7 @@ public class SendHandler implements Handler<RoutingContext> {
       if (recipientURL == null) {
         throw new RuntimeException("couldn't find peer URL");
       }
-      URL pushURL = new URL(recipientURL, AthenaRoutes.PUSH);
+      URL pushURL = new URL(recipientURL, OrionRoutes.PUSH);
 
       // serialize payload and build RequestBody. we also strip non relevant combinedKeys
       byte[] payload =

@@ -1,19 +1,19 @@
-# Athena
-Athena is the PegaSys component for doing private transactions.
+# Orion
+Orion is the PegaSys component for doing private transactions.
 
-[![Build Status](https://travis-ci.com/ConsenSys/athena.svg?token=2Yxbwhz1bCkWTaWcjCFS&branch=master)](https://travis-ci.com/ConsenSys/athena)
+[![Build Status](https://travis-ci.com/ConsenSys/orion.svg?token=2Yxbwhz1bCkWTaWcjCFS&branch=master)](https://travis-ci.com/ConsenSys/orion)
 
 #### Build Instructions
 
 To build `clone` this repo as below, subsequently `cd` into the newly created directory and `clone` the relevant Ethereum test repo. Run with `gradle` like so:
 
 ```
-git clone https://github.com/ConsenSys/athena
-cd athena
+git clone https://github.com/ConsenSys/orion
+cd orion
 gradle build  
 ```
 
-Perhaps you might like using the ssh protocol to clone... in which case do `git clone git@github.com:ConsenSys/athena.git`
+Perhaps you might like using the ssh protocol to clone... in which case do `git clone git@github.com:ConsenSys/orion.git`
 
 ## libsodium
 
@@ -45,9 +45,9 @@ sudo apt-get install autoconf automake libtool make tar \
 
 `brew install autoconf automake libtool`
 
-## Running Athena
+## Running Orion
 
-Kick start the Athena http server after getting everything setup with `gradle run`.
+Kick start the Orion http server after getting everything setup with `gradle run`.
 
 If you want to add runtime options, use `-Pargs`, for example:
 

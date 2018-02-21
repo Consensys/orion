@@ -4,9 +4,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.Optional;
 
-/**
- * Configuration for Athena. Refer to the "sample.conf" file for documentation on config elements
- */
+/** Configuration for Orion. Refer to the "sample.conf" file for documentation on config elements */
 public interface Config {
 
   /**
@@ -55,8 +53,8 @@ public interface Config {
   Optional<File> socket();
 
   /**
-   * Initial list of other nodes in the network. Athena will automatically connect to other nodes
-   * not in this list that are advertised by the nodes below, so these can be considered the "boot
+   * Initial list of other nodes in the network. Orion will automatically connect to other nodes not
+   * in this list that are advertised by the nodes below, so these can be considered the "boot
    * nodes."
    *
    * <p><strong>Default:</strong> []
@@ -88,7 +86,7 @@ public interface Config {
   /**
    * Optional comma-separated list of paths to public keys to add as recipients for every
    * transaction sent through this node, e.g. for backup purposes. These keys must be advertised by
-   * some Athena node on the network, i.e. be in a node's <i>publicKeys/privateKeys</i> lists.
+   * some Orion node on the network, i.e. be in a node's <i>publicKeys/privateKeys</i> lists.
    *
    * <p><strong>Default:</strong> []
    *
@@ -113,7 +111,7 @@ public interface Config {
    * <ul>
    *   <li>leveldb:path - LevelDB
    *   <li>mapdb:path - MapDB
-   *   <li>memory - Contents are cleared when Athena exits
+   *   <li>memory - Contents are cleared when Orion exits
    * </ul>
    *
    * <strong>Default:</strong> "leveldb"
@@ -125,7 +123,7 @@ public interface Config {
   /**
    * Optional IP whitelist for the public API. If unspecified/empty, connections from all sources
    * will be allowed (but the private API remains accessible only via the IPC socket.) To allow
-   * connections from localhost when a whitelist is defined, e.g. when running multiple Athena nodes
+   * connections from localhost when a whitelist is defined, e.g. when running multiple Orion nodes
    * on the same machine, add "127.0.0.1" and "::1" to this list.
    *
    * <p><strong>Default:</strong> []

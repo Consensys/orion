@@ -6,7 +6,7 @@ import static net.consensys.orion.impl.http.server.HttpContentType.BINARY;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static org.junit.Assert.assertArrayEquals;
 
-import net.consensys.orion.api.cmd.AthenaRoutes;
+import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.HashAlgorithm;
 import net.consensys.orion.api.enclave.KeyConfig;
@@ -51,7 +51,7 @@ public class SendHandlerTest extends HandlerTest {
   public void testInvalidRequest() throws Exception {
     SendRequest sendRequest = new SendRequest((byte[]) null, "me", null);
 
-    Request request = buildPostRequest(AthenaRoutes.SEND, HttpContentType.JSON, sendRequest);
+    Request request = buildPostRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -62,7 +62,7 @@ public class SendHandlerTest extends HandlerTest {
   @Test
   public void testEmptyPayload() throws Exception {
     RequestBody body = RequestBody.create(null, new byte[0]);
-    Request request = new Request.Builder().post(body).url(baseUrl + AthenaRoutes.SEND).build();
+    Request request = new Request.Builder().post(body).url(baseUrl + OrionRoutes.SEND).build();
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -83,7 +83,7 @@ public class SendHandlerTest extends HandlerTest {
     // build our sendRequest
     SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer));
 
-    Request request = buildPostRequest(AthenaRoutes.SEND, HttpContentType.JSON, sendRequest);
+    Request request = buildPostRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -95,7 +95,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // ensure the fakePeer got a good formatted request
     RecordedRequest recordedRequest = fakePeer.server.takeRequest();
-    assertEquals(AthenaRoutes.PUSH, recordedRequest.getPath());
+    assertEquals(OrionRoutes.PUSH, recordedRequest.getPath());
     assertEquals("POST", recordedRequest.getMethod());
   }
 
@@ -109,7 +109,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // build our sendRequest
     SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer));
-    Request request = buildPostRequest(AthenaRoutes.SEND, HttpContentType.JSON, sendRequest);
+    Request request = buildPostRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -143,7 +143,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // build our sendRequest
     SendRequest sendRequest = buildFakeRequest(fakePeers, toEncrypt);
-    Request request = buildPostRequest(AthenaRoutes.SEND, HttpContentType.JSON, sendRequest);
+    Request request = buildPostRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -177,7 +177,7 @@ public class SendHandlerTest extends HandlerTest {
     // build our sendRequest
     SendRequest sendRequest = new SendRequest(b64String, b64String, new String[] {b64String});
     // CBOR type is not available
-    Request request = buildPostRequest(AthenaRoutes.SEND, HttpContentType.CBOR, sendRequest);
+    Request request = buildPostRequest(OrionRoutes.SEND, HttpContentType.CBOR, sendRequest);
     Response resp = httpClient.newCall(request).execute();
 
     // produces 404 because there is no route for the content type in the request.
@@ -260,7 +260,7 @@ public class SendHandlerTest extends HandlerTest {
   @Test
   public void testSendWithInvalidBody() throws Exception {
     Request requestWithInvalidBody =
-        buildPostRequest(AthenaRoutes.SEND, HttpContentType.JSON, "{\"foo\": \"bar\"}");
+        buildPostRequest(OrionRoutes.SEND, HttpContentType.JSON, "{\"foo\": \"bar\"}");
 
     Response resp = httpClient.newCall(requestWithInvalidBody).execute();
 
