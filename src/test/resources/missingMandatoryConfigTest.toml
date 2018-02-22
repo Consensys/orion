@@ -2,7 +2,7 @@
 #url = "http://127.0.0.1:9001/"
 #port = 9001
 workdir = "data"
-socket = "athena.ipc"
+socket = "orion.ipc"
 othernodes = ["http://127.0.0.1:9000/"]
 publickeys = ["foo.pub"]
 privatekeys = ["foo.key"]

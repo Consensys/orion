@@ -7,7 +7,7 @@ apply plugin: 'java-library'
 apply plugin: 'application'
 apply plugin: "jacoco"
 
-mainClassName = 'net.consensys.athena.api.cmd.Athena'
+mainClassName = 'net.consensys.orion.api.cmd.Orion'
 version = '0.1.0-' + versionDetails().gitHash[0..4] + '-' + getTimestamp()
 
 // JVM Settings for Log4J and VertX
@@ -47,18 +47,20 @@ dependencies {
   // http client
   implementation 'com.squareup.okhttp3:okhttp:3.9.1'
 
+  //Storage
+  implementation 'org.fusesource.leveldbjni:leveldbjni-all:1.8'
+
   // mock http server (unit test purposes)
   testImplementation 'com.squareup.okhttp3:mockwebserver:3.9.1'
 
   // serialization
   implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
   implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.0'
+  implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.0'
 
   // logger
   compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.10.0'
   compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
-
-
 }
 
 jar {
@@ -69,13 +71,13 @@ jar {
     manifest {
         attributes('Implementation-Title': project.name,
                 'Implementation-Version': version,
-                'Main-Class': 'net.consensys.athena.api.cmd.Athena'
+                'Main-Class': 'net.consensys.orion.api.cmd.Orion'
         )
     }
 }
 
 run {
-  description = 'Run Athena. Use -Pargs="" to pass arguments'
+  description = 'Run Orion. Use -Pargs="" to pass arguments'
   standardInput = System.in
 
   if (project.hasProperty("args")) {
@@ -93,7 +95,6 @@ task acceptanceTest(type: Test) {
   dependsOn(test)
 }
 
-
 check {
   dependsOn(acceptanceTest)
 }
@@ -105,7 +106,6 @@ spotless {
     importOrder 'net.consensys', 'java', ''
   }
 }
-
 
 distTar {
     doFirst {
