@@ -2,7 +2,7 @@ package net.consensys.orion.impl.http;
 
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 
-import net.consensys.orion.api.cmd.AthenaRoutes;
+import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.impl.http.handler.receive.ReceiveRequest;
 import net.consensys.orion.impl.http.handler.receive.ReceiveResponse;
 import net.consensys.orion.impl.http.handler.send.SendRequest;
@@ -21,7 +21,7 @@ import okhttp3.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class AthenaClient {
+public class OrionClient {
   private static final Logger log = LogManager.getLogger();
 
   private final OkHttpClient httpClient = new OkHttpClient();
@@ -30,7 +30,7 @@ public class AthenaClient {
   private final String baseUrl;
   private final Request upRequest;
 
-  public AthenaClient(String baseUrl) {
+  public OrionClient(String baseUrl) {
     if (baseUrl.endsWith("/")) {
       this.baseUrl = baseUrl;
     } else {
@@ -38,8 +38,7 @@ public class AthenaClient {
     }
 
     // setup immutable upCheck request
-    upRequest =
-        new Request.Builder().get().url(baseUrl + AthenaRoutes.UPCHECK.substring(1)).build();
+    upRequest = new Request.Builder().get().url(baseUrl + OrionRoutes.UPCHECK.substring(1)).build();
   }
 
   public boolean upCheck() {
@@ -58,7 +57,7 @@ public class AthenaClient {
             MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, sendRequest));
 
     Request httpSendRequest =
-        new Request.Builder().post(sendBody).url(baseUrl + AthenaRoutes.SEND.substring(1)).build();
+        new Request.Builder().post(sendBody).url(baseUrl + OrionRoutes.SEND.substring(1)).build();
 
     // executes the request
     try (Response httpSendResponse = httpClient.newCall(httpSendRequest).execute()) {
@@ -87,7 +86,7 @@ public class AthenaClient {
     Request httpReceiveRequest =
         new Request.Builder()
             .post(receiveBody)
-            .url(baseUrl + AthenaRoutes.RECEIVE.substring(1))
+            .url(baseUrl + OrionRoutes.RECEIVE.substring(1))
             .build();
 
     // executes the request

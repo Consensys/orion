@@ -2,7 +2,7 @@ package net.consensys.orion.impl.http.handlers;
 
 import static org.junit.Assert.assertEquals;
 
-import net.consensys.orion.api.cmd.AthenaRoutes;
+import net.consensys.orion.api.cmd.OrionRoutes;
 
 import okhttp3.Request;
 import okhttp3.Response;
@@ -13,7 +13,7 @@ public class UpcheckHandlerTest extends HandlerTest {
   @Test
   public void testMyApplication() throws Exception {
 
-    Request request = new Request.Builder().get().url(baseUrl + AthenaRoutes.UPCHECK).build();
+    Request request = new Request.Builder().get().url(baseUrl + OrionRoutes.UPCHECK).build();
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());

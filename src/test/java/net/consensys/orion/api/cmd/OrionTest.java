@@ -14,8 +14,8 @@ import java.util.Optional;
 
 import org.junit.Test;
 
-public class AthenaTest {
-  Athena athena = new Athena();
+public class OrionTest {
+  Orion orion = new Orion();
 
   //  @Test
   //  public void testServerStartWithFullConfig() throws Exception {
@@ -37,7 +37,7 @@ public class AthenaTest {
 
   @Test
   public void testLoadConfigForTheStandardConfig() throws Exception {
-    Config config = athena.loadConfig(Optional.of("src/main/resources/sample.conf"));
+    Config config = orion.loadConfig(Optional.of("src/main/resources/sample.conf"));
     assertEquals(9001, config.port());
 
     File expectedSocket = new File("data/orion.ipc");
@@ -47,7 +47,7 @@ public class AthenaTest {
 
   @Test
   public void testDefaultConfigIsUsedWhenNoneProvided() throws Exception {
-    Config config = athena.loadConfig(Optional.empty());
+    Config config = orion.loadConfig(Optional.empty());
 
     assertEquals(8080, config.port());
     assertFalse(config.socket().isPresent());
@@ -60,7 +60,7 @@ public class AthenaTest {
     String input = "\n";
     InputStream in = new ByteArrayInputStream(input.getBytes());
     System.setIn(in);
-    athena.run(args1);
+    orion.run(args1);
 
     File privateKey1 = new File("testkey1.key");
     File publicKey1 = new File("testkey1.pub");
@@ -80,7 +80,7 @@ public class AthenaTest {
     InputStream in2 = new ByteArrayInputStream(input2.getBytes());
     System.setIn(in2);
 
-    athena.run(args1);
+    orion.run(args1);
 
     File privateKey2 = new File("testkey2.key");
     File publicKey2 = new File("testkey2.pub");
@@ -114,7 +114,7 @@ public class AthenaTest {
     String input = "\n";
     InputStream in = new ByteArrayInputStream(input.getBytes());
     System.setIn(in);
-    athena.run(args1);
+    orion.run(args1);
 
     File privateKey1 = new File("testkey1.key");
     File publicKey1 = new File("testkey1.pub");
@@ -143,7 +143,7 @@ public class AthenaTest {
     String input = "abc\n";
     InputStream in = new ByteArrayInputStream(input.getBytes());
     System.setIn(in);
-    athena.run(args1);
+    orion.run(args1);
 
     File privateKey1 = new File("testkey1.key");
     File publicKey1 = new File("testkey1.pub");

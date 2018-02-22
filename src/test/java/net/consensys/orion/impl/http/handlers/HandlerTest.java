@@ -1,6 +1,6 @@
 package net.consensys.orion.impl.http.handlers;
 
-import net.consensys.orion.api.cmd.AthenaRoutes;
+import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.storage.StorageEngine;
@@ -43,7 +43,7 @@ public abstract class HandlerTest {
   protected Vertx vertx;
   protected Integer httpServerPort;
   protected VertxServer vertxServer;
-  protected AthenaRoutes routes;
+  protected OrionRoutes routes;
 
   private StorageEngine<EncryptedPayload> storageEngine;
 
@@ -72,7 +72,7 @@ public abstract class HandlerTest {
     enclave = buildEnclave();
 
     storageEngine = new MapDbStorage(SodiumEncryptedPayload.class, "routerdb", serializer);
-    routes = new AthenaRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
+    routes = new OrionRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
 
     // create our vertx object
     vertx = Vertx.vertx();

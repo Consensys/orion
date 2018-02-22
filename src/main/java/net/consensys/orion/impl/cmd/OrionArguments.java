@@ -1,20 +1,20 @@
 package net.consensys.orion.impl.cmd;
 
-import net.consensys.orion.api.cmd.Athena;
+import net.consensys.orion.api.cmd.Orion;
 
 import java.util.Optional;
 
-public class AthenaArguments {
+public class OrionArguments {
   private boolean argumentExit = false;
 
   private Optional<String> configFileName = Optional.empty();
   private Optional<String[]> keysToGenerate = Optional.empty();
   private boolean displayVersion = false;
 
-  public AthenaArguments(String[] args) {
+  public OrionArguments(String[] args) {
 
     // Process Arguments
-    // Usage Athena [--generatekeys|-g names] [config]
+    // Usage Orion [--generatekeys|-g names] [config]
     // names - comma seperated list of key file prefixes (can include directory information) to
     // generate key(s) for
     for (int i = 0; i < args.length; i++) {
@@ -53,7 +53,7 @@ public class AthenaArguments {
   }
 
   private void displayHelp() {
-    System.out.println("Usage: " + Athena.name + " [options] [config file]");
+    System.out.println("Usage: " + Orion.name + " [options] [config file]");
     System.out.println("where options include:");
     System.out.println("\t-g");
     System.out.println("\t--generatekeys <names>");

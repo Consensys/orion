@@ -2,7 +2,7 @@ package net.consensys.orion.impl.cmd;
 
 import static org.junit.Assert.*;
 
-import net.consensys.orion.api.cmd.Athena;
+import net.consensys.orion.api.cmd.Orion;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -11,12 +11,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class AthenaArgumentsTest {
+public class OrionArgumentsTest {
 
   private final String usageOut =
       String.format(
           "Usage: "
-              + Athena.name
+              + Orion.name
               + " [options] [config file]%n"
               + "where options include:%n"
               + "\t-g%n"
@@ -45,7 +45,7 @@ public class AthenaArgumentsTest {
     String errorMsg = String.format("Error: Missing key names to generate.%n");
     String[] args = {"-g"};
 
-    AthenaArguments arguments = new AthenaArguments(args);
+    OrionArguments arguments = new OrionArguments(args);
 
     assertEquals(errorMsg + usageOut, outContent.toString());
     assertTrue(arguments.argumentExit());
@@ -55,7 +55,7 @@ public class AthenaArgumentsTest {
   public void testHelpOutput() {
     String[] args = {"--help"};
 
-    AthenaArguments arguments = new AthenaArguments(args);
+    OrionArguments arguments = new OrionArguments(args);
 
     assertEquals(usageOut, outContent.toString());
     assertTrue(arguments.argumentExit());
@@ -65,7 +65,7 @@ public class AthenaArgumentsTest {
   public void testVersionArgument() {
     String[] args = {"-v"};
 
-    AthenaArguments arguments = new AthenaArguments(args);
+    OrionArguments arguments = new OrionArguments(args);
 
     assertTrue(arguments.displayVersion());
   }
@@ -75,7 +75,7 @@ public class AthenaArgumentsTest {
     String errorMsg = "Invalid option: -x\n";
     String[] args = {"-x"};
 
-    AthenaArguments arguments = new AthenaArguments(args);
+    OrionArguments arguments = new OrionArguments(args);
 
     assertEquals(errorMsg + usageOut, outContent.toString());
     assertTrue(arguments.argumentExit());
@@ -86,7 +86,7 @@ public class AthenaArgumentsTest {
     String errorMsg = "Invalid option: -x\n";
     String[] args = {"-x", "-g", "keys"};
 
-    AthenaArguments arguments = new AthenaArguments(args);
+    OrionArguments arguments = new OrionArguments(args);
 
     assertEquals(errorMsg + usageOut, outContent.toString());
     assertTrue(arguments.argumentExit());
@@ -96,7 +96,7 @@ public class AthenaArgumentsTest {
   public void testConfigFileParam() {
     String[] args = {"config.conf"};
 
-    AthenaArguments arguments = new AthenaArguments(args);
+    OrionArguments arguments = new OrionArguments(args);
     assertTrue(arguments.configFileName().isPresent());
     assertEquals("config.conf", arguments.configFileName().get());
   }

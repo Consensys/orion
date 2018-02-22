@@ -7,7 +7,7 @@ apply plugin: 'java-library'
 apply plugin: 'application'
 apply plugin: "jacoco"
 
-mainClassName = 'net.consensys.orion.api.cmd.Athena'
+mainClassName = 'net.consensys.orion.api.cmd.Orion'
 version = '0.1.0-' + versionDetails().gitHash[0..4] + '-' + getTimestamp()
 
 repositories {
@@ -61,13 +61,13 @@ jar {
     manifest {
         attributes('Implementation-Title': project.name,
                 'Implementation-Version': version,
-                'Main-Class': 'net.consensys.orion.api.cmd.Athena'
+                'Main-Class': 'net.consensys.orion.api.cmd.Orion'
         )
     }
 }
 
 run {
-  description = 'Run Athena. Use -Pargs="" to pass arguments'
+  description = 'Run Orion. Use -Pargs="" to pass arguments'
   standardInput = System.in
 
   if (project.hasProperty("args")) {
