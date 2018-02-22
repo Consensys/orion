@@ -1,19 +1,51 @@
-.idea
-db
-routerdb
-*.iml
-.gradle
-/.classpath
-/.gradle
-/.project
-/.settings/*
-/bin/
-/build/*
-/gradlew
-/gradlew.bat
+*.db.test
 /keys.test
 /tests
-/out
-*.db.test
+db
+routerdb
 routerdb.wal.0
 version.txt
+
+
+### Gradle ###
+.gradle
+/gradlew
+/gradlew.bat
+
+
+### IntelliJ ###
+*.iml
+.idea
+build/
+out/
+
+
+### Eclipse ###
+*.bak
+*.swp
+*.tmp
+*~.nib
+.loadpath
+.metadata
+.prefs
+.recommenders
+.settings/
+bin/
+local.properties
+target/
+tmp/
+
+# Eclipse Core
+.project
+
+# External tool builders
+.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
+
+# STS (Spring Tool Suite)
+.springBeans
