@@ -10,6 +10,24 @@ apply plugin: "jacoco"
 mainClassName = 'net.consensys.orion.api.cmd.Orion'
 version = '0.1.0-' + versionDetails().gitHash[0..4] + '-' + getTimestamp()
 
+// JVM Settings for Log4J and VertX
+applicationDefaultJvmArgs = [
+        '-Dlog4j.configurationFile=log4j2.xml',
+        "-Dvertx.disableFileCPResolving=true",
+        "-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory"
+]
+
+def buildAliases = ['dev': [
+        'spotlessApply',
+        'build'
+]]
+
+def expandedTaskList = []
+gradle.startParameter.taskNames.each {
+    expandedTaskList << (buildAliases[it] ? buildAliases[it] : it)
+}
+gradle.startParameter.taskNames = expandedTaskList.flatten()
+
 repositories {
     jcenter()
 }
@@ -57,7 +75,9 @@ dependencies {
 }
 
 jar {
-    versionTxt()
+    doLast {
+        versionTxt()
+    }
     manifest {
         attributes('Implementation-Title': project.name,
                 'Implementation-Version': version,
