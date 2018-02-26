@@ -75,7 +75,6 @@ dependencies {
 }
 
 jar {
-    println "JAR task"
     doLast {
         versionTxt()
     }
@@ -140,8 +139,6 @@ def getTimestamp() {
 
 // Create the version.txt file
 def versionTxt()  {
-    println "create version.txt"
-
     new File("$projectDir/src/main/resources/version.txt").text = """Application-name: $project.name
 Version: $version
 """
