@@ -17,6 +17,17 @@ applicationDefaultJvmArgs = [
         "-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory"
 ]
 
+def buildAliases = ['dev': [
+        'spotlessApply',
+        'build'
+]]
+
+def expandedTaskList = []
+gradle.startParameter.taskNames.each {
+    expandedTaskList << (buildAliases[it] ? buildAliases[it] : it)
+}
+gradle.startParameter.taskNames = expandedTaskList.flatten()
+
 repositories {
     jcenter()
 }
