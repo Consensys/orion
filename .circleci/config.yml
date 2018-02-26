@@ -27,7 +27,7 @@ jobs:
       - run: 
           name: Install Sodium Dependencies
           command: | 
-            sudo apt-get install -y autoconf automake libtool make tar gcc-multilib libaio-dev;
+            sudo apt-get install -y autoconf automake libtool make tar gcc-multilib libaio-dev libsodium-dev;
           when: always
 
       
