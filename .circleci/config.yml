@@ -37,9 +37,9 @@ jobs:
           paths:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
-        
-      # run tests!
-      - run: gradle test
+
+      # compile the code & run the tests
+      - run: gradle build
 
 
 
