@@ -24,6 +24,13 @@ jobs:
     steps:
       - checkout
 
+      - run: 
+          name: Install Sodium Dependencies
+          command: | 
+            sudo apt-get install -y autoconf automake libtool make tar gcc-multilib libaio-dev libsodium-dev;
+          when: always
+
+      
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -37,8 +44,8 @@ jobs:
           paths:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
-        
-      # run tests!
+
+      # compile the code & run the tests
       - run: gradle test
 
 
