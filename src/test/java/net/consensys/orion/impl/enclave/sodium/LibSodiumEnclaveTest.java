@@ -2,6 +2,7 @@ package net.consensys.orion.impl.enclave.sodium;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import net.consensys.orion.api.enclave.EnclaveException;
@@ -33,7 +34,7 @@ public class LibSodiumEnclaveTest {
 
   @Test
   public void version() {
-    assertEquals("1.0.16", SodiumLibrary.libsodiumVersionString());
+    assertTrue(!SodiumLibrary.libsodiumVersionString().isEmpty());
   }
 
   @Test
