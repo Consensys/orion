@@ -97,10 +97,11 @@ public class LibSodiumEnclave implements Enclave {
   }
 
   private SodiumPublicKey sodiumPublicKey(PublicKey senderKey) {
-    if (!(senderKey instanceof SodiumPublicKey)) {
-      throw new EnclaveException("SodiumEnclave needs SodiumPublicKey");
+    if (senderKey instanceof SodiumPublicKey) {
+      return (SodiumPublicKey) senderKey;
     }
-    return (SodiumPublicKey) senderKey;
+
+    throw new EnclaveException("SodiumEnclave needs SodiumPublicKey");
   }
 
   private PublicKey[] addSenderToRecipients(final PublicKey[] recipients, final PublicKey sender) {
