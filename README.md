@@ -37,34 +37,6 @@ brew install libsodium
 For more information on how to install libsodium on your system check the 
 [libsodium installation docs](https://download.libsodium.org/doc/installation/). 
 
-### Native transports
-
-In order to make sure the http related communications are as optimised as possible, we use native 
-transports with the Java Netty library.  You'll need to build some good things on your OS to help 
-make this sing.
-
-#### Linux (RHEL/CentOS/Fedora)
-```
-sudo yum install autoconf automake libtool make tar \
-                 glibc-devel libaio-devel \
-                 libgcc.i686 glibc-devel.i686
-```
-
-#### Linux (Debian/Ubuntu)
-```
-sudo apt-get install autoconf automake libtool make tar \
-                     gcc-multilib libaio-dev
-```
-
-#### MacOS
-```
-brew install autoconf automake libtool
-```
-
-#### Other systems
-For more information on how to install the native transports on your system check the 
-[Netty native transport docs](https://netty.io/wiki/native-transports.html).
-
 ## Running Orion
 
 Running orion with Gradle:
@@ -106,7 +78,7 @@ Where `foo.conf` is a file in the current directory.
 ### Configuration file
 
 The only required properties are `url` and `port`. Although, it is recommended to set at least the
-followin properties:
+following properties:
 
 | property name | description |
 |---|---|
