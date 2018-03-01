@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class LibSodiumEnclaveTest {
+
   MemoryConfig config = new MemoryConfig();
   KeyStore memoryKeyStore = new SodiumMemoryKeyStore(config);
   LibSodiumEnclave enclave;
@@ -31,40 +32,27 @@ public class LibSodiumEnclaveTest {
   }
 
   @Test
-  public void testVersion() {
+  public void version() {
     System.out.println(SodiumLibrary.libsodiumVersionString());
   }
 
   @Test
-  public void testSodium() throws SodiumLibraryException {
+  public void sodium() throws SodiumLibraryException {
     int nonceBytesLength = SodiumLibrary.cryptoBoxNonceBytes().intValue();
     byte[] nonce = SodiumLibrary.randomBytes((int) nonceBytesLength);
     SodiumKeyPair senderPair = SodiumLibrary.cryptoBoxKeyPair();
     SodiumKeyPair recipientPair = SodiumLibrary.cryptoBoxKeyPair();
 
     byte[] message = "hello".getBytes();
-    checkEncryptDecrypt(nonce, senderPair, recipientPair, message);
+    assertEncryptDecrypt(nonce, senderPair, recipientPair, message);
 
     byte[] secretKey =
         SodiumLibrary.randomBytes(SodiumLibrary.cryptoSecretBoxKeyBytes().intValue());
-    checkEncryptDecrypt(nonce, senderPair, recipientPair, secretKey);
-  }
-
-  private void checkEncryptDecrypt(
-      byte[] nonce, SodiumKeyPair senderPair, SodiumKeyPair recipientPair, byte[] message)
-      throws SodiumLibraryException {
-    byte[] ciphertext =
-        SodiumLibrary.cryptoBoxEasy(
-            message, nonce, recipientPair.getPublicKey(), senderPair.getPrivateKey());
-
-    byte[] decrypted =
-        SodiumLibrary.cryptoBoxOpenEasy(
-            ciphertext, nonce, senderPair.getPublicKey(), recipientPair.getPrivateKey());
-    assertArrayEquals(message, decrypted);
+    assertEncryptDecrypt(nonce, senderPair, recipientPair, secretKey);
   }
 
   @Test
-  public void testEncryptDecrypt() throws SodiumLibraryException {
+  public void encryptDecrypt() throws SodiumLibraryException {
     PublicKey senderKey = generateKey();
     PublicKey recipientKey = generateKey();
 
@@ -77,7 +65,7 @@ public class LibSodiumEnclaveTest {
   }
 
   @Test
-  public void testEncryptThrowsExceptionWhenMissingKey() throws Exception {
+  public void encryptThrowsExceptionWhenMissingKey() throws Exception {
     PublicKey fake = new SodiumPublicKey("fake".getBytes());
     PublicKey recipientKey = generateKey();
     try {
@@ -88,13 +76,8 @@ public class LibSodiumEnclaveTest {
     }
   }
 
-  private SodiumPublicKey generateKey() {
-    return (SodiumPublicKey)
-        memoryKeyStore.generateKeyPair(new KeyConfig("ignore", Optional.empty()));
-  }
-
   @Test
-  public void testDecryptThrowsExceptionWhnMissingKey() throws Exception {
+  public void decryptThrowsExceptionWhnMissingKey() throws Exception {
     PublicKey fake = new SodiumPublicKey("fake".getBytes());
     SodiumPublicKey sender = generateKey();
     try {
@@ -106,5 +89,23 @@ public class LibSodiumEnclaveTest {
     } catch (EnclaveException e) {
       assertEquals("No StoredPrivateKey found in keystore", e.getMessage());
     }
+  }
+
+  private void assertEncryptDecrypt(
+      byte[] nonce, SodiumKeyPair senderPair, SodiumKeyPair recipientPair, byte[] message)
+      throws SodiumLibraryException {
+    byte[] ciphertext =
+        SodiumLibrary.cryptoBoxEasy(
+            message, nonce, recipientPair.getPublicKey(), senderPair.getPrivateKey());
+
+    byte[] decrypted =
+        SodiumLibrary.cryptoBoxOpenEasy(
+            ciphertext, nonce, senderPair.getPublicKey(), recipientPair.getPrivateKey());
+    assertArrayEquals(message, decrypted);
+  }
+
+  private SodiumPublicKey generateKey() {
+    return (SodiumPublicKey)
+        memoryKeyStore.generateKeyPair(new KeyConfig("ignore", Optional.empty()));
   }
 }
