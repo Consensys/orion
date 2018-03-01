@@ -21,9 +21,9 @@ import org.junit.Test;
 
 public class LibSodiumEnclaveTest {
 
-  MemoryConfig config = new MemoryConfig();
-  KeyStore memoryKeyStore = new SodiumMemoryKeyStore(config);
-  LibSodiumEnclave enclave;
+  private final MemoryConfig config = new MemoryConfig();
+  private final KeyStore memoryKeyStore = new SodiumMemoryKeyStore(config);
+  private LibSodiumEnclave enclave;
 
   @Before
   public void setUp() throws Exception {
@@ -38,36 +38,37 @@ public class LibSodiumEnclaveTest {
 
   @Test
   public void sodium() throws SodiumLibraryException {
-    int nonceBytesLength = SodiumLibrary.cryptoBoxNonceBytes().intValue();
-    byte[] nonce = SodiumLibrary.randomBytes((int) nonceBytesLength);
-    SodiumKeyPair senderPair = SodiumLibrary.cryptoBoxKeyPair();
-    SodiumKeyPair recipientPair = SodiumLibrary.cryptoBoxKeyPair();
+    final int nonceBytesLength = SodiumLibrary.cryptoBoxNonceBytes().intValue();
+    final byte[] nonce = SodiumLibrary.randomBytes((int) nonceBytesLength);
+    final SodiumKeyPair senderPair = SodiumLibrary.cryptoBoxKeyPair();
+    final SodiumKeyPair recipientPair = SodiumLibrary.cryptoBoxKeyPair();
 
-    byte[] message = "hello".getBytes();
+    final byte[] message = "hello".getBytes();
     assertEncryptDecrypt(nonce, senderPair, recipientPair, message);
 
-    byte[] secretKey =
+    final byte[] secretKey =
         SodiumLibrary.randomBytes(SodiumLibrary.cryptoSecretBoxKeyBytes().intValue());
     assertEncryptDecrypt(nonce, senderPair, recipientPair, secretKey);
   }
 
   @Test
   public void encryptDecrypt() throws SodiumLibraryException {
-    PublicKey senderKey = generateKey();
-    PublicKey recipientKey = generateKey();
+    final PublicKey senderKey = generateKey();
+    final PublicKey recipientKey = generateKey();
 
-    String plaintext = "hello";
-    EncryptedPayload encryptedPayload =
+    final String plaintext = "hello";
+    final EncryptedPayload encryptedPayload =
         enclave.encrypt(plaintext.getBytes(), senderKey, new PublicKey[] {recipientKey});
-    byte[] bytes = enclave.decrypt(encryptedPayload, recipientKey);
-    String decrypted = new String(bytes);
+    final byte[] bytes = enclave.decrypt(encryptedPayload, recipientKey);
+    final String decrypted = new String(bytes);
     assertEquals(plaintext, decrypted);
   }
 
   @Test
   public void encryptThrowsExceptionWhenMissingKey() throws Exception {
-    PublicKey fake = new SodiumPublicKey("fake".getBytes());
-    PublicKey recipientKey = generateKey();
+    final PublicKey fake = new SodiumPublicKey("fake".getBytes());
+    final PublicKey recipientKey = generateKey();
+
     try {
       enclave.encrypt("plaintext".getBytes(), fake, new PublicKey[] {recipientKey});
       fail("Should have thrown an Enclave Exception");
@@ -78,8 +79,9 @@ public class LibSodiumEnclaveTest {
 
   @Test
   public void decryptThrowsExceptionWhnMissingKey() throws Exception {
-    PublicKey fake = new SodiumPublicKey("fake".getBytes());
-    SodiumPublicKey sender = generateKey();
+    final PublicKey fake = new SodiumPublicKey("fake".getBytes());
+    final SodiumPublicKey sender = generateKey();
+
     try {
       EncryptedPayload payload =
           new SodiumEncryptedPayload(
@@ -91,16 +93,22 @@ public class LibSodiumEnclaveTest {
     }
   }
 
+  // TODO multiple combined keys
+
+  // TODO no combined keys
+
+  // TODO exceptions from Sodium
+
   private void assertEncryptDecrypt(
       byte[] nonce, SodiumKeyPair senderPair, SodiumKeyPair recipientPair, byte[] message)
       throws SodiumLibraryException {
-    byte[] ciphertext =
+    final byte[] ciphertext =
         SodiumLibrary.cryptoBoxEasy(
             message, nonce, recipientPair.getPublicKey(), senderPair.getPrivateKey());
-
-    byte[] decrypted =
+    final byte[] decrypted =
         SodiumLibrary.cryptoBoxOpenEasy(
             ciphertext, nonce, senderPair.getPublicKey(), recipientPair.getPrivateKey());
+
     assertArrayEquals(message, decrypted);
   }
 
