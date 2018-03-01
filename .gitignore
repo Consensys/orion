@@ -9,8 +9,6 @@ version.txt
 
 ### Gradle ###
 .gradle
-/gradlew
-/gradlew.bat
 
 
 ### IntelliJ ###
