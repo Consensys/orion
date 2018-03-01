@@ -60,28 +60,20 @@ public class LibSodiumEnclave implements Enclave {
     final PublicKey[] recipientsAndSender = addSenderToRecipients(recipients, senderKey);
     final SodiumPublicKey senderPublicKey = sodiumPublicKey(senderKey);
     final PrivateKey senderPrivateKey = privateKey(senderKey);
+    final byte[] secretKey = secretKey();
+    final byte[] secretNonce = secretNonce();
+    final byte[] cipherText = encrypt(plaintext, secretNonce, secretKey);
+    final byte[] nonce = nonce();
+    final SodiumCombinedKey[] combinedKeys =
+        combinedKeys(recipientsAndSender, senderPrivateKey, secretKey, nonce);
 
-    try {
-      final byte[] secretKey =
-          SodiumLibrary.randomBytes(SodiumLibrary.cryptoSecretBoxKeyBytes().intValue());
-      final byte[] secretNonce = secretNonce();
-      final byte[] cipherText =
-          SodiumLibrary.cryptoSecretBoxEasy(plaintext, secretNonce, secretKey);
-      final byte[] nonce = nonce();
-      SodiumCombinedKey[] combinedKeys =
-          combinedKeys(recipientsAndSender, senderPrivateKey, secretKey, nonce);
-
-      // store mapping between combined keys and recipients
-      return new SodiumEncryptedPayload(
-          senderPublicKey,
-          secretNonce,
-          nonce,
-          combinedKeys,
-          cipherText,
-          Optional.of(combinedKeysMapping(recipientsAndSender)));
-    } catch (SodiumLibraryException e) {
-      throw new EnclaveException(e);
-    }
+    return new SodiumEncryptedPayload(
+        senderPublicKey,
+        secretNonce,
+        nonce,
+        combinedKeys,
+        cipherText,
+        Optional.of(combinedKeysMapping(recipientsAndSender)));
   }
 
   @Override
@@ -122,34 +114,30 @@ public class LibSodiumEnclave implements Enclave {
   /** Handles multiple candidates for applying the private key to for decryption. */
   private byte[] secretKey(EncryptedPayload ciphertextAndMetadata, PrivateKey privateKey) {
     SodiumLibraryException problem = null;
-    byte[] secretKey = null;
 
     for (final CombinedKey key : ciphertextAndMetadata.combinedKeys()) {
       try {
         // When decryption with the combined fails, SodiumLibrary exceptions
-        secretKey =
-            SodiumLibrary.cryptoBoxOpenEasy(
-                key.getEncoded(),
-                ciphertextAndMetadata.combinedKeyNonce(),
-                ciphertextAndMetadata.sender().getEncoded(),
-                privateKey.getEncoded());
+        return SodiumLibrary.cryptoBoxOpenEasy(
+            key.getEncoded(),
+            ciphertextAndMetadata.combinedKeyNonce(),
+            ciphertextAndMetadata.sender().getEncoded(),
+            privateKey.getEncoded());
 
-        // Getting to here mean decryption success (valid combined key)
-        break;
       } catch (final SodiumLibraryException e) {
         problem = e;
       }
     }
 
-    if (secretKey == null) {
-      throw new EnclaveException(problem);
-    }
+    throw new EnclaveException(problem);
+  }
 
-    return secretKey;
+  private byte[] nonce() {
+    final int nonceBytesLength = SodiumLibrary.cryptoBoxNonceBytes().intValue();
+    return SodiumLibrary.randomBytes(nonceBytesLength);
   }
 
   private PrivateKey privateKey(PublicKey identity) {
-
     final PrivateKey privateKey = keyStore.privateKey(identity);
     if (privateKey == null) {
       throw new EnclaveException("No StoredPrivateKey found in keystore");
@@ -159,36 +147,50 @@ public class LibSodiumEnclave implements Enclave {
   }
 
   private byte[] secretNonce() {
-    int secretNonceBytesLength = SodiumLibrary.cryptoSecretBoxNonceBytes().intValue();
+    final int secretNonceBytesLength = SodiumLibrary.cryptoSecretBoxNonceBytes().intValue();
 
     return SodiumLibrary.randomBytes(secretNonceBytesLength);
   }
 
-  private byte[] nonce() {
-    int nonceBytesLength = SodiumLibrary.cryptoBoxNonceBytes().intValue();
-    return SodiumLibrary.randomBytes(nonceBytesLength);
+  private byte[] secretKey() {
+    return SodiumLibrary.randomBytes(SodiumLibrary.cryptoSecretBoxKeyBytes().intValue());
   }
 
+  private byte[] encrypt(byte[] plaintext, byte[] secretNonce, byte[] secretKey) {
+    try {
+      return SodiumLibrary.cryptoSecretBoxEasy(plaintext, secretNonce, secretKey);
+    } catch (SodiumLibraryException e) {
+      throw new EnclaveException(e);
+    }
+  }
+
+  /** Create mapping between combined keys and recipients */
   private HashMap<SodiumPublicKey, Integer> combinedKeysMapping(PublicKey[] recipients) {
-    HashMap<SodiumPublicKey, Integer> combinedKeysMapping = new HashMap<>();
+    final HashMap<SodiumPublicKey, Integer> combinedKeysMapping = new HashMap<>();
     for (int i = 0; i < recipients.length; i++) {
       combinedKeysMapping.put((SodiumPublicKey) recipients[i], i);
     }
+
     return combinedKeysMapping;
   }
 
   private SodiumCombinedKey[] combinedKeys(
-      PublicKey[] recipients, PrivateKey senderPrivateKey, byte[] secretKey, byte[] nonce)
-      throws SodiumLibraryException {
-    SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[recipients.length];
-    for (int i = 0; i < recipients.length; i++) {
-      PublicKey recipient = recipients[i];
-      byte[] encryptedKey =
-          SodiumLibrary.cryptoBoxEasy(
-              secretKey, nonce, recipient.getEncoded(), senderPrivateKey.getEncoded());
-      SodiumCombinedKey combinedKey = new SodiumCombinedKey(encryptedKey);
-      combinedKeys[i] = combinedKey;
+      PublicKey[] recipients, PrivateKey senderPrivateKey, byte[] secretKey, byte[] nonce) {
+
+    try {
+      final SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[recipients.length];
+      for (int i = 0; i < recipients.length; i++) {
+        final PublicKey recipient = recipients[i];
+        final byte[] encryptedKey =
+            SodiumLibrary.cryptoBoxEasy(
+                secretKey, nonce, recipient.getEncoded(), senderPrivateKey.getEncoded());
+        final SodiumCombinedKey combinedKey = new SodiumCombinedKey(encryptedKey);
+        combinedKeys[i] = combinedKey;
+      }
+
+      return combinedKeys;
+    } catch (SodiumLibraryException e) {
+      throw new EnclaveException(e);
     }
-    return combinedKeys;
   }
 }
