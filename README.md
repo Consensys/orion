@@ -1,66 +1,115 @@
 # Orion
 Orion is the PegaSys component for doing private transactions.
 
-[![Build Status](https://travis-ci.com/ConsenSys/orion.svg?token=2Yxbwhz1bCkWTaWcjCFS&branch=master)](https://travis-ci.com/ConsenSys/orion)
+[![CircleCI](https://circleci.com/gh/ConsenSys/orion.svg?style=shield&circle-token=5f92fd966a971e60e57f53f2257fe5dda0fcf52c)](https://circleci.com/gh/ConsenSys/orion)
 
-#### Build Instructions
-
-To build `clone` this repo as below, subsequently `cd` into the newly created directory and `clone` the relevant Ethereum test repo. Run with `gradle` like so:
-
+## Building from source
 ```
-git clone https://github.com/ConsenSys/orion
+git clone git@github.com:ConsenSys/orion.git
 cd orion
-gradle build  
+./gradlew build  
 ```
 
-Perhaps you might like using the ssh protocol to clone... in which case do `git clone git@github.com:ConsenSys/orion.git`
+## Dependencies
 
-## libsodium
+### libsodium
 
-In order to be compatible with the original Haskell Constellation, the lib sodium library has been used to provide the encryption primitives.
+In order to be compatible with the original Haskell Constellation, we used 
+[Sodium crypto library](https://download.libsodium.org/doc/) (libsodium) to provide the encryption 
+primitives. To use this, you will first need to install libsodium on your machine.
 
-In order to use this, you will first need to install lib sodium on your machine.
-
-mac:
-`brew install libsodium`
-
-## Native transports
-
-In order to make sure the http related communications are as optimised as possible, we use native transports with the
-Java Netty library.  You'll need to build some good things on your OS to help make this sing.
-
-### Linux
-
+#### Linux
+Download the [latest stable version](https://download.libsodium.org/libsodium/releases/LATEST.tar.gz) 
+of libsodium tarball and then execute:
 ```
-# RHEL/CentOS/Fedora:
-sudo yum install autoconf automake libtool make tar \
-                 glibc-devel libaio-devel \
-                 libgcc.i686 glibc-devel.i686
-# Debian/Ubuntu:
-sudo apt-get install autoconf automake libtool make tar \
-                     gcc-multilib libaio-dev
+./configure
+make && make check
+sudo make install
 ```
 
-### Mac OS/BSD
+#### MacOS
+You can install using [homebrew](https://brew.sh/):
+```
+brew install libsodium
+```
 
-`brew install autoconf automake libtool`
+#### Other systems
+For more information on how to install libsodium on your system check the 
+[libsodium installation docs](https://download.libsodium.org/doc/installation/). 
 
 ## Running Orion
 
-Kick start the Orion http server after getting everything setup with `gradle run`.
+Running orion with Gradle:
+```
+./gradlew run
+```
+If you want to add runtime options, use `-Pargs`, for example: `gradle run -Pargs="-g my-key"`
 
-If you want to add runtime options, use `-Pargs`, for example:
+Running from distribution binaries (after building from the source):
+```
+cd build/distributions
+tar -xvzf orion*.tar.gz
+mv orion*/ orion/
+./orion/bin/orion
+```
 
-`gradle run -Pargs="-g ath-key"`
+If you want, you can link the binary to your `/usr/local/bin/`
+```
+ln -s <full_path_to_project_folder>/build/distributions/bin/orion /usr/local/bin/orion
+```
 
-## Code coverage report
+e.g. `ln -s /Users/john/git/orion/build/distributions/orion/bin/orion /usr/local/bin/orion`
+
+### Generating keys
+If you want to generate a pair of public/private keys:
+```
+orion -g foo
+```
+This will generate a `foo.key` (private key) and `foo.pub` (public key) in the current folder.
+
+## Configuring Orion
+
+You can start orion providing a config file:
+```
+orion foo.conf
+```
+Where `foo.conf` is a file in the current directory.
+
+### Configuration file
+
+The only required properties are `url` and `port`. Although, it is recommended to set at least the
+following properties:
+
+| property name | description |
+|---|---|
+| url | The URL to advertise to other nodes (reachable by them) |
+| port | The local port to listen on |
+| workdir | The folder to put stuff in (default: .) |
+| othernodes | "Boot nodes" to connect to to discover the network |
+| publickeys | Public keys hosted by this node |
+| privatekeys | Private keys hosted by this node (in corresponding order) |
+
+Example config file:
+
+```
+url = "http://127.0.0.1:9001/"
+port = 9001
+workdir = "data"
+othernodes = ["http://127.0.0.1:9000/"]
+publickeys = ["foo.pub"]
+privatekeys = ["foo.key"]
+```
+
+If you want to check all the available properties, check the 
+[`sample.conf`](https://github.com/ConsenSys/orion/blob/master/src/main/resources/sample.conf) file.
+
+## Code coverage
 
 We use the jacoco test coverage plugin, which will generate coverage data whenever tests are run.
 
-To run the report do:
+To run the report:
+```
+gradle test jacocoTestReport
+```
 
-```gradle test jacocoTestReport```
-
-Then view it at:
-
-```build/reports/jacoco/test/html/index.html```
+The report will be available at `build/reports/jacoco/test/html/index.html`
