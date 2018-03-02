@@ -100,7 +100,7 @@ publickeys = ["foo.pub"]
 privatekeys = ["foo.key"]
 ```
 
-If you want to check all the available properties, check the 
+You can check all the available properties in the  
 [`sample.conf`](https://github.com/ConsenSys/orion/blob/master/src/main/resources/sample.conf) file.
 
 ## Code coverage
@@ -113,3 +113,9 @@ gradle test jacocoTestReport
 ```
 
 The report will be available at `build/reports/jacoco/test/html/index.html`
+
+## Feature comparison with Constellation
+
+On [this wiki page](https://github.com/ConsenSys/orion/wiki/Feature-comparison-with-Constellation) 
+you can find a breakdown of the features implemented by Orion and the comparison with Constellation's 
+features.
