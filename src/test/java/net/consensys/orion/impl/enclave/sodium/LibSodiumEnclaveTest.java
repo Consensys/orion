@@ -38,7 +38,7 @@ public class LibSodiumEnclaveTest {
   }
 
   @Test
-  public void sodium() throws SodiumLibraryException {
+  public void sodiumLoads() throws SodiumLibraryException {
     final int nonceBytesLength = SodiumLibrary.cryptoBoxNonceBytes().intValue();
     final byte[] nonce = SodiumLibrary.randomBytes((int) nonceBytesLength);
     final SodiumKeyPair senderPair = SodiumLibrary.cryptoBoxKeyPair();
