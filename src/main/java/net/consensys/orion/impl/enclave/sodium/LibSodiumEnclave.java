@@ -115,6 +115,7 @@ public class LibSodiumEnclave implements Enclave {
   private byte[] secretKey(EncryptedPayload ciphertextAndMetadata, PrivateKey privateKey) {
     SodiumLibraryException problem = null;
 
+    // Try each key until we find one that successfully decrypts or we run out of keys
     for (final CombinedKey key : ciphertextAndMetadata.combinedKeys()) {
       try {
         // When decryption with the combined fails, SodiumLibrary exceptions
@@ -125,10 +126,12 @@ public class LibSodiumEnclave implements Enclave {
             privateKey.getEncoded());
 
       } catch (final SodiumLibraryException e) {
+        // The next next key might be the lucky one, so don't propagate just yet
         problem = e;
       }
     }
 
+    // No more keys left to try, finally propagate the issue
     throw new EnclaveException(problem);
   }
 
