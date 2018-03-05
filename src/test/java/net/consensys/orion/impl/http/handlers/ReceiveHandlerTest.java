@@ -115,21 +115,16 @@ public class ReceiveHandlerTest extends HandlerTest {
 
   @Test
   public void testResponseWhenDecryptFails() throws Exception {
-    // ref to storage
     final Storage storage = routes.getStorage();
 
-    // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    // encrypt a payload
     SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     EncryptedPayload originalPayload =
         enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {senderKey});
 
-    // store it
     String key = storage.put(originalPayload);
-    // Receive operation, sending a ReceivePayload request
     RequestBody body = RequestBody.create(MediaType.parse(BINARY.httpHeaderValue), "");
 
     Request request =
@@ -141,7 +136,6 @@ public class ReceiveHandlerTest extends HandlerTest {
             .url(baseUrl + "receiveraw")
             .build();
 
-    // execute request
     Response resp = httpClient.newCall(request).execute();
     assertEquals(404, resp.code());
   }
