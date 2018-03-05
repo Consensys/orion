@@ -114,6 +114,33 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
+  public void testResponseWhenDecryptFails() throws Exception {
+    final Storage storage = routes.getStorage();
+
+    byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
+    EncryptedPayload originalPayload =
+        enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {senderKey});
+
+    String key = storage.put(originalPayload);
+    RequestBody body = RequestBody.create(MediaType.parse(BINARY.httpHeaderValue), "");
+
+    Request request =
+        new Request.Builder()
+            .post(body)
+            .addHeader("Content-Type", BINARY.httpHeaderValue)
+            .addHeader("Accept", BINARY.httpHeaderValue)
+            .addHeader("c11n-key", key)
+            .url(baseUrl + "receiveraw")
+            .build();
+
+    Response resp = httpClient.newCall(request).execute();
+    assertEquals(404, resp.code());
+  }
+
+  @Test
   public void testRoundTripSerialization() {
     ReceiveResponse receiveResponse = new ReceiveResponse("some payload");
     assertEquals(

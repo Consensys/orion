@@ -3,6 +3,7 @@ package net.consensys.orion.impl.http.handler.receive;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 
 import net.consensys.orion.api.enclave.Enclave;
+import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
@@ -63,7 +64,15 @@ public class ReceiveHandler implements Handler<RoutingContext> {
       return;
     }
 
-    byte[] decryptedPayload = enclave.decrypt(encryptedPayload.get(), to);
+    byte[] decryptedPayload;
+    try {
+      decryptedPayload = enclave.decrypt(encryptedPayload.get(), to);
+    } catch (EnclaveException e) {
+
+      log.info("unable to decrypt payload with key {}", key);
+      routingContext.fail(404);
+      return;
+    }
 
     // build a ReceiveResponse
     Buffer toReturn;
