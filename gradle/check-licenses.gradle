@@ -89,6 +89,9 @@ task checkLicenses {
     description "Verify that all dependencies use white-listed licenses."
     dependsOn ':downloadLicenses'
 
+    def licenceOutFile = file("$buildDir/reports/license/license-dependency.html")
+    outputs.file licenceOutFile
+
     def bads = ""
     doLast {
         def xml = new XmlParser().parse('build/reports/license/license-dependency.xml')
