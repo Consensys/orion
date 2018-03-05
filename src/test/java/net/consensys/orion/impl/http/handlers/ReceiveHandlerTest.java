@@ -124,7 +124,8 @@ public class ReceiveHandlerTest extends HandlerTest {
 
     // encrypt a payload
     SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
-    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {senderKey});
+    EncryptedPayload originalPayload =
+        enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {senderKey});
 
     // store it
     String key = storage.put(originalPayload);
@@ -143,7 +144,6 @@ public class ReceiveHandlerTest extends HandlerTest {
     // execute request
     Response resp = httpClient.newCall(request).execute();
     assertEquals(404, resp.code());
-
   }
 
   @Test
