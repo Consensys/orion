@@ -124,13 +124,17 @@ spotless {
   }
 }
 
-distTar {
+task deleteTarGzip() {
     doFirst {
         delete fileTree(dir:'build/distributions', include: '*.tar.gz')
     }
+}
+
+distTar {
     compression = Compression.GZIP
     extension = 'tar.gz'
 }
+distTar.dependsOn deleteTarGzip
 
 distZip {
     doFirst {
@@ -141,7 +145,10 @@ distZip {
 project.ext.fatJarBaseName = "orion-fat-jar"
 shadowDistTar {
     baseName = project.fatJarBaseName
+    compression = Compression.GZIP
+    extension = 'tar.gz'
 }
+shadowDistTar.dependsOn deleteTarGzip
 
 shadowDistZip {
     baseName = project.fatJarBaseName
