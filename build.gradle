@@ -2,11 +2,13 @@ plugins {
   id "com.diffplug.gradle.spotless" version "3.6.0"
   id 'com.palantir.git-version' version '0.10.0'
   id "com.github.hierynomus.license" version "0.14.0"
+  id "com.github.johnrengelman.shadow" version "2.0.2"
 }
 
 apply plugin: 'java-library'
 apply plugin: 'application'
 apply plugin: "jacoco"
+apply plugin: 'com.github.johnrengelman.shadow'
 
 apply from: "gradle/check-licenses.gradle"
 
@@ -122,18 +124,39 @@ spotless {
   }
 }
 
-distTar {
+task deleteTarGzip() {
     doFirst {
         delete fileTree(dir:'build/distributions', include: '*.tar.gz')
     }
+}
+
+distTar {
     compression = Compression.GZIP
     extension = 'tar.gz'
 }
+distTar.dependsOn deleteTarGzip
 
 distZip {
     doFirst {
         delete fileTree(dir:'build/distributions', include: '*.zip')
     }
+}
+
+project.ext.fatJarBaseName = "orion-fat-jar"
+shadowDistTar {
+    baseName = project.fatJarBaseName
+    compression = Compression.GZIP
+    extension = 'tar.gz'
+}
+shadowDistTar.dependsOn deleteTarGzip
+
+shadowDistZip {
+    baseName = project.fatJarBaseName
+}
+
+shadowJar {
+    baseName = project.fatJarBaseName
+    classifier = null
 }
 
 // Generate the Timestamp for the version
