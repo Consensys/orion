@@ -171,3 +171,16 @@ def versionTxt()  {
 Version: $version
 """
 }
+
+distributions {
+    main {
+        contents {
+            from(checkLicenses) {
+                into "license"
+            }
+            from("./LICENSE") {
+                into "license"
+            }
+        }
+    }
+}
