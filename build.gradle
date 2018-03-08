@@ -15,6 +15,7 @@ apply plugin: 'maven-publish'
 apply from: "gradle/check-licenses.gradle"
 
 mainClassName = 'net.consensys.orion.api.cmd.Orion'
+group = 'net.consensys'
 version = '0.1.0-' + versionDetails().gitHash[0..4] + '-' + getTimestamp()
 
 // JVM Settings for Log4J and VertX
@@ -194,9 +195,6 @@ publishing {
   publications {
     jar(MavenPublication) {
       from components.java
-      groupId 'net.consensys'
-      artifactId 'orion'
-      version project.version
       pom.withXml {
         asNode().children().last() + {
           resolveStrategy = Closure.DELEGATE_FIRST
@@ -218,34 +216,24 @@ publishing {
     }
     jarWithDepsZip(MavenPublication) {
       artifact distZip
-      groupId 'net.consensys'
-      artifactId 'orion'
-      version project.version
     }
     jarWithDepsTar(MavenPublication) {
       artifact distTar
-      groupId 'net.consensys'
-      artifactId 'orion'
-      version project.version
     }
     fatJarZip(MavenPublication) {
       artifact shadowDistZip
-      groupId 'net.consensys'
       artifactId 'orion-fat-jar'
-      version project.version
     }
     fatJarTar(MavenPublication) {
       artifact shadowDistTar
-      groupId 'net.consensys'
       artifactId 'orion-fat-jar'
-      version project.version
     }
   }
 }
 
 bintray {
-  user = System.getenv('BINTRAY_USER')
-  key = System.getenv('BINTRAY_KEY')
+  user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+  key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_KEY')
   publications = ['jar', "jarWithDepsZip", "jarWithDepsTar", "fatJarZip", "fatJarTar"]
   pkg {
     repo = "pantheon"
