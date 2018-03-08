@@ -76,9 +76,10 @@ public class OrionRoutes {
         .handler(new SendHandler(enclave, storage, networkNodes, serializer, JSON));
     router
         .post(SEND_RAW)
-        .produces(BINARY.httpHeaderValue)
-        .consumes(BINARY.httpHeaderValue)
-        .handler(new SendHandler(enclave, storage, networkNodes, serializer, BINARY));
+        .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .handler(
+            new SendHandler(enclave, storage, networkNodes, serializer, APPLICATION_OCTET_STREAM));
 
     router
         .post(RECEIVE)
@@ -87,9 +88,9 @@ public class OrionRoutes {
         .handler(new ReceiveHandler(enclave, storage, serializer, JSON));
     router
         .post(RECEIVE_RAW)
-        .produces(BINARY.httpHeaderValue)
-        .consumes(BINARY.httpHeaderValue)
-        .handler(new ReceiveHandler(enclave, storage, serializer, BINARY));
+        .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .handler(new ReceiveHandler(enclave, storage, serializer, APPLICATION_OCTET_STREAM));
 
     router.post(DELETE).handler(new DeleteHandler(storage));
 

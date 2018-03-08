@@ -1,7 +1,7 @@
 package net.consensys.orion.impl.http.handlers;
 
 import static junit.framework.TestCase.assertTrue;
-import static net.consensys.orion.impl.http.server.HttpContentType.BINARY;
+import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -81,13 +81,14 @@ public class ReceiveHandlerTest extends HandlerTest {
     // store it
     String key = storage.put(originalPayload);
     // Receive operation, sending a ReceivePayload request
-    RequestBody body = RequestBody.create(MediaType.parse(BINARY.httpHeaderValue), "");
+    RequestBody body =
+        RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
     Request request =
         new Request.Builder()
             .post(body)
-            .addHeader("Content-Type", BINARY.httpHeaderValue)
-            .addHeader("Accept", BINARY.httpHeaderValue)
+            .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
+            .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
             .addHeader("c11n-key", key)
             .url(baseUrl + "receiveraw")
             .build();
@@ -125,13 +126,14 @@ public class ReceiveHandlerTest extends HandlerTest {
         enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {senderKey});
 
     String key = storage.put(originalPayload);
-    RequestBody body = RequestBody.create(MediaType.parse(BINARY.httpHeaderValue), "");
+    RequestBody body =
+        RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
     Request request =
         new Request.Builder()
             .post(body)
-            .addHeader("Content-Type", BINARY.httpHeaderValue)
-            .addHeader("Accept", BINARY.httpHeaderValue)
+            .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
+            .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
             .addHeader("c11n-key", key)
             .url(baseUrl + "receiveraw")
             .build();

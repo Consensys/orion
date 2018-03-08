@@ -2,7 +2,7 @@ package net.consensys.orion.impl.http.handlers;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
-import static net.consensys.orion.impl.http.server.HttpContentType.BINARY;
+import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static org.junit.Assert.assertArrayEquals;
 
@@ -208,7 +208,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // build the binary sendRequest
     RequestBody body =
-        RequestBody.create(MediaType.parse(HttpContentType.BINARY.httpHeaderValue), toEncrypt);
+        RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
     PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
 
     String from = Base64.encode(sender.getEncoded());
@@ -225,8 +225,8 @@ public class SendHandlerTest extends HandlerTest {
             .url(baseUrl + "sendraw")
             .addHeader("c11n-from", from)
             .addHeader("c11n-to", String.join(",", to))
-            .addHeader("Content-Type", BINARY.httpHeaderValue)
-            .addHeader("Accept", BINARY.httpHeaderValue)
+            .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
+            .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
             .build();
 
     // execute request
