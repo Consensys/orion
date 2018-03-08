@@ -215,5 +215,29 @@ publishing {
         }
       }
     }
+    jarWithDepsZip(MavenPublication) {
+      artifact distZip
+      groupId 'net.consensys'
+      artifactId 'orion'
+      version project.version
+    }
+    jarWithDepsTar(MavenPublication) {
+      artifact distTar
+      groupId 'net.consensys'
+      artifactId 'orion'
+      version project.version
+    }
+    fatJarZip(MavenPublication) {
+      artifact shadowDistZip
+      groupId 'net.consensys'
+      artifactId 'orion-fat-jar'
+      version project.version
+    }
+    fatJarTar(MavenPublication) {
+      artifact shadowDistTar
+      groupId 'net.consensys'
+      artifactId 'orion-fat-jar'
+      version project.version
+    }
   }
 }
