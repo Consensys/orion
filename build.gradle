@@ -3,6 +3,7 @@ plugins {
   id 'com.palantir.git-version' version '0.10.0'
   id "com.github.hierynomus.license" version "0.14.0"
   id "com.github.johnrengelman.shadow" version "2.0.2"
+  id "com.jfrog.bintray" version "1.7.3"
 }
 
 apply plugin: 'java-library'
@@ -238,6 +239,22 @@ publishing {
       groupId 'net.consensys'
       artifactId 'orion-fat-jar'
       version project.version
+    }
+  }
+}
+
+bintray {
+  user = System.getenv('BINTRAY_USER')
+  key = System.getenv('BINTRAY_KEY')
+  publications = ['jar', "jarWithDepsZip", "jarWithDepsTar", "fatJarZip", "fatJarTar"]
+  pkg {
+    repo = "pantheon"
+    name = "orion"
+    userOrg = "consensys"
+    licenses = ["Apache-2.0"]
+    vcsUrl = "https://github.com/ConsenSys/orion"
+    version {
+      name = project.version
     }
   }
 }
