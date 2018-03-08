@@ -9,6 +9,7 @@ apply plugin: 'java-library'
 apply plugin: 'application'
 apply plugin: "jacoco"
 apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'maven-publish'
 
 apply from: "gradle/check-licenses.gradle"
 
@@ -186,4 +187,33 @@ distributions {
             }
         }
     }
+}
+
+publishing {
+  publications {
+    jar(MavenPublication) {
+      from components.java
+      groupId 'net.consensys'
+      artifactId 'orion'
+      version project.version
+      pom.withXml {
+        asNode().children().last() + {
+          resolveStrategy = Closure.DELEGATE_FIRST
+          name 'Orion'
+          description 'A java implementation of Constellation'
+          url 'https://github.com/ConsenSys/orion'
+          scm {
+            url 'https://github.com/ConsenSys/orion'
+          }
+          licenses {
+            license {
+              name 'The Apache Software License, Version 2.0'
+              url 'http://www.apache.org/license/LICENSE-2.0.txt'
+              distribution 'repo'
+            }
+          }
+        }
+      }
+    }
+  }
 }
