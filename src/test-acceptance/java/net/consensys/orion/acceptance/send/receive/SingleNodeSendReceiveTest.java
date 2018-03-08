@@ -43,6 +43,7 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   @BeforeClass
   public static void setUpSingleNode() throws Exception {
     int port = utils().freePort();
+    int ethport = utils().freePort();
 
     baseUrl = utils().url(HOST_NAME, port);
 
@@ -51,6 +52,7 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
             .nodeConfig(
                 baseUrl,
                 port,
+                ethport,
                 "node1",
                 baseUrl,
                 "src/test-acceptance/resources/key1.pub\", \"src/test-acceptance/resources/key2.pub",

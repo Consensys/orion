@@ -1,3 +1,4 @@
 # Test file with only mandatory fields for testing default values
 url = "http://127.0.0.1:9001/"
 port = 9001
+ethport = 9002

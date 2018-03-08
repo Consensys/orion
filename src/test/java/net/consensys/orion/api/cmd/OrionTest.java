@@ -38,7 +38,7 @@ public class OrionTest {
   @Test
   public void testLoadConfigForTheStandardConfig() throws Exception {
     Config config = orion.loadConfig(Optional.of("src/main/resources/sample.conf"));
-    assertEquals(9001, config.port());
+    assertEquals(8080, config.port());
 
     File expectedSocket = new File("data/orion.ipc");
     assertTrue(config.socket().isPresent());

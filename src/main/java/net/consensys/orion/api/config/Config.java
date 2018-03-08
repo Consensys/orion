@@ -23,6 +23,13 @@ public interface Config {
   int port();
 
   /**
+   * Port to listen on for the private API.
+   *
+   * @return Port to listen on for the private API
+   */
+  int ethport();
+
+  /**
    * Path at which to locate the lib sodium shared library.
    *
    * <p><strong>Default:</strong>

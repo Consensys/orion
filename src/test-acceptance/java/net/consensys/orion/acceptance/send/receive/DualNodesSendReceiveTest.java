@@ -45,7 +45,9 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
   @BeforeClass
   public static void setUpDualNodes() throws Exception {
     int firstNodePort = utils().freePort();
+    int firstNodeEthPort = utils().freePort();
     int secondNodePort = utils().freePort();
+    int secondNodeEthPort = utils().freePort();
 
     firstNodeBaseUrl = utils().url(HOST_NAME, firstNodePort);
     secondNodeBaseUrl = utils().url(HOST_NAME, secondNodePort);
@@ -55,6 +57,7 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
             .nodeConfig(
                 firstNodeBaseUrl,
                 firstNodePort,
+                firstNodeEthPort,
                 "node1",
                 secondNodeBaseUrl,
                 "src/test-acceptance/resources/key1.pub",
@@ -64,6 +67,7 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
             .nodeConfig(
                 secondNodeBaseUrl,
                 secondNodePort,
+                secondNodeEthPort,
                 "node2",
                 firstNodeBaseUrl,
                 "src/test-acceptance/resources/key2.pub",

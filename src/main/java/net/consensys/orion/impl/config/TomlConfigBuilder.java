@@ -42,6 +42,7 @@ public final class TomlConfigBuilder {
     }
 
     setInt(toml.getLong("port"), memoryConfig::setPort);
+    setInt(toml.getLong("ethport"), memoryConfig::setEthPort);
     setFile(baseDir, toml.getString("socket"), memoryConfig::setSocket);
     setString(toml.getString("libsodiumpath"), memoryConfig::setLibSodiumPath);
 
@@ -70,6 +71,14 @@ public final class TomlConfigBuilder {
     // Validations
     if (memoryConfig.port() == Integer.MIN_VALUE) {
       errorMsg.append("Error: value for key 'port' in config must be specified\n");
+    }
+
+    if (memoryConfig.ethport() == Integer.MIN_VALUE) {
+      errorMsg.append("Error: value for key 'ethport' in config must be specified\n");
+    }
+
+    if (memoryConfig.ethport() == memoryConfig.port()) {
+      errorMsg.append("Error: value for key 'ethport' in config must be different to 'port'\n");
     }
 
     if (othernodesError.length() != 0) {

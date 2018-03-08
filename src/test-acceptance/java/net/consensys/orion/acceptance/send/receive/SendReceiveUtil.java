@@ -25,7 +25,13 @@ public class SendReceiveUtil {
   }
 
   public Config nodeConfig(
-      String baseUrl, int port, String nodeName, String otherNodes, String pubKeys, String privKeys)
+      String baseUrl,
+      int port,
+      int ethport,
+      String nodeName,
+      String otherNodes,
+      String pubKeys,
+      String privKeys)
       throws UnsupportedEncodingException {
 
     final String confString =
@@ -34,6 +40,8 @@ public class SendReceiveUtil {
             .append(baseUrl)
             .append("\"\nport = ")
             .append(port)
+            .append("\nethport = ")
+            .append(ethport)
             .append("\nstorage = \"leveldb:database/" + nodeName + "\"")
             .append("\nothernodes = [\"")
             .append(otherNodes)
