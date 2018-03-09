@@ -59,6 +59,7 @@ jobs:
       - persist_to_workspace:
           root: ~/repo
           paths:
+            - build/version
             - build/distributions/*
 
   publish:
