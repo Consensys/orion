@@ -17,24 +17,6 @@ import org.junit.Test;
 public class OrionTest {
   Orion orion = new Orion();
 
-  //  @Test
-  //  public void testServerStartWithFullConfig() throws Exception {
-  //    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
-  //    Config config =
-  //        configBuilder.build(
-  //            this.getClass().getClassLoader().getResourceAsStream("fullConfigTest.toml"));
-  //    NettyServer server = orion.startServer(config);
-  //
-  //    HttpServerSettings settings = server.getSettings();
-  //
-  //    assertEquals(Optional.of(9001), settings.getHttpPort());
-  //
-  //    File expectedSocket = new File("orion.ipc");
-  //    assertEquals(Optional.of(expectedSocket), settings.getDomainSocketPath());
-  //
-  //    server.stop();
-  //  }
-
   @Test
   public void testLoadConfigForTheStandardConfig() throws Exception {
     Config config = orion.loadConfig(Optional.of("src/main/resources/sample.conf"));
