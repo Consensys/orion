@@ -44,7 +44,9 @@ jobs:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
 
-      - run: ./gradlew build
+      - run:
+         name: Run gradle build
+         command: ./gradlew build bintrayUpload
 
       - run:
           name: Save test results
@@ -62,7 +64,7 @@ jobs:
             - build/version
             - build/distributions/*
 
-  publish:
+  publish-binaries:
     docker:
       - image: circleci/openjdk:8-jdk
     steps:
@@ -87,6 +89,6 @@ workflows:
   pipeline:
     jobs:
       - build
-      - publish:
+      - publish-binaries:
           requires:
             - build
