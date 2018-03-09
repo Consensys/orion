@@ -72,6 +72,15 @@ jobs:
       - run:
           name: Upload skinny targz file to Bintray
           command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/distributions/orion-$(cat build/version).tar.gz consensys binaries orion $(cat build/version)"
+      - run:
+          name: Upload skinny zip file to Bintray
+          command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/distributions/orion-$(cat build/version).zip consensys binaries orion $(cat build/version)"
+      - run:
+          name: Upload fat-jar targz file to Bintray
+          command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/distributions/orion-fat-jar-$(cat build/version).tar.gz consensys binaries orion $(cat build/version)"
+      - run:
+          name: Upload fat-jar zip file to Bintray
+          command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/distributions/orion-fat-jar-$(cat build/version).zip consensys binaries orion $(cat build/version)"
 
 workflows:
   version: 2
