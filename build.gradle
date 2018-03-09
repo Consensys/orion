@@ -82,7 +82,7 @@ dependencies {
 }
 
 jar {
-    doLast {
+    doFirst {
         versionTxt()
     }
     manifest {
@@ -167,7 +167,10 @@ def getTimestamp() {
 
 // Create the version.txt file
 def versionTxt()  {
-    new File("$projectDir/src/main/resources/version.txt").text = """Application-name: $project.name
+  delete "$projectDir/src/main/resources/version.txt"
+  delete "$projectDir/build/resources/main/version.txt"
+
+  new File("$projectDir/build/resources/main/version.txt").text = """Application-name: $project.name
 Version: $version
 """
 }
