@@ -67,10 +67,10 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-        at: ~/project
+          at: ~/project
       - run:
-        name: Upload skinny targz file to Bintray
-        command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/distributions/orion-$(cat build/version).tar.gz consensys binaries orion $(cat build/version)"
+          name: Upload skinny targz file to Bintray
+          command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/distributions/orion-$(cat build/version).tar.gz consensys binaries orion $(cat build/version)"
 
 workflows:
   version: 2
