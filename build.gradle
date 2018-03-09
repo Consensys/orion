@@ -193,7 +193,7 @@ distributions {
 
 publishing {
   publications {
-    jar(MavenPublication) {
+    mavenArtifact(MavenPublication) {
       from components.java
       pom.withXml {
         asNode().children().last() + {
@@ -214,27 +214,13 @@ publishing {
         }
       }
     }
-    jarWithDepsZip(MavenPublication) {
-      artifact distZip
-    }
-    jarWithDepsTar(MavenPublication) {
-      artifact distTar
-    }
-    fatJarZip(MavenPublication) {
-      artifact shadowDistZip
-      artifactId 'orion-fat-jar'
-    }
-    fatJarTar(MavenPublication) {
-      artifact shadowDistTar
-      artifactId 'orion-fat-jar'
-    }
   }
 }
 
 bintray {
   user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
   key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_KEY')
-  publications = ['jar', "jarWithDepsZip", "jarWithDepsTar", "fatJarZip", "fatJarTar"]
+  publications = ['mavenArtifact']
   pkg {
     repo = "pantheon"
     name = "orion"
