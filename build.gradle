@@ -176,6 +176,7 @@ def versionTxt()  {
   new File("$projectDir/build/resources/main/version.txt").text = """Application-name: $project.name
 Version: $version
 """
+  new File("$projectDir/build/version").text = """$version"""
 }
 
 distributions {

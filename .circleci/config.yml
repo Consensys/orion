@@ -56,3 +56,27 @@ jobs:
           path: ~/junit
       - store_artifacts:
           path: ~/junit
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - build/distributions/*
+
+  publish:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - attach_workspace:
+        at: ~/project
+      - run:
+        name: Upload skinny targz file to Bintray
+        command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/distributions/orion-$(cat build/version).tar.gz consensys binaries orion $(cat build/version)"
+
+workflows:
+  version: 2
+  pipeline:
+    jobs:
+      - build
+      - publish:
+          requires:
+            - build
