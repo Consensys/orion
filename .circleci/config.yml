@@ -64,7 +64,7 @@ jobs:
             - build/version
             - build/distributions/*
 
-  publish-binaries:
+  upload-distribution:
     docker:
       - image: circleci/openjdk:8-jdk
     steps:
@@ -89,7 +89,7 @@ workflows:
   pipeline:
     jobs:
       - build
-      - publish-binaries:
+      - upload-distribution:
           requires:
             - build
           filters:
