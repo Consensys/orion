@@ -92,3 +92,6 @@ workflows:
       - publish-binaries:
           requires:
             - build
+          filters:
+            branches:
+              only: master
