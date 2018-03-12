@@ -44,7 +44,9 @@ jobs:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
 
-      - run: ./gradlew build
+      - run:
+         name: Run gradle build
+         command: ./gradlew build bintrayUpload
 
       - run:
           name: Save test results
@@ -56,3 +58,40 @@ jobs:
           path: ~/junit
       - store_artifacts:
           path: ~/junit
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - build/version
+            - build/distributions/*
+
+  upload-distribution:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Upload skinny targz file to Bintray
+          command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/distributions/orion-$(cat build/version).tar.gz consensys binaries orion $(cat build/version)"
+      - run:
+          name: Upload skinny zip file to Bintray
+          command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/distributions/orion-$(cat build/version).zip consensys binaries orion $(cat build/version)"
+      - run:
+          name: Upload fat-jar targz file to Bintray
+          command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/distributions/orion-fat-jar-$(cat build/version).tar.gz consensys binaries orion $(cat build/version)"
+      - run:
+          name: Upload fat-jar zip file to Bintray
+          command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/distributions/orion-fat-jar-$(cat build/version).zip consensys binaries orion $(cat build/version)"
+
+workflows:
+  version: 2
+  pipeline:
+    jobs:
+      - build
+      - upload-distribution:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
