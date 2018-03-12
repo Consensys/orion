@@ -1,5 +1,7 @@
 package net.consensys.orion.impl.http.handlers;
 
+import static junit.framework.TestCase.assertEquals;
+
 import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
@@ -7,6 +9,7 @@ import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
+import net.consensys.orion.impl.exception.OrionErrorCode;
 import net.consensys.orion.impl.helpers.CesarEnclave;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.http.server.vertx.VertxServer;
@@ -14,17 +17,14 @@ import net.consensys.orion.impl.network.MemoryNetworkNodes;
 import net.consensys.orion.impl.storage.file.MapDbStorage;
 import net.consensys.orion.impl.utils.Serializer;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerOptions;
-import okhttp3.HttpUrl;
+import okhttp3.*;
 import okhttp3.HttpUrl.Builder;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 import org.junit.After;
 import org.junit.Before;
 
@@ -109,5 +109,10 @@ public abstract class HandlerTest {
     }
 
     return new Request.Builder().post(body).url(baseUrl + path).build();
+  }
+
+  protected void assertError(final OrionErrorCode expected, final Response actual)
+      throws IOException {
+    assertEquals("{\"error\":" + expected.code() + "}", actual.body().string());
   }
 }
