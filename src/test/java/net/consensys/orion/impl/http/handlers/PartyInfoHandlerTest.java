@@ -34,7 +34,10 @@ public class PartyInfoHandlerTest extends HandlerTest {
 
     // call http endpoint
     Request request =
-        new Request.Builder().post(partyInfoBody).url(baseUrl + OrionRoutes.PARTYINFO).build();
+        new Request.Builder()
+            .post(partyInfoBody)
+            .url(publicBaseUrl + OrionRoutes.PARTYINFO)
+            .build();
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
@@ -68,7 +71,10 @@ public class PartyInfoHandlerTest extends HandlerTest {
             MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, networkNodes));
 
     Request request =
-        new Request.Builder().post(partyInfoBody).url(baseUrl + OrionRoutes.PARTYINFO).build();
+        new Request.Builder()
+            .post(partyInfoBody)
+            .url(publicBaseUrl + OrionRoutes.PARTYINFO)
+            .build();
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(404, resp.code());
@@ -79,7 +85,10 @@ public class PartyInfoHandlerTest extends HandlerTest {
     RequestBody partyInfoBody = RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), "foo");
 
     Request request =
-        new Request.Builder().post(partyInfoBody).url(baseUrl + OrionRoutes.PARTYINFO).build();
+        new Request.Builder()
+            .post(partyInfoBody)
+            .url(publicBaseUrl + OrionRoutes.PARTYINFO)
+            .build();
 
     Response resp = httpClient.newCall(request).execute();
 

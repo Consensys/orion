@@ -133,12 +133,21 @@ public class Orion {
     storageEngine = createStorageEngine(config, storagePath);
     OrionRoutes routes = new OrionRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
 
-    // build vertx http server
-    HttpServerOptions serverOptions = new HttpServerOptions();
-    serverOptions.setPort(config.port());
+    // build vertx http server for public API
+    HttpServerOptions publicServerOptions = new HttpServerOptions();
+    publicServerOptions.setPort(config.port());
 
-    VertxServer httpServer = new VertxServer(vertx, routes.getRouter(), serverOptions);
-    httpServer.start().get();
+    VertxServer publicHTTPServer =
+        new VertxServer(vertx, routes.getPublicRouter(), publicServerOptions);
+    publicHTTPServer.start().get();
+
+    // build vertx http server for private API
+    HttpServerOptions privateServerOptions = new HttpServerOptions();
+    privateServerOptions.setPort(config.ethport());
+
+    VertxServer privateHTTPServer =
+        new VertxServer(vertx, routes.getPrivateRouter(), privateServerOptions);
+    privateHTTPServer.start().get();
 
     // start network discovery of other peers
     NetworkDiscovery discovery = new NetworkDiscovery(networkNodes, serializer);

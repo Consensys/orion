@@ -51,7 +51,8 @@ public class ReceiveHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     ReceiveRequest receiveRequest = buildReceiveRequest(storage, toEncrypt);
-    Request request = buildPostRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
+    Request request =
+        buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -89,7 +90,7 @@ public class ReceiveHandlerTest extends HandlerTest {
             .addHeader("Content-Type", BINARY.httpHeaderValue)
             .addHeader("Accept", BINARY.httpHeaderValue)
             .addHeader("c11n-key", key)
-            .url(baseUrl + "receiveraw")
+            .url(privateBaseUrl + "receiveraw")
             .build();
 
     // execute request
@@ -101,11 +102,63 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
+  public void testReceiveRestrictedToPrivateAPIServer() throws Exception {
+    // ref to storage
+    final Storage storage = routes.getStorage();
+
+    // generate random byte content
+    byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    ReceiveRequest receiveRequest = buildReceiveRequest(storage, toEncrypt);
+    Request request =
+        buildPublicAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
+
+    // execute request
+    Response resp = httpClient.newCall(request).execute();
+
+    assertEquals(404, resp.code());
+  }
+
+  @Test
+  public void testReceiveRawRestrictedToPrivateAPIServer() throws Exception {
+    // ref to storage
+    final Storage storage = routes.getStorage();
+
+    // generate random byte content
+    byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    // encrypt a payload
+    SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
+    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys());
+
+    // store it
+    String key = storage.put(originalPayload);
+    // Receive operation, sending a ReceivePayload request
+    RequestBody body = RequestBody.create(MediaType.parse(BINARY.httpHeaderValue), "");
+
+    Request request =
+        new Request.Builder()
+            .post(body)
+            .addHeader("Content-Type", BINARY.httpHeaderValue)
+            .addHeader("Accept", BINARY.httpHeaderValue)
+            .addHeader("c11n-key", key)
+            .url(publicBaseUrl + "receiveraw")
+            .build();
+
+    // execute request
+    Response resp = httpClient.newCall(request).execute();
+    assertEquals(404, resp.code());
+  }
+
+  @Test
   public void testResponseWhenKeyNotFound() throws Exception {
     // Receive operation, sending a ReceivePayload request
     ReceiveRequest receiveRequest = new ReceiveRequest("notForMe", null);
 
-    Request request = buildPostRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
+    Request request =
+        buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -133,7 +186,7 @@ public class ReceiveHandlerTest extends HandlerTest {
             .addHeader("Content-Type", BINARY.httpHeaderValue)
             .addHeader("Accept", BINARY.httpHeaderValue)
             .addHeader("c11n-key", key)
-            .url(baseUrl + "receiveraw")
+            .url(privateBaseUrl + "receiveraw")
             .build();
 
     Response resp = httpClient.newCall(request).execute();
@@ -168,7 +221,8 @@ public class ReceiveHandlerTest extends HandlerTest {
 
     // build receive request with payload
     ReceiveRequest receiveRequest = buildReceiveRequest(routes.getStorage(), toEncrypt);
-    Request request = buildPostRequest(OrionRoutes.RECEIVE, HttpContentType.CBOR, receiveRequest);
+    Request request =
+        buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.CBOR, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -179,7 +233,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   @Test
   public void testReceiveWithInvalidBody() throws Exception {
     Request request =
-        buildPostRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, "{\"foo\": \"bar\"}");
+        buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, "{\"foo\": \"bar\"}");
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
