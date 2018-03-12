@@ -8,7 +8,6 @@ import net.consensys.orion.api.network.NetworkNodes;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
-import net.consensys.orion.impl.http.handler.delete.DeleteHandler;
 import net.consensys.orion.impl.http.handler.partyinfo.PartyInfoHandler;
 import net.consensys.orion.impl.http.handler.push.PushHandler;
 import net.consensys.orion.impl.http.handler.receive.ReceiveHandler;
@@ -91,8 +90,6 @@ public class OrionRoutes {
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .handler(new ReceiveHandler(enclave, storage, serializer, APPLICATION_OCTET_STREAM));
-
-    router.post(DELETE).handler(new DeleteHandler(storage));
 
     router
         .post(PARTYINFO)
