@@ -5,6 +5,8 @@ import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
+import net.consensys.orion.api.exception.OrionErrorCode;
+import net.consensys.orion.api.exception.OrionException;
 import net.consensys.orion.api.network.NetworkNodes;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.impl.http.server.HttpContentType;
@@ -72,8 +74,8 @@ public class SendHandler implements Handler<RoutingContext> {
 
     log.debug("reading public keys from SendRequest object");
     // read provided public keys
-    PublicKey fromKey = enclave.readKey(sendRequest.from());
-    List<PublicKey> toKeys =
+    final PublicKey fromKey = enclave.readKey(sendRequest.from());
+    final List<PublicKey> toKeys =
         Arrays.stream(sendRequest.to()).map(enclave::readKey).collect(Collectors.toList());
 
     // toKeys = toKeys + [nodeAlwaysSendTo] --> default pub key to always send to
@@ -82,18 +84,18 @@ public class SendHandler implements Handler<RoutingContext> {
     arrToKeys = toKeys.toArray(arrToKeys);
 
     // convert payload from b64 to bytes
-    byte[] rawPayload = sendRequest.rawPayload();
+    final byte[] rawPayload = sendRequest.rawPayload();
     // encrypting payload
     log.debug("encrypting payload from SendRequest object");
-    EncryptedPayload encryptedPayload = enclave.encrypt(rawPayload, fromKey, arrToKeys);
+    final EncryptedPayload encryptedPayload = enclave.encrypt(rawPayload, fromKey, arrToKeys);
 
     // storing payload
     log.debug("storing payload");
-    String digest = storage.put(encryptedPayload);
+    final String digest = storage.put(encryptedPayload);
 
     // propagate payload
     log.debug("propagating payload");
-    boolean propagated =
+    final boolean propagated =
         toKeys
             .stream()
             .parallel()
@@ -104,16 +106,20 @@ public class SendHandler implements Handler<RoutingContext> {
     if (!propagated) {
       log.warn("propagating the payload failed, removing stored encrypted payload");
       storage.remove(digest);
-      routingContext.fail(new RuntimeException("couldn't propagate payload to all recipients"));
+      routingContext.fail(
+          new OrionException(
+              OrionErrorCode.NODE_PROPAGATION_TO_ALL_PEERS,
+              "couldn't propagate payload to all recipients"));
       return;
     }
 
-    Buffer responseData;
+    final Buffer responseData;
     if (contentType == JSON) {
       responseData = Buffer.buffer(serializer.serialize(JSON, new SendResponse(digest)));
     } else {
       responseData = Buffer.buffer(digest);
     }
+
     routingContext.response().end(responseData);
   }
 
@@ -125,16 +131,16 @@ public class SendHandler implements Handler<RoutingContext> {
 
   private Response pushToPeer(EncryptedPayload encryptedPayload, PublicKey recipient) {
     try {
-      URL recipientURL = networkNodes.urlForRecipient(recipient);
+      final URL recipientURL = networkNodes.urlForRecipient(recipient);
       if (recipientURL == null) {
-        throw new RuntimeException("couldn't find peer URL");
+        throw new OrionException(OrionErrorCode.NODE_MISSING_PEER_URL, "couldn't find peer URL");
       }
-      URL pushURL = new URL(recipientURL, OrionRoutes.PUSH);
+      final URL pushURL = new URL(recipientURL, OrionRoutes.PUSH);
 
       // serialize payload and build RequestBody. we also strip non relevant combinedKeys
-      byte[] payload =
+      final byte[] payload =
           serializer.serialize(HttpContentType.CBOR, encryptedPayload.stripFor(recipient));
-      RequestBody body = RequestBody.create(CBOR, payload);
+      final RequestBody body = RequestBody.create(CBOR, payload);
 
       // build request
       okhttp3.Request req = new okhttp3.Request.Builder().url(pushURL).post(body).build();
@@ -142,7 +148,7 @@ public class SendHandler implements Handler<RoutingContext> {
       // execute request
       return httpClient.newCall(req).execute();
     } catch (IOException io) {
-      throw new RuntimeException(io);
+      throw new OrionException(OrionErrorCode.NODE_PUSHING_TO_PEER, io);
     }
   }
 
@@ -150,7 +156,7 @@ public class SendHandler implements Handler<RoutingContext> {
     try {
       return response.code() == 200 && response.body().string().equals(digest);
     } catch (IOException io) {
-      throw new RuntimeException(io);
+      throw new OrionException(OrionErrorCode.NODE_PUSHING_TO_PEER_RESPONSE, io);
     }
   }
 }

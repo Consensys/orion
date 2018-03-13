@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import net.consensys.orion.api.exception.OrionErrorCode;
+
 import java.util.Optional;
 
 import org.junit.Test;
@@ -13,7 +15,7 @@ public class OrionErrorCodeTest {
 
   @Test
   public void propagationToAllParticipantsFailed() {
-    final OrionErrorCode expected = OrionErrorCode.PAYLOAD_PROPAGATION_TO_ALL_PARTICIPANTS;
+    final OrionErrorCode expected = OrionErrorCode.NODE_PROPAGATION_TO_ALL_PEERS;
 
     final Optional<OrionErrorCode> actual = OrionErrorCode.get(expected.code());
 

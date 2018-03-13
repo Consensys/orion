@@ -7,11 +7,11 @@ import static org.junit.Assert.assertTrue;
 import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
-import net.consensys.orion.impl.exception.OrionErrorCode;
 import net.consensys.orion.impl.http.server.HttpContentType;
 
 import java.security.PublicKey;
@@ -104,7 +104,7 @@ public class PushHandlerTest extends HandlerTest {
     // produces 500 because serialisation error
     TestCase.assertEquals(500, resp.code());
     // checks if the failure reason was with de-serialisation
-    assertError(OrionErrorCode.JSON_DESERIALIZATION, resp);
+    assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
   }
 
   protected EncryptedPayload mockPayload() {

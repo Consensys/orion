@@ -1,21 +1,11 @@
 package net.consensys.orion.api.config;
 
-public class ConfigException extends RuntimeException {
+import net.consensys.orion.api.exception.OrionErrorCode;
+import net.consensys.orion.api.exception.OrionException;
 
-  public ConfigException(String message) {
-    super(message);
-  }
+public class ConfigException extends OrionException {
 
-  public ConfigException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public ConfigException(Throwable cause) {
-    super(cause);
-  }
-
-  protected ConfigException(
-      String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-    super(message, cause, enableSuppression, writableStackTrace);
+  public ConfigException(OrionErrorCode code, String message) {
+    super(code, message);
   }
 }

@@ -5,9 +5,9 @@ import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import static org.junit.Assert.assertEquals;
 
 import net.consensys.orion.api.cmd.OrionRoutes;
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.network.NetworkNodes;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
-import net.consensys.orion.impl.exception.OrionErrorCode;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.network.MemoryNetworkNodes;
 
@@ -86,6 +86,6 @@ public class PartyInfoHandlerTest extends HandlerTest {
     // produces 500 because serialisation error
     TestCase.assertEquals(500, resp.code());
     // checks if the failure reason was with de-serialisation
-    assertError(OrionErrorCode.JSON_DESERIALIZATION, resp);
+    assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
   }
 }

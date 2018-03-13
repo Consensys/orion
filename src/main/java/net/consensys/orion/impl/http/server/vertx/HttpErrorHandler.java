@@ -1,6 +1,7 @@
 package net.consensys.orion.impl.http.server.vertx;
 
-import net.consensys.orion.impl.exception.OrionErrorCode;
+import net.consensys.orion.api.exception.OrionErrorCode;
+import net.consensys.orion.api.exception.OrionException;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.http.server.HttpError;
 import net.consensys.orion.impl.utils.Serializer;
@@ -67,17 +68,12 @@ public class HttpErrorHandler implements Handler<RoutingContext> {
 
   private OrionErrorCode orionError(final Throwable failure) {
 
-    //TODO remove these if cases, replace with an internsl exception type containing the code
-    if (failure.getMessage().equals("couldn't propagate payload to all recipients")) {
-      return OrionErrorCode.PAYLOAD_PROPAGATION_TO_ALL_PARTICIPANTS;
+    if (failure instanceof OrionException) {
+      log.info(failure);
+      return ((OrionException) failure).code();
     }
 
-    if (failure.getMessage().contains("com.fasterxml.jackson")) {
-      return OrionErrorCode.JSON_DESERIALIZATION;
-    }
-
-    //TODO log - unmapped
-    // TODO else
+    log.warn("Non OrionException, default unmapped code used", failure);
     return OrionErrorCode.UNMAPPED;
   }
 }

@@ -10,9 +10,9 @@ import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.HashAlgorithm;
 import net.consensys.orion.api.enclave.KeyConfig;
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
-import net.consensys.orion.impl.exception.OrionErrorCode;
 import net.consensys.orion.impl.http.handler.send.SendRequest;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
@@ -91,7 +91,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // ensure we got a 500 ERROR, as the fakePeer didn't return 200 OK
     assertEquals(500, resp.code());
-    assertError(OrionErrorCode.PAYLOAD_PROPAGATION_TO_ALL_PARTICIPANTS, resp);
+    assertError(OrionErrorCode.NODE_PROPAGATION_TO_ALL_PEERS, resp);
 
     // ensure the fakePeer got a good formatted request
     RecordedRequest recordedRequest = fakePeer.server.takeRequest();
@@ -267,7 +267,7 @@ public class SendHandlerTest extends HandlerTest {
     // produces 500 because serialisation error
     assertEquals(500, resp.code());
     // checks if the failure reason was with de-serialisation
-    assertError(OrionErrorCode.JSON_DESERIALIZATION, resp);
+    assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
   }
 
   private SendRequest buildFakeRequest(List<FakePeer> forPeers, byte[] toEncrypt) {

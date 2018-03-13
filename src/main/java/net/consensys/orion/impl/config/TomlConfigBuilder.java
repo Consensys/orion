@@ -4,6 +4,7 @@ import static java.lang.Math.toIntExact;
 
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.config.ConfigException;
+import net.consensys.orion.api.exception.OrionErrorCode;
 
 import java.io.File;
 import java.io.InputStream;
@@ -107,7 +108,7 @@ public final class TomlConfigBuilder {
 
     if (errorMsg.length() != 0) {
       errorMsg.insert(0, "Invalid Configuration Options\n");
-      throw new ConfigException(errorMsg.toString());
+      throw new ConfigException(OrionErrorCode.CONFIGURATION_OPTION, errorMsg.toString());
     }
 
     return memoryConfig;

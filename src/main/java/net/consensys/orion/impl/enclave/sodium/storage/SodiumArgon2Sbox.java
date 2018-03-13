@@ -2,6 +2,7 @@ package net.consensys.orion.impl.enclave.sodium.storage;
 
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.EnclaveException;
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.utils.Base64;
 
 import com.muquit.libsodiumjna.SodiumLibrary;
@@ -15,11 +16,11 @@ public class SodiumArgon2Sbox {
   }
 
   public byte[] decrypt(StoredPrivateKey storedPrivateKey, String password) {
-    ArgonOptions argonOptions = storedPrivateKey.data().aopts().get();
-    String asalt = storedPrivateKey.data().asalt().get();
-    int algorithm = lookupAlgorithm(argonOptions);
+    final ArgonOptions argonOptions = storedPrivateKey.data().aopts().get();
+    final String asalt = storedPrivateKey.data().asalt().get();
+    final int algorithm = lookupAlgorithm(argonOptions);
     try {
-      byte[] pwhash =
+      final byte[] pwhash =
           SodiumLibrary.cryptoPwhash(
               password.getBytes(),
               decode(asalt),
@@ -30,8 +31,8 @@ public class SodiumArgon2Sbox {
           decode(storedPrivateKey.data().sbox().get()),
           decode(storedPrivateKey.data().snonce().get()),
           pwhash);
-    } catch (SodiumLibraryException e) {
-      throw new EnclaveException(e);
+    } catch (final SodiumLibraryException e) {
+      throw new EnclaveException(OrionErrorCode.ENCLAVE_STORAGE_DECRYPT, e);
     }
   }
 
@@ -46,7 +47,9 @@ public class SodiumArgon2Sbox {
       case "id":
         return SodiumLibrary.cryptoPwhashAlgArgon2id13();
       default:
-        throw new EnclaveException("Unsupported variant: " + argonOptions.variant());
+        throw new EnclaveException(
+            OrionErrorCode.ENCLAVE_UNSUPPORTED_STORAGE_ALGORTHIM,
+            "Unsupported variant: " + argonOptions.variant());
     }
   }
 
@@ -59,9 +62,13 @@ public class SodiumArgon2Sbox {
   }
 
   public byte[] encrypt(
-      byte[] privateKey, String password, byte[] asalt, byte[] snonce, ArgonOptions argonOptions) {
+      final byte[] privateKey,
+      String password,
+      byte[] asalt,
+      byte[] snonce,
+      ArgonOptions argonOptions) {
     try {
-      byte[] pwhash =
+      final byte[] pwhash =
           SodiumLibrary.cryptoPwhash(
               password.getBytes(),
               asalt,
@@ -70,8 +77,8 @@ public class SodiumArgon2Sbox {
               lookupAlgorithm(argonOptions));
       return SodiumLibrary.cryptoSecretBoxEasy(privateKey, snonce, pwhash);
 
-    } catch (SodiumLibraryException e) {
-      throw new EnclaveException(e);
+    } catch (final SodiumLibraryException e) {
+      throw new EnclaveException(OrionErrorCode.ENCLAVE_STORAGE_ENCRYPT, e);
     }
   }
 }

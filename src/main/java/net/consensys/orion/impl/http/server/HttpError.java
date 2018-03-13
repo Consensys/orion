@@ -1,6 +1,6 @@
 package net.consensys.orion.impl.http.server;
 
-import net.consensys.orion.impl.exception.OrionErrorCode;
+import net.consensys.orion.api.exception.OrionErrorCode;
 
 import java.util.Objects;
 import java.util.Optional;

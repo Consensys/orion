@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.storage.leveldb;
 
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.api.storage.StorageException;
 import net.consensys.orion.impl.http.server.HttpContentType;
@@ -16,25 +17,26 @@ import org.iq80.leveldb.Options;
 public class LevelDbStorage<T> implements StorageEngine<T> {
 
   private Optional<DB> db;
-  private Serializer serializer;
+  private final Serializer serializer;
   private final Class<? extends T> typeParameterClass;
 
   public LevelDbStorage(Class<? extends T> typeParameterClass, String path, Serializer serializer) {
     this.typeParameterClass = typeParameterClass;
     this.serializer = serializer;
-    Options options = new Options();
+    final Options options = new Options();
     options.createIfMissing(true);
     try {
       db = Optional.of(JniDBFactory.factory.open(new File(path), options));
-    } catch (IOException e) {
-      throw new StorageException(e);
+    } catch (final IOException e) {
+      throw new StorageException(OrionErrorCode.STORAGE_OPEN, e);
     }
   }
 
   @Override
   public void put(String key, T data) {
     if (!db.isPresent()) {
-      throw new StorageException("Database was already closed");
+      throw new StorageException(
+          OrionErrorCode.STORAGE_CLOSED_WRITE, "Database was already closed");
     }
     db.get().put(key.getBytes(), serializer.serialize(HttpContentType.CBOR, data));
   }
@@ -42,7 +44,7 @@ public class LevelDbStorage<T> implements StorageEngine<T> {
   @Override
   public Optional<T> get(String key) {
     if (!db.isPresent()) {
-      throw new StorageException("Database was already closed");
+      throw new StorageException(OrionErrorCode.STORAGE_CLOSED_READ, "Database was already closed");
     }
 
     byte[] bytes = db.get().get(key.getBytes());
@@ -55,7 +57,8 @@ public class LevelDbStorage<T> implements StorageEngine<T> {
   @Override
   public void remove(String key) {
     if (!db.isPresent()) {
-      throw new StorageException("Database was already closed");
+      throw new StorageException(
+          OrionErrorCode.STORAGE_CLOSED_DELETE, "Database was already closed");
     }
     db.get().delete(key.getBytes());
   }
@@ -70,11 +73,13 @@ public class LevelDbStorage<T> implements StorageEngine<T> {
     if (!db.isPresent()) {
       return;
     }
+
     try {
       db.get().close();
-      db = Optional.empty();
-    } catch (IOException e) {
-      throw new StorageException(e);
+    } catch (final IOException e) {
+      throw new StorageException(OrionErrorCode.STORAGE_CLOSE, e);
     }
+
+    db = Optional.empty();
   }
 }

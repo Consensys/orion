@@ -3,6 +3,7 @@ package net.consensys.orion.impl.enclave.sodium;
 import net.consensys.orion.api.enclave.CombinedKey;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.EncryptedPayload;
+import net.consensys.orion.api.exception.OrionErrorCode;
 
 import java.io.Serializable;
 import java.security.PublicKey;
@@ -82,9 +83,12 @@ public class SodiumEncryptedPayload implements EncryptedPayload, Serializable {
 
   @Override
   public EncryptedPayload stripFor(PublicKey key) {
-    Integer toKeepIdx = combinedKeysOwners.get().get(key);
+    final Integer toKeepIdx = combinedKeysOwners.get().get(key);
+
     if (toKeepIdx == null || toKeepIdx < 0 || toKeepIdx >= combinedKeys.length) {
-      throw new EnclaveException("can't strip encrypted payload for provided key");
+      throw new EnclaveException(
+          OrionErrorCode.ENCLAVE_NOT_PAYLOAD_OWNER,
+          "can't strip encrypted payload for provided key");
     }
 
     return new SodiumEncryptedPayload(

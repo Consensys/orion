@@ -7,6 +7,7 @@ import net.consensys.orion.api.config.ConfigException;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.network.NetworkNodes;
 import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.impl.cmd.OrionArguments;
@@ -161,7 +162,9 @@ public class Orion {
     } else if (storage.startsWith("leveldb")) {
       return new LevelDbStorage<>(SodiumEncryptedPayload.class, storagePath + dbPath, serializer);
     } else {
-      throw new ConfigException("unsupported storage mechanism: " + storage);
+      throw new ConfigException(
+          OrionErrorCode.CONFIGURATION_STORAGE_MECHANISM,
+          "unsupported storage mechanism: " + storage);
     }
   }
 
