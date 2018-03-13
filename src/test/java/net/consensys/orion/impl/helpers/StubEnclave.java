@@ -14,17 +14,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class CesarEnclave implements Enclave {
+/*
+ * A very simple test class that implements the enclave interface and does minimal encryption operations that do not do much at all.
+ */
+public class StubEnclave implements Enclave {
 
   private final SodiumPublicKey[] alwaysSendTo;
   private final SodiumPublicKey[] nodeKeys;
 
-  public CesarEnclave(SodiumPublicKey[] alwaysSendTo, SodiumPublicKey[] nodeKeys) {
+  public StubEnclave(SodiumPublicKey[] alwaysSendTo, SodiumPublicKey[] nodeKeys) {
     this.alwaysSendTo = alwaysSendTo;
     this.nodeKeys = nodeKeys;
   }
 
-  public CesarEnclave() {
+  public StubEnclave() {
     this.alwaysSendTo = new SodiumPublicKey[0];
     this.nodeKeys = new SodiumPublicKey[0];
   }
