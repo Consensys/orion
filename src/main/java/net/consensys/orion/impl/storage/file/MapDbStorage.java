@@ -22,7 +22,7 @@ public class MapDbStorage<T> implements StorageEngine<T> {
 
   public MapDbStorage(Class<? extends T> typeParameterClass, String path, Serializer serializer) {
     this.typeParameterClass = typeParameterClass;
-    db = DBMaker.fileDB(path).transactionEnable().make();
+    db = DBMaker.fileDB(path + "/mapdb").transactionEnable().make();
     this.serializer = serializer;
     storageData = db.hashMap("storageData", BYTE_ARRAY, BYTE_ARRAY).createOrOpen();
   }

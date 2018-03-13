@@ -11,7 +11,7 @@ import org.junit.After;
 import org.junit.Test;
 
 public class MapDbStorageTest {
-  String path = "db";
+  String path = ".";
   private Serializer serializer = new Serializer();
   MapDbStorage<String> storage = new MapDbStorage<>(String.class, path, serializer);
 
