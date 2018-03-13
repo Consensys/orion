@@ -122,8 +122,11 @@ features.
 
 ## Database disaster recovery
 
-Orion stores all payload information on its internal database. This database is stored on the path defined by the workdir configuration.
+Orion stores all payload information on its internal database. This database is stored on the path 
+defined by the `workdir` configuration combined with the path information provided in the `storage` option.
 
-If the database is deleted or corrupted, the node will lose all the payloads stored in its local database. It is not possible to recover a lost database without a backup.
+If the database is deleted or corrupted, the node will lose all the payloads stored in its local 
+database. It is not possible to recover a lost database without a backup.
 
-[This page](https://github.com/ConsenSys/orion/wiki/Disaster-Recovery-Strategies) contains more information about disaster recovery strategies for Orion.
+[This page](https://github.com/ConsenSys/orion/wiki/Disaster-Recovery-Strategies) contains more 
+information about disaster recovery strategies for Orion.
