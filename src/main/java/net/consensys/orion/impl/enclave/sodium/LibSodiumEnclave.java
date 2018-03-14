@@ -7,6 +7,7 @@ import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.HashAlgorithm;
 import net.consensys.orion.api.enclave.KeyStore;
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.Hasher;
 
 import java.nio.charset.StandardCharsets;
@@ -93,7 +94,8 @@ public class LibSodiumEnclave implements Enclave {
       return (SodiumPublicKey) senderKey;
     }
 
-    throw new EnclaveException("SodiumEnclave needs SodiumPublicKey");
+    throw new EnclaveException(
+        OrionErrorCode.ENCLAVE_UNSUPPORTED_PUBLIC_KEY_TYPE, "SodiumEnclave needs SodiumPublicKey");
   }
 
   private PublicKey[] addSenderToRecipients(final PublicKey[] recipients, final PublicKey sender) {
@@ -106,8 +108,8 @@ public class LibSodiumEnclave implements Enclave {
     try {
       return SodiumLibrary.cryptoSecretBoxOpenEasy(
           ciphertextAndMetadata.cipherText(), ciphertextAndMetadata.nonce(), secretKey);
-    } catch (SodiumLibraryException e) {
-      throw new EnclaveException(e);
+    } catch (final SodiumLibraryException e) {
+      throw new EnclaveException(OrionErrorCode.ENCLAVE_DECRYPT, e);
     }
   }
 
@@ -132,7 +134,7 @@ public class LibSodiumEnclave implements Enclave {
     }
 
     // No more keys left to try, finally propagate the issue
-    throw new EnclaveException(problem);
+    throw new EnclaveException(OrionErrorCode.ENCLAVE_DECRYPT_WRONG_PRIVATE_KEY, problem);
   }
 
   private byte[] nonce() {
@@ -143,7 +145,8 @@ public class LibSodiumEnclave implements Enclave {
   private PrivateKey privateKey(PublicKey identity) {
     final PrivateKey privateKey = keyStore.privateKey(identity);
     if (privateKey == null) {
-      throw new EnclaveException("No StoredPrivateKey found in keystore");
+      throw new EnclaveException(
+          OrionErrorCode.ENCLAVE_NO_MATCHING_PRIVATE_KEY, "No StoredPrivateKey found in keystore");
     }
 
     return privateKey;
@@ -162,8 +165,8 @@ public class LibSodiumEnclave implements Enclave {
   private byte[] encrypt(byte[] plaintext, byte[] secretNonce, byte[] secretKey) {
     try {
       return SodiumLibrary.cryptoSecretBoxEasy(plaintext, secretNonce, secretKey);
-    } catch (SodiumLibraryException e) {
-      throw new EnclaveException(e);
+    } catch (final SodiumLibraryException e) {
+      throw new EnclaveException(OrionErrorCode.ENCLAVE_ENCRYPT, e);
     }
   }
 
@@ -192,8 +195,8 @@ public class LibSodiumEnclave implements Enclave {
       }
 
       return combinedKeys;
-    } catch (SodiumLibraryException e) {
-      throw new EnclaveException(e);
+    } catch (final SodiumLibraryException e) {
+      throw new EnclaveException(OrionErrorCode.ENCLAVE_ENCRYPT_COMBINE_KEYS, e);
     }
   }
 }

@@ -1,8 +1,11 @@
 package net.consensys.orion.impl.http.handlers;
 
+import static junit.framework.TestCase.assertEquals;
+
 import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
@@ -14,7 +17,6 @@ import net.consensys.orion.impl.network.MemoryNetworkNodes;
 import net.consensys.orion.impl.storage.file.MapDbStorage;
 import net.consensys.orion.impl.utils.Serializer;
 
-import java.io.File;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 
@@ -112,5 +114,10 @@ public abstract class HandlerTest {
     }
 
     return new Request.Builder().post(body).url(baseUrl + path).build();
+  }
+
+  protected void assertError(final OrionErrorCode expected, final Response actual)
+      throws IOException {
+    assertEquals("{\"error\":" + expected.code() + "}", actual.body().string());
   }
 }

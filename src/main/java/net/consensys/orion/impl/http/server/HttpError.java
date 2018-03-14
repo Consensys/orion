@@ -1,11 +1,20 @@
 package net.consensys.orion.impl.http.server;
 
+import net.consensys.orion.api.exception.OrionErrorCode;
+
 import java.util.Objects;
+import java.util.Optional;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class HttpError {
-  public final String error;
+  private static final Logger log = LogManager.getLogger();
 
-  public HttpError(String error) {
+  private OrionErrorCode error;
+
+  public HttpError(OrionErrorCode error) {
     this.error = error;
   }
 
@@ -28,6 +37,25 @@ public final class HttpError {
 
   @Override
   public String toString() {
-    return "HttpError{" + "error='" + error + '\'' + '}';
+    return "HttpError{" + "error='" + error.code() + '\'' + '}';
+  }
+
+  @JsonProperty("error")
+  public int error() {
+    return error.code();
+  }
+
+  @JsonProperty("error")
+  public void error(final int code) {
+    final Optional<OrionErrorCode> potential = OrionErrorCode.get(code);
+
+    if (potential.isPresent()) {
+      this.error = potential.get();
+    } else {
+      log.warn(
+          String.format(
+              "Unmapped error code, decimal: %s, hex: %s", code, Integer.toBinaryString(code)));
+      this.error = OrionErrorCode.UNMAPPED;
+    }
   }
 }

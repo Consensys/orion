@@ -1,11 +1,11 @@
 package net.consensys.orion.impl.http.handlers;
 
-import static junit.framework.TestCase.assertTrue;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import static org.junit.Assert.assertEquals;
 
 import net.consensys.orion.api.cmd.OrionRoutes;
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.network.NetworkNodes;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
@@ -86,6 +86,6 @@ public class PartyInfoHandlerTest extends HandlerTest {
     // produces 500 because serialisation error
     TestCase.assertEquals(500, resp.code());
     // checks if the failure reason was with de-serialisation
-    assertTrue(resp.body().string().contains("com.fasterxml.jackson"));
+    assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
   }
 }
