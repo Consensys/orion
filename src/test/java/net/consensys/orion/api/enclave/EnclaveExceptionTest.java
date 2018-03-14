@@ -7,12 +7,12 @@ import org.junit.Test;
 public class EnclaveExceptionTest {
 
   @Test
-  public void testImplementationOfRuntimeInterface() {
+  public void implementationOfRuntimeInterface() {
     assertTrue(RuntimeException.class.isAssignableFrom(EnclaveException.class));
   }
 
   @Test
-  public void testConstruction() {
+  public void construction() {
     String message = "This is the cause";
     EnclaveException exception = new EnclaveException(message);
     assertEquals(message, exception.getMessage());

@@ -11,7 +11,7 @@ import org.junit.Test;
 public class LibSodiumEnclaveStubTest {
 
   @Test
-  public void testRoundTripEncryption() {
+  public void roundTripEncryption() {
     byte[] message = "hello".getBytes();
     LibSodiumEnclaveStub enclave = new LibSodiumEnclaveStub();
     EncryptedPayload encryptedPayload = enclave.encrypt(message, null, null);
@@ -20,7 +20,7 @@ public class LibSodiumEnclaveStubTest {
   }
 
   @Test
-  public void testRoundTripEncryptionWithFunkyBytes() {
+  public void roundTripEncryptionWithFunkyBytes() {
     byte[] message = DatatypeConverter.parseHexBinary("0079FF00FF89");
     LibSodiumEnclaveStub enclave = new LibSodiumEnclaveStub();
     EncryptedPayload encryptedPayload = enclave.encrypt(message, null, null);

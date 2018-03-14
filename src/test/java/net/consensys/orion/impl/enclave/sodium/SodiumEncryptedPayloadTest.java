@@ -16,7 +16,7 @@ import org.junit.Test;
 public class SodiumEncryptedPayloadTest {
 
   @Test
-  public void testRoundTripSerialization() {
+  public void roundTripSerialization() {
     SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes());
     Map<SodiumPublicKey, Integer> combinedKeysOwners = new HashMap<>();
     SodiumPublicKey key = new SodiumPublicKey("fake remote publickey".getBytes());
@@ -37,7 +37,7 @@ public class SodiumEncryptedPayloadTest {
   }
 
   @Test
-  public void testSerializationToJsonWithoutCombinedKeyOwners() throws Exception {
+  public void serializationToJsonWithoutCombinedKeyOwners() throws Exception {
     SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes());
     SodiumEncryptedPayload payload =
         new SodiumEncryptedPayload(

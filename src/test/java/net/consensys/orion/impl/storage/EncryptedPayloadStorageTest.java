@@ -18,11 +18,11 @@ public class EncryptedPayloadStorageTest {
 
   private Enclave enclave = new LibSodiumEnclaveStub();
   private StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
-  MemoryStorage memory = new MemoryStorage();
-  Storage<EncryptedPayload> storage = new EncryptedPayloadStorage(memory, keyBuilder);
+  private MemoryStorage memory = new MemoryStorage();
+  private Storage<EncryptedPayload> storage = new EncryptedPayloadStorage(memory, keyBuilder);
 
   @Test
-  public void testStoreAndRetrieve() throws Exception {
+  public void storeAndRetrieve() {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
@@ -34,7 +34,7 @@ public class EncryptedPayloadStorageTest {
   }
 
   @Test
-  public void testRetrieveWithoutStore() throws Exception {
+  public void retrieveWithoutStore() {
     assertEquals(Optional.empty(), storage.get("missing"));
   }
 }

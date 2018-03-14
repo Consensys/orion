@@ -42,7 +42,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testPayloadIsRetrieved() throws Exception {
+  public void payloadIsRetrieved() throws Exception {
     // ref to storage
     final Storage storage = routes.getStorage();
 
@@ -66,7 +66,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testRawPayloadIsRetrieved() throws Exception {
+  public void rawPayloadIsRetrieved() throws Exception {
     // ref to storage
     final Storage storage = routes.getStorage();
 
@@ -102,7 +102,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testResponseWhenKeyNotFound() throws Exception {
+  public void responseWhenKeyNotFound() throws Exception {
     // Receive operation, sending a ReceivePayload request
     ReceiveRequest receiveRequest = new ReceiveRequest("notForMe", null);
 
@@ -115,7 +115,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testResponseWhenDecryptFails() throws Exception {
+  public void responseWhenDecryptFails() throws Exception {
     final Storage storage = routes.getStorage();
 
     byte[] toEncrypt = new byte[342];
@@ -143,7 +143,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testRoundTripSerialization() {
+  public void roundTripSerialization() {
     ReceiveResponse receiveResponse = new ReceiveResponse("some payload");
     assertEquals(
         receiveResponse,
@@ -163,7 +163,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testReceiveWithInvalidContentType() throws Exception {
+  public void receiveWithInvalidContentType() throws Exception {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
@@ -179,7 +179,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testReceiveWithInvalidBody() throws Exception {
+  public void receiveWithInvalidBody() throws Exception {
     Request request =
         buildPostRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, "{\"foo\": \"bar\"}");
 
