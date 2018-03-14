@@ -1,4 +1,4 @@
-package net.consensys.orion.impl.http;
+package net.consensys.orion.acceptance;
 
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 
@@ -21,7 +21,10 @@ import okhttp3.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class OrionClient {
+/**
+ * Simple Ethereum Client (Node) for calling Orion APIs
+ */
+public class EthNodeStub {
   private static final Logger log = LogManager.getLogger();
 
   private final OkHttpClient httpClient = new OkHttpClient();
@@ -30,15 +33,19 @@ public class OrionClient {
   private final String baseUrl;
   private final Request upRequest;
 
-  public OrionClient(String baseUrl) {
-    if (baseUrl.endsWith("/")) {
-      this.baseUrl = baseUrl;
+  /**
+   *
+   * @param orionPrivateUrl URL, including port, of the Orion Private API server
+   */
+  public EthNodeStub(String orionPrivateUrl) {
+    if (orionPrivateUrl.endsWith("/")) {
+      this.baseUrl = orionPrivateUrl;
     } else {
-      this.baseUrl = baseUrl + "/";
+      this.baseUrl = orionPrivateUrl + "/";
     }
 
     // setup immutable upCheck request
-    upRequest = new Request.Builder().get().url(baseUrl + OrionRoutes.UPCHECK.substring(1)).build();
+    upRequest = new Request.Builder().get().url(orionPrivateUrl + OrionRoutes.UPCHECK.substring(1)).build();
   }
 
   public boolean upCheck() {

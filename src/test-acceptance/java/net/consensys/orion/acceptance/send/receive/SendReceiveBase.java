@@ -2,9 +2,8 @@ package net.consensys.orion.acceptance.send.receive;
 
 import static org.junit.Assert.assertArrayEquals;
 
-import net.consensys.orion.impl.http.OrionClient;
-
 import junit.framework.AssertionFailedError;
+import net.consensys.orion.acceptance.EthNodeStub;
 
 /**
  * SendReceiveBase contains the common attributes and behaviours to tests that focus on sending and
@@ -19,11 +18,11 @@ public class SendReceiveBase {
     return utils;
   }
 
-  protected byte[] viewTransaction(OrionClient viewer, String viewerKey, String digest) {
+  protected byte[] viewTransaction(EthNodeStub viewer, String viewerKey, String digest) {
     return viewer.receive(digest, viewerKey).orElseThrow(AssertionFailedError::new);
   }
 
-  protected String sendTransaction(OrionClient sender, String senderKey, String... recipientsKey) {
+  protected String sendTransaction(EthNodeStub sender, String senderKey, String... recipientsKey) {
     return sender
         .send(originalPayload, senderKey, recipientsKey)
         .orElseThrow(AssertionFailedError::new);

@@ -1,8 +1,8 @@
 package net.consensys.orion.acceptance.send.receive;
 
+import net.consensys.orion.acceptance.EthNodeStub;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
-import net.consensys.orion.impl.http.OrionClient;
 
 import java.io.File;
 import java.nio.file.FileVisitOption;
@@ -25,8 +25,8 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String HOST_NAME = "127.0.0.1";
 
-  private static String firstNodeBaseUrl;
-  private static String secondNodeBaseUrl;
+  private static String firstNodeEthUrl;
+  private static String secondNodeEthUrl;
   private static Config firstNodeConfig;
   private static Config secondNodeConfig;
 
@@ -49,8 +49,10 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
     int secondNodePort = utils().freePort();
     int secondNodeEthPort = utils().freePort();
 
-    firstNodeBaseUrl = utils().url(HOST_NAME, firstNodePort);
-    secondNodeBaseUrl = utils().url(HOST_NAME, secondNodePort);
+    String firstNodeBaseUrl = utils().url(HOST_NAME, firstNodePort);
+    firstNodeEthUrl = utils().url(HOST_NAME, firstNodeEthPort);
+    String secondNodeBaseUrl = utils().url(HOST_NAME, secondNodePort);
+    secondNodeEthUrl = utils().url(HOST_NAME, secondNodeEthPort);
 
     firstNodeConfig =
         utils()
@@ -88,8 +90,8 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
 
   @Test
   public void receiverCanView() throws Exception {
-    final OrionClient firstNode = firstClient();
-    final OrionClient secondNode = secondClient();
+    final EthNodeStub firstNode = utils().ethNode(firstNodeEthUrl);
+    final EthNodeStub secondNode = utils().ethNode(secondNodeEthUrl);
     ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
@@ -100,7 +102,7 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
 
   @Test
   public void senderCanView() throws Exception {
-    final OrionClient firstNode = firstClient();
+    final EthNodeStub firstNode = utils().ethNode(firstNodeEthUrl);
     ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
@@ -109,11 +111,4 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
     assertTransaction(receivedPayload);
   }
 
-  private OrionClient firstClient() {
-    return utils().client(firstNodeBaseUrl);
-  }
-
-  private OrionClient secondClient() {
-    return utils().client(secondNodeBaseUrl);
-  }
 }
