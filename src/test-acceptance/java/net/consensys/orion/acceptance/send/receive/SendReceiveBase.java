@@ -2,7 +2,6 @@ package net.consensys.orion.acceptance.send.receive;
 
 import static org.junit.Assert.assertArrayEquals;
 
-import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.http.OrionClient;
 
 import junit.framework.AssertionFailedError;
@@ -30,21 +29,9 @@ public class SendReceiveBase {
         .orElseThrow(AssertionFailedError::new);
   }
 
-  protected String sendTransactionExpectingError(
-      OrionClient sender, String senderKey, String... recipientsKey) {
-    return sender
-        .sendExpectingError(originalPayload, senderKey, recipientsKey)
-        .orElseThrow(AssertionFailedError::new);
-  }
-
   /** Asserts the received payload matches that sent. */
   protected void assertTransaction(byte[] receivedPayload) {
     assertArrayEquals(originalPayload, receivedPayload);
-  }
-
-  /** Asserts the received payload matches that sent. */
-  protected void assertError(OrionErrorCode expected, String actual) {
-    utils.assertError(OrionErrorCode.NODE_MISSING_PEER_URL, actual);
   }
 
   protected void ensureNetworkDiscoveryOccurs() throws InterruptedException {

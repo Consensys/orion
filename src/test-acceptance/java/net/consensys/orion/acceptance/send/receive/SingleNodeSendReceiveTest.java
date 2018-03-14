@@ -42,7 +42,7 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
 
   @BeforeClass
   public static void setUpSingleNode() throws Exception {
-    int port = utils().freePort();
+    final int port = utils().freePort();
 
     baseUrl = utils().url(HOST_NAME, port);
 

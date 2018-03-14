@@ -86,7 +86,12 @@ public class LibSodiumEnclave implements Enclave {
 
   @Override
   public PublicKey readKey(String b64) {
-    return new SodiumPublicKey(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
+    try {
+      return new SodiumPublicKey(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
+
+    } catch (final IllegalArgumentException e) {
+      throw new EnclaveException(OrionErrorCode.ENCLAVE_DECODE_PUBLIC_KEY, e);
+    }
   }
 
   private SodiumPublicKey sodiumPublicKey(PublicKey senderKey) {
