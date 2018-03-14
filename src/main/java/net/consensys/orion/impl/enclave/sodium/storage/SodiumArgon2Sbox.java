@@ -48,7 +48,7 @@ public class SodiumArgon2Sbox {
         return SodiumLibrary.cryptoPwhashAlgArgon2id13();
       default:
         throw new EnclaveException(
-            OrionErrorCode.ENCLAVE_UNSUPPORTED_STORAGE_ALGORTHIM,
+            OrionErrorCode.ENCLAVE_UNSUPPORTED_STORAGE_ALGORITHM,
             "Unsupported variant: " + argonOptions.variant());
     }
   }

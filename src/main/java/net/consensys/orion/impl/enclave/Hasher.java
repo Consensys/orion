@@ -21,7 +21,7 @@ public class Hasher {
       digest.update(input);
       return digest.digest();
     } catch (final NoSuchAlgorithmException e) {
-      throw new EnclaveException(OrionErrorCode.ENCLAVE_UNSUPPORTED_ALGORTHIM, e);
+      throw new EnclaveException(OrionErrorCode.ENCLAVE_UNSUPPORTED_ALGORITHM, e);
     }
   }
 }

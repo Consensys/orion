@@ -1,7 +1,9 @@
-package net.consensys.orion.acceptance.send.receive;
+package net.consensys.orion.acceptance.send;
 
+import net.consensys.orion.acceptance.send.receive.SendReceiveBase;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.http.OrionClient;
 
 import java.io.File;
@@ -19,10 +21,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /** Runs up a single node that communicates with itself. */
-public class SingleNodeSendReceiveTest extends SendReceiveBase {
+public class SingleNodeSendTest extends SendReceiveBase {
 
   private static final String PK_1_B_64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
-  private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
+  private static final String PK_MISSING_PEER = "A1aVtMxLCUlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String HOST_NAME = "127.0.0.1";
 
   private static String baseUrl;
@@ -67,41 +69,17 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
     orionLauncher.stop();
   }
 
-  /** Sender and receiver use the same key. */
+  /** Try sending to a peer that does not exist. */
   @Test
-  public void keyIdentity() throws Exception {
+  public void missingPeer() {
     final OrionClient orionClient = client();
-    ensureNetworkDiscoveryOccurs();
 
-    final String digest = sendTransaction(orionClient, PK_2_B_64, PK_2_B_64);
-    final byte[] receivedPayload = viewTransaction(orionClient, PK_2_B_64, digest);
+    final String response = sendTransactionExpectingError(orionClient, PK_1_B_64, PK_MISSING_PEER);
 
-    assertTransaction(receivedPayload);
+    assertError(OrionErrorCode.NODE_MISSING_PEER_URL, response);
   }
 
-  /** Different keys for the sender and receiver. */
-  @Test
-  public void receiverCanView() throws Exception {
-    final OrionClient orionClient = client();
-    ensureNetworkDiscoveryOccurs();
-
-    final String digest = sendTransaction(orionClient, PK_1_B_64, PK_2_B_64);
-    final byte[] receivedPayload = viewTransaction(orionClient, PK_2_B_64, digest);
-
-    assertTransaction(receivedPayload);
-  }
-
-  /** The sender key can view their transaction when not in the recipient key list. */
-  @Test
-  public void senderCanView() throws Exception {
-    final OrionClient orionClient = client();
-    ensureNetworkDiscoveryOccurs();
-
-    final String digest = sendTransaction(orionClient, PK_1_B_64, PK_2_B_64);
-    final byte[] receivedPayload = viewTransaction(orionClient, PK_1_B_64, digest);
-
-    assertTransaction(receivedPayload);
-  }
+  //TODO wrong pk size key (currently unmapped error)
 
   private OrionClient client() {
     return utils().client(baseUrl);
