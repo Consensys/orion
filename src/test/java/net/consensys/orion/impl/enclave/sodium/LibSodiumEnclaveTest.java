@@ -27,7 +27,7 @@ public class LibSodiumEnclaveTest {
   private LibSodiumEnclave enclave;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
     enclave = new LibSodiumEnclave(config, memoryKeyStore);
   }
@@ -40,7 +40,7 @@ public class LibSodiumEnclaveTest {
   @Test
   public void sodiumLoads() throws SodiumLibraryException {
     final int nonceBytesLength = SodiumLibrary.cryptoBoxNonceBytes().intValue();
-    final byte[] nonce = SodiumLibrary.randomBytes((int) nonceBytesLength);
+    final byte[] nonce = SodiumLibrary.randomBytes(nonceBytesLength);
     final SodiumKeyPair senderPair = SodiumLibrary.cryptoBoxKeyPair();
     final SodiumKeyPair recipientPair = SodiumLibrary.cryptoBoxKeyPair();
 
@@ -53,7 +53,7 @@ public class LibSodiumEnclaveTest {
   }
 
   @Test
-  public void recipienEncryptDecrypt() throws SodiumLibraryException {
+  public void recipientEncryptDecrypt() {
     final PublicKey senderKey = generateKey();
     final PublicKey recipientKey = generateKey();
     final String plaintext = "hello again";
@@ -65,19 +65,19 @@ public class LibSodiumEnclaveTest {
   }
 
   @Test
-  /** Sender can decrpt the cipher text for their encrypted plaint text. */
+  /* Sender can decrypt the cipher text for their encrypted plaint text. */
   public void senderEncryptDecrypt() {
     final PublicKey senderKey = generateKey();
     final String plaintext = "the original message";
 
     final EncryptedPayload encryptedPayload = encrypt(plaintext, senderKey);
-    final String decrptedPlainText = decrypt(encryptedPayload, senderKey);
+    final String decryptedPlainText = decrypt(encryptedPayload, senderKey);
 
-    assertEquals(plaintext, decrptedPlainText);
+    assertEquals(plaintext, decryptedPlainText);
   }
 
   @Test
-  /** Sender decryption must not be affected by the presence of other combined keys (recipients) */
+  /* Sender decryption must not be affected by the presence of other combined keys (recipients) */
   public void senderEncryptDecryptWithRecipients() {
     final PublicKey senderKey = generateKey();
     final PublicKey recipientAKey = generateKey();
@@ -86,13 +86,13 @@ public class LibSodiumEnclaveTest {
 
     final EncryptedPayload encryptedPayload =
         encrypt(plaintext, senderKey, recipientAKey, recipientBKey);
-    final String decrptedPlainText = decrypt(encryptedPayload, senderKey);
+    final String decryptedPlainText = decrypt(encryptedPayload, senderKey);
 
-    assertEquals(plaintext, decrptedPlainText);
+    assertEquals(plaintext, decryptedPlainText);
   }
 
   @Test
-  public void encryptThrowsExceptionWhenMissingKey() throws Exception {
+  public void encryptThrowsExceptionWhenMissingKey() {
     final PublicKey fake = new SodiumPublicKey("fake".getBytes());
     final PublicKey recipientKey = generateKey();
 
@@ -105,7 +105,7 @@ public class LibSodiumEnclaveTest {
   }
 
   @Test
-  public void decryptThrowsExceptionWhnMissingKey() throws Exception {
+  public void decryptThrowsExceptionWhenMissingKey() {
     final PublicKey fake = new SodiumPublicKey("fake".getBytes());
     final SodiumPublicKey sender = generateKey();
 

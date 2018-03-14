@@ -24,14 +24,14 @@ public class SodiumPublicKeyTest {
   private Enclave enclave;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
     memoryKeyStore = new SodiumMemoryKeyStore(config);
     enclave = new LibSodiumEnclave(config, memoryKeyStore);
   }
 
   @Test
-  public void testRoundTripSerialization() {
+  public void roundTripSerialization() {
     SodiumPublicKey key = new SodiumPublicKey("fake encoded".getBytes());
     Serializer serializer = new Serializer();
     byte[] bytes = serializer.serialize(HttpContentType.JSON, key);
@@ -41,7 +41,7 @@ public class SodiumPublicKeyTest {
   }
 
   @Test
-  public void testKeyFromB64EqualsOriginal() {
+  public void keyFromB64EqualsOriginal() {
     // generate key
     PublicKey fakePK = memoryKeyStore.generateKeyPair(keyConfig);
 

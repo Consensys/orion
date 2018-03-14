@@ -10,7 +10,7 @@ public class VersionTest {
    * expected version. It is expected that a good cleanup of code will result in this being deleted.
    */
   @Test
-  public void testVersionIs0_0_0_1() throws Exception {
+  public void versionIs0_0_0_1() {
     assertArrayEquals(Version.VERSION, new int[] {0, 0, 0, 1});
   }
 }

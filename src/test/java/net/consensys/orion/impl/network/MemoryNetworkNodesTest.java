@@ -15,7 +15,7 @@ import org.junit.Test;
 
 public class MemoryNetworkNodesTest {
   @Test
-  public void testRoundTripSerialization() throws MalformedURLException {
+  public void roundTripSerialization() throws MalformedURLException {
     CopyOnWriteArraySet<URL> urls = new CopyOnWriteArraySet<>();
     URL u = new URL("http://nowhere:9090/");
     urls.add(u);
