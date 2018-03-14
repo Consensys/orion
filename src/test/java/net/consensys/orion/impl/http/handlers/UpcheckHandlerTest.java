@@ -11,7 +11,7 @@ import org.junit.Test;
 public class UpcheckHandlerTest extends HandlerTest {
 
   @Test
-  public void testPublicUpcheck() throws Exception {
+  public void publicUpcheck() throws Exception {
 
     Request request = new Request.Builder().get().url(publicBaseUrl + OrionRoutes.UPCHECK).build();
 
@@ -21,7 +21,7 @@ public class UpcheckHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testPrivateUpcheck() throws Exception {
+  public void privateUpcheck() throws Exception {
 
     Request request = new Request.Builder().get().url(privateBaseUrl + OrionRoutes.UPCHECK).build();
 

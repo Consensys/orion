@@ -1,6 +1,7 @@
 *.db.test
 /keys.test
 /tests
+mapdb
 db
 routerdb
 routerdb.wal.0

@@ -8,7 +8,6 @@ import net.consensys.orion.api.network.NetworkNodes;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
-import net.consensys.orion.impl.http.handler.delete.DeleteHandler;
 import net.consensys.orion.impl.http.handler.partyinfo.PartyInfoHandler;
 import net.consensys.orion.impl.http.handler.push.PushHandler;
 import net.consensys.orion.impl.http.handler.receive.ReceiveHandler;
@@ -73,8 +72,6 @@ public class OrionRoutes {
 
     publicRouter.get(UPCHECK).produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
-    publicRouter.post(DELETE).handler(new DeleteHandler(storage));
-
     publicRouter
         .post(PARTYINFO)
         .produces(CBOR.httpHeaderValue)
@@ -104,9 +101,10 @@ public class OrionRoutes {
         .handler(new SendHandler(enclave, storage, networkNodes, serializer, JSON));
     privateRouter
         .post(SEND_RAW)
-        .produces(BINARY.httpHeaderValue)
-        .consumes(BINARY.httpHeaderValue)
-        .handler(new SendHandler(enclave, storage, networkNodes, serializer, BINARY));
+        .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .handler(
+            new SendHandler(enclave, storage, networkNodes, serializer, APPLICATION_OCTET_STREAM));
 
     privateRouter
         .post(RECEIVE)
@@ -115,9 +113,9 @@ public class OrionRoutes {
         .handler(new ReceiveHandler(enclave, storage, serializer, JSON));
     privateRouter
         .post(RECEIVE_RAW)
-        .produces(BINARY.httpHeaderValue)
-        .consumes(BINARY.httpHeaderValue)
-        .handler(new ReceiveHandler(enclave, storage, serializer, BINARY));
+        .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .handler(new ReceiveHandler(enclave, storage, serializer, APPLICATION_OCTET_STREAM));
   }
 
   public Storage getStorage() {

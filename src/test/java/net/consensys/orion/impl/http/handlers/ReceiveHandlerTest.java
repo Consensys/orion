@@ -1,7 +1,7 @@
 package net.consensys.orion.impl.http.handlers;
 
 import static junit.framework.TestCase.assertTrue;
-import static net.consensys.orion.impl.http.server.HttpContentType.BINARY;
+import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -42,7 +42,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testPayloadIsRetrieved() throws Exception {
+  public void payloadIsRetrieved() throws Exception {
     // ref to storage
     final Storage storage = routes.getStorage();
 
@@ -67,7 +67,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testRawPayloadIsRetrieved() throws Exception {
+  public void rawPayloadIsRetrieved() throws Exception {
     // ref to storage
     final Storage storage = routes.getStorage();
 
@@ -82,13 +82,14 @@ public class ReceiveHandlerTest extends HandlerTest {
     // store it
     String key = storage.put(originalPayload);
     // Receive operation, sending a ReceivePayload request
-    RequestBody body = RequestBody.create(MediaType.parse(BINARY.httpHeaderValue), "");
+    RequestBody body =
+        RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
     Request request =
         new Request.Builder()
             .post(body)
-            .addHeader("Content-Type", BINARY.httpHeaderValue)
-            .addHeader("Accept", BINARY.httpHeaderValue)
+            .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
+            .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
             .addHeader("c11n-key", key)
             .url(privateBaseUrl + "receiveraw")
             .build();
@@ -102,7 +103,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testReceiveRestrictedToPrivateAPIServer() throws Exception {
+  public void receiveRestrictedToPrivateAPIServer() throws Exception {
     // ref to storage
     final Storage storage = routes.getStorage();
 
@@ -121,7 +122,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testReceiveRawRestrictedToPrivateAPIServer() throws Exception {
+  public void receiveRawRestrictedToPrivateAPIServer() throws Exception {
     // ref to storage
     final Storage storage = routes.getStorage();
 
@@ -136,13 +137,14 @@ public class ReceiveHandlerTest extends HandlerTest {
     // store it
     String key = storage.put(originalPayload);
     // Receive operation, sending a ReceivePayload request
-    RequestBody body = RequestBody.create(MediaType.parse(BINARY.httpHeaderValue), "");
+    RequestBody body =
+        RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
     Request request =
         new Request.Builder()
             .post(body)
-            .addHeader("Content-Type", BINARY.httpHeaderValue)
-            .addHeader("Accept", BINARY.httpHeaderValue)
+            .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
+            .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
             .addHeader("c11n-key", key)
             .url(publicBaseUrl + "receiveraw")
             .build();
@@ -153,7 +155,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testResponseWhenKeyNotFound() throws Exception {
+  public void responseWhenKeyNotFound() throws Exception {
     // Receive operation, sending a ReceivePayload request
     ReceiveRequest receiveRequest = new ReceiveRequest("notForMe", null);
 
@@ -167,7 +169,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testResponseWhenDecryptFails() throws Exception {
+  public void responseWhenDecryptFails() throws Exception {
     final Storage storage = routes.getStorage();
 
     byte[] toEncrypt = new byte[342];
@@ -178,13 +180,14 @@ public class ReceiveHandlerTest extends HandlerTest {
         enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {senderKey});
 
     String key = storage.put(originalPayload);
-    RequestBody body = RequestBody.create(MediaType.parse(BINARY.httpHeaderValue), "");
+    RequestBody body =
+        RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
     Request request =
         new Request.Builder()
             .post(body)
-            .addHeader("Content-Type", BINARY.httpHeaderValue)
-            .addHeader("Accept", BINARY.httpHeaderValue)
+            .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
+            .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
             .addHeader("c11n-key", key)
             .url(privateBaseUrl + "receiveraw")
             .build();
@@ -194,7 +197,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testRoundTripSerialization() {
+  public void roundTripSerialization() {
     ReceiveResponse receiveResponse = new ReceiveResponse("some payload");
     assertEquals(
         receiveResponse,
@@ -214,7 +217,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testReceiveWithInvalidContentType() throws Exception {
+  public void receiveWithInvalidContentType() throws Exception {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
@@ -231,7 +234,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testReceiveWithInvalidBody() throws Exception {
+  public void receiveWithInvalidBody() throws Exception {
     Request request =
         buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, "{\"foo\": \"bar\"}");
 

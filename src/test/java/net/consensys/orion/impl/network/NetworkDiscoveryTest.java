@@ -51,7 +51,7 @@ public class NetworkDiscoveryTest {
   }
 
   @Test
-  public void testNetworkDiscoveryWithNoPeers() throws Exception {
+  public void networkDiscoveryWithNoPeers() throws Exception {
     // add peers
 
     // start network discovery
@@ -62,7 +62,7 @@ public class NetworkDiscoveryTest {
   }
 
   @Test
-  public void testNetworkDiscoveryWithUnresponsivePeer() throws Exception {
+  public void networkDiscoveryWithUnresponsivePeer() throws Exception {
     // add peers
     FakePeer fakePeer =
         new FakePeer(
@@ -89,7 +89,7 @@ public class NetworkDiscoveryTest {
   }
 
   @Test
-  public void testNetworkDiscoveryWithMerge() throws Exception {
+  public void networkDiscoveryWithMerge() throws Exception {
     // empty memory nodes, lets' say one peer is alone in his network
     byte[] unknownPeerNetworkNodes =
         serializer.serialize(CBOR, new MemoryNetworkNodes(new URL("http://localhost/")));

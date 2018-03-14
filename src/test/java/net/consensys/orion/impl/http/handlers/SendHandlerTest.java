@@ -2,7 +2,7 @@ package net.consensys.orion.impl.http.handlers;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
-import static net.consensys.orion.impl.http.server.HttpContentType.BINARY;
+import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static org.junit.Assert.assertArrayEquals;
 
@@ -19,11 +19,7 @@ import net.consensys.orion.impl.utils.Base64;
 import java.io.IOException;
 import java.net.URL;
 import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -48,7 +44,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testInvalidRequest() throws Exception {
+  public void invalidRequest() throws Exception {
     SendRequest sendRequest = new SendRequest((byte[]) null, "me", null);
 
     Request request = buildPrivateAPIRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
@@ -60,7 +56,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testEmptyPayload() throws Exception {
+  public void emptyPayload() throws Exception {
     RequestBody body = RequestBody.create(null, new byte[0]);
     Request request =
         new Request.Builder().post(body).url(privateBaseUrl + OrionRoutes.SEND).build();
@@ -74,7 +70,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testSendFailsWhenBadResponseFromPeer() throws Exception {
+  public void sendFailsWhenBadResponseFromPeer() throws Exception {
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setResponseCode(500));
 
@@ -82,7 +78,7 @@ public class SendHandlerTest extends HandlerTest {
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // build our sendRequest
-    SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer));
+    SendRequest sendRequest = buildFakeRequest(Collections.singletonList(fakePeer));
 
     Request request = buildPrivateAPIRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
 
@@ -101,7 +97,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testSendFailsWhenBadDigestFromPeer() throws Exception {
+  public void sendFailsWhenBadDigestFromPeer() throws Exception {
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody("not the best digest"));
 
@@ -120,7 +116,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testSendToSinglePeer() throws Exception {
+  public void sendToSinglePeer() throws Exception {
     // note: we need to do this as the fakePeers need to know in advance the digest to return.
     // not possible with libSodium due to random nonce
 
@@ -194,7 +190,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testPropagatedToMultiplePeers() throws Exception {
+  public void propagatedToMultiplePeers() throws Exception {
     // note: we need to do this as the fakePeers need to know in advance the digest to return.
     // not possible with libSodium due to random nonce
 
@@ -246,7 +242,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testSendWithInvalidContentType() throws Exception {
+  public void sendWithInvalidContentType() throws Exception {
     String b64String = Base64.encode("foo".getBytes());
 
     // build our sendRequest
@@ -260,7 +256,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testSendingWithARawBody() throws Exception {
+  public void sendingWithARawBody() throws Exception {
     // note: this closely mirrors the test "testPropagatedToMultiplePeers",
     // using the raw version of the API.
 
@@ -283,7 +279,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // build the binary sendRequest
     RequestBody body =
-        RequestBody.create(MediaType.parse(HttpContentType.BINARY.httpHeaderValue), toEncrypt);
+        RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
     PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
 
     String from = Base64.encode(sender.getEncoded());
@@ -300,8 +296,8 @@ public class SendHandlerTest extends HandlerTest {
             .url(privateBaseUrl + "sendraw")
             .addHeader("c11n-from", from)
             .addHeader("c11n-to", String.join(",", to))
-            .addHeader("Content-Type", BINARY.httpHeaderValue)
-            .addHeader("Accept", BINARY.httpHeaderValue)
+            .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
+            .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
             .build();
 
     // execute request
@@ -333,7 +329,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testSendRawRestrictedToPrivateAPIServer() throws Exception {
+  public void sendRawRestrictedToPrivateAPIServer() throws Exception {
     // note: this closely mirrors the test "testPropagatedToMultiplePeers",
     // using the raw version of the API.
 
@@ -352,7 +348,8 @@ public class SendHandlerTest extends HandlerTest {
 
     // build the binary sendRequest
     RequestBody body =
-        RequestBody.create(MediaType.parse(HttpContentType.BINARY.httpHeaderValue), toEncrypt);
+        RequestBody.create(
+            MediaType.parse(HttpContentType.APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
     PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
 
     String from = Base64.encode(sender.getEncoded());
@@ -363,8 +360,8 @@ public class SendHandlerTest extends HandlerTest {
             .url(publicBaseUrl + "sendraw")
             .addHeader("c11n-from", from)
             .addHeader("c11n-to", Base64.encode(fakePeer.publicKey.getEncoded()))
-            .addHeader("Content-Type", BINARY.httpHeaderValue)
-            .addHeader("Accept", BINARY.httpHeaderValue)
+            .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
+            .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
             .build();
 
     // execute request
@@ -375,7 +372,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testSendWithInvalidBody() throws Exception {
+  public void sendWithInvalidBody() throws Exception {
     Request requestWithInvalidBody =
         buildPrivateAPIRequest(OrionRoutes.SEND, HttpContentType.JSON, "{\"foo\": \"bar\"}");
 
@@ -413,7 +410,7 @@ public class SendHandlerTest extends HandlerTest {
     final MockWebServer server;
     final PublicKey publicKey;
 
-    public FakePeer(MockResponse response) throws IOException {
+    FakePeer(MockResponse response) throws IOException {
       server = new MockWebServer();
       publicKey = memoryKeyStore.generateKeyPair(keyConfig);
       server.enqueue(response);

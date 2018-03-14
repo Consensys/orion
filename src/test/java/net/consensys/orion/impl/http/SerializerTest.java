@@ -24,10 +24,10 @@ import org.junit.Test;
 
 public class SerializerTest {
 
-  final Serializer serializer = new Serializer();
+  private final Serializer serializer = new Serializer();
 
   @Test
-  public void testJsonSerialization() throws Exception {
+  public void jsonSerialization() {
     DummyObject dummyObjectOriginal = new DummyObject();
     byte[] bytes = serializer.serialize(HttpContentType.JSON, dummyObjectOriginal);
     DummyObject dummyObject =
@@ -36,7 +36,7 @@ public class SerializerTest {
   }
 
   @Test
-  public void testCBORSerialization() throws Exception {
+  public void cborSerialization() {
     DummyObject dummyObjectOriginal = new DummyObject();
     byte[] bytes = serializer.serialize(HttpContentType.CBOR, dummyObjectOriginal);
     DummyObject dummyObject =
@@ -45,12 +45,11 @@ public class SerializerTest {
   }
 
   @Test
-  public void testSodiumEncryptedPayloadSerialization() throws Exception {
+  public void sodiumEncryptedPayloadSerialization() {
     MemoryConfig config = new MemoryConfig();
     config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
     final KeyStore memoryKeyStore = new SodiumMemoryKeyStore(config);
     KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
-    ;
     Enclave enclave = new LibSodiumEnclave(config, memoryKeyStore);
 
     SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[0];
@@ -79,7 +78,7 @@ class DummyObject implements Serializable {
   public String name;
   public int age;
 
-  public DummyObject() {
+  DummyObject() {
     this.name = "john";
     this.age = 42;
   }

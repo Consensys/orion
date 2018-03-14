@@ -23,25 +23,25 @@ import org.junit.Test;
 
 public class SodiumFileKeyStoreTest {
 
-  InputStream configAsStream =
+  private InputStream configAsStream =
       this.getClass().getClassLoader().getResourceAsStream("keyStoreTest.toml");
-  TomlConfigBuilder configBuilder = new TomlConfigBuilder();
-  final Serializer serializer = new Serializer();
-  Config config = configBuilder.build(configAsStream);
-  SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
-  String publicKey1Base64Encoded = "BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=";
-  String privateKey1Base64Encoded = "Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA=";
-  PublicKey publicKey1 = new SodiumPublicKey(Base64.decode(publicKey1Base64Encoded));
-  PrivateKey privateKey1 = new SodiumPrivateKey(Base64.decode(privateKey1Base64Encoded));
+  private TomlConfigBuilder configBuilder = new TomlConfigBuilder();
+  private final Serializer serializer = new Serializer();
+  private Config config = configBuilder.build(configAsStream);
+  private SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
+  private String publicKey1Base64Encoded = "BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=";
+  private String privateKey1Base64Encoded = "Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA=";
+  private PublicKey publicKey1 = new SodiumPublicKey(Base64.decode(publicKey1Base64Encoded));
+  private PrivateKey privateKey1 = new SodiumPrivateKey(Base64.decode(privateKey1Base64Encoded));
 
   @Test
-  public void testConfigLoadsRawKeys() throws Exception {
+  public void configLoadsRawKeys() {
     PrivateKey storedKey = keyStore.privateKey(publicKey1);
     assertEquals(privateKey1, storedKey);
   }
 
   @Test
-  public void testMissingKeyBehaviourIsNice() {
+  public void missingKeyBehaviourIsNice() {
     MemoryConfig config = new MemoryConfig();
     config.setPrivateKeys(new File[] {new File("Does not exist")});
     config.setPublicKeys(new File[] {new File("Does not exist")});
@@ -55,7 +55,7 @@ public class SodiumFileKeyStoreTest {
   }
 
   @Test
-  public void testMissingAlgorithimRaisesAppropriateException() {
+  public void missingAlgorithimRaisesAppropriateException() {
     MemoryConfig config = new MemoryConfig();
     config.setPrivateKeys(new File[] {new File("keys/noalgorithm.key")});
     config.setPublicKeys(new File[] {new File("keys/tm1a.pub")});
@@ -69,7 +69,7 @@ public class SodiumFileKeyStoreTest {
   }
 
   @Test
-  public void testConfigLoadsMultipleKeys() {
+  public void configLoadsMultipleKeys() {
     InputStream configAsStream =
         this.getClass().getClassLoader().getResourceAsStream("multipleKeyStoreTest.toml");
 
@@ -96,7 +96,7 @@ public class SodiumFileKeyStoreTest {
   }
 
   @Test
-  public void testAlwaysSendTo() {
+  public void alwaysSendTo() {
     InputStream configAsStream =
         this.getClass().getClassLoader().getResourceAsStream("alwaysSendToKeyStoreTest.toml");
 
@@ -116,7 +116,7 @@ public class SodiumFileKeyStoreTest {
     assertArrayEquals(publicKeys, keyStore.alwaysSendTo());
   }
 
-  public void testLoadOfPasswordProtectedKeys() {
+  public void loadOfPasswordProtectedKeys() {
     MemoryConfig config = new MemoryConfig();
     config.setPrivateKeys(new File[] {new File("keys/password.key")});
     config.setPublicKeys(new File[] {new File("keys/password.pub")});
@@ -124,7 +124,7 @@ public class SodiumFileKeyStoreTest {
   }
 
   @Test
-  public void testGenerateUnlockedProtectedKeyPair() {
+  public void generateUnlockedProtectedKeyPair() {
     String keyPrefix = "keys/generated";
     try {
       keyStore = new SodiumFileKeyStore(config, serializer);
@@ -155,7 +155,7 @@ public class SodiumFileKeyStoreTest {
   }
 
   @Test
-  public void testGeneratePasswordProtectedKeyPair() {
+  public void generatePasswordProtectedKeyPair() {
     String keyPrefix = "keys/generated_password";
     try {
       keyStore = new SodiumFileKeyStore(config, serializer);

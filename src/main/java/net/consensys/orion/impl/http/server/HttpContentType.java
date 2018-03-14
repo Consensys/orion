@@ -6,7 +6,7 @@ import io.netty.handler.codec.http.HttpHeaderValues;
 
 public enum HttpContentType {
   JSON(HttpHeaderValues.APPLICATION_JSON.toString()),
-  BINARY(HttpHeaderValues.BINARY.toString()),
+  APPLICATION_OCTET_STREAM(HttpHeaderValues.APPLICATION_OCTET_STREAM.toString()),
   TEXT(HttpHeaderValues.TEXT_PLAIN.toString() + "; charset=utf-8"),
   HASKELL_ENCODED("application/haskell-stream"),
   CBOR("application/cbor");

@@ -47,15 +47,15 @@ public class LibSodiumEnclaveStub implements Enclave {
 
   @Override
   public EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients) {
-    byte[] ciphterText = new byte[plaintext.length];
+    byte[] cipherText = new byte[plaintext.length];
     for (int i = 0; i < plaintext.length; i++) {
       byte b = plaintext[i];
-      ciphterText[i] = (byte) (b + 10);
+      cipherText[i] = (byte) (b + 10);
     }
     SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[0];
     byte[] combinedKeyNonce = {};
     byte[] nonce = {};
     return new SodiumEncryptedPayload(
-        (SodiumPublicKey) senderKey, nonce, combinedKeyNonce, combinedKeys, ciphterText);
+        (SodiumPublicKey) senderKey, nonce, combinedKeyNonce, combinedKeys, cipherText);
   }
 }

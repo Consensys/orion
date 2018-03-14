@@ -3,16 +3,19 @@ plugins {
   id 'com.palantir.git-version' version '0.10.0'
   id "com.github.hierynomus.license" version "0.14.0"
   id "com.github.johnrengelman.shadow" version "2.0.2"
+  id "com.jfrog.bintray" version "1.7.3"
 }
 
 apply plugin: 'java-library'
 apply plugin: 'application'
 apply plugin: "jacoco"
 apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'maven-publish'
 
 apply from: "gradle/check-licenses.gradle"
 
 mainClassName = 'net.consensys.orion.api.cmd.Orion'
+group = 'net.consensys'
 version = '0.1.0-' + versionDetails().gitHash[0..4] + '-' + getTimestamp()
 
 // JVM Settings for Log4J and VertX
@@ -82,7 +85,7 @@ dependencies {
 }
 
 jar {
-    doLast {
+    doFirst {
         versionTxt()
     }
     manifest {
@@ -167,9 +170,13 @@ def getTimestamp() {
 
 // Create the version.txt file
 def versionTxt()  {
-    new File("$projectDir/src/main/resources/version.txt").text = """Application-name: $project.name
+  delete "$projectDir/src/main/resources/version.txt"
+  delete "$projectDir/build/resources/main/version.txt"
+
+  new File("$projectDir/build/resources/main/version.txt").text = """Application-name: $project.name
 Version: $version
 """
+  new File("$projectDir/build/version").text = """$version"""
 }
 
 distributions {
@@ -183,4 +190,46 @@ distributions {
             }
         }
     }
+}
+
+publishing {
+  publications {
+    mavenArtifact(MavenPublication) {
+      from components.java
+      pom.withXml {
+        asNode().children().last() + {
+          resolveStrategy = Closure.DELEGATE_FIRST
+          name 'Orion'
+          description 'A java implementation of Constellation'
+          url 'https://github.com/ConsenSys/orion'
+          scm {
+            url 'https://github.com/ConsenSys/orion'
+          }
+          licenses {
+            license {
+              name 'The Apache Software License, Version 2.0'
+              url 'http://www.apache.org/license/LICENSE-2.0.txt'
+              distribution 'repo'
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+bintray {
+  user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+  key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_KEY')
+  publications = ['mavenArtifact']
+  pkg {
+    repo = "pegasys-repo"
+    name = "orion"
+    userOrg = "consensys"
+    licenses = ["Apache-2.0"]
+    vcsUrl = "https://github.com/ConsenSys/orion"
+    version {
+      name = project.version
+    }
+  }
 }

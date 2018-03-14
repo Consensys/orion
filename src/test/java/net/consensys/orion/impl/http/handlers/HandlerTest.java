@@ -7,13 +7,14 @@ import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
-import net.consensys.orion.impl.helpers.CesarEnclave;
+import net.consensys.orion.impl.helpers.StubEnclave;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.http.server.vertx.VertxServer;
 import net.consensys.orion.impl.network.MemoryNetworkNodes;
 import net.consensys.orion.impl.storage.file.MapDbStorage;
 import net.consensys.orion.impl.utils.Serializer;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -39,7 +40,7 @@ public abstract class HandlerTest {
   protected String privateBaseUrl;
 
   // these are re-built between tests
-  protected MemoryNetworkNodes networkNodes;
+  MemoryNetworkNodes networkNodes;
   protected MemoryConfig config;
   protected Enclave enclave;
 
@@ -74,7 +75,9 @@ public abstract class HandlerTest {
     networkNodes = new MemoryNetworkNodes(publicHTTP.url());
     enclave = buildEnclave();
 
-    storageEngine = new MapDbStorage(SodiumEncryptedPayload.class, "routerdb", serializer);
+    String path = "routerdb";
+    new File(path).mkdirs();
+    storageEngine = new MapDbStorage(SodiumEncryptedPayload.class, path, serializer);
     routes = new OrionRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
 
     // create our vertx object
@@ -133,7 +136,7 @@ public abstract class HandlerTest {
   }
 
   protected Enclave buildEnclave() {
-    return new CesarEnclave();
+    return new StubEnclave();
   }
 
   protected Request buildPrivateAPIRequest(
