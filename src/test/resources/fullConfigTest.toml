@@ -1,6 +1,7 @@
 # Test file with complete config settings (not defaults)
 url = "http://127.0.0.1:9001/"
 port = 9001
+ethurl = "http://127.0.0.1:9002/"
 ethport = 9002
 workdir = "data"
 socket = "orion.ipc"

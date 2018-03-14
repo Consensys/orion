@@ -165,6 +165,7 @@ public class TomlConfigBuilderTest {
       String message =
           "Invalid Configuration Options\n"
               + "Error: key 'url' in config is malformed.\n\tunknown protocol: htt\n"
+              + "Error: key 'ethurl' in config is malformed.\n\tunknown protocol: htt\n"
               + "Error: value for key 'ethport' in config must be different to 'port'\n"
               + "Error: key 'othernodes' in config containes malformed URLS.\n"
               + "\tURL [htt://127.0.0.1:9000/] unknown protocol: htt\n"
@@ -193,6 +194,7 @@ public class TomlConfigBuilderTest {
       String message =
           "Invalid Configuration Options\n"
               + "Error: value for key 'url' in config must be specified\n"
+              + "Error: value for key 'ethurl' in config must be specified\n"
               + "Error: value for key 'port' in config must be specified\n"
               + "Error: value for key 'ethport' in config must be specified\n"
               + "Error: value for key 'ethport' in config must be different to 'port'\n";

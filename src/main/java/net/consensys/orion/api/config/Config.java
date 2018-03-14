@@ -23,6 +23,14 @@ public interface Config {
   int port();
 
   /**
+   * Internally accessible URL for this node's public API This is what is advertised to other nodes
+   * on the network and must be reachable by them.
+   *
+   * @return URL for this node
+   */
+  URL ethurl();
+
+  /**
    * Port to listen on for the private API.
    *
    * @return Port to listen on for the private API

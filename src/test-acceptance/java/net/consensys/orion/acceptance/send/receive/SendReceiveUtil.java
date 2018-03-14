@@ -27,6 +27,7 @@ public class SendReceiveUtil {
   public Config nodeConfig(
       String baseUrl,
       int port,
+      String ethURL,
       int ethport,
       String nodeName,
       String otherNodes,
@@ -40,7 +41,9 @@ public class SendReceiveUtil {
             .append(baseUrl)
             .append("\"\nport = ")
             .append(port)
-            .append("\nethport = ")
+            .append("\nethurl = \"")
+            .append(ethURL)
+            .append("\"\nethport = ")
             .append(ethport)
             .append("\nstorage = \"leveldb:database/" + nodeName + "\"")
             .append("\nothernodes = [\"")

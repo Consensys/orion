@@ -53,6 +53,7 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
             .nodeConfig(
                 baseUrl,
                 port,
+                ethURL,
                 ethport,
                 "node1",
                 baseUrl,

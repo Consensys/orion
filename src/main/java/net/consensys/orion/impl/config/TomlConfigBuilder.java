@@ -35,6 +35,17 @@ public final class TomlConfigBuilder {
       errorMsg.append("Error: value for key 'url' in config must be specified\n");
     }
 
+    if (toml.getString("ethurl") != null) {
+      try {
+        memoryConfig.setEthUrl(new URL(toml.getString("ethurl")));
+      } catch (MalformedURLException e) {
+        errorMsg.append("Error: key 'ethurl' in config is malformed.\n\t");
+        errorMsg.append(e.getMessage()).append("\n");
+      }
+    } else {
+      errorMsg.append("Error: value for key 'ethurl' in config must be specified\n");
+    }
+
     // reading and setting workDir first;
     String baseDir = toml.getString("workdir");
     if (baseDir != null) {

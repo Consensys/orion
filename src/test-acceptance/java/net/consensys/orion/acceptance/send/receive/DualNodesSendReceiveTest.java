@@ -59,6 +59,7 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
             .nodeConfig(
                 firstNodeBaseUrl,
                 firstNodePort,
+                firstNodeEthUrl,
                 firstNodeEthPort,
                 "node1",
                 secondNodeBaseUrl,
@@ -69,6 +70,7 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
             .nodeConfig(
                 secondNodeBaseUrl,
                 secondNodePort,
+                secondNodeEthUrl,
                 secondNodeEthPort,
                 "node2",
                 firstNodeBaseUrl,

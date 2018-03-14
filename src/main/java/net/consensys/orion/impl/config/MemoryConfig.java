@@ -11,6 +11,7 @@ public class MemoryConfig implements Config {
 
   private URL url;
   private int port = Integer.MIN_VALUE;
+  private URL ethurl;
   private int ethport = Integer.MIN_VALUE;
   private Optional<File> workDir = Optional.empty();
   private Optional<File> socket = Optional.empty();
@@ -43,6 +44,10 @@ public class MemoryConfig implements Config {
 
   public void setPort(int port) {
     this.port = port;
+  }
+
+  public void setEthUrl(URL url) {
+    this.ethurl = url;
   }
 
   public void setEthPort(int port) {
@@ -153,6 +158,11 @@ public class MemoryConfig implements Config {
   @Override
   public int port() {
     return port;
+  }
+
+  @Override
+  public URL ethurl() {
+    return ethurl;
   }
 
   @Override
