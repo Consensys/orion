@@ -2,8 +2,9 @@ package net.consensys.orion.acceptance.send.receive;
 
 import static org.junit.Assert.assertArrayEquals;
 
-import junit.framework.AssertionFailedError;
 import net.consensys.orion.acceptance.EthNodeStub;
+
+import junit.framework.AssertionFailedError;
 
 /**
  * SendReceiveBase contains the common attributes and behaviours to tests that focus on sending and

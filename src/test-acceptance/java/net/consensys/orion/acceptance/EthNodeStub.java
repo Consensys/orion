@@ -21,9 +21,7 @@ import okhttp3.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-/**
- * Simple Ethereum Client (Node) for calling Orion APIs
- */
+/** Simple Ethereum Client (Node) for calling Orion APIs */
 public class EthNodeStub {
   private static final Logger log = LogManager.getLogger();
 
@@ -33,10 +31,7 @@ public class EthNodeStub {
   private final String baseUrl;
   private final Request upRequest;
 
-  /**
-   *
-   * @param orionPrivateUrl URL, including port, of the Orion Private API server
-   */
+  /** @param orionPrivateUrl URL, including port, of the Orion Private API server */
   public EthNodeStub(String orionPrivateUrl) {
     if (orionPrivateUrl.endsWith("/")) {
       this.baseUrl = orionPrivateUrl;
@@ -45,7 +40,8 @@ public class EthNodeStub {
     }
 
     // setup immutable upCheck request
-    upRequest = new Request.Builder().get().url(orionPrivateUrl + OrionRoutes.UPCHECK.substring(1)).build();
+    upRequest =
+        new Request.Builder().get().url(orionPrivateUrl + OrionRoutes.UPCHECK.substring(1)).build();
   }
 
   public boolean upCheck() {

@@ -110,5 +110,4 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
 
     assertTransaction(receivedPayload);
   }
-
 }
