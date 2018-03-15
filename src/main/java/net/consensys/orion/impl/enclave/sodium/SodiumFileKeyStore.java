@@ -7,6 +7,7 @@ import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.sodium.storage.ArgonOptions;
 import net.consensys.orion.impl.enclave.sodium.storage.PrivateKeyData;
 import net.consensys.orion.impl.enclave.sodium.storage.SodiumArgon2Sbox;
@@ -50,51 +51,53 @@ public class SodiumFileKeyStore implements KeyStore {
   }
 
   private void loadKeysFromConfig(Config config) {
-    Optional<String[]> passwordList = lookupPasswords();
+    final Optional<String[]> passwordList = lookupPasswords();
 
     for (int i = 0; i < config.publicKeys().length; i++) {
-      File publicKeyFile = config.publicKeys()[i];
-      File privateKeyFile = config.privateKeys()[i];
-      Optional<String> password = empty();
-      if (passwordList.isPresent()) {
-        password = Optional.of(passwordList.get()[i]);
-      }
-      PublicKey publicKey = readPublicKey(publicKeyFile);
-      PrivateKey privateKey = readPrivateKey(privateKeyFile, password);
+      final File publicKeyFile = config.publicKeys()[i];
+      final File privateKeyFile = config.privateKeys()[i];
+      final Optional<String> password =
+          passwordList.isPresent() ? Optional.of(passwordList.get()[i]) : empty();
+      final PublicKey publicKey = readPublicKey(publicKeyFile);
+      final PrivateKey privateKey = readPrivateKey(privateKeyFile, password);
 
       cache.put(publicKey, privateKey);
     }
   }
 
   private PrivateKey readPrivateKey(File privateKeyFile, Optional<String> password) {
-    StoredPrivateKey storedPrivateKey =
+    final StoredPrivateKey storedPrivateKey =
         serializer.readFile(HttpContentType.JSON, privateKeyFile, StoredPrivateKey.class);
 
-    byte[] decoded;
+    final byte[] decoded;
     switch (storedPrivateKey.type()) {
       case StoredPrivateKey.UNLOCKED:
         decoded = Base64.decode(storedPrivateKey.data().bytes().get());
         break;
       case StoredPrivateKey.ARGON2_SBOX:
         if (!password.isPresent()) {
-          throw new EnclaveException("missing password to read private key");
+          throw new EnclaveException(
+              OrionErrorCode.ENCLAVE_MISSING_PRIVATE_KEY_PASSWORD,
+              "missing password to read private key");
         }
         decoded = new SodiumArgon2Sbox(config).decrypt(storedPrivateKey, password.get());
         break;
       default:
         throw new EnclaveException(
+            OrionErrorCode.ENCLAVE_UNSUPPORTED_PRIVATE_KEY_TYPE,
             "Unable to support private key storage of type: " + storedPrivateKey.type());
     }
+
     return new SodiumPrivateKey(decoded);
   }
 
   private PublicKey readPublicKey(File publicKeyFile) {
     try (BufferedReader br = new BufferedReader(new FileReader(publicKeyFile))) {
-      String base64Encoded = br.readLine();
-      byte[] decoded = Base64.decode(base64Encoded);
+      final String base64Encoded = br.readLine();
+      final byte[] decoded = Base64.decode(base64Encoded);
       return new SodiumPublicKey(decoded);
-    } catch (IOException e) {
-      throw new EnclaveException(e);
+    } catch (final IOException e) {
+      throw new EnclaveException(OrionErrorCode.ENCLAVE_READ_PUBLIC_KEY, e);
     }
   }
 
@@ -105,39 +108,44 @@ public class SodiumFileKeyStore implements KeyStore {
 
   @Override
   public PublicKey generateKeyPair(KeyConfig config) {
-    String basePath = config.basePath();
-    Optional<String> password = config.password();
+    final String basePath = config.basePath();
+    final Optional<String> password = config.password();
     return generateStoreAndCache(basePath, password);
   }
 
   private Optional<String[]> lookupPasswords() {
-    Optional<File> passwords = config.passwords();
-    Optional<String[]> passwordList = empty();
+    final Optional<File> passwords = config.passwords();
+
     if (passwords.isPresent()) {
       try {
-        List<String> strings = Files.readAllLines(passwords.get().toPath());
-        passwordList = Optional.of(strings.toArray(new String[strings.size()]));
-      } catch (IOException e) {
-        throw new EnclaveException(e);
+        final List<String> strings = Files.readAllLines(passwords.get().toPath());
+        return Optional.of(strings.toArray(new String[strings.size()]));
+      } catch (final IOException e) {
+        throw new EnclaveException(OrionErrorCode.ENCLAVE_READ_PASSWORDS, e);
       }
     }
-    return passwordList;
+
+    return empty();
   }
 
   private PublicKey generateStoreAndCache(String key, Optional<String> password) {
+    final SodiumKeyPair keyPair = keyPair();
+    final File publicFile = new File(key + ".pub");
+    final File privateFile = new File(key + ".key");
+    storePublicKey(keyPair.getPublicKey(), publicFile);
+    final StoredPrivateKey privKey = createStoredPrivateKey(keyPair, password);
+    storePrivateKey(privKey, privateFile);
+    final SodiumPublicKey publicKey = new SodiumPublicKey(keyPair.getPublicKey());
+    final SodiumPrivateKey privateKey = new SodiumPrivateKey(keyPair.getPrivateKey());
+    cache.put(publicKey, privateKey);
+    return publicKey;
+  }
+
+  private SodiumKeyPair keyPair() {
     try {
-      SodiumKeyPair keyPair = SodiumLibrary.cryptoBoxKeyPair();
-      File publicFile = new File(key + ".pub");
-      File privateFile = new File(key + ".key");
-      storePublicKey(keyPair.getPublicKey(), publicFile);
-      StoredPrivateKey privKey = createStoredPrivateKey(keyPair, password);
-      storePrivateKey(privKey, privateFile);
-      SodiumPublicKey publicKey = new SodiumPublicKey(keyPair.getPublicKey());
-      SodiumPrivateKey privateKey = new SodiumPrivateKey(keyPair.getPrivateKey());
-      cache.put(publicKey, privateKey);
-      return publicKey;
-    } catch (SodiumLibraryException e) {
-      throw new EnclaveException(e);
+      return SodiumLibrary.cryptoBoxKeyPair();
+    } catch (final SodiumLibraryException e) {
+      throw new EnclaveException(OrionErrorCode.ENCLAVE_CREATE_KEY_PAIR, e);
     }
   }
 
@@ -148,22 +156,22 @@ public class SodiumFileKeyStore implements KeyStore {
   private void storePublicKey(byte[] publicKey, File publicFile) {
     try (FileWriter fw = new FileWriter(publicFile)) {
       fw.write(Base64.encode(publicKey));
-    } catch (IOException e) {
-      throw new EnclaveException(e);
+    } catch (final IOException e) {
+      throw new EnclaveException(OrionErrorCode.ENCLAVE_WRITE_PUBLIC_KEY, e);
     }
   }
 
   @NotNull
   private StoredPrivateKey createStoredPrivateKey(
       SodiumKeyPair keyPair, Optional<String> password) {
-    PrivateKeyData data;
+    final PrivateKeyData data;
 
     if (password.isPresent()) {
-      ArgonOptions argonOptions = defaultArgonOptions();
-      SodiumArgon2Sbox sodiumArgon2Sbox = new SodiumArgon2Sbox(config);
-      byte[] snonce = sodiumArgon2Sbox.generateSnonce();
-      byte[] asalt = sodiumArgon2Sbox.generateAsalt();
-      byte[] sbox =
+      final ArgonOptions argonOptions = defaultArgonOptions();
+      final SodiumArgon2Sbox sodiumArgon2Sbox = new SodiumArgon2Sbox(config);
+      final byte[] snonce = sodiumArgon2Sbox.generateSnonce();
+      final byte[] asalt = sodiumArgon2Sbox.generateAsalt();
+      final byte[] sbox =
           sodiumArgon2Sbox.encrypt(
               keyPair.getPrivateKey(), password.get(), asalt, snonce, argonOptions);
       data =
@@ -193,13 +201,13 @@ public class SodiumFileKeyStore implements KeyStore {
   }
 
   public PublicKey[] alwaysSendTo() {
-    File[] alwaysSendTo = config.alwaysSendTo();
+    final File[] alwaysSendTo = config.alwaysSendTo();
     return Arrays.stream(alwaysSendTo).map(this::readPublicKey).toArray(PublicKey[]::new);
   }
 
   @Override
   public PublicKey[] nodeKeys() {
-    File[] publicKeys = config.publicKeys();
+    final File[] publicKeys = config.publicKeys();
     return Arrays.stream(publicKeys).map(this::readPublicKey).toArray(PublicKey[]::new);
   }
 }

@@ -10,6 +10,7 @@ import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.HashAlgorithm;
 import net.consensys.orion.api.enclave.KeyConfig;
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.orion.impl.http.handler.send.SendRequest;
@@ -87,8 +88,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // ensure we got a 500 ERROR, as the fakePeer didn't return 200 OK
     assertEquals(500, resp.code());
-    assertEquals(
-        "{\"error\":\"couldn't propagate payload to all recipients\"}", resp.body().string());
+    assertError(OrionErrorCode.NODE_PROPAGATION_TO_ALL_PEERS, resp);
 
     // ensure the fakePeer got a good formatted request
     RecordedRequest recordedRequest = fakePeer.server.takeRequest();
@@ -381,7 +381,7 @@ public class SendHandlerTest extends HandlerTest {
     // produces 500 because serialisation error
     assertEquals(500, resp.code());
     // checks if the failure reason was with de-serialisation
-    assertTrue(resp.body().string().contains("com.fasterxml.jackson"));
+    assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
   }
 
   private SendRequest buildFakeRequest(List<FakePeer> forPeers, byte[] toEncrypt) {

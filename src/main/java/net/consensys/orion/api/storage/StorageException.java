@@ -1,21 +1,15 @@
 package net.consensys.orion.api.storage;
 
-public class StorageException extends RuntimeException {
+import net.consensys.orion.api.exception.OrionErrorCode;
+import net.consensys.orion.api.exception.OrionException;
 
-  public StorageException(String message) {
-    super(message);
+public class StorageException extends OrionException {
+
+  public StorageException(OrionErrorCode code, String message) {
+    super(code, message);
   }
 
-  public StorageException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public StorageException(Throwable cause) {
-    super(cause);
-  }
-
-  protected StorageException(
-      String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-    super(message, cause, enableSuppression, writableStackTrace);
+  public StorageException(OrionErrorCode code, Throwable cause) {
+    super(code, cause);
   }
 }

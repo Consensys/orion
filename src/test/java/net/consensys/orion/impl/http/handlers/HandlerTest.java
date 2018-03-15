@@ -1,8 +1,11 @@
 package net.consensys.orion.impl.http.handlers;
 
+import static org.junit.Assert.assertEquals;
+
 import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
@@ -28,6 +31,7 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.junit.After;
 import org.junit.Before;
 
@@ -160,5 +164,10 @@ public abstract class HandlerTest {
     }
 
     return new Request.Builder().post(body).url(baseurl + path).build();
+  }
+
+  protected void assertError(final OrionErrorCode expected, final Response actual)
+      throws IOException {
+    assertEquals("{\"error\":" + expected.code() + "}", actual.body().string());
   }
 }

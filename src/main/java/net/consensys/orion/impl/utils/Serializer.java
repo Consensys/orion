@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.utils;
 
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.http.server.HttpContentType;
 
 import java.io.File;
@@ -37,10 +38,11 @@ public class Serializer {
         case CBOR:
           return cborObjectMapper.writeValueAsBytes(obj);
         default:
-          throw new SerializationException(new NotSerializableException());
+          throw new SerializationException(
+              OrionErrorCode.OBJECT_JSON_SERIALIZATION, new NotSerializableException());
       }
-    } catch (IOException io) {
-      throw new SerializationException(io);
+    } catch (final IOException io) {
+      throw new SerializationException(OrionErrorCode.OBJECT_JSON_SERIALIZATION, io);
     }
   }
 
@@ -54,26 +56,27 @@ public class Serializer {
         case TEXT:
           return valueType.cast(new String(bytes, StandardCharsets.UTF_8));
         default:
-          throw new SerializationException(new NotSerializableException());
+          throw new SerializationException(
+              OrionErrorCode.OBJECT_JSON_DESERIALIZATION, new NotSerializableException());
       }
-    } catch (Exception e) {
-      throw new SerializationException(e);
+    } catch (final Exception e) {
+      throw new SerializationException(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, e);
     }
   }
 
   public void writeFile(HttpContentType contentType, File file, Object obj) {
     try {
       getMapperOrThrows(contentType).writeValue(file, obj);
-    } catch (IOException io) {
-      throw new SerializationException(io);
+    } catch (final IOException io) {
+      throw new SerializationException(OrionErrorCode.OBJECT_WRITE, io);
     }
   }
 
   public <T> T readFile(HttpContentType contentType, File file, Class<T> valueType) {
     try {
       return getMapperOrThrows(contentType).readValue(file, valueType);
-    } catch (IOException io) {
-      throw new SerializationException(io);
+    } catch (final IOException io) {
+      throw new SerializationException(OrionErrorCode.OBJECT_READ, io);
     }
   }
 
@@ -88,7 +91,8 @@ public class Serializer {
       case CBOR:
         return cborObjectMapper;
       default:
-        throw new SerializationException(new NotSerializableException());
+        throw new SerializationException(
+            OrionErrorCode.OBJECT_UNSUPPORTED_TYPE, new NotSerializableException());
     }
   }
 }
