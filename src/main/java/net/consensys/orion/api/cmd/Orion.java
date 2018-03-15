@@ -155,7 +155,7 @@ public class Orion {
   }
 
   private CompletableFuture<Boolean> startHttpServerAsync(
-      int port, Vertx vertx, Router publicRouter) throws InterruptedException, ExecutionException {
+      int port, Vertx vertx, Router publicRouter) {
     HttpServerOptions publicServerOptions = new HttpServerOptions();
     publicServerOptions.setPort(port);
 

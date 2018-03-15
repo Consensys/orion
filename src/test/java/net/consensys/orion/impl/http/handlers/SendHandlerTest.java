@@ -161,7 +161,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testSendRestrictedToPrivateAPIServer() throws Exception {
+  public void sendRestrictedToPrivateAPIServer() throws Exception {
     // note: we need to do this as the fakePeers need to know in advance the digest to return.
     // not possible with libSodium due to random nonce
 
