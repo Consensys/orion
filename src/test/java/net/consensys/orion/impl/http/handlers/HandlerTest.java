@@ -39,9 +39,9 @@ public abstract class HandlerTest {
   protected final Serializer serializer = new Serializer();
 
   // http client
-  protected OkHttpClient httpClient = new OkHttpClient();
-  protected String publicBaseUrl;
-  protected String privateBaseUrl;
+  OkHttpClient httpClient = new OkHttpClient();
+  String publicBaseUrl;
+  String privateBaseUrl;
 
   // these are re-built between tests
   MemoryNetworkNodes networkNodes;
@@ -96,7 +96,7 @@ public abstract class HandlerTest {
     HttpServerOptions publicServerOptions = new HttpServerOptions();
     publicServerOptions.setPort(publicHTTPServerPort);
 
-    publicVertxServer = new VertxServer(vertx, routes.getPublicRouter(), publicServerOptions);
+    publicVertxServer = new VertxServer(vertx, routes.publicRouter(), publicServerOptions);
     publicVertxServer.start().get();
   }
 
@@ -113,7 +113,7 @@ public abstract class HandlerTest {
     HttpServerOptions privateServerOptions = new HttpServerOptions();
     privateServerOptions.setPort(privateHTTPServerPort);
 
-    privateVertxServer = new VertxServer(vertx, routes.getPrivateRouter(), privateServerOptions);
+    privateVertxServer = new VertxServer(vertx, routes.privateRouter(), privateServerOptions);
 
     privateVertxServer.start().get();
   }

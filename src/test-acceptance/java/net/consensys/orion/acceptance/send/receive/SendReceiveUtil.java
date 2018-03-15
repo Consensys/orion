@@ -30,7 +30,7 @@ public class SendReceiveUtil {
       String baseUrl,
       int port,
       String ethURL,
-      int ethport,
+      int ethPort,
       String nodeName,
       String otherNodes,
       String pubKeys,
@@ -46,7 +46,7 @@ public class SendReceiveUtil {
             .append("\nethurl = \"")
             .append(ethURL)
             .append("\"\nethport = ")
-            .append(ethport)
+            .append(ethPort)
             .append("\nstorage = \"leveldb:database/" + nodeName + "\"")
             .append("\nothernodes = [\"")
             .append(otherNodes)

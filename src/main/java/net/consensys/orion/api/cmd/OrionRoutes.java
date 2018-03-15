@@ -122,11 +122,11 @@ public class OrionRoutes {
     return storage;
   }
 
-  public Router getPublicRouter() {
+  public Router publicRouter() {
     return publicRouter;
   }
 
-  public Router getPrivateRouter() {
+  public Router privateRouter() {
     return privateRouter;
   }
 }

@@ -11,7 +11,7 @@ public interface Config {
    * Externally accessible URL for this node's public API This is what is advertised to other nodes
    * on the network and must be reachable by them.
    *
-   * @return URL for this node
+   * @return URL for this nodes public API
    */
   URL url();
 
@@ -26,16 +26,16 @@ public interface Config {
    * Internally accessible URL for this node's public API This is what is advertised to other nodes
    * on the network and must be reachable by them.
    *
-   * @return URL for this node
+   * @return URL for this nodes private API
    */
-  URL ethurl();
+  URL ethUrl();
 
   /**
    * Port to listen on for the private API.
    *
    * @return Port to listen on for the private API
    */
-  int ethport();
+  int ethPort();
 
   /**
    * Path at which to locate the lib sodium shared library.

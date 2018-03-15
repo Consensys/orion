@@ -85,11 +85,11 @@ public final class TomlConfigBuilder {
       errorMsg.append("Error: value for key 'port' in config must be specified\n");
     }
 
-    if (memoryConfig.ethport() == Integer.MIN_VALUE) {
+    if (memoryConfig.ethPort() == Integer.MIN_VALUE) {
       errorMsg.append("Error: value for key 'ethport' in config must be specified\n");
     }
 
-    if (memoryConfig.ethport() == memoryConfig.port()) {
+    if (memoryConfig.ethPort() == memoryConfig.port()) {
       errorMsg.append("Error: value for key 'ethport' in config must be different to 'port'\n");
     }
 
