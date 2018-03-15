@@ -1,5 +1,7 @@
 package net.consensys.orion.api.network;
 
+import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
+
 import java.net.URL;
 import java.security.PublicKey;
 import java.util.Map;
@@ -31,5 +33,5 @@ public interface NetworkNodes {
    */
   Map<PublicKey, URL> nodePKs();
 
-  boolean merge(NetworkNodes other);
+  boolean merge(ConcurrentNetworkNodes other);
 }
