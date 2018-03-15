@@ -36,6 +36,6 @@ public class SendReceiveBase {
 
   protected void ensureNetworkDiscoveryOccurs() throws InterruptedException {
     // TODO there must be a better way then sleeping & hoping network discovery occurs
-    Thread.sleep(1000);
+    Thread.sleep(2000);
   }
 }
