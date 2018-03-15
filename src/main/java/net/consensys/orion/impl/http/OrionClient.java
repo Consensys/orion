@@ -50,40 +50,55 @@ public class OrionClient {
   }
 
   public Optional<String> send(byte[] payload, String from, String[] to) {
-    // create the okHttp Request object
-    SendRequest sendRequest = new SendRequest(Base64.encode(payload), from, to);
-    RequestBody sendBody =
-        RequestBody.create(
-            MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, sendRequest));
-
-    Request httpSendRequest =
-        new Request.Builder().post(sendBody).url(baseUrl + OrionRoutes.SEND.substring(1)).build();
+    final SendRequest sendRequest = sendRequest(payload, from, to);
+    final RequestBody sendBody = sendBody(sendRequest);
+    final Request httpSendRequest = httpSendRequest(sendBody);
 
     // executes the request
-    try (Response httpSendResponse = httpClient.newCall(httpSendRequest).execute()) {
+    try (final Response httpSendResponse = httpClient.newCall(httpSendRequest).execute()) {
+
       if (httpSendResponse.code() != 200) {
         log.error("send operation failed " + httpSendResponse.code());
         return Optional.empty();
       }
 
-      // deserialize the response
-      SendResponse sendResponse =
-          serializer.deserialize(JSON, SendResponse.class, httpSendResponse.body().bytes());
-      return Optional.of(sendResponse.key);
-    } catch (IOException io) {
+      return Optional.of(deserialize(httpSendResponse).key);
+
+    } catch (final IOException io) {
       log.error(io.getMessage());
       return Optional.empty();
     }
   }
 
+  public Optional<String> sendExpectingError(byte[] payload, String from, String[] to) {
+    final SendRequest sendRequest = sendRequest(payload, from, to);
+    final RequestBody sendBody = sendBody(sendRequest);
+    final Request httpSendRequest = httpSendRequest(sendBody);
+
+    // executes the request
+    try (final Response httpSendResponse = httpClient.newCall(httpSendRequest).execute()) {
+
+      if (httpSendResponse.code() != 200) {
+        return Optional.of(httpSendResponse.body().string());
+      } else {
+        log.error("send operation encountered no error ");
+      }
+
+    } catch (final IOException io) {
+      log.error(io.getMessage());
+    }
+
+    return Optional.empty();
+  }
+
   public Optional<byte[]> receive(String digest, String publicKey) {
     // create the okHttp Request object
-    ReceiveRequest receiveRequest = new ReceiveRequest(digest, publicKey);
-    RequestBody receiveBody =
+    final ReceiveRequest receiveRequest = new ReceiveRequest(digest, publicKey);
+    final RequestBody receiveBody =
         RequestBody.create(
             MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, receiveRequest));
 
-    Request httpReceiveRequest =
+    final Request httpReceiveRequest =
         new Request.Builder()
             .post(receiveBody)
             .url(baseUrl + OrionRoutes.RECEIVE.substring(1))
@@ -97,7 +112,7 @@ public class OrionClient {
       }
 
       // deserialize the response
-      ReceiveResponse receiveResponse =
+      final ReceiveResponse receiveResponse =
           serializer.deserialize(JSON, ReceiveResponse.class, httpReceiveResponse.body().bytes());
 
       return Optional.of(Base64.decode(receiveResponse.payload));
@@ -106,5 +121,25 @@ public class OrionClient {
       log.error(io.getMessage());
       return Optional.empty();
     }
+  }
+
+  private SendResponse deserialize(Response httpSendResponse) throws IOException {
+    return serializer.deserialize(JSON, SendResponse.class, httpSendResponse.body().bytes());
+  }
+
+  private Request httpSendRequest(RequestBody sendBody) {
+    return new Request.Builder()
+        .post(sendBody)
+        .url(baseUrl + OrionRoutes.SEND.substring(1))
+        .build();
+  }
+
+  private RequestBody sendBody(SendRequest sendRequest) {
+    return RequestBody.create(
+        MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, sendRequest));
+  }
+
+  private SendRequest sendRequest(byte[] payload, String from, String[] to) {
+    return new SendRequest(Base64.encode(payload), from, to);
   }
 }

@@ -1,21 +1,11 @@
 package net.consensys.orion.impl.utils;
 
-public class SerializationException extends RuntimeException {
+import net.consensys.orion.api.exception.OrionErrorCode;
+import net.consensys.orion.api.exception.OrionException;
 
-  public SerializationException(String message) {
-    super(message);
-  }
+public class SerializationException extends OrionException {
 
-  public SerializationException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public SerializationException(Throwable cause) {
-    super(cause);
-  }
-
-  protected SerializationException(
-      String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-    super(message, cause, enableSuppression, writableStackTrace);
+  public SerializationException(OrionErrorCode code, Throwable cause) {
+    super(code, cause);
   }
 }

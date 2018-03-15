@@ -1,9 +1,11 @@
 package net.consensys.orion.acceptance.send.receive;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.config.TomlConfigBuilder;
 import net.consensys.orion.impl.http.OrionClient;
 
@@ -71,5 +73,10 @@ public class SendReceiveUtil {
     final OrionClient client = new OrionClient(baseUrl);
     assertTrue(client.upCheck());
     return client;
+  }
+
+  /** Verifies the Orion error JSON matches the desired Orion code. */
+  public void assertError(OrionErrorCode expected, String actual) {
+    assertEquals(String.format("{\"error\":%s}", expected.code()), actual);
   }
 }

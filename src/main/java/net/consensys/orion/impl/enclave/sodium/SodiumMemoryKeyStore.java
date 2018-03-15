@@ -4,6 +4,7 @@ import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
+import net.consensys.orion.api.exception.OrionErrorCode;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -18,8 +19,8 @@ import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 
 public class SodiumMemoryKeyStore implements KeyStore {
 
-  private Map<PublicKey, PrivateKey> store = new HashMap<>();
-  private List<PublicKey> nodeKeys = new ArrayList<>();
+  private final Map<PublicKey, PrivateKey> store = new HashMap<>();
+  private final List<PublicKey> nodeKeys = new ArrayList<>();
 
   public SodiumMemoryKeyStore(Config config) {
     SodiumLibrary.setLibraryPath(config.libSodiumPath());
@@ -33,13 +34,13 @@ public class SodiumMemoryKeyStore implements KeyStore {
   @Override
   public PublicKey generateKeyPair(KeyConfig keyConfig) {
     try {
-      SodiumKeyPair keyPair = SodiumLibrary.cryptoBoxKeyPair();
-      SodiumPrivateKey privateKey = new SodiumPrivateKey(keyPair.getPrivateKey());
-      SodiumPublicKey publicKey = new SodiumPublicKey(keyPair.getPublicKey());
+      final SodiumKeyPair keyPair = SodiumLibrary.cryptoBoxKeyPair();
+      final SodiumPrivateKey privateKey = new SodiumPrivateKey(keyPair.getPrivateKey());
+      final SodiumPublicKey publicKey = new SodiumPublicKey(keyPair.getPublicKey());
       store.put(publicKey, privateKey);
       return publicKey;
-    } catch (SodiumLibraryException e) {
-      throw new EnclaveException(e);
+    } catch (final SodiumLibraryException e) {
+      throw new EnclaveException(OrionErrorCode.ENCLAVE_CREATE_KEY_PAIR, e);
     }
   }
 

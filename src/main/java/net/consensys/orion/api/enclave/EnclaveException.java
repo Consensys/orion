@@ -1,21 +1,15 @@
 package net.consensys.orion.api.enclave;
 
-public class EnclaveException extends RuntimeException {
+import net.consensys.orion.api.exception.OrionErrorCode;
+import net.consensys.orion.api.exception.OrionException;
 
-  public EnclaveException(String message) {
-    super(message);
+public class EnclaveException extends OrionException {
+
+  public EnclaveException(OrionErrorCode code, String message) {
+    super(code, message);
   }
 
-  public EnclaveException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public EnclaveException(Throwable cause) {
-    super(cause);
-  }
-
-  protected EnclaveException(
-      String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-    super(message, cause, enableSuppression, writableStackTrace);
+  public EnclaveException(OrionErrorCode code, Throwable cause) {
+    super(code, cause);
   }
 }

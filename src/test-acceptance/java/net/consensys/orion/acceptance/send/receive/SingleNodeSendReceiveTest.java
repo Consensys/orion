@@ -42,7 +42,7 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
 
   @BeforeClass
   public static void setUpSingleNode() throws Exception {
-    int port = utils().freePort();
+    final int port = utils().freePort();
 
     baseUrl = utils().url(HOST_NAME, port);
 
@@ -81,7 +81,7 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
 
   /** Different keys for the sender and receiver. */
   @Test
-  public void recieverCanView() throws Exception {
+  public void receiverCanView() throws Exception {
     final OrionClient orionClient = client();
     ensureNetworkDiscoveryOccurs();
 
