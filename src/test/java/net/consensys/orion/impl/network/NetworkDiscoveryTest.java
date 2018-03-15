@@ -26,12 +26,12 @@ import org.junit.Test;
 public class NetworkDiscoveryTest {
   private static final Serializer serializer = new Serializer();
   private Vertx vertx;
-  private MemoryNetworkNodes networkNodes;
+  private ConcurrentNetworkNodes networkNodes;
 
   @Before
   public void setUp() throws Exception {
     vertx = Vertx.vertx();
-    networkNodes = new MemoryNetworkNodes(new URL("http://localhost1234/"));
+    networkNodes = new ConcurrentNetworkNodes(new URL("http://localhost1234/"));
   }
 
   @After
@@ -92,7 +92,7 @@ public class NetworkDiscoveryTest {
   public void networkDiscoveryWithMerge() throws Exception {
     // empty memory nodes, lets' say one peer is alone in his network
     byte[] unknownPeerNetworkNodes =
-        serializer.serialize(CBOR, new MemoryNetworkNodes(new URL("http://localhost/")));
+        serializer.serialize(CBOR, new ConcurrentNetworkNodes(new URL("http://localhost/")));
     Buffer unknownPeerBody = new Buffer();
     unknownPeerBody.write(unknownPeerNetworkNodes);
     // create a peer that's not in our current network nodes
@@ -102,7 +102,8 @@ public class NetworkDiscoveryTest {
             new SodiumPublicKey("unknown.pk1".getBytes()));
 
     // create a peer that we know, and that knows the lonely unknown peer.
-    MemoryNetworkNodes knownPeerNetworkNodes = new MemoryNetworkNodes(new URL("http://localhost/"));
+    ConcurrentNetworkNodes knownPeerNetworkNodes =
+        new ConcurrentNetworkNodes(new URL("http://localhost/"));
     knownPeerNetworkNodes.addNode(unknownPeer.publicKey, unknownPeer.getURL());
     Buffer knownPeerBody = new Buffer();
     knownPeerBody.write(serializer.serialize(CBOR, knownPeerNetworkNodes));

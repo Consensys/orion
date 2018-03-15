@@ -18,13 +18,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-public class MemoryNetworkNodes implements NetworkNodes, Serializable {
+public class ConcurrentNetworkNodes implements NetworkNodes, Serializable {
 
   private final URL url;
   private CopyOnWriteArraySet<URL> nodeURLs;
   private ConcurrentHashMap<PublicKey, URL> nodePKs;
 
-  public MemoryNetworkNodes(Config config, PublicKey[] publicKeys) {
+  public ConcurrentNetworkNodes(Config config, PublicKey[] publicKeys) {
     url = config.url();
     if (config.otherNodes().length > 0) {
       nodeURLs = new CopyOnWriteArraySet<>(Arrays.asList(config.otherNodes()));
@@ -35,13 +35,13 @@ public class MemoryNetworkNodes implements NetworkNodes, Serializable {
     nodePKs = new ConcurrentHashMap<>();
 
     // adding my publickey(s) so /partyinfo returns my info when called.
-    for (int i = 0; i < publicKeys.length; i++) {
-      nodePKs.put(publicKeys[i], url);
+    for (PublicKey publicKey : publicKeys) {
+      nodePKs.put(publicKey, url);
     }
   }
 
   @JsonCreator
-  public MemoryNetworkNodes(
+  public ConcurrentNetworkNodes(
       @JsonProperty("url") URL url,
       @JsonProperty("nodeURLs") Set<URL> nodeURLs,
       @JsonProperty("nodePKs") @JsonDeserialize(keyUsing = SodiumPublicKeyDeserializer.class)
@@ -51,7 +51,7 @@ public class MemoryNetworkNodes implements NetworkNodes, Serializable {
     this.nodePKs = new ConcurrentHashMap<>(nodePKs);
   }
 
-  public MemoryNetworkNodes(URL url) {
+  public ConcurrentNetworkNodes(URL url) {
     this(url, new CopyOnWriteArraySet<>(), new ConcurrentHashMap<>());
   }
 
@@ -90,7 +90,7 @@ public class MemoryNetworkNodes implements NetworkNodes, Serializable {
   }
 
   @Override
-  public boolean merge(NetworkNodes other) {
+  public boolean merge(ConcurrentNetworkNodes other) {
     // note; not using map.putAll() as we don't want a malicious peer to overwrite ours nodes.
     boolean thisChanged = false;
 
@@ -114,7 +114,7 @@ public class MemoryNetworkNodes implements NetworkNodes, Serializable {
       return false;
     }
 
-    MemoryNetworkNodes that = (MemoryNetworkNodes) o;
+    ConcurrentNetworkNodes that = (ConcurrentNetworkNodes) o;
 
     if (url != null ? !url.equals(that.url) : that.url != null) {
       return false;

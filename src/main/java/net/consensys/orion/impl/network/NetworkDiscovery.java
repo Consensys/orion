@@ -3,7 +3,6 @@ package net.consensys.orion.impl.network;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 
 import net.consensys.orion.api.cmd.OrionRoutes;
-import net.consensys.orion.api.network.NetworkNodes;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.net.URL;
@@ -32,11 +31,11 @@ public class NetworkDiscovery extends AbstractVerticle {
 
   private final OkHttpClient httpClient;
 
-  private final NetworkNodes nodes;
+  private final ConcurrentNetworkNodes nodes;
   private final Map<URL, Discoverer> discoverers;
   private final Serializer serializer;
 
-  public NetworkDiscovery(NetworkNodes nodes, Serializer serializer) {
+  public NetworkDiscovery(ConcurrentNetworkNodes nodes, Serializer serializer) {
     this.serializer = serializer;
     this.nodes = nodes;
     this.discoverers = new HashMap<>();
@@ -56,7 +55,7 @@ public class NetworkDiscovery extends AbstractVerticle {
    * Should be called from the same vertx event loop either when NetworkDiscovery is deployed (via
    * start() method) or when a merge occurs in one of the Discoverer (same event loop)
    */
-  protected void updateDiscoverers() {
+  private void updateDiscoverers() {
     // for each peer that we know, we start a Discoverer (on timer)
     for (URL nodeUrl : nodes.nodeURLs()) {
       if (!discoverers.containsKey(nodeUrl)) {
@@ -92,7 +91,7 @@ public class NetworkDiscovery extends AbstractVerticle {
       vertx.executeBlocking(
           future -> {
             // executes outside the event loop (vertx worker pool).
-            Optional<NetworkNodes> result = peerPartyInfo();
+            Optional<ConcurrentNetworkNodes> result = peerPartyInfo();
             future.complete(result);
           },
           res -> {
@@ -106,7 +105,8 @@ public class NetworkDiscovery extends AbstractVerticle {
             vertx.setTimer(currentRefreshDelay, this);
 
             // process the result, and merge new nodes if any
-            Optional<NetworkNodes> result = (Optional<NetworkNodes>) res.result();
+            Optional<ConcurrentNetworkNodes> result =
+                (Optional<ConcurrentNetworkNodes>) res.result();
             if (result.isPresent() && nodes.merge(result.get())) {
               // we merged something new, let's start discovery on this new nodes
               log.info("merged new nodes from {} discoverer", nodeUrl);
@@ -119,7 +119,7 @@ public class NetworkDiscovery extends AbstractVerticle {
     }
 
     /** calls http endpoint PartyInfo; returns Optional.empty() if error. */
-    private Optional<NetworkNodes> peerPartyInfo() {
+    private Optional<ConcurrentNetworkNodes> peerPartyInfo() {
       try {
         log.trace("calling partyInfo on {}", nodeUrl);
         attempts++;
@@ -140,8 +140,8 @@ public class NetworkDiscovery extends AbstractVerticle {
         if (resp.code() == 200) {
           lastUpdate = Instant.now();
           // deserialize response
-          NetworkNodes partyInfoResponse =
-              serializer.deserialize(CBOR, MemoryNetworkNodes.class, resp.body().bytes());
+          ConcurrentNetworkNodes partyInfoResponse =
+              serializer.deserialize(CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
 
           return Optional.of(partyInfoResponse);
         }

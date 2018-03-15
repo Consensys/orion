@@ -7,9 +7,9 @@ import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.exception.OrionException;
-import net.consensys.orion.api.network.NetworkNodes;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.impl.http.server.HttpContentType;
+import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.IOException;
@@ -36,7 +36,7 @@ public class SendHandler implements Handler<RoutingContext> {
   private final Enclave enclave;
   private final Storage storage;
   private final List<PublicKey> nodeKeys;
-  private final NetworkNodes networkNodes;
+  private final ConcurrentNetworkNodes networkNodes;
   private final Serializer serializer;
   private final HttpContentType contentType;
 
@@ -46,7 +46,7 @@ public class SendHandler implements Handler<RoutingContext> {
   public SendHandler(
       Enclave enclave,
       Storage storage,
-      NetworkNodes networkNodes,
+      ConcurrentNetworkNodes networkNodes,
       Serializer serializer,
       HttpContentType contentType) {
     this.enclave = enclave;

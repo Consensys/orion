@@ -8,7 +8,6 @@ import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
-import net.consensys.orion.api.network.NetworkNodes;
 import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.impl.cmd.OrionArguments;
 import net.consensys.orion.impl.config.TomlConfigBuilder;
@@ -16,7 +15,7 @@ import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumFileKeyStore;
 import net.consensys.orion.impl.http.server.vertx.VertxServer;
-import net.consensys.orion.impl.network.MemoryNetworkNodes;
+import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 import net.consensys.orion.impl.network.NetworkDiscovery;
 import net.consensys.orion.impl.storage.file.MapDbStorage;
 import net.consensys.orion.impl.storage.leveldb.LevelDbStorage;
@@ -109,7 +108,7 @@ public class Orion {
 
   public void run(Config config) throws ExecutionException, InterruptedException {
     SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
-    NetworkNodes networkNodes = new MemoryNetworkNodes(config, keyStore.nodeKeys());
+    ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(config, keyStore.nodeKeys());
     Enclave enclave = new LibSodiumEnclave(config, keyStore);
 
     // storage path
