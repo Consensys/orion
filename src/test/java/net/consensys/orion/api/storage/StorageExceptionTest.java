@@ -10,12 +10,12 @@ import org.junit.Test;
 public class StorageExceptionTest {
 
   @Test
-  public void testImplementationOfRuntimeInterface() {
+  public void implementationOfRuntimeInterface() {
     assertTrue(RuntimeException.class.isAssignableFrom(StorageException.class));
   }
 
   @Test
-  public void testConstruction() {
+  public void construction() {
     final String message = "This is the cause";
     final StorageException exception = new StorageException(OrionErrorCode.STORAGE_OPEN, message);
     assertEquals(message, exception.getMessage());

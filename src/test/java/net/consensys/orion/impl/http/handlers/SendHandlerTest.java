@@ -20,11 +20,7 @@ import net.consensys.orion.impl.utils.Base64;
 import java.io.IOException;
 import java.net.URL;
 import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -49,7 +45,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testInvalidRequest() throws Exception {
+  public void invalidRequest() throws Exception {
     SendRequest sendRequest = new SendRequest((byte[]) null, "me", null);
 
     Request request = buildPostRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
@@ -61,7 +57,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testEmptyPayload() throws Exception {
+  public void emptyPayload() throws Exception {
     RequestBody body = RequestBody.create(null, new byte[0]);
     Request request = new Request.Builder().post(body).url(baseUrl + OrionRoutes.SEND).build();
 
@@ -74,7 +70,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testSendFailsWhenBadResponseFromPeer() throws Exception {
+  public void sendFailsWhenBadResponseFromPeer() throws Exception {
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setResponseCode(500));
 
@@ -82,7 +78,7 @@ public class SendHandlerTest extends HandlerTest {
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // build our sendRequest
-    SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer));
+    SendRequest sendRequest = buildFakeRequest(Collections.singletonList(fakePeer));
 
     Request request = buildPostRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
 
@@ -100,7 +96,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testSendFailsWhenBadDigestFromPeer() throws Exception {
+  public void sendFailsWhenBadDigestFromPeer() throws Exception {
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody("not the best digest"));
 
@@ -108,7 +104,7 @@ public class SendHandlerTest extends HandlerTest {
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // build our sendRequest
-    SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer));
+    SendRequest sendRequest = buildFakeRequest(Collections.singletonList(fakePeer));
     Request request = buildPostRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
 
     // execute request
@@ -119,7 +115,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testPropagatedToMultiplePeers() throws Exception {
+  public void propagatedToMultiplePeers() throws Exception {
     // note: we need to do this as the fakePeers need to know in advance the digest to return.
     // not possible with libSodium due to random nonce
 
@@ -171,7 +167,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testSendWithInvalidContentType() throws Exception {
+  public void sendWithInvalidContentType() throws Exception {
     String b64String = Base64.encode("foo".getBytes());
 
     // build our sendRequest
@@ -185,7 +181,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testSendingWithARawBody() throws Exception {
+  public void sendingWithARawBody() throws Exception {
     // note: this closely mirrors the test "testPropagatedToMultiplePeers",
     // using the raw version of the API.
 
@@ -258,7 +254,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testSendWithInvalidBody() throws Exception {
+  public void sendWithInvalidBody() throws Exception {
     Request requestWithInvalidBody =
         buildPostRequest(OrionRoutes.SEND, HttpContentType.JSON, "{\"foo\": \"bar\"}");
 
@@ -296,7 +292,7 @@ public class SendHandlerTest extends HandlerTest {
     final MockWebServer server;
     final PublicKey publicKey;
 
-    public FakePeer(MockResponse response) throws IOException {
+    FakePeer(MockResponse response) throws IOException {
       server = new MockWebServer();
       publicKey = memoryKeyStore.generateKeyPair(keyConfig);
       server.enqueue(response);

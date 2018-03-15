@@ -9,12 +9,12 @@ import org.junit.Test;
 public class EnclaveExceptionTest {
 
   @Test
-  public void testImplementationOfRuntimeInterface() {
+  public void implementationOfRuntimeInterface() {
     assertTrue(RuntimeException.class.isAssignableFrom(EnclaveException.class));
   }
 
   @Test
-  public void testConstruction() {
+  public void construction() {
     final String message = "This is the cause";
     final EnclaveException exception =
         new EnclaveException(OrionErrorCode.ENCLAVE_CREATE_KEY_PAIR, message);

@@ -15,7 +15,7 @@ import org.junit.Test;
 public class TomlConfigBuilderTest {
 
   @Test
-  public void testFullFileRead() throws Exception {
+  public void fullFileRead() throws Exception {
 
     File expectedFile;
     File expectedFilesArray[];
@@ -100,7 +100,7 @@ public class TomlConfigBuilderTest {
   }
 
   @Test
-  public void testFullFileReadUsingDefaults() throws Exception {
+  public void fullFileReadUsingDefaults() {
 
     InputStream configAsStream =
         this.getClass().getClassLoader().getResourceAsStream("defaultConfigTest.toml");
@@ -152,7 +152,7 @@ public class TomlConfigBuilderTest {
   }
 
   @Test
-  public void testInvalidConfigsThrowException() throws Exception {
+  public void invalidConfigsThrowException() {
 
     InputStream configAsStream =
         this.getClass().getClassLoader().getResourceAsStream("invalidConfigTest.toml");
@@ -179,7 +179,7 @@ public class TomlConfigBuilderTest {
   }
 
   @Test
-  public void testMissingMandatoryConfigsThrowException() throws Exception {
+  public void missingMandatoryConfigsThrowException() {
 
     InputStream configAsStream =
         this.getClass().getClassLoader().getResourceAsStream("missingMandatoryConfigTest.toml");
@@ -198,7 +198,7 @@ public class TomlConfigBuilderTest {
   }
 
   @Test
-  public void testTrustModeValidation() throws Exception {
+  public void trustModeValidation() {
     TomlConfigBuilder configBuilder = new TomlConfigBuilder();
 
     assertTrue(configBuilder.validateTrustMode("whitelist"));
@@ -213,7 +213,7 @@ public class TomlConfigBuilderTest {
   }
 
   @Test
-  public void testVerbosityValidation() throws Exception {
+  public void verbosityValidation() {
     TomlConfigBuilder configBuilder = new TomlConfigBuilder();
 
     assertTrue(configBuilder.validateVerbosity(0));
@@ -224,7 +224,7 @@ public class TomlConfigBuilderTest {
   }
 
   @Test
-  public void testTLSValidation() throws Exception {
+  public void tlsValidation() {
     TomlConfigBuilder configBuilder = new TomlConfigBuilder();
 
     assertTrue(configBuilder.validateTLS("strict"));
@@ -234,7 +234,7 @@ public class TomlConfigBuilderTest {
   }
 
   @Test
-  public void testStorageValidationTypes() throws Exception {
+  public void storageValidationTypes() {
     TomlConfigBuilder configBuilder = new TomlConfigBuilder();
     assertTrue(configBuilder.validateStorageTypes("leveldb:path"));
     assertTrue(configBuilder.validateStorageTypes("memory"));

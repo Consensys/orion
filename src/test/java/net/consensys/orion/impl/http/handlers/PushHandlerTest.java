@@ -36,7 +36,7 @@ public class PushHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testPayloadIsStored() throws Exception {
+  public void payloadIsStored() throws Exception {
     // ref to storage
     final Storage storage = routes.getStorage();
 
@@ -64,7 +64,7 @@ public class PushHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testRoundTripSerialization() {
+  public void roundTripSerialization() {
     EncryptedPayload pushRequest = mockPayload();
     assertEquals(
         pushRequest,
@@ -75,7 +75,7 @@ public class PushHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testPushWithInvalidContentType() throws Exception {
+  public void pushWithInvalidContentType() throws Exception {
     // build & serialize our payload
     EncryptedPayload encryptedPayload = mockPayload();
 
@@ -93,7 +93,7 @@ public class PushHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testPushWithInvalidBody() throws Exception {
+  public void pushWithInvalidBody() throws Exception {
     RequestBody body =
         RequestBody.create(MediaType.parse(HttpContentType.CBOR.httpHeaderValue), "foo");
 
@@ -107,7 +107,7 @@ public class PushHandlerTest extends HandlerTest {
     assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
   }
 
-  protected EncryptedPayload mockPayload() {
+  private EncryptedPayload mockPayload() {
     LibSodiumEnclave sEnclave = new LibSodiumEnclave(config, memoryKeyStore);
     PublicKey k1 = memoryKeyStore.generateKeyPair(keyConfig);
     PublicKey k2 = memoryKeyStore.generateKeyPair(keyConfig);

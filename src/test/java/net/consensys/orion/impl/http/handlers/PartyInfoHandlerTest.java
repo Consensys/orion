@@ -23,7 +23,7 @@ import org.junit.Test;
 public class PartyInfoHandlerTest extends HandlerTest {
 
   @Test
-  public void testSuccessfulProcessingOfRequest() throws Exception {
+  public void successfulProcessingOfRequest() throws Exception {
     networkNodes.addNode(new SodiumPublicKey("pk1".getBytes()), new URL("http://127.0.0.1:9001/"));
     networkNodes.addNode(new SodiumPublicKey("pk2".getBytes()), new URL("http://127.0.0.1:9002/"));
 
@@ -46,7 +46,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testRoundTripSerialization() throws Exception {
+  public void roundTripSerialization() throws Exception {
     MemoryNetworkNodes networkNodes = new MemoryNetworkNodes(new URL("http://localhost:1234/"));
     networkNodes.addNode(new SodiumPublicKey("fake".getBytes()), new URL("http://localhost/"));
     assertEquals(
@@ -58,7 +58,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testPartyInfoWithInvalidContentType() throws Exception {
+  public void partyInfoWithInvalidContentType() throws Exception {
     networkNodes.addNode(new SodiumPublicKey("pk1".getBytes()), new URL("http://127.0.0.1:9001/"));
     networkNodes.addNode(new SodiumPublicKey("pk2".getBytes()), new URL("http://127.0.0.1:9002/"));
 
@@ -75,7 +75,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void testPartyInfoWithInvalidBody() throws Exception {
+  public void partyInfoWithInvalidBody() throws Exception {
     RequestBody partyInfoBody = RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), "foo");
 
     Request request =

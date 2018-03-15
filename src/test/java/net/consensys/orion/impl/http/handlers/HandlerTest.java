@@ -38,18 +38,18 @@ public abstract class HandlerTest {
   protected final Serializer serializer = new Serializer();
 
   // http client
-  protected OkHttpClient httpClient = new OkHttpClient();
-  protected String baseUrl;
+  OkHttpClient httpClient = new OkHttpClient();
+  String baseUrl;
 
   // these are re-built between tests
-  protected MemoryNetworkNodes networkNodes;
+  MemoryNetworkNodes networkNodes;
   protected MemoryConfig config;
   protected Enclave enclave;
 
-  protected Vertx vertx;
-  protected Integer httpServerPort;
-  protected VertxServer vertxServer;
-  protected OrionRoutes routes;
+  private Vertx vertx;
+  private Integer httpServerPort;
+  private VertxServer vertxServer;
+  OrionRoutes routes;
 
   private StorageEngine<EncryptedPayload> storageEngine;
 
@@ -105,11 +105,11 @@ public abstract class HandlerTest {
     return new StubEnclave();
   }
 
-  protected Request buildPostRequest(String path, HttpContentType contentType, Object payload) {
+  Request buildPostRequest(String path, HttpContentType contentType, Object payload) {
     return buildPostRequest(path, contentType, serializer.serialize(contentType, payload));
   }
 
-  protected Request buildPostRequest(String path, HttpContentType contentType, byte[] payload) {
+  private Request buildPostRequest(String path, HttpContentType contentType, byte[] payload) {
     RequestBody body = RequestBody.create(MediaType.parse(contentType.httpHeaderValue), payload);
 
     if (path.startsWith("/")) {

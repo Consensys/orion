@@ -41,7 +41,7 @@ public class OrionArgumentsTest {
   }
 
   @Test
-  public void testGenerateKeysArgumentWithNoKeyNamesProvided() {
+  public void generateKeysArgumentWithNoKeyNamesProvided() {
     String errorMsg = String.format("Error: Missing key names to generate.%n");
     String[] args = {"-g"};
 
@@ -52,7 +52,7 @@ public class OrionArgumentsTest {
   }
 
   @Test
-  public void testHelpOutput() {
+  public void helpOutput() {
     String[] args = {"--help"};
 
     OrionArguments arguments = new OrionArguments(args);
@@ -62,7 +62,7 @@ public class OrionArgumentsTest {
   }
 
   @Test
-  public void testVersionArgument() {
+  public void versionArgument() {
     String[] args = {"-v"};
 
     OrionArguments arguments = new OrionArguments(args);
@@ -71,7 +71,7 @@ public class OrionArgumentsTest {
   }
 
   @Test
-  public void testInvalidOption() {
+  public void invalidOption() {
     String errorMsg = "Invalid option: -x\n";
     String[] args = {"-x"};
 
@@ -82,7 +82,7 @@ public class OrionArgumentsTest {
   }
 
   @Test
-  public void testValidAndInvalidOptions() {
+  public void validAndInvalidOptions() {
     String errorMsg = "Invalid option: -x\n";
     String[] args = {"-x", "-g", "keys"};
 
@@ -93,7 +93,7 @@ public class OrionArgumentsTest {
   }
 
   @Test
-  public void testConfigFileParam() {
+  public void configFileParam() {
     String[] args = {"config.conf"};
 
     OrionArguments arguments = new OrionArguments(args);

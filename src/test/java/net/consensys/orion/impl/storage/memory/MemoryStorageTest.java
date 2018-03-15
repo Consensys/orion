@@ -10,13 +10,13 @@ public class MemoryStorageTest {
   MemoryStorage<String> storage = new MemoryStorage();
 
   @Test
-  public void testStoreAndRetrieve() {
+  public void storeAndRetrieve() {
     storage.put("key", "data");
     assertEquals("data", storage.get("key").get());
   }
 
   @Test
-  public void testRetrieveWithoutStore() {
+  public void retrieveWithoutStore() {
     assertEquals(Optional.empty(), storage.get("missing"));
   }
 }

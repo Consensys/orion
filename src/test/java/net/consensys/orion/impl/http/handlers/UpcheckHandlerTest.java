@@ -11,7 +11,7 @@ import org.junit.Test;
 public class UpcheckHandlerTest extends HandlerTest {
 
   @Test
-  public void testMyApplication() throws Exception {
+  public void myApplication() throws Exception {
 
     Request request = new Request.Builder().get().url(baseUrl + OrionRoutes.UPCHECK).build();
 
