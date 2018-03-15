@@ -2,6 +2,7 @@ package net.consensys.orion.impl.enclave.sodium;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -198,6 +199,31 @@ public class LibSodiumEnclaveTest {
           "com.muquit.libsodiumjna.exceptions.SodiumLibraryException: invalid nonce length 0 bytes",
           e.getMessage());
     }
+  }
+
+  @Test(expected = EnclaveException.class)
+  public void payloadCanOnlyBeDecryptedByItsKey() {
+    final PublicKey senderKey = generateKey();
+    final PublicKey recipientKey1 = generateKey();
+    final PublicKey recipientKey2 = generateKey();
+    final String plaintext = "hello";
+
+    final EncryptedPayload encryptedPayload1 = encrypt(plaintext, senderKey, recipientKey1);
+
+    // trying to decrypt payload1 with recipient2 key
+    decrypt(encryptedPayload1, recipientKey2);
+  }
+
+  @Test
+  public void encryptGeneratesDifferentCypherForSamePayloadAndKey() {
+    final PublicKey senderKey = generateKey();
+    final PublicKey recipientKey = generateKey();
+    final String plaintext = "hello";
+
+    final EncryptedPayload encryptedPayload1 = encrypt(plaintext, senderKey, recipientKey);
+    final EncryptedPayload encryptedPayload2 = encrypt(plaintext, senderKey, recipientKey);
+
+    assertNotEquals(encryptedPayload1.cipherText(), encryptedPayload2.cipherText());
   }
 
   private String decrypt(EncryptedPayload encryptedPayload, PublicKey senderKey) {
