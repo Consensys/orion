@@ -10,6 +10,7 @@ import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.config.MemoryConfig;
 
 import java.security.PublicKey;
@@ -201,7 +202,7 @@ public class LibSodiumEnclaveTest {
     }
   }
 
-  @Test(expected = EnclaveException.class)
+  @Test
   public void payloadCanOnlyBeDecryptedByItsKey() {
     final PublicKey senderKey = generateKey();
     final PublicKey recipientKey1 = generateKey();
@@ -211,11 +212,16 @@ public class LibSodiumEnclaveTest {
     final EncryptedPayload encryptedPayload1 = encrypt(plaintext, senderKey, recipientKey1);
 
     // trying to decrypt payload1 with recipient2 key
-    decrypt(encryptedPayload1, recipientKey2);
+    try {
+      decrypt(encryptedPayload1, recipientKey2);
+      fail("Should've failed because it is using the wrong key");
+    } catch (EnclaveException e) {
+      assertEquals(OrionErrorCode.ENCLAVE_DECRYPT_WRONG_PRIVATE_KEY, e.code());
+    }
   }
 
   @Test
-  public void encryptGeneratesDifferentCypherForSamePayloadAndKey() {
+  public void encryptGeneratesDifferentCipherForSamePayloadAndKey() {
     final PublicKey senderKey = generateKey();
     final PublicKey recipientKey = generateKey();
     final String plaintext = "hello";
