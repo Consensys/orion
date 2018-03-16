@@ -36,8 +36,14 @@ public class SodiumFileKeyStoreTest {
 
   @Test
   public void configLoadsRawKeys() {
-    PrivateKey storedKey = keyStore.privateKey(publicKey1);
-    assertEquals(privateKey1, storedKey);
+    Optional<PrivateKey> storedKey = keyStore.privateKey(publicKey1);
+    assertEquals(privateKey1, storedKey.get());
+  }
+
+  @Test
+  public void configLoadsNullKey() {
+    Optional<PrivateKey> storedKey = keyStore.privateKey(null);
+    assertFalse(storedKey.isPresent());
   }
 
   @Test
@@ -90,8 +96,8 @@ public class SodiumFileKeyStoreTest {
     for (int i = 0; i < encodedPrivateKeys.length; i++) {
       PrivateKey privateKey = new SodiumPrivateKey(Base64.decode(encodedPrivateKeys[i]));
       PublicKey publicKey = new SodiumPublicKey(Base64.decode(encodedPublicKeys[i]));
-      PrivateKey storedKey = keyStore.privateKey(publicKey);
-      assertEquals(privateKey, storedKey);
+      Optional<PrivateKey> storedKey = keyStore.privateKey(publicKey);
+      assertEquals(privateKey, storedKey.get());
     }
   }
 

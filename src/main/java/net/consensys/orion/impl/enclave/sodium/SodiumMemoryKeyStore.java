@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.muquit.libsodiumjna.SodiumKeyPair;
 import com.muquit.libsodiumjna.SodiumLibrary;
@@ -27,8 +28,8 @@ public class SodiumMemoryKeyStore implements KeyStore {
   }
 
   @Override
-  public PrivateKey privateKey(PublicKey publicKey) {
-    return store.get(publicKey);
+  public Optional<PrivateKey> privateKey(PublicKey publicKey) {
+    return Optional.ofNullable(store.get(publicKey));
   }
 
   @Override
