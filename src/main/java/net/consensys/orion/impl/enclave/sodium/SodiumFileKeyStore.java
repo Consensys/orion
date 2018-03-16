@@ -102,8 +102,8 @@ public class SodiumFileKeyStore implements KeyStore {
   }
 
   @Override
-  public PrivateKey privateKey(PublicKey publicKey) {
-    return cache.get(publicKey);
+  public Optional<PrivateKey> privateKey(PublicKey publicKey) {
+    return Optional.ofNullable(cache.get(publicKey));
   }
 
   @Override
