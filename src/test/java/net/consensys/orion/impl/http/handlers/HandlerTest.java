@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerOptions;
@@ -39,7 +40,8 @@ public abstract class HandlerTest {
 
   // http client
   OkHttpClient httpClient = new OkHttpClient();
-  String baseUrl;
+  String publicBaseUrl;
+  String privateBaseUrl;
 
   // these are re-built between tests
   ConcurrentNetworkNodes networkNodes;
@@ -47,8 +49,10 @@ public abstract class HandlerTest {
   protected Enclave enclave;
 
   private Vertx vertx;
-  private Integer httpServerPort;
-  private VertxServer vertxServer;
+  private Integer publicHTTPServerPort;
+  private VertxServer publicVertxServer;
+  private Integer privateHTTPServerPort;
+  private VertxServer privateVertxServer;
   OrionRoutes routes;
 
   private StorageEngine<EncryptedPayload> storageEngine;
@@ -56,25 +60,23 @@ public abstract class HandlerTest {
   @Before
   public void setUp() throws Exception {
 
-    // get a free httpServerPort
-    ServerSocket socket = new ServerSocket(0);
-    httpServerPort = socket.getLocalPort();
-    socket.close();
+    // Setup ports for Public and Private API Servers
+    setupPorts();
 
     // Initialise the base HTTP url in two forms: String and OkHttp's HttpUrl object to allow for simpler composition
     // of complex URLs with path parameters, query strings, etc.
-    HttpUrl http =
+    HttpUrl publicHTTP =
         new Builder()
             .scheme("http")
             .host(InetAddress.getLocalHost().getHostAddress())
-            .port(httpServerPort)
+            .port(publicHTTPServerPort)
             .build();
-    baseUrl = http.toString();
+    publicBaseUrl = publicHTTP.toString();
 
     // orion dependencies, reset them all between tests
     config = new MemoryConfig();
     config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
-    networkNodes = new ConcurrentNetworkNodes(http.url());
+    networkNodes = new ConcurrentNetworkNodes(publicHTTP.url());
     enclave = buildEnclave();
 
     String path = "routerdb";
@@ -85,18 +87,54 @@ public abstract class HandlerTest {
     // create our vertx object
     vertx = Vertx.vertx();
 
-    // settings = HTTP server with provided httpServerPort
-    HttpServerOptions httpServerOptions = new HttpServerOptions();
-    httpServerOptions.setPort(httpServerPort);
+    setupPublicAPIServer();
+    setupPrivateAPIServer();
+  }
 
-    // deploy our server
-    vertxServer = new VertxServer(vertx, routes.getRouter(), httpServerOptions);
-    vertxServer.start().get();
+  private void setupPublicAPIServer()
+      throws InterruptedException, java.util.concurrent.ExecutionException {
+    HttpServerOptions publicServerOptions = new HttpServerOptions();
+    publicServerOptions.setPort(publicHTTPServerPort);
+
+    publicVertxServer = new VertxServer(vertx, routes.publicRouter(), publicServerOptions);
+    publicVertxServer.start().get();
+  }
+
+  private void setupPrivateAPIServer()
+      throws UnknownHostException, InterruptedException, java.util.concurrent.ExecutionException {
+    HttpUrl privateHTTP =
+        new Builder()
+            .scheme("http")
+            .host(InetAddress.getLocalHost().getHostAddress())
+            .port(privateHTTPServerPort)
+            .build();
+    privateBaseUrl = privateHTTP.toString();
+
+    HttpServerOptions privateServerOptions = new HttpServerOptions();
+    privateServerOptions.setPort(privateHTTPServerPort);
+
+    privateVertxServer = new VertxServer(vertx, routes.privateRouter(), privateServerOptions);
+
+    privateVertxServer.start().get();
+  }
+
+  private void setupPorts() throws IOException {
+    // get a free httpServerPort for Public API
+    ServerSocket socket1 = new ServerSocket(0);
+    publicHTTPServerPort = socket1.getLocalPort();
+
+    // get a free httpServerPort for Private API
+    ServerSocket socket2 = new ServerSocket(0);
+    privateHTTPServerPort = socket2.getLocalPort();
+
+    socket1.close();
+    socket2.close();
   }
 
   @After
   public void tearDown() throws Exception {
-    vertxServer.stop().get();
+    publicVertxServer.stop().get();
+    privateVertxServer.stop().get();
     vertx.close();
     storageEngine.close();
   }
@@ -105,18 +143,27 @@ public abstract class HandlerTest {
     return new StubEnclave();
   }
 
-  Request buildPostRequest(String path, HttpContentType contentType, Object payload) {
-    return buildPostRequest(path, contentType, serializer.serialize(contentType, payload));
+  protected Request buildPrivateAPIRequest(
+      String path, HttpContentType contentType, Object payload) {
+    return buildPostRequest(
+        privateBaseUrl, path, contentType, serializer.serialize(contentType, payload));
   }
 
-  private Request buildPostRequest(String path, HttpContentType contentType, byte[] payload) {
+  protected Request buildPublicAPIRequest(
+      String path, HttpContentType contentType, Object payload) {
+    return buildPostRequest(
+        publicBaseUrl, path, contentType, serializer.serialize(contentType, payload));
+  }
+
+  private Request buildPostRequest(
+      String baseurl, String path, HttpContentType contentType, byte[] payload) {
     RequestBody body = RequestBody.create(MediaType.parse(contentType.httpHeaderValue), payload);
 
     if (path.startsWith("/")) {
       path = path.substring(1, path.length());
     }
 
-    return new Request.Builder().post(body).url(baseUrl + path).build();
+    return new Request.Builder().post(body).url(baseurl + path).build();
   }
 
   protected void assertError(final OrionErrorCode expected, final Response actual)

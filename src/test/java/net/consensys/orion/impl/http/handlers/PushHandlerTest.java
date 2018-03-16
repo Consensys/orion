@@ -49,7 +49,8 @@ public class PushHandlerTest extends HandlerTest {
             MediaType.parse(HttpContentType.CBOR.httpHeaderValue),
             serializer.serialize(HttpContentType.CBOR, encryptedPayload));
 
-    Request request = new Request.Builder().post(body).url(baseUrl + OrionRoutes.PUSH).build();
+    Request request =
+        new Request.Builder().post(body).url(publicBaseUrl + OrionRoutes.PUSH).build();
 
     Response resp = httpClient.newCall(request).execute();
 
@@ -85,7 +86,8 @@ public class PushHandlerTest extends HandlerTest {
             MediaType.parse(HttpContentType.JSON.httpHeaderValue),
             serializer.serialize(HttpContentType.JSON, encryptedPayload));
 
-    Request request = new Request.Builder().post(body).url(baseUrl + OrionRoutes.PUSH).build();
+    Request request =
+        new Request.Builder().post(body).url(publicBaseUrl + OrionRoutes.PUSH).build();
 
     Response resp = httpClient.newCall(request).execute();
 
@@ -97,7 +99,8 @@ public class PushHandlerTest extends HandlerTest {
     RequestBody body =
         RequestBody.create(MediaType.parse(HttpContentType.CBOR.httpHeaderValue), "foo");
 
-    Request request = new Request.Builder().post(body).url(baseUrl + OrionRoutes.PUSH).build();
+    Request request =
+        new Request.Builder().post(body).url(publicBaseUrl + OrionRoutes.PUSH).build();
 
     Response resp = httpClient.newCall(request).execute();
 

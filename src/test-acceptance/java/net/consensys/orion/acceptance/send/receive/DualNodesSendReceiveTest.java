@@ -1,8 +1,8 @@
 package net.consensys.orion.acceptance.send.receive;
 
+import net.consensys.orion.acceptance.EthNodeStub;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
-import net.consensys.orion.impl.http.OrionClient;
 
 import java.io.File;
 import java.nio.file.FileVisitOption;
@@ -25,8 +25,8 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String HOST_NAME = "127.0.0.1";
 
-  private static String firstNodeBaseUrl;
-  private static String secondNodeBaseUrl;
+  private static String firstNodePrivacyUrl;
+  private static String secondNodePrivacyUrl;
   private static Config firstNodeConfig;
   private static Config secondNodeConfig;
 
@@ -45,16 +45,22 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
   @BeforeClass
   public static void setUpDualNodes() throws Exception {
     int firstNodePort = utils().freePort();
+    int firstNodePrivacyPort = utils().freePort();
     int secondNodePort = utils().freePort();
+    int secondNodePrivacyPort = utils().freePort();
 
-    firstNodeBaseUrl = utils().url(HOST_NAME, firstNodePort);
-    secondNodeBaseUrl = utils().url(HOST_NAME, secondNodePort);
+    String firstNodeBaseUrl = utils().url(HOST_NAME, firstNodePort);
+    firstNodePrivacyUrl = utils().url(HOST_NAME, firstNodePrivacyPort);
+    String secondNodeBaseUrl = utils().url(HOST_NAME, secondNodePort);
+    secondNodePrivacyUrl = utils().url(HOST_NAME, secondNodePrivacyPort);
 
     firstNodeConfig =
         utils()
             .nodeConfig(
                 firstNodeBaseUrl,
                 firstNodePort,
+                firstNodePrivacyUrl,
+                firstNodePrivacyPort,
                 "node1",
                 secondNodeBaseUrl,
                 "src/test-acceptance/resources/key1.pub",
@@ -64,6 +70,8 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
             .nodeConfig(
                 secondNodeBaseUrl,
                 secondNodePort,
+                secondNodePrivacyUrl,
+                secondNodePrivacyPort,
                 "node2",
                 firstNodeBaseUrl,
                 "src/test-acceptance/resources/key2.pub",
@@ -84,8 +92,8 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
 
   @Test
   public void receiverCanView() throws Exception {
-    final OrionClient firstNode = firstClient();
-    final OrionClient secondNode = secondClient();
+    final EthNodeStub firstNode = utils().ethNode(firstNodePrivacyUrl);
+    final EthNodeStub secondNode = utils().ethNode(secondNodePrivacyUrl);
     ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
@@ -96,20 +104,12 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
 
   @Test
   public void senderCanView() throws Exception {
-    final OrionClient firstNode = firstClient();
+    final EthNodeStub firstNode = utils().ethNode(firstNodePrivacyUrl);
     ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
     final byte[] receivedPayload = viewTransaction(firstNode, PK_1_B_64, digest);
 
     assertTransaction(receivedPayload);
-  }
-
-  private OrionClient firstClient() {
-    return utils().client(firstNodeBaseUrl);
-  }
-
-  private OrionClient secondClient() {
-    return utils().client(secondNodeBaseUrl);
   }
 }

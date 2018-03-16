@@ -2,7 +2,7 @@ package net.consensys.orion.acceptance.send.receive;
 
 import static org.junit.Assert.assertArrayEquals;
 
-import net.consensys.orion.impl.http.OrionClient;
+import net.consensys.orion.acceptance.EthNodeStub;
 
 import junit.framework.AssertionFailedError;
 
@@ -19,11 +19,11 @@ public class SendReceiveBase {
     return utils;
   }
 
-  protected byte[] viewTransaction(OrionClient viewer, String viewerKey, String digest) {
+  protected byte[] viewTransaction(EthNodeStub viewer, String viewerKey, String digest) {
     return viewer.receive(digest, viewerKey).orElseThrow(AssertionFailedError::new);
   }
 
-  protected String sendTransaction(OrionClient sender, String senderKey, String... recipientsKey) {
+  protected String sendTransaction(EthNodeStub sender, String senderKey, String... recipientsKey) {
     return sender
         .send(originalPayload, senderKey, recipientsKey)
         .orElseThrow(AssertionFailedError::new);
@@ -36,6 +36,6 @@ public class SendReceiveBase {
 
   protected void ensureNetworkDiscoveryOccurs() throws InterruptedException {
     // TODO there must be a better way then sleeping & hoping network discovery occurs
-    Thread.sleep(1000);
+    Thread.sleep(2000);
   }
 }
