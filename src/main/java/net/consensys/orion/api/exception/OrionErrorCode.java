@@ -12,10 +12,10 @@ public enum OrionErrorCode {
   UNMAPPED("0x000000F"),
 
   /** 0x1xxxxx Node communication issues. */
-  NODE_MISSING_PEER_URL("NNodeMissingPeerUrl"),
+  NODE_MISSING_PEER_URL("NodeMissingPeerUrl"),
   NODE_PUSHING_TO_PEER("NodePushingToPeer"),
-  NODE_PUSHING_TO_PEER_RESPONSE("NodePushingToPeerResponses"),
-  NODE_PROPAGATION_TO_ALL_PEERS("NodePropagatingToAllPeers"),
+  NODE_PUSHING_TO_PEER_RESPONSE("NodePushingToPeerResponse"),
+  NODE_PROPAGATING_TO_ALL_PEERS("NodePropagatingToAllPeers"),
 
   /** 0x2xxxxx object mapping issues. */
   OBJECT_JSON_DESERIALIZATION("ObjectJsonDeserialization"),
@@ -25,7 +25,7 @@ public enum OrionErrorCode {
   OBJECT_WRITE("ObjectWrite"),
 
   /** 0x3xxxxx application configuration issues. */
-  CONFIGURATION_OPTION("0ConfigurationOption"),
+  CONFIGURATION_OPTION("ConfigurationOption"),
   CONFIGURATION_STORAGE_MECHANISM("ConfigurationStorageMechanism"),
 
   /** 0x4xxxxx Encalve category of issues. */
