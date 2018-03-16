@@ -141,7 +141,7 @@ public class Orion {
 
     // asynchronously start the vertx http server for private API
     CompletableFuture<Boolean> privateFuture =
-        startHttpServerAsync(config.ethPort(), vertx, routes.privateRouter());
+        startHttpServerAsync(config.privacyPort(), vertx, routes.privateRouter());
 
     // Block and wait for the two servers to start.
     CompletableFuture.allOf(publicFuture, privateFuture).get();

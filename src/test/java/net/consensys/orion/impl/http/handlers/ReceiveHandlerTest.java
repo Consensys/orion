@@ -103,7 +103,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void receiveRestrictedToPrivateAPIPort() throws Exception {
+  public void receiveApiOnlyWorksOnPrivatePort() throws Exception {
     // ref to storage
     final Storage storage = routes.getStorage();
 
@@ -122,7 +122,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void receiveRawRestrictedToPrivateAPIPort() throws Exception {
+  public void receiveRawApiOnlyWorksOnPrivatePort() throws Exception {
     // ref to storage
     final Storage storage = routes.getStorage();
 

@@ -28,14 +28,14 @@ public interface Config {
    *
    * @return URL for this nodes private API
    */
-  URL ethUrl();
+  URL privacyUrl();
 
   /**
    * Port to listen on for the private API.
    *
    * @return Port to listen on for the private API
    */
-  int ethPort();
+  int privacyPort();
 
   /**
    * Path at which to locate the lib sodium shared library.

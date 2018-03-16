@@ -48,12 +48,12 @@ public abstract class HandlerTest {
   protected MemoryConfig config;
   protected Enclave enclave;
 
-  protected Vertx vertx;
-  protected Integer publicHTTPServerPort;
-  protected VertxServer publicVertxServer;
-  protected Integer privateHTTPServerPort;
-  protected VertxServer privateVertxServer;
-  protected OrionRoutes routes;
+  private Vertx vertx;
+  private Integer publicHTTPServerPort;
+  private VertxServer publicVertxServer;
+  private Integer privateHTTPServerPort;
+  private VertxServer privateVertxServer;
+  OrionRoutes routes;
 
   private StorageEngine<EncryptedPayload> storageEngine;
 

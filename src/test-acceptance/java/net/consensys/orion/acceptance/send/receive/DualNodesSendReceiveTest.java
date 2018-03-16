@@ -25,8 +25,8 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String HOST_NAME = "127.0.0.1";
 
-  private static String firstNodeEthUrl;
-  private static String secondNodeEthUrl;
+  private static String firstNodePrivacyUrl;
+  private static String secondNodePrivacyUrl;
   private static Config firstNodeConfig;
   private static Config secondNodeConfig;
 
@@ -45,22 +45,22 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
   @BeforeClass
   public static void setUpDualNodes() throws Exception {
     int firstNodePort = utils().freePort();
-    int firstNodeEthPort = utils().freePort();
+    int firstNodePrivacyPort = utils().freePort();
     int secondNodePort = utils().freePort();
-    int secondNodeEthPort = utils().freePort();
+    int secondNodePrivacyPort = utils().freePort();
 
     String firstNodeBaseUrl = utils().url(HOST_NAME, firstNodePort);
-    firstNodeEthUrl = utils().url(HOST_NAME, firstNodeEthPort);
+    firstNodePrivacyUrl = utils().url(HOST_NAME, firstNodePrivacyPort);
     String secondNodeBaseUrl = utils().url(HOST_NAME, secondNodePort);
-    secondNodeEthUrl = utils().url(HOST_NAME, secondNodeEthPort);
+    secondNodePrivacyUrl = utils().url(HOST_NAME, secondNodePrivacyPort);
 
     firstNodeConfig =
         utils()
             .nodeConfig(
                 firstNodeBaseUrl,
                 firstNodePort,
-                firstNodeEthUrl,
-                firstNodeEthPort,
+                firstNodePrivacyUrl,
+                firstNodePrivacyPort,
                 "node1",
                 secondNodeBaseUrl,
                 "src/test-acceptance/resources/key1.pub",
@@ -70,8 +70,8 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
             .nodeConfig(
                 secondNodeBaseUrl,
                 secondNodePort,
-                secondNodeEthUrl,
-                secondNodeEthPort,
+                secondNodePrivacyUrl,
+                secondNodePrivacyPort,
                 "node2",
                 firstNodeBaseUrl,
                 "src/test-acceptance/resources/key2.pub",
@@ -92,8 +92,8 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
 
   @Test
   public void receiverCanView() throws Exception {
-    final EthNodeStub firstNode = utils().ethNode(firstNodeEthUrl);
-    final EthNodeStub secondNode = utils().ethNode(secondNodeEthUrl);
+    final EthNodeStub firstNode = utils().ethNode(firstNodePrivacyUrl);
+    final EthNodeStub secondNode = utils().ethNode(secondNodePrivacyUrl);
     ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
@@ -104,7 +104,7 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
 
   @Test
   public void senderCanView() throws Exception {
-    final EthNodeStub firstNode = utils().ethNode(firstNodeEthUrl);
+    final EthNodeStub firstNode = utils().ethNode(firstNodePrivacyUrl);
     ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);

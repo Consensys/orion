@@ -25,7 +25,7 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String HOST_NAME = "127.0.0.1";
 
-  private static String ethURL;
+  private static String privacyUrl;
 
   private static Config config;
 
@@ -43,18 +43,18 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   @BeforeClass
   public static void setUpSingleNode() throws Exception {
     final int port = utils().freePort();
-    final int ethport = utils().freePort();
+    final int privacyPort = utils().freePort();
 
     String baseUrl = utils().url(HOST_NAME, port);
-    ethURL = utils().url(HOST_NAME, ethport);
+    privacyUrl = utils().url(HOST_NAME, privacyPort);
 
     config =
         utils()
             .nodeConfig(
                 baseUrl,
                 port,
-                ethURL,
-                ethport,
+                privacyUrl,
+                privacyPort,
                 "node1",
                 baseUrl,
                 "src/test-acceptance/resources/key1.pub\", \"src/test-acceptance/resources/key2.pub",
@@ -74,7 +74,7 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   /** Sender and receiver use the same key. */
   @Test
   public void keyIdentity() throws Exception {
-    final EthNodeStub ethNodeStub = utils().ethNode(ethURL);
+    final EthNodeStub ethNodeStub = utils().ethNode(privacyUrl);
     ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(ethNodeStub, PK_2_B_64, PK_2_B_64);
@@ -86,7 +86,7 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   /** Different keys for the sender and receiver. */
   @Test
   public void recieverCanView() throws Exception {
-    final EthNodeStub ethNodeStub = utils().ethNode(ethURL);
+    final EthNodeStub ethNodeStub = utils().ethNode(privacyUrl);
     ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(ethNodeStub, PK_1_B_64, PK_2_B_64);
@@ -98,7 +98,7 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   /** The sender key can view their transaction when not in the recipient key list. */
   @Test
   public void senderCanView() throws Exception {
-    final EthNodeStub ethNodeStub = utils().ethNode(ethURL);
+    final EthNodeStub ethNodeStub = utils().ethNode(privacyUrl);
     ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(ethNodeStub, PK_1_B_64, PK_2_B_64);
