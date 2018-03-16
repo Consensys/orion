@@ -1,16 +1,13 @@
 package net.consensys.orion.acceptance.send;
 
-import junit.framework.AssertionFailedError;
+import static org.junit.Assert.assertEquals;
+
+import net.consensys.orion.acceptance.proxy.ReverseProxyServer;
 import net.consensys.orion.acceptance.send.receive.SendReceiveUtil;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.http.OrionClient;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import java.io.File;
 import java.nio.file.FileVisitOption;
@@ -20,10 +17,17 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
+import junit.framework.AssertionFailedError;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
- * Send communciation between two nodes with a proxy server in between to inject eoronrous behaviour.
+ * Send communication between two nodes with a proxy server in between to inject erroneous
+ * responses.
  */
 public class DualNodesSendTest {
 
@@ -45,7 +49,7 @@ public class DualNodesSendTest {
   private static String proxyBaseUrl;
   private static int proxyPort;
 
-  private static int  firstNodePort;
+  private static int firstNodePort;
   private ReverseProxyServer proxyServer;
 
   @AfterClass
@@ -60,7 +64,7 @@ public class DualNodesSendTest {
   /** Proxt set up to proxy firstNode->secondNode communication. */
   @BeforeClass
   public static void setUpDualNodes() throws Exception {
-     firstNodePort = utils.freePort();
+    firstNodePort = utils.freePort();
     int secondNodePort = utils.freePort();
     proxyPort = utils.freePort();
 
@@ -69,23 +73,21 @@ public class DualNodesSendTest {
     proxyBaseUrl = utils.url(HOST_NAME, proxyPort);
 
     firstNodeConfig =
-        utils
-            .nodeConfig(
-                firstNodeBaseUrl,
-                firstNodePort,
-                "node1",
-                proxyBaseUrl,
-                "src/test-acceptance/resources/key1.pub",
-                "src/test-acceptance/resources/key1.key");
+        utils.nodeConfig(
+            firstNodeBaseUrl,
+            firstNodePort,
+            "node1",
+            proxyBaseUrl,
+            "src/test-acceptance/resources/key1.pub",
+            "src/test-acceptance/resources/key1.key");
     secondNodeConfig =
-        utils
-            .nodeConfig(
-                secondNodeBaseUrl,
-                secondNodePort,
-                "node2",
-                firstNodeBaseUrl,
-                "src/test-acceptance/resources/key2.pub",
-                "src/test-acceptance/resources/key2.key");
+        utils.nodeConfig(
+            secondNodeBaseUrl,
+            secondNodePort,
+            "node2",
+            firstNodeBaseUrl,
+            "src/test-acceptance/resources/key2.pub",
+            "src/test-acceptance/resources/key2.key");
   }
 
   @Before
@@ -103,32 +105,45 @@ public class DualNodesSendTest {
     proxyServer.stop();
   }
 
-
-  /** Try sending to a peer that  exists. */
+  //TODO remove later
+  /** Control test: Try sending to a peer that exists. */
   @Test
   public void sendToPeer() throws InterruptedException {
-    //TODO checking the Reverse proxy works normally - next to inject error overrides
-    final OrionClient orionClient = client();
+    final OrionClient firstNode = firstNode();
     ensureNetworkDiscoveryOccurs();
 
-    final String digest = sendTransaction(orionClient, PK_1_B_64, PK_2_B_64);
+    final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
 
     // Digest (encrypted message) changes every run, just verify it's the correct size
     assertEquals(44, digest.length());
   }
 
-  /** Try sending to a peer that does not exist. */
+  //TODO remove later
+  /** Control test: Try sending to a peer that does not exist. */
   @Test
   public void proxyMissingPeer() throws InterruptedException {
-    //TODO checking the Reverse proxy works normally - next to inject error overrides
-    final OrionClient orionClient = client();
+    final OrionClient firstNode = firstNode();
     ensureNetworkDiscoveryOccurs();
 
-    final String response = sendTransactionExpectingError(orionClient, PK_1_B_64, PK_MISSING_PEER);
+    final String response = sendTransactionExpectingError(firstNode, PK_1_B_64, PK_MISSING_PEER);
 
     assertError(OrionErrorCode.NODE_MISSING_PEER_URL, response);
   }
 
+  /** Pushing to a peer fails from an IO Exception (socket timeout). */
+  @Ignore
+  @Test
+  public void pushingToPeerTimeout() throws InterruptedException {
+    final OrionClient firstNode = firstNode();
+    ensureNetworkDiscoveryOccurs();
+
+    //TODO inject error overrides
+    proxyServer.socketProblem();
+
+    final String response = sendTransactionExpectingError(firstNode, PK_1_B_64, PK_2_B_64);
+
+    assertError(OrionErrorCode.NODE_PUSHING_TO_PEER, response);
+  }
 
   //TODO aggregation into a utils of these
 
@@ -137,10 +152,9 @@ public class DualNodesSendTest {
     utils.assertError(expected, actual);
   }
 
-  private OrionClient client() {
+  private OrionClient firstNode() {
     return utils.client(firstNodeBaseUrl);
   }
-
 
   private String sendTransactionExpectingError(
       OrionClient sender, String senderKey, String... recipientsKey) {
@@ -149,12 +163,10 @@ public class DualNodesSendTest {
         .orElseThrow(AssertionFailedError::new);
   }
 
-
   protected void ensureNetworkDiscoveryOccurs() throws InterruptedException {
     // TODO there must be a better way then sleeping & hoping network discovery occurs
     Thread.sleep(2000);
   }
-
 
   protected String sendTransaction(OrionClient sender, String senderKey, String... recipientsKey) {
     return sender

@@ -36,7 +36,6 @@ public class SingleNodeSendTest {
   private static Config config;
   private static int port;
 
-
   private Orion orionLauncher;
 
   @AfterClass
@@ -68,7 +67,6 @@ public class SingleNodeSendTest {
   @Before
   public void setUp() throws ExecutionException, InterruptedException {
     orionLauncher = utils.startOrion(config);
-
   }
 
   @After
@@ -97,7 +95,6 @@ public class SingleNodeSendTest {
 
     assertError(OrionErrorCode.ENCLAVE_DECODE_PUBLIC_KEY, response);
   }
-
 
   private OrionClient client() {
     return utils.client(baseUrl);

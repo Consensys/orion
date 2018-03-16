@@ -1,8 +1,9 @@
-package net.consensys.orion.acceptance.send;
+package net.consensys.orion.acceptance.proxy;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
@@ -12,10 +13,7 @@ import io.vertx.core.http.HttpServerOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static com.sun.tools.doclint.Entity.or;
-
-/** A simple reverse proxy server. */
-public class ReverseProxyServer {
+public class ProxyVerticle extends AbstractVerticle {
 
   private static final Logger log = LogManager.getLogger();
 
@@ -29,29 +27,28 @@ public class ReverseProxyServer {
 
   private final Vertx vertx;
 
-  public ReverseProxyServer(String hostName, int listeningPort, int targetPort) {
+  private final HttpServer proxyServer;
+  private final HttpClient client;
+
+  public ProxyVerticle(String hostName, int listeningPort, int targetPort) {
     this.hostName = hostName;
     this.listeningPort = listeningPort;
     this.targetPort = targetPort;
     this.vertx = Vertx.vertx();
-  }
 
-  public void start() {
     final HttpClientOptions clientConfig =
         new HttpClientOptions().setDefaultPort(targetPort).setDefaultHost(hostName);
-    final HttpClient client = vertx.createHttpClient(clientConfig);
+    this.client = vertx.createHttpClient(clientConfig);
 
     final HttpServerOptions proxyOptions =
         new HttpServerOptions().setPort(listeningPort).setHost(hostName);
-    final HttpServer proxyServer = vertx.createHttpServer(proxyOptions);
+    this.proxyServer = vertx.createHttpServer(proxyOptions);
+  }
 
-
+  @Override
+  public void start() throws Exception {
     proxyServer.requestHandler(
         originalRequest -> {
-
-
-          originalRequest.host();
-
           final HttpClientRequest proxiedRequest =
               client.request(
                   originalRequest.method(),
