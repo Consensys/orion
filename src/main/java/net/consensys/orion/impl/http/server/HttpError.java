@@ -41,20 +41,18 @@ public final class HttpError {
   }
 
   @JsonProperty("error")
-  public int error() {
+  public String error() {
     return error.code();
   }
 
   @JsonProperty("error")
-  public void error(final int code) {
+  public void error(final String code) {
     final Optional<OrionErrorCode> potential = OrionErrorCode.get(code);
 
     if (potential.isPresent()) {
       this.error = potential.get();
     } else {
-      log.warn(
-          String.format(
-              "Unmapped error code, decimal: %s, hex: %s", code, Integer.toBinaryString(code)));
+      log.warn(String.format("Unmapped error code %s", code));
       this.error = OrionErrorCode.UNMAPPED;
     }
   }

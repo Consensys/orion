@@ -77,6 +77,6 @@ public class SendReceiveUtil {
 
   /** Verifies the Orion error JSON matches the desired Orion code. */
   public void assertError(OrionErrorCode expected, String actual) {
-    assertEquals(String.format("{\"error\":%s}", expected.code()), actual);
+    assertEquals(String.format("{\"error\":\"%s\"}", expected.code()), actual);
   }
 }

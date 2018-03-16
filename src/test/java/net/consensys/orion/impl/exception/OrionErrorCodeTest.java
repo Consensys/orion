@@ -25,7 +25,7 @@ public class OrionErrorCodeTest {
 
   @Test
   public void absent() {
-    final Byte missingCode = Byte.decode("0x000000");
+    final String missingCode = "I don't really exist";
 
     final Optional<OrionErrorCode> actual = OrionErrorCode.get(missingCode);
 
