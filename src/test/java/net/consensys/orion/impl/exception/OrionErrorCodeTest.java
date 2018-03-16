@@ -15,7 +15,7 @@ public class OrionErrorCodeTest {
 
   @Test
   public void propagationToAllParticipantsFailed() {
-    final OrionErrorCode expected = OrionErrorCode.NODE_PROPAGATION_TO_ALL_PEERS;
+    final OrionErrorCode expected = OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS;
 
     final Optional<OrionErrorCode> actual = OrionErrorCode.get(expected.code());
 

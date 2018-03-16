@@ -108,7 +108,7 @@ public class SendHandler implements Handler<RoutingContext> {
       storage.remove(digest);
       routingContext.fail(
           new OrionException(
-              OrionErrorCode.NODE_PROPAGATION_TO_ALL_PEERS,
+              OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS,
               "couldn't propagate payload to all recipients"));
       return;
     }

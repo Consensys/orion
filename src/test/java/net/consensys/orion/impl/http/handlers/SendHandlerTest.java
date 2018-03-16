@@ -87,7 +87,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // ensure we got a 500 ERROR, as the fakePeer didn't return 200 OK
     assertEquals(500, resp.code());
-    assertError(OrionErrorCode.NODE_PROPAGATION_TO_ALL_PEERS, resp);
+    assertError(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS, resp);
 
     // ensure the fakePeer got a good formatted request
     RecordedRequest recordedRequest = fakePeer.server.takeRequest();
