@@ -76,23 +76,34 @@ public class ProxyVerticle extends AbstractVerticle {
               });
         });
 
+    CompletableFuture<Void> resultFuture = new CompletableFuture<>();
+
     proxyServer.listen(
-        ar -> {
-          if (ar.succeeded()) {
+        result -> {
+          if (result.succeeded()) {
             log.info("Proxy server started on {}", listeningPort);
+            resultFuture.complete(null);
           } else {
-            ar.cause().printStackTrace();
+            result.cause().printStackTrace();
+            resultFuture.completeExceptionally(result.cause());
           }
         });
+
+    // Make the asynchronous operation synchronous
+    try {
+      resultFuture.get();
+    } catch (final InterruptedException | ExecutionException io) {
+      log.error(io.getMessage());
+    }
   }
 
   public void stop() {
-    CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
+    CompletableFuture<Void> resultFuture = new CompletableFuture<>();
 
     vertx.close(
         result -> {
           if (result.succeeded()) {
-            resultFuture.complete(true);
+            resultFuture.complete(null);
           } else {
             resultFuture.completeExceptionally(result.cause());
           }

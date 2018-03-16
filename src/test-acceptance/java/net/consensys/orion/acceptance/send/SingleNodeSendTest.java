@@ -1,6 +1,8 @@
 package net.consensys.orion.acceptance.send;
 
-import net.consensys.orion.acceptance.send.receive.SendReceiveUtil;
+import static org.junit.Assert.assertEquals;
+
+import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.exception.OrionErrorCode;
@@ -24,8 +26,8 @@ import org.junit.Test;
 /** Runs up a single node that communicates with itself. */
 public class SingleNodeSendTest {
 
-  private static final SendReceiveUtil utils = new SendReceiveUtil();
-  private static final byte[] originalPayload = "a wonderful transaction".getBytes();
+  private static final NodeUtils nodeUtils = new NodeUtils();
+  private static final byte[] originalPayload = "another wonderful transaction".getBytes();
 
   private static final String PK_1_B_64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
   private static final String PK_CORRUPTED = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGoAAA=";
@@ -49,13 +51,12 @@ public class SingleNodeSendTest {
 
   @BeforeClass
   public static void setUpSingleNode() throws Exception {
+    port = nodeUtils.freePort();
 
-    port = utils.freePort();
-
-    baseUrl = utils.url(HOST_NAME, port);
+    baseUrl = nodeUtils.url(HOST_NAME, port);
 
     config =
-        utils.nodeConfig(
+        nodeUtils.nodeConfig(
             baseUrl,
             port,
             "node1",
@@ -66,22 +67,20 @@ public class SingleNodeSendTest {
 
   @Before
   public void setUp() throws ExecutionException, InterruptedException {
-    orionLauncher = utils.startOrion(config);
+    orionLauncher = nodeUtils.startOrion(config);
   }
 
   @After
   public void tearDown() {
     orionLauncher.stop();
-
-    ;
   }
 
   /** Try sending to a peer that does not exist. */
   @Test
   public void missingPeer() {
-    final OrionClient orionClient = client();
+    final OrionClient orionNode = node();
 
-    final String response = sendTransactionExpectingError(orionClient, PK_1_B_64, PK_MISSING_PEER);
+    final String response = sendTransactionExpectingError(orionNode, PK_1_B_64, PK_MISSING_PEER);
 
     assertError(OrionErrorCode.NODE_MISSING_PEER_URL, response);
   }
@@ -89,20 +88,20 @@ public class SingleNodeSendTest {
   /** Try sending to a peer using a corrupted public key (wrong length). */
   @Test
   public void corruptedPublicKey() {
-    final OrionClient orionClient = client();
+    final OrionClient orionClient = node();
 
     final String response = sendTransactionExpectingError(orionClient, PK_1_B_64, PK_CORRUPTED);
 
     assertError(OrionErrorCode.ENCLAVE_DECODE_PUBLIC_KEY, response);
   }
 
-  private OrionClient client() {
-    return utils.client(baseUrl);
+  private OrionClient node() {
+    return nodeUtils.node(baseUrl);
   }
 
-  /** Asserts the received payload matches that sent. */
+  /** Verifies the Orion error JSON matches the desired Orion code. */
   private void assertError(OrionErrorCode expected, String actual) {
-    utils.assertError(expected, actual);
+    assertEquals(String.format("{\"error\":%s}", expected.code()), actual);
   }
 
   private String sendTransactionExpectingError(

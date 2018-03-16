@@ -2,8 +2,8 @@ package net.consensys.orion.acceptance.send;
 
 import static org.junit.Assert.assertEquals;
 
+import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.acceptance.proxy.ReverseProxyServer;
-import net.consensys.orion.acceptance.send.receive.SendReceiveUtil;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.exception.OrionErrorCode;
@@ -17,7 +17,6 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.concurrent.ExecutionException;
 
-import junit.framework.AssertionFailedError;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -31,7 +30,7 @@ import org.junit.Test;
  */
 public class DualNodesSendTest {
 
-  private static final SendReceiveUtil utils = new SendReceiveUtil();
+  private static final NodeUtils nodeUtils = new NodeUtils();
   private static final byte[] originalPayload = "a wonderful transaction".getBytes();
 
   private static final String PK_1_B_64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
@@ -43,13 +42,13 @@ public class DualNodesSendTest {
   private static String secondNodeBaseUrl;
   private static Config firstNodeConfig;
   private static Config secondNodeConfig;
+  private static int proxyPort;
+  private static int firstNodePort;
+  private static String proxyBaseUrl;
 
   private Orion firstOrionLauncher;
   private Orion secondOrionLauncher;
-  private static String proxyBaseUrl;
-  private static int proxyPort;
 
-  private static int firstNodePort;
   private ReverseProxyServer proxyServer;
 
   @AfterClass
@@ -64,16 +63,16 @@ public class DualNodesSendTest {
   /** Proxt set up to proxy firstNode->secondNode communication. */
   @BeforeClass
   public static void setUpDualNodes() throws Exception {
-    firstNodePort = utils.freePort();
-    int secondNodePort = utils.freePort();
-    proxyPort = utils.freePort();
+    firstNodePort = nodeUtils.freePort();
+    int secondNodePort = nodeUtils.freePort();
+    proxyPort = nodeUtils.freePort();
 
-    firstNodeBaseUrl = utils.url(HOST_NAME, firstNodePort);
-    secondNodeBaseUrl = utils.url(HOST_NAME, secondNodePort);
-    proxyBaseUrl = utils.url(HOST_NAME, proxyPort);
+    firstNodeBaseUrl = nodeUtils.url(HOST_NAME, firstNodePort);
+    secondNodeBaseUrl = nodeUtils.url(HOST_NAME, secondNodePort);
+    proxyBaseUrl = nodeUtils.url(HOST_NAME, proxyPort);
 
     firstNodeConfig =
-        utils.nodeConfig(
+        nodeUtils.nodeConfig(
             firstNodeBaseUrl,
             firstNodePort,
             "node1",
@@ -81,7 +80,7 @@ public class DualNodesSendTest {
             "src/test-acceptance/resources/key1.pub",
             "src/test-acceptance/resources/key1.key");
     secondNodeConfig =
-        utils.nodeConfig(
+        nodeUtils.nodeConfig(
             secondNodeBaseUrl,
             secondNodePort,
             "node2",
@@ -92,8 +91,8 @@ public class DualNodesSendTest {
 
   @Before
   public void setUp() throws ExecutionException, InterruptedException {
-    firstOrionLauncher = utils.startOrion(firstNodeConfig);
-    secondOrionLauncher = utils.startOrion(secondNodeConfig);
+    firstOrionLauncher = nodeUtils.startOrion(firstNodeConfig);
+    secondOrionLauncher = nodeUtils.startOrion(secondNodeConfig);
     proxyServer = new ReverseProxyServer(HOST_NAME, proxyPort, firstNodePort);
     proxyServer.start();
   }
@@ -107,6 +106,7 @@ public class DualNodesSendTest {
 
   //TODO remove later
   /** Control test: Try sending to a peer that exists. */
+  @Ignore
   @Test
   public void sendToPeer() throws InterruptedException {
     final OrionClient firstNode = firstNode();
@@ -145,32 +145,27 @@ public class DualNodesSendTest {
     assertError(OrionErrorCode.NODE_PUSHING_TO_PEER, response);
   }
 
-  //TODO aggregation into a utils of these
-
-  /** Asserts the received payload matches that sent. */
+  /** Verifies the Orion error JSON matches the desired Orion code. */
   private void assertError(OrionErrorCode expected, String actual) {
-    utils.assertError(expected, actual);
+    assertEquals(String.format("{\"error\":%s}", expected.code()), actual);
   }
 
   private OrionClient firstNode() {
-    return utils.client(firstNodeBaseUrl);
+    return nodeUtils.node(firstNodeBaseUrl);
   }
 
-  private String sendTransactionExpectingError(
+  private void ensureNetworkDiscoveryOccurs() throws InterruptedException {
+    nodeUtils.ensureNetworkDiscoveryOccurs();
+  }
+
+  public String sendTransactionExpectingError(
       OrionClient sender, String senderKey, String... recipientsKey) {
-    return sender
-        .sendExpectingError(originalPayload, senderKey, recipientsKey)
-        .orElseThrow(AssertionFailedError::new);
+    return nodeUtils.sendTransactionExpectingError(
+        sender, originalPayload, senderKey, recipientsKey);
   }
 
-  protected void ensureNetworkDiscoveryOccurs() throws InterruptedException {
-    // TODO there must be a better way then sleeping & hoping network discovery occurs
-    Thread.sleep(2000);
-  }
-
-  protected String sendTransaction(OrionClient sender, String senderKey, String... recipientsKey) {
-    return sender
-        .send(originalPayload, senderKey, recipientsKey)
-        .orElseThrow(AssertionFailedError::new);
+  public String sendTransaction(
+      OrionClient sender, String payload, String senderKey, String... recipientsKey) {
+    return nodeUtils.sendTransaction(sender, originalPayload, senderKey, recipientsKey);
   }
 }

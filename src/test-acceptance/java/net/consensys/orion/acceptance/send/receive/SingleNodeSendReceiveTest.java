@@ -26,7 +26,6 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   private static final String HOST_NAME = "127.0.0.1";
 
   private static String baseUrl;
-
   private static Config config;
 
   private Orion orionLauncher;
@@ -42,24 +41,23 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
 
   @BeforeClass
   public static void setUpSingleNode() throws Exception {
-    final int port = utils().freePort();
+    final int port = freePort();
 
-    baseUrl = utils().url(HOST_NAME, port);
+    baseUrl = url(HOST_NAME, port);
 
     config =
-        utils()
-            .nodeConfig(
-                baseUrl,
-                port,
-                "node1",
-                baseUrl,
-                "src/test-acceptance/resources/key1.pub\", \"src/test-acceptance/resources/key2.pub",
-                "src/test-acceptance/resources/key1.key\", \"src/test-acceptance/resources/key2.key");
+        nodeConfig(
+            baseUrl,
+            port,
+            "node1",
+            baseUrl,
+            "src/test-acceptance/resources/key1.pub\", \"src/test-acceptance/resources/key2.pub",
+            "src/test-acceptance/resources/key1.key\", \"src/test-acceptance/resources/key2.key");
   }
 
   @Before
   public void setUp() throws ExecutionException, InterruptedException {
-    orionLauncher = utils().startOrion(config);
+    orionLauncher = startOrion(config);
   }
 
   @After
@@ -70,11 +68,11 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   /** Sender and receiver use the same key. */
   @Test
   public void keyIdentity() throws Exception {
-    final OrionClient orionClient = client();
+    final OrionClient orionNode = node();
     ensureNetworkDiscoveryOccurs();
 
-    final String digest = sendTransaction(orionClient, PK_2_B_64, PK_2_B_64);
-    final byte[] receivedPayload = viewTransaction(orionClient, PK_2_B_64, digest);
+    final String digest = sendTransaction(orionNode, PK_2_B_64, PK_2_B_64);
+    final byte[] receivedPayload = viewTransaction(orionNode, PK_2_B_64, digest);
 
     assertTransaction(receivedPayload);
   }
@@ -82,11 +80,11 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   /** Different keys for the sender and receiver. */
   @Test
   public void receiverCanView() throws Exception {
-    final OrionClient orionClient = client();
+    final OrionClient orionNode = node();
     ensureNetworkDiscoveryOccurs();
 
-    final String digest = sendTransaction(orionClient, PK_1_B_64, PK_2_B_64);
-    final byte[] receivedPayload = viewTransaction(orionClient, PK_2_B_64, digest);
+    final String digest = sendTransaction(orionNode, PK_1_B_64, PK_2_B_64);
+    final byte[] receivedPayload = viewTransaction(orionNode, PK_2_B_64, digest);
 
     assertTransaction(receivedPayload);
   }
@@ -94,16 +92,16 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   /** The sender key can view their transaction when not in the recipient key list. */
   @Test
   public void senderCanView() throws Exception {
-    final OrionClient orionClient = client();
+    final OrionClient orionNode = node();
     ensureNetworkDiscoveryOccurs();
 
-    final String digest = sendTransaction(orionClient, PK_1_B_64, PK_2_B_64);
-    final byte[] receivedPayload = viewTransaction(orionClient, PK_1_B_64, digest);
+    final String digest = sendTransaction(orionNode, PK_1_B_64, PK_2_B_64);
+    final byte[] receivedPayload = viewTransaction(orionNode, PK_1_B_64, digest);
 
     assertTransaction(receivedPayload);
   }
 
-  private OrionClient client() {
-    return utils().client(baseUrl);
+  private OrionClient node() {
+    return node(baseUrl);
   }
 }

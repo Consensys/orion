@@ -44,36 +44,34 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
 
   @BeforeClass
   public static void setUpDualNodes() throws Exception {
-    int firstNodePort = utils().freePort();
-    int secondNodePort = utils().freePort();
+    int firstNodePort = freePort();
+    int secondNodePort = freePort();
 
-    firstNodeBaseUrl = utils().url(HOST_NAME, firstNodePort);
-    secondNodeBaseUrl = utils().url(HOST_NAME, secondNodePort);
+    firstNodeBaseUrl = url(HOST_NAME, firstNodePort);
+    secondNodeBaseUrl = url(HOST_NAME, secondNodePort);
 
     firstNodeConfig =
-        utils()
-            .nodeConfig(
-                firstNodeBaseUrl,
-                firstNodePort,
-                "node1",
-                secondNodeBaseUrl,
-                "src/test-acceptance/resources/key1.pub",
-                "src/test-acceptance/resources/key1.key");
+        nodeConfig(
+            firstNodeBaseUrl,
+            firstNodePort,
+            "node1",
+            secondNodeBaseUrl,
+            "src/test-acceptance/resources/key1.pub",
+            "src/test-acceptance/resources/key1.key");
     secondNodeConfig =
-        utils()
-            .nodeConfig(
-                secondNodeBaseUrl,
-                secondNodePort,
-                "node2",
-                firstNodeBaseUrl,
-                "src/test-acceptance/resources/key2.pub",
-                "src/test-acceptance/resources/key2.key");
+        nodeConfig(
+            secondNodeBaseUrl,
+            secondNodePort,
+            "node2",
+            firstNodeBaseUrl,
+            "src/test-acceptance/resources/key2.pub",
+            "src/test-acceptance/resources/key2.key");
   }
 
   @Before
   public void setUp() throws ExecutionException, InterruptedException {
-    firstOrionLauncher = utils().startOrion(firstNodeConfig);
-    secondOrionLauncher = utils().startOrion(secondNodeConfig);
+    firstOrionLauncher = startOrion(firstNodeConfig);
+    secondOrionLauncher = startOrion(secondNodeConfig);
   }
 
   @After
@@ -106,10 +104,10 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
   }
 
   private OrionClient firstClient() {
-    return utils().client(firstNodeBaseUrl);
+    return node(firstNodeBaseUrl);
   }
 
   private OrionClient secondClient() {
-    return utils().client(secondNodeBaseUrl);
+    return node(secondNodeBaseUrl);
   }
 }

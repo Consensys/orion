@@ -36,6 +36,10 @@ public class SocketTimeoutVerticle extends AbstractVerticle {
     exceptionalServer.requestHandler(
         originalRequest -> {
 
+          //TODO why is this request handler not getting called as a result of the send request???
+          System.out.println("XXXXXXxxxxXXXXX");
+          log.error("AAAAAAARggggghhhh");
+
           //TODO cause socket exception
           try {
             Thread.sleep(2000);
@@ -44,23 +48,34 @@ public class SocketTimeoutVerticle extends AbstractVerticle {
           }
         });
 
+    CompletableFuture<Void> resultFuture = new CompletableFuture<>();
+
     exceptionalServer.listen(
-        ar -> {
-          if (ar.succeeded()) {
+        result -> {
+          if (result.succeeded()) {
             log.info("Socket Exception server started on {}", listeningPort);
+            resultFuture.complete(null);
           } else {
-            ar.cause().printStackTrace();
+            result.cause().printStackTrace();
+            resultFuture.completeExceptionally(result.cause());
           }
         });
+
+    // Make the asynchronous operation synchronous
+    try {
+      resultFuture.get();
+    } catch (final InterruptedException | ExecutionException io) {
+      log.error(io.getMessage());
+    }
   }
 
   public void stop() {
-    CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
+    CompletableFuture<Void> resultFuture = new CompletableFuture<>();
 
     vertx.close(
         result -> {
           if (result.succeeded()) {
-            resultFuture.complete(true);
+            resultFuture.complete(null);
           } else {
             resultFuture.completeExceptionally(result.cause());
           }

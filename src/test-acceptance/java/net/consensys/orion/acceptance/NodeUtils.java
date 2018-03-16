@@ -1,11 +1,9 @@
-package net.consensys.orion.acceptance.send.receive;
+package net.consensys.orion.acceptance;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
-import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.config.TomlConfigBuilder;
 import net.consensys.orion.impl.http.OrionClient;
 
@@ -15,11 +13,10 @@ import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
 
+import junit.framework.AssertionFailedError;
 import okhttp3.HttpUrl;
 
-/** Utility functions for performing the send and receive acceptance tests. */
-public class SendReceiveUtil {
-
+public class NodeUtils {
   private static final String HTTP_PROTOCOL = "http";
 
   public String url(String host, int port) {
@@ -61,6 +58,23 @@ public class SendReceiveUtil {
     return toReturn;
   }
 
+  public void ensureNetworkDiscoveryOccurs() throws InterruptedException {
+    // TODO there must be a better way then sleeping & hoping network discovery occurs
+    Thread.sleep(1000);
+  }
+
+  public String sendTransactionExpectingError(
+      OrionClient sender, byte[] payload, String senderKey, String... recipientsKey) {
+    return sender
+        .sendExpectingError(payload, senderKey, recipientsKey)
+        .orElseThrow(AssertionFailedError::new);
+  }
+
+  public String sendTransaction(
+      OrionClient sender, byte[] payload, String senderKey, String... recipientsKey) {
+    return sender.send(payload, senderKey, recipientsKey).orElseThrow(AssertionFailedError::new);
+  }
+
   /** It's the callers responsibility to stop the started Orion. */
   public Orion startOrion(Config config) throws ExecutionException, InterruptedException {
     final Orion orion = new Orion();
@@ -69,14 +83,9 @@ public class SendReceiveUtil {
     return orion;
   }
 
-  public OrionClient client(String baseUrl) {
+  public OrionClient node(String baseUrl) {
     final OrionClient client = new OrionClient(baseUrl);
     assertTrue(client.upCheck());
     return client;
-  }
-
-  /** Verifies the Orion error JSON matches the desired Orion code. */
-  public void assertError(OrionErrorCode expected, String actual) {
-    assertEquals(String.format("{\"error\":%s}", expected.code()), actual);
   }
 }
