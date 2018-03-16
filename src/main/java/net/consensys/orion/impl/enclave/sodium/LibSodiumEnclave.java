@@ -148,13 +148,13 @@ public class LibSodiumEnclave implements Enclave {
   }
 
   private PrivateKey privateKey(PublicKey identity) {
-    final PrivateKey privateKey = keyStore.privateKey(identity);
-    if (privateKey == null) {
+    final Optional<PrivateKey> privateKey = keyStore.privateKey(identity);
+    if (!privateKey.isPresent()) {
       throw new EnclaveException(
           OrionErrorCode.ENCLAVE_NO_MATCHING_PRIVATE_KEY, "No StoredPrivateKey found in keystore");
     }
 
-    return privateKey;
+    return privateKey.get();
   }
 
   private byte[] secretNonce() {

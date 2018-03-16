@@ -2,6 +2,7 @@ package net.consensys.orion.api.enclave;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Optional;
 
 /**
  * Interface for key put. Provides a mechanism for generating keys, and looking up a private key for
@@ -13,9 +14,9 @@ public interface KeyStore {
    * Lookup the private key for a given public key.
    *
    * @param publicKey PublicKey to get the private key for.
-   * @return Return the public key.
+   * @return Optional Return the public key.
    */
-  PrivateKey privateKey(PublicKey publicKey);
+  Optional<PrivateKey> privateKey(PublicKey publicKey);
 
   /**
    * Generate and put a new keypair, returning the public key for external use.
