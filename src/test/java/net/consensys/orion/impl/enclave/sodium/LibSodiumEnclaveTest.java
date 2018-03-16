@@ -2,6 +2,7 @@ package net.consensys.orion.impl.enclave.sodium;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -9,6 +10,7 @@ import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
+import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.config.MemoryConfig;
 
 import java.security.PublicKey;
@@ -198,6 +200,36 @@ public class LibSodiumEnclaveTest {
           "com.muquit.libsodiumjna.exceptions.SodiumLibraryException: invalid nonce length 0 bytes",
           e.getMessage());
     }
+  }
+
+  @Test
+  public void payloadCanOnlyBeDecryptedByItsKey() {
+    final PublicKey senderKey = generateKey();
+    final PublicKey recipientKey1 = generateKey();
+    final PublicKey recipientKey2 = generateKey();
+    final String plaintext = "hello";
+
+    final EncryptedPayload encryptedPayload1 = encrypt(plaintext, senderKey, recipientKey1);
+
+    // trying to decrypt payload1 with recipient2 key
+    try {
+      decrypt(encryptedPayload1, recipientKey2);
+      fail("Should've failed because it is using the wrong key");
+    } catch (EnclaveException e) {
+      assertEquals(OrionErrorCode.ENCLAVE_DECRYPT_WRONG_PRIVATE_KEY, e.code());
+    }
+  }
+
+  @Test
+  public void encryptGeneratesDifferentCipherForSamePayloadAndKey() {
+    final PublicKey senderKey = generateKey();
+    final PublicKey recipientKey = generateKey();
+    final String plaintext = "hello";
+
+    final EncryptedPayload encryptedPayload1 = encrypt(plaintext, senderKey, recipientKey);
+    final EncryptedPayload encryptedPayload2 = encrypt(plaintext, senderKey, recipientKey);
+
+    assertNotEquals(encryptedPayload1.cipherText(), encryptedPayload2.cipherText());
   }
 
   private String decrypt(EncryptedPayload encryptedPayload, PublicKey senderKey) {

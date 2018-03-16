@@ -6,10 +6,9 @@ import static org.junit.Assert.assertEquals;
 
 import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.exception.OrionErrorCode;
-import net.consensys.orion.api.network.NetworkNodes;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
-import net.consensys.orion.impl.network.MemoryNetworkNodes;
+import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 
 import java.net.URL;
 
@@ -42,22 +41,24 @@ public class PartyInfoHandlerTest extends HandlerTest {
     Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
 
-    NetworkNodes partyInfoResponse =
-        serializer.deserialize(HttpContentType.CBOR, MemoryNetworkNodes.class, resp.body().bytes());
+    ConcurrentNetworkNodes partyInfoResponse =
+        serializer.deserialize(
+            HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
 
     assertEquals(networkNodes, partyInfoResponse);
   }
 
   @Test
   public void roundTripSerialization() throws Exception {
-    MemoryNetworkNodes networkNodes = new MemoryNetworkNodes(new URL("http://localhost:1234/"));
+    ConcurrentNetworkNodes networkNodes =
+        new ConcurrentNetworkNodes(new URL("http://localhost:1234/"));
     networkNodes.addNode(new SodiumPublicKey("fake".getBytes()), new URL("http://localhost/"));
     assertEquals(
         networkNodes,
-        serializer.roundTrip(HttpContentType.CBOR, MemoryNetworkNodes.class, networkNodes));
+        serializer.roundTrip(HttpContentType.CBOR, ConcurrentNetworkNodes.class, networkNodes));
     assertEquals(
         networkNodes,
-        serializer.roundTrip(HttpContentType.JSON, MemoryNetworkNodes.class, networkNodes));
+        serializer.roundTrip(HttpContentType.JSON, ConcurrentNetworkNodes.class, networkNodes));
   }
 
   @Test

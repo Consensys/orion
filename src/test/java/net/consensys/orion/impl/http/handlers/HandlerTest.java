@@ -13,7 +13,7 @@ import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.helpers.StubEnclave;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.http.server.vertx.VertxServer;
-import net.consensys.orion.impl.network.MemoryNetworkNodes;
+import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 import net.consensys.orion.impl.storage.file.MapDbStorage;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -44,7 +44,7 @@ public abstract class HandlerTest {
   String privateBaseUrl;
 
   // these are re-built between tests
-  MemoryNetworkNodes networkNodes;
+  ConcurrentNetworkNodes networkNodes;
   protected MemoryConfig config;
   protected Enclave enclave;
 
@@ -76,7 +76,7 @@ public abstract class HandlerTest {
     // orion dependencies, reset them all between tests
     config = new MemoryConfig();
     config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
-    networkNodes = new MemoryNetworkNodes(publicHTTP.url());
+    networkNodes = new ConcurrentNetworkNodes(publicHTTP.url());
     enclave = buildEnclave();
 
     String path = "routerdb";

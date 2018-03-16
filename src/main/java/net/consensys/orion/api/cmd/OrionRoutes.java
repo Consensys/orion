@@ -1,10 +1,12 @@
 package net.consensys.orion.api.cmd;
 
-import static net.consensys.orion.impl.http.server.HttpContentType.*;
+import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
+import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
+import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
+import static net.consensys.orion.impl.http.server.HttpContentType.TEXT;
 
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.network.NetworkNodes;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
@@ -14,6 +16,7 @@ import net.consensys.orion.impl.http.handler.receive.ReceiveHandler;
 import net.consensys.orion.impl.http.handler.send.SendHandler;
 import net.consensys.orion.impl.http.handler.upcheck.UpcheckHandler;
 import net.consensys.orion.impl.http.server.vertx.HttpErrorHandler;
+import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 import net.consensys.orion.impl.storage.EncryptedPayloadStorage;
 import net.consensys.orion.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.impl.utils.Serializer;
@@ -44,7 +47,7 @@ public class OrionRoutes {
 
   public OrionRoutes(
       Vertx vertx,
-      NetworkNodes networkNodes,
+      ConcurrentNetworkNodes networkNodes,
       Serializer serializer,
       Enclave enclave,
       StorageEngine<EncryptedPayload> storageEngine) {
