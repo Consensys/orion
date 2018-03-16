@@ -11,7 +11,6 @@ import junit.framework.AssertionFailedError;
  * receiving private transactions.
  */
 public class SendReceiveBase {
-
   private static final SendReceiveUtil utils = new SendReceiveUtil();
   private static final byte[] originalPayload = "a wonderful transaction".getBytes();
 

@@ -33,12 +33,10 @@ public class SingleNodeSendTest {
   private static final String HOST_NAME = "127.0.0.1";
 
   private static String baseUrl;
-  private static String proxyUrl;
   private static Config config;
   private static int port;
-  private static int proxyPort;
 
-  private ReverseProxyServer proxyServer;
+
   private Orion orionLauncher;
 
   @AfterClass
@@ -54,9 +52,7 @@ public class SingleNodeSendTest {
   public static void setUpSingleNode() throws Exception {
 
     port = utils.freePort();
-    proxyPort = utils.freePort();
 
-    proxyUrl = utils.url(HOST_NAME, proxyPort);
     baseUrl = utils.url(HOST_NAME, port);
 
     config =
@@ -72,14 +68,13 @@ public class SingleNodeSendTest {
   @Before
   public void setUp() throws ExecutionException, InterruptedException {
     orionLauncher = utils.startOrion(config);
-    proxyServer = new ReverseProxyServer(HOST_NAME, proxyPort, port);
-    proxyServer.start();
+
   }
 
   @After
   public void tearDown() {
     orionLauncher.stop();
-    proxyServer.stop();
+
     ;
   }
 
@@ -103,23 +98,9 @@ public class SingleNodeSendTest {
     assertError(OrionErrorCode.ENCLAVE_DECODE_PUBLIC_KEY, response);
   }
 
-  /** Try sending to a peer that does not exist. */
-  @Test
-  public void proxyMissingPeer() {
-    //TODO checking the Reverse proxy works normally - next to inject error overrides
-    final OrionClient orionClient = proxy();
-
-    final String response = sendTransactionExpectingError(orionClient, PK_1_B_64, PK_MISSING_PEER);
-
-    assertError(OrionErrorCode.NODE_MISSING_PEER_URL, response);
-  }
 
   private OrionClient client() {
     return utils.client(baseUrl);
-  }
-
-  private OrionClient proxy() {
-    return new OrionClient(proxyUrl);
   }
 
   /** Asserts the received payload matches that sent. */

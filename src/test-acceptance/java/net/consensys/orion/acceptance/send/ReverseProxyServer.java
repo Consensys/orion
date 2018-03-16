@@ -12,6 +12,8 @@ import io.vertx.core.http.HttpServerOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static com.sun.tools.doclint.Entity.or;
+
 /** A simple reverse proxy server. */
 public class ReverseProxyServer {
 
@@ -22,7 +24,7 @@ public class ReverseProxyServer {
   /** The port users connect to the proxy server on. */
   private final int listeningPort;
 
-  /** The port the proxy forwards requests on to. */
+  /** The port that messages are proxied onto. */
   private final int targetPort;
 
   private final Vertx vertx;
@@ -36,46 +38,51 @@ public class ReverseProxyServer {
 
   public void start() {
     final HttpClientOptions clientConfig =
-        new HttpClientOptions().setDefaultHost(hostName).setDefaultPort(targetPort);
+        new HttpClientOptions().setDefaultPort(targetPort).setDefaultHost(hostName);
     final HttpClient client = vertx.createHttpClient(clientConfig);
 
     final HttpServerOptions proxyOptions =
         new HttpServerOptions().setPort(listeningPort).setHost(hostName);
     final HttpServer proxyServer = vertx.createHttpServer(proxyOptions);
 
-    proxyServer.requestHandler(
-        request -> {
-          final HttpClientRequest cReq =
-              client.request(
-                  request.method(),
-                  request.uri(),
-                  cRes -> {
-                    log.info("Proxying response: %s", cRes.statusCode());
-                    request.response().setStatusCode(cRes.statusCode());
-                    request.response().headers().setAll(cRes.headers());
-                    request.response().setChunked(true);
 
-                    cRes.bodyHandler(
+    proxyServer.requestHandler(
+        originalRequest -> {
+
+
+          originalRequest.host();
+
+          final HttpClientRequest proxiedRequest =
+              client.request(
+                  originalRequest.method(),
+                  originalRequest.uri(),
+                  proxiedResponse -> {
+                    log.info("Proxying response: {}", proxiedResponse.statusCode());
+                    originalRequest.response().setStatusCode(proxiedResponse.statusCode());
+                    originalRequest.response().headers().setAll(proxiedResponse.headers());
+                    originalRequest.response().setChunked(true);
+
+                    proxiedResponse.bodyHandler(
                         data -> {
-                          log.info("Proxying response body: %s", data);
-                          request.response().end(data);
+                          log.info("Proxying response body: {}", data);
+                          originalRequest.response().end(data);
                         });
                   });
 
-          cReq.headers().setAll(request.headers());
-          cReq.setChunked(true);
+          proxiedRequest.headers().setAll(originalRequest.headers());
+          proxiedRequest.setChunked(true);
 
-          request.bodyHandler(
+          originalRequest.bodyHandler(
               data -> {
-                log.info("Proxying request body: %s", data);
-                cReq.end(data);
+                log.info("Proxying originalRequest body: {}", data);
+                proxiedRequest.end(data);
               });
         });
 
     proxyServer.listen(
         ar -> {
           if (ar.succeeded()) {
-            log.info("Proxy server started on %s", listeningPort);
+            log.info("Proxy server started on {}", listeningPort);
           } else {
             ar.cause().printStackTrace();
           }
