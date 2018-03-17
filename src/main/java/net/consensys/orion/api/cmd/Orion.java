@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.ext.web.Router;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -133,12 +134,16 @@ public class Orion {
     storageEngine = createStorageEngine(config, storagePath);
     OrionRoutes routes = new OrionRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
 
-    // build vertx http server
-    HttpServerOptions serverOptions = new HttpServerOptions();
-    serverOptions.setPort(config.port());
+    // asynchronously start the vertx http server for public API
+    CompletableFuture<Boolean> publicFuture =
+        startHttpServerAsync(config.port(), vertx, routes.publicRouter());
 
-    VertxServer httpServer = new VertxServer(vertx, routes.getRouter(), serverOptions);
-    httpServer.start().get();
+    // asynchronously start the vertx http server for private API
+    CompletableFuture<Boolean> privateFuture =
+        startHttpServerAsync(config.privacyPort(), vertx, routes.privateRouter());
+
+    // Block and wait for the two servers to start.
+    CompletableFuture.allOf(publicFuture, privateFuture).get();
 
     // start network discovery of other peers
     NetworkDiscovery discovery = new NetworkDiscovery(networkNodes, serializer);
@@ -146,6 +151,15 @@ public class Orion {
 
     // set shutdown hook
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+  }
+
+  private CompletableFuture<Boolean> startHttpServerAsync(
+      int port, Vertx vertx, Router publicRouter) {
+    HttpServerOptions publicServerOptions = new HttpServerOptions();
+    publicServerOptions.setPort(port);
+
+    VertxServer publicHTTPServer = new VertxServer(vertx, publicRouter, publicServerOptions);
+    return (CompletableFuture<Boolean>) publicHTTPServer.start();
   }
 
   private StorageEngine<EncryptedPayload> createStorageEngine(Config config, String storagePath) {

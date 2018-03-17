@@ -41,7 +41,9 @@ public class OrionRoutes {
 
   private final Storage storage;
 
-  private final Router router;
+  private final Router publicRouter;
+
+  private final Router privateRouter;
 
   public OrionRoutes(
       Vertx vertx,
@@ -54,64 +56,80 @@ public class OrionRoutes {
 
     this.storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
 
-    // Vertx router
-    router = Router.router(vertx);
+    // Vertx routers
+    publicRouter = Router.router(vertx);
+    privateRouter = Router.router(vertx);
 
     // sets response content-type from Accept header
     // and handle errors
 
     LoggerHandler loggerHandler = LoggerHandler.create();
 
-    router
+    //Setup Pulblic APIs
+    publicRouter
         .route()
         .handler(BodyHandler.create())
         .handler(loggerHandler)
         .handler(ResponseContentTypeHandler.create())
         .failureHandler(new HttpErrorHandler(serializer));
 
-    router.get(UPCHECK).produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
+    publicRouter.get(UPCHECK).produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
-    router
+    publicRouter
+        .post(PARTYINFO)
+        .produces(CBOR.httpHeaderValue)
+        .consumes(CBOR.httpHeaderValue)
+        .handler(new PartyInfoHandler(networkNodes, serializer));
+
+    publicRouter
+        .post(PUSH)
+        .produces(TEXT.httpHeaderValue)
+        .consumes(CBOR.httpHeaderValue)
+        .handler(new PushHandler(storage, serializer));
+
+    //Setup Private APIs
+    privateRouter
+        .route()
+        .handler(BodyHandler.create())
+        .handler(loggerHandler)
+        .handler(ResponseContentTypeHandler.create())
+        .failureHandler(new HttpErrorHandler(serializer));
+
+    privateRouter.get(UPCHECK).produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
+
+    privateRouter
         .post(SEND)
         .produces(JSON.httpHeaderValue)
         .consumes(JSON.httpHeaderValue)
         .handler(new SendHandler(enclave, storage, networkNodes, serializer, JSON));
-    router
+    privateRouter
         .post(SEND_RAW)
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .handler(
             new SendHandler(enclave, storage, networkNodes, serializer, APPLICATION_OCTET_STREAM));
 
-    router
+    privateRouter
         .post(RECEIVE)
         .produces(JSON.httpHeaderValue)
         .consumes(JSON.httpHeaderValue)
         .handler(new ReceiveHandler(enclave, storage, serializer, JSON));
-    router
+    privateRouter
         .post(RECEIVE_RAW)
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .handler(new ReceiveHandler(enclave, storage, serializer, APPLICATION_OCTET_STREAM));
-
-    router
-        .post(PARTYINFO)
-        .produces(CBOR.httpHeaderValue)
-        .consumes(CBOR.httpHeaderValue)
-        .handler(new PartyInfoHandler(networkNodes, serializer));
-
-    router
-        .post(PUSH)
-        .produces(TEXT.httpHeaderValue)
-        .consumes(CBOR.httpHeaderValue)
-        .handler(new PushHandler(storage, serializer));
   }
 
   public Storage getStorage() {
     return storage;
   }
 
-  public Router getRouter() {
-    return router;
+  public Router publicRouter() {
+    return publicRouter;
+  }
+
+  public Router privateRouter() {
+    return privateRouter;
   }
 }

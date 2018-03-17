@@ -2,10 +2,10 @@ package net.consensys.orion.acceptance.send.receive;
 
 import static org.junit.Assert.assertArrayEquals;
 
+import net.consensys.orion.acceptance.EthNodeStub;
 import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
-import net.consensys.orion.impl.http.OrionClient;
 
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.ExecutionException;
@@ -29,16 +29,24 @@ public class SendReceiveBase {
   }
 
   protected static Config nodeConfig(
-      String baseUrl, int port, String nodeName, String otherNodes, String pubKeys, String privKeys)
+      String baseUrl,
+      int port,
+      String privacyUrl,
+      int privacyPort,
+      String nodeName,
+      String otherNodes,
+      String pubKeys,
+      String privKeys)
       throws UnsupportedEncodingException {
-    return nodeUtils.nodeConfig(baseUrl, port, nodeName, otherNodes, pubKeys, privKeys);
+    return nodeUtils.nodeConfig(
+        baseUrl, port, privacyUrl, privacyPort, nodeName, otherNodes, pubKeys, privKeys);
   }
 
-  protected byte[] viewTransaction(OrionClient viewer, String viewerKey, String digest) {
+  protected byte[] viewTransaction(EthNodeStub viewer, String viewerKey, String digest) {
     return viewer.receive(digest, viewerKey).orElseThrow(AssertionFailedError::new);
   }
 
-  protected String sendTransaction(OrionClient sender, String senderKey, String... recipientsKey) {
+  protected String sendTransaction(EthNodeStub sender, String senderKey, String... recipientsKey) {
     return sender
         .send(originalPayload, senderKey, recipientsKey)
         .orElseThrow(AssertionFailedError::new);
@@ -53,7 +61,7 @@ public class SendReceiveBase {
     nodeUtils.ensureNetworkDiscoveryOccurs();
   }
 
-  protected OrionClient node(String baseUrl) {
+  protected EthNodeStub node(String baseUrl) {
     return nodeUtils.node(baseUrl);
   }
 

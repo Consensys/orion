@@ -1,8 +1,8 @@
 package net.consensys.orion.acceptance.send.receive;
 
+import net.consensys.orion.acceptance.EthNodeStub;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
-import net.consensys.orion.impl.http.OrionClient;
 
 import java.io.File;
 import java.nio.file.FileVisitOption;
@@ -25,7 +25,8 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String HOST_NAME = "127.0.0.1";
 
-  private static String baseUrl;
+  private static String privacyUrl;
+
   private static Config config;
 
   private Orion orionLauncher;
@@ -42,13 +43,17 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   @BeforeClass
   public static void setUpSingleNode() throws Exception {
     final int port = freePort();
+    final int privacyPort = freePort();
 
-    baseUrl = url(HOST_NAME, port);
+    String baseUrl = url(HOST_NAME, port);
+    privacyUrl = url(HOST_NAME, privacyPort);
 
     config =
         nodeConfig(
             baseUrl,
             port,
+            privacyUrl,
+            privacyPort,
             "node1",
             baseUrl,
             "src/test-acceptance/resources/key1.pub\", \"src/test-acceptance/resources/key2.pub",
@@ -68,23 +73,23 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   /** Sender and receiver use the same key. */
   @Test
   public void keyIdentity() throws Exception {
-    final OrionClient orionNode = node();
+    final EthNodeStub ethNodeStub = node(privacyUrl);
     ensureNetworkDiscoveryOccurs();
 
-    final String digest = sendTransaction(orionNode, PK_2_B_64, PK_2_B_64);
-    final byte[] receivedPayload = viewTransaction(orionNode, PK_2_B_64, digest);
+    final String digest = sendTransaction(ethNodeStub, PK_2_B_64, PK_2_B_64);
+    final byte[] receivedPayload = viewTransaction(ethNodeStub, PK_2_B_64, digest);
 
     assertTransaction(receivedPayload);
   }
 
   /** Different keys for the sender and receiver. */
   @Test
-  public void receiverCanView() throws Exception {
-    final OrionClient orionNode = node();
+  public void recieverCanView() throws Exception {
+    final EthNodeStub ethNodeStub = node(privacyUrl);
     ensureNetworkDiscoveryOccurs();
 
-    final String digest = sendTransaction(orionNode, PK_1_B_64, PK_2_B_64);
-    final byte[] receivedPayload = viewTransaction(orionNode, PK_2_B_64, digest);
+    final String digest = sendTransaction(ethNodeStub, PK_1_B_64, PK_2_B_64);
+    final byte[] receivedPayload = viewTransaction(ethNodeStub, PK_2_B_64, digest);
 
     assertTransaction(receivedPayload);
   }
@@ -92,16 +97,16 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   /** The sender key can view their transaction when not in the recipient key list. */
   @Test
   public void senderCanView() throws Exception {
-    final OrionClient orionNode = node();
+    final EthNodeStub ethNodeStub = node(privacyUrl);
     ensureNetworkDiscoveryOccurs();
 
-    final String digest = sendTransaction(orionNode, PK_1_B_64, PK_2_B_64);
-    final byte[] receivedPayload = viewTransaction(orionNode, PK_1_B_64, digest);
+    final String digest = sendTransaction(ethNodeStub, PK_1_B_64, PK_2_B_64);
+    final byte[] receivedPayload = viewTransaction(ethNodeStub, PK_1_B_64, digest);
 
     assertTransaction(receivedPayload);
   }
 
-  private OrionClient node() {
-    return node(baseUrl);
+  private EthNodeStub node() {
+    return node(privacyUrl);
   }
 }

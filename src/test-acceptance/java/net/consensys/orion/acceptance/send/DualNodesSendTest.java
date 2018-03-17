@@ -2,12 +2,12 @@ package net.consensys.orion.acceptance.send;
 
 import static org.junit.Assert.assertEquals;
 
+import net.consensys.orion.acceptance.EthNodeStub;
 import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.acceptance.proxy.ReverseProxyServer;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.exception.OrionErrorCode;
-import net.consensys.orion.impl.http.OrionClient;
 
 import java.io.File;
 import java.nio.file.FileVisitOption;
@@ -40,11 +40,17 @@ public class DualNodesSendTest {
 
   private static String firstNodeBaseUrl;
   private static String secondNodeBaseUrl;
+  private static String firstNodePrivacyUrl;
   private static Config firstNodeConfig;
+  private static String secondNodePrivacyUrl;
   private static Config secondNodeConfig;
+  private static String proxyBaseUrl;
+
   private static int proxyPort;
   private static int firstNodePort;
-  private static String proxyBaseUrl;
+  private static int firstNodePrivacyPort;
+  private static int secondNodePort;
+  private static int secondNodePrivacyPort;
 
   private Orion firstOrionLauncher;
   private Orion secondOrionLauncher;
@@ -64,7 +70,9 @@ public class DualNodesSendTest {
   @BeforeClass
   public static void setUpDualNodes() throws Exception {
     firstNodePort = nodeUtils.freePort();
-    int secondNodePort = nodeUtils.freePort();
+    firstNodePrivacyPort = nodeUtils.freePort();
+    secondNodePort = nodeUtils.freePort();
+    secondNodePrivacyPort = nodeUtils.freePort();
     proxyPort = nodeUtils.freePort();
 
     firstNodeBaseUrl = nodeUtils.url(HOST_NAME, firstNodePort);
@@ -75,6 +83,8 @@ public class DualNodesSendTest {
         nodeUtils.nodeConfig(
             firstNodeBaseUrl,
             firstNodePort,
+            firstNodePrivacyUrl,
+            firstNodePrivacyPort,
             "node1",
             proxyBaseUrl,
             "src/test-acceptance/resources/key1.pub",
@@ -83,6 +93,8 @@ public class DualNodesSendTest {
         nodeUtils.nodeConfig(
             secondNodeBaseUrl,
             secondNodePort,
+            secondNodePrivacyUrl,
+            secondNodePrivacyPort,
             "node2",
             firstNodeBaseUrl,
             "src/test-acceptance/resources/key2.pub",
@@ -109,7 +121,7 @@ public class DualNodesSendTest {
   @Ignore
   @Test
   public void sendToPeer() throws InterruptedException {
-    final OrionClient firstNode = firstNode();
+    final EthNodeStub firstNode = firstNode();
     ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
@@ -120,9 +132,10 @@ public class DualNodesSendTest {
 
   //TODO remove later
   /** Control test: Try sending to a peer that does not exist. */
+  @Ignore
   @Test
   public void proxyMissingPeer() throws InterruptedException {
-    final OrionClient firstNode = firstNode();
+    final EthNodeStub firstNode = firstNode();
     ensureNetworkDiscoveryOccurs();
 
     final String response = sendTransactionExpectingError(firstNode, PK_1_B_64, PK_MISSING_PEER);
@@ -134,7 +147,7 @@ public class DualNodesSendTest {
   @Ignore
   @Test
   public void pushingToPeerTimeout() throws InterruptedException {
-    final OrionClient firstNode = firstNode();
+    final EthNodeStub firstNode = firstNode();
     ensureNetworkDiscoveryOccurs();
 
     //TODO inject error overrides
@@ -150,7 +163,7 @@ public class DualNodesSendTest {
     assertEquals(String.format("{\"error\":%s}", expected.code()), actual);
   }
 
-  private OrionClient firstNode() {
+  private EthNodeStub firstNode() {
     return nodeUtils.node(firstNodeBaseUrl);
   }
 
@@ -159,13 +172,13 @@ public class DualNodesSendTest {
   }
 
   public String sendTransactionExpectingError(
-      OrionClient sender, String senderKey, String... recipientsKey) {
+      EthNodeStub sender, String senderKey, String... recipientsKey) {
     return nodeUtils.sendTransactionExpectingError(
         sender, originalPayload, senderKey, recipientsKey);
   }
 
   public String sendTransaction(
-      OrionClient sender, String payload, String senderKey, String... recipientsKey) {
+      EthNodeStub sender, String payload, String senderKey, String... recipientsKey) {
     return nodeUtils.sendTransaction(sender, originalPayload, senderKey, recipientsKey);
   }
 }

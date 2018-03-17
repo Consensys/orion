@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.impl.config.TomlConfigBuilder;
-import net.consensys.orion.impl.http.OrionClient;
 
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
@@ -24,7 +23,14 @@ public class NodeUtils {
   }
 
   public Config nodeConfig(
-      String baseUrl, int port, String nodeName, String otherNodes, String pubKeys, String privKeys)
+      String baseUrl,
+      int port,
+      String privacyUrl,
+      int privacyPort,
+      String nodeName,
+      String otherNodes,
+      String pubKeys,
+      String privKeys)
       throws UnsupportedEncodingException {
 
     final String confString =
@@ -33,6 +39,10 @@ public class NodeUtils {
             .append(baseUrl)
             .append("\"\nport = ")
             .append(port)
+            .append("\nprivacyurl = \"")
+            .append(privacyUrl)
+            .append("\"\nprivacyport = ")
+            .append(privacyPort)
             .append("\nstorage = \"leveldb:database/" + nodeName + "\"")
             .append("\nothernodes = [\"")
             .append(otherNodes)
@@ -60,18 +70,18 @@ public class NodeUtils {
 
   public void ensureNetworkDiscoveryOccurs() throws InterruptedException {
     // TODO there must be a better way then sleeping & hoping network discovery occurs
-    Thread.sleep(1000);
+    Thread.sleep(2000);
   }
 
   public String sendTransactionExpectingError(
-      OrionClient sender, byte[] payload, String senderKey, String... recipientsKey) {
+      EthNodeStub sender, byte[] payload, String senderKey, String... recipientsKey) {
     return sender
         .sendExpectingError(payload, senderKey, recipientsKey)
         .orElseThrow(AssertionFailedError::new);
   }
 
   public String sendTransaction(
-      OrionClient sender, byte[] payload, String senderKey, String... recipientsKey) {
+      EthNodeStub sender, byte[] payload, String senderKey, String... recipientsKey) {
     return sender.send(payload, senderKey, recipientsKey).orElseThrow(AssertionFailedError::new);
   }
 
@@ -83,8 +93,8 @@ public class NodeUtils {
     return orion;
   }
 
-  public OrionClient node(String baseUrl) {
-    final OrionClient client = new OrionClient(baseUrl);
+  public EthNodeStub node(String baseUrl) {
+    final EthNodeStub client = new EthNodeStub(baseUrl);
     assertTrue(client.upCheck());
     return client;
   }

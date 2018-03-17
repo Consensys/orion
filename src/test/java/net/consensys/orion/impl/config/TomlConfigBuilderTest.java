@@ -165,6 +165,8 @@ public class TomlConfigBuilderTest {
       String message =
           "Invalid Configuration Options\n"
               + "Error: key 'url' in config is malformed.\n\tunknown protocol: htt\n"
+              + "Error: key 'privacyurl' in config is malformed.\n\tunknown protocol: htt\n"
+              + "Error: value for key 'privacyport' in config must be different to 'port'\n"
               + "Error: key 'othernodes' in config containes malformed URLS.\n"
               + "\tURL [htt://127.0.0.1:9000/] unknown protocol: htt\n"
               + "\tURL [10.1.1.1] no protocol: 10.1.1.1\n"
@@ -192,7 +194,10 @@ public class TomlConfigBuilderTest {
       String message =
           "Invalid Configuration Options\n"
               + "Error: value for key 'url' in config must be specified\n"
-              + "Error: value for key 'port' in config must be specified\n";
+              + "Error: value for key 'privacyurl' in config must be specified\n"
+              + "Error: value for key 'port' in config must be specified\n"
+              + "Error: value for key 'privacyport' in config must be specified\n"
+              + "Error: value for key 'privacyport' in config must be different to 'port'\n";
       assertEquals(message, e.getMessage());
     }
   }

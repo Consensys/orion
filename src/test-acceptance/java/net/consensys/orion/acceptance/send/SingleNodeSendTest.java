@@ -2,11 +2,11 @@ package net.consensys.orion.acceptance.send;
 
 import static org.junit.Assert.assertEquals;
 
+import net.consensys.orion.acceptance.EthNodeStub;
 import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.exception.OrionErrorCode;
-import net.consensys.orion.impl.http.OrionClient;
 
 import java.io.File;
 import java.nio.file.FileVisitOption;
@@ -35,6 +35,8 @@ public class SingleNodeSendTest {
   private static final String HOST_NAME = "127.0.0.1";
 
   private static String baseUrl;
+  private static String ethUrl;
+
   private static Config config;
   private static int port;
 
@@ -52,13 +54,18 @@ public class SingleNodeSendTest {
   @BeforeClass
   public static void setUpSingleNode() throws Exception {
     port = nodeUtils.freePort();
+    final int port = nodeUtils.freePort();
+    final int ethPort = nodeUtils.freePort();
 
     baseUrl = nodeUtils.url(HOST_NAME, port);
+    ethUrl = nodeUtils.url(HOST_NAME, ethPort);
 
     config =
         nodeUtils.nodeConfig(
             baseUrl,
             port,
+            ethUrl,
+            ethPort,
             "node1",
             baseUrl,
             "src/test-acceptance/resources/key1.pub\", \"src/test-acceptance/resources/key2.pub",
@@ -78,7 +85,7 @@ public class SingleNodeSendTest {
   /** Try sending to a peer that does not exist. */
   @Test
   public void missingPeer() {
-    final OrionClient orionNode = node();
+    final EthNodeStub orionNode = node();
 
     final String response = sendTransactionExpectingError(orionNode, PK_1_B_64, PK_MISSING_PEER);
 
@@ -88,15 +95,15 @@ public class SingleNodeSendTest {
   /** Try sending to a peer using a corrupted public key (wrong length). */
   @Test
   public void corruptedPublicKey() {
-    final OrionClient orionClient = node();
+    final EthNodeStub orionNode = node();
 
-    final String response = sendTransactionExpectingError(orionClient, PK_1_B_64, PK_CORRUPTED);
+    final String response = sendTransactionExpectingError(orionNode, PK_1_B_64, PK_CORRUPTED);
 
     assertError(OrionErrorCode.ENCLAVE_DECODE_PUBLIC_KEY, response);
   }
 
-  private OrionClient node() {
-    return nodeUtils.node(baseUrl);
+  private EthNodeStub node() {
+    return nodeUtils.node(ethUrl);
   }
 
   /** Verifies the Orion error JSON matches the desired Orion code. */
@@ -105,7 +112,7 @@ public class SingleNodeSendTest {
   }
 
   private String sendTransactionExpectingError(
-      OrionClient sender, String senderKey, String... recipientsKey) {
+      EthNodeStub sender, String senderKey, String... recipientsKey) {
     return sender
         .sendExpectingError(originalPayload, senderKey, recipientsKey)
         .orElseThrow(AssertionFailedError::new);
