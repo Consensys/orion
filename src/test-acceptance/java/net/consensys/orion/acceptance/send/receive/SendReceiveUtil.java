@@ -3,11 +3,11 @@ package net.consensys.orion.acceptance.send.receive;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import net.consensys.orion.acceptance.EthNodeStub;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.config.TomlConfigBuilder;
-import net.consensys.orion.impl.http.OrionClient;
 
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
@@ -27,7 +27,14 @@ public class SendReceiveUtil {
   }
 
   public Config nodeConfig(
-      String baseUrl, int port, String nodeName, String otherNodes, String pubKeys, String privKeys)
+      String baseUrl,
+      int port,
+      String privacyUrl,
+      int privacyPort,
+      String nodeName,
+      String otherNodes,
+      String pubKeys,
+      String privKeys)
       throws UnsupportedEncodingException {
 
     final String confString =
@@ -36,6 +43,10 @@ public class SendReceiveUtil {
             .append(baseUrl)
             .append("\"\nport = ")
             .append(port)
+            .append("\nprivacyurl = \"")
+            .append(privacyUrl)
+            .append("\"\nprivacyport = ")
+            .append(privacyPort)
             .append("\nstorage = \"leveldb:database/" + nodeName + "\"")
             .append("\nothernodes = [\"")
             .append(otherNodes)
@@ -69,8 +80,8 @@ public class SendReceiveUtil {
     return orion;
   }
 
-  public OrionClient client(String baseUrl) {
-    final OrionClient client = new OrionClient(baseUrl);
+  public EthNodeStub ethNode(String baseUrl) {
+    final EthNodeStub client = new EthNodeStub(baseUrl);
     assertTrue(client.upCheck());
     return client;
   }

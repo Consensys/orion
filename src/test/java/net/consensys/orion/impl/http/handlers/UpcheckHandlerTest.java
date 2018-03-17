@@ -11,9 +11,19 @@ import org.junit.Test;
 public class UpcheckHandlerTest extends HandlerTest {
 
   @Test
-  public void myApplication() throws Exception {
+  public void publicUpcheck() throws Exception {
 
-    Request request = new Request.Builder().get().url(baseUrl + OrionRoutes.UPCHECK).build();
+    Request request = new Request.Builder().get().url(publicBaseUrl + OrionRoutes.UPCHECK).build();
+
+    Response resp = httpClient.newCall(request).execute();
+    assertEquals(200, resp.code());
+    assertEquals("I'm up!", resp.body().string());
+  }
+
+  @Test
+  public void privateUpcheck() throws Exception {
+
+    Request request = new Request.Builder().get().url(privateBaseUrl + OrionRoutes.UPCHECK).build();
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());

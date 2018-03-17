@@ -36,6 +36,17 @@ public final class TomlConfigBuilder {
       errorMsg.append("Error: value for key 'url' in config must be specified\n");
     }
 
+    if (toml.getString("privacyurl") != null) {
+      try {
+        memoryConfig.setPrivacyUrl(new URL(toml.getString("privacyurl")));
+      } catch (MalformedURLException e) {
+        errorMsg.append("Error: key 'privacyurl' in config is malformed.\n\t");
+        errorMsg.append(e.getMessage()).append("\n");
+      }
+    } else {
+      errorMsg.append("Error: value for key 'privacyurl' in config must be specified\n");
+    }
+
     // reading and setting workDir first;
     String baseDir = toml.getString("workdir");
     if (baseDir != null) {
@@ -43,6 +54,7 @@ public final class TomlConfigBuilder {
     }
 
     setInt(toml.getLong("port"), memoryConfig::setPort);
+    setInt(toml.getLong("privacyport"), memoryConfig::setPrivacyPort);
     setFile(baseDir, toml.getString("socket"), memoryConfig::setSocket);
     setString(toml.getString("libsodiumpath"), memoryConfig::setLibSodiumPath);
 
@@ -71,6 +83,14 @@ public final class TomlConfigBuilder {
     // Validations
     if (memoryConfig.port() == Integer.MIN_VALUE) {
       errorMsg.append("Error: value for key 'port' in config must be specified\n");
+    }
+
+    if (memoryConfig.privacyPort() == Integer.MIN_VALUE) {
+      errorMsg.append("Error: value for key 'privacyport' in config must be specified\n");
+    }
+
+    if (memoryConfig.privacyPort() == memoryConfig.port()) {
+      errorMsg.append("Error: value for key 'privacyport' in config must be different to 'port'\n");
     }
 
     if (othernodesError.length() != 0) {
