@@ -46,7 +46,7 @@ public enum OrionErrorCode {
   ENCLAVE_READ_PUBLIC_KEY("EnclaveReadPublicKeys"),
   ENCLAVE_STORAGE_ENCRYPT("EnclaveStorageEncrypt"),
   ENCLAVE_STORAGE_DECRYPT("EnclaveStorageDecrypt"),
-  ENCLAVE_WRITE_PUBLIC_KEY("EnclaveWritePublicApi"),
+  ENCLAVE_WRITE_PUBLIC_KEY("EnclaveWritePublicKey"),
 
   /** 0x5xxxxx Storage category of issues. */
   STORAGE_CLOSE("StorageClose"),
