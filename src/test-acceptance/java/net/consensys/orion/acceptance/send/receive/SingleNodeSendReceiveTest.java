@@ -42,28 +42,27 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
 
   @BeforeClass
   public static void setUpSingleNode() throws Exception {
-    final int port = utils().freePort();
-    final int privacyPort = utils().freePort();
+    final int port = freePort();
+    final int privacyPort = freePort();
 
-    String baseUrl = utils().url(HOST_NAME, port);
-    privacyUrl = utils().url(HOST_NAME, privacyPort);
+    String baseUrl = url(HOST_NAME, port);
+    privacyUrl = url(HOST_NAME, privacyPort);
 
     config =
-        utils()
-            .nodeConfig(
-                baseUrl,
-                port,
-                privacyUrl,
-                privacyPort,
-                "node1",
-                baseUrl,
-                "src/test-acceptance/resources/key1.pub\", \"src/test-acceptance/resources/key2.pub",
-                "src/test-acceptance/resources/key1.key\", \"src/test-acceptance/resources/key2.key");
+        nodeConfig(
+            baseUrl,
+            port,
+            privacyUrl,
+            privacyPort,
+            "node1",
+            baseUrl,
+            "src/test-acceptance/resources/key1.pub\", \"src/test-acceptance/resources/key2.pub",
+            "src/test-acceptance/resources/key1.key\", \"src/test-acceptance/resources/key2.key");
   }
 
   @Before
   public void setUp() throws ExecutionException, InterruptedException {
-    orionLauncher = utils().startOrion(config);
+    orionLauncher = startOrion(config);
   }
 
   @After
@@ -74,7 +73,7 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   /** Sender and receiver use the same key. */
   @Test
   public void keyIdentity() throws Exception {
-    final EthNodeStub ethNodeStub = utils().ethNode(privacyUrl);
+    final EthNodeStub ethNodeStub = node(privacyUrl);
     ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(ethNodeStub, PK_2_B_64, PK_2_B_64);
@@ -86,7 +85,7 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   /** Different keys for the sender and receiver. */
   @Test
   public void recieverCanView() throws Exception {
-    final EthNodeStub ethNodeStub = utils().ethNode(privacyUrl);
+    final EthNodeStub ethNodeStub = node(privacyUrl);
     ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(ethNodeStub, PK_1_B_64, PK_2_B_64);
@@ -98,12 +97,16 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   /** The sender key can view their transaction when not in the recipient key list. */
   @Test
   public void senderCanView() throws Exception {
-    final EthNodeStub ethNodeStub = utils().ethNode(privacyUrl);
+    final EthNodeStub ethNodeStub = node(privacyUrl);
     ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(ethNodeStub, PK_1_B_64, PK_2_B_64);
     final byte[] receivedPayload = viewTransaction(ethNodeStub, PK_1_B_64, digest);
 
     assertTransaction(receivedPayload);
+  }
+
+  private EthNodeStub node() {
+    return node(privacyUrl);
   }
 }

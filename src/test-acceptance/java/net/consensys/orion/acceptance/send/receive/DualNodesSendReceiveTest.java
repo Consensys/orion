@@ -44,44 +44,42 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
 
   @BeforeClass
   public static void setUpDualNodes() throws Exception {
-    int firstNodePort = utils().freePort();
-    int firstNodePrivacyPort = utils().freePort();
-    int secondNodePort = utils().freePort();
-    int secondNodePrivacyPort = utils().freePort();
+    int firstNodePort = freePort();
+    int firstNodePrivacyPort = freePort();
+    int secondNodePort = freePort();
+    int secondNodePrivacyPort = freePort();
 
-    String firstNodeBaseUrl = utils().url(HOST_NAME, firstNodePort);
-    firstNodePrivacyUrl = utils().url(HOST_NAME, firstNodePrivacyPort);
-    String secondNodeBaseUrl = utils().url(HOST_NAME, secondNodePort);
-    secondNodePrivacyUrl = utils().url(HOST_NAME, secondNodePrivacyPort);
+    String firstNodeBaseUrl = url(HOST_NAME, firstNodePort);
+    firstNodePrivacyUrl = url(HOST_NAME, firstNodePrivacyPort);
+    String secondNodeBaseUrl = url(HOST_NAME, secondNodePort);
+    secondNodePrivacyUrl = url(HOST_NAME, secondNodePrivacyPort);
 
     firstNodeConfig =
-        utils()
-            .nodeConfig(
-                firstNodeBaseUrl,
-                firstNodePort,
-                firstNodePrivacyUrl,
-                firstNodePrivacyPort,
-                "node1",
-                secondNodeBaseUrl,
-                "src/test-acceptance/resources/key1.pub",
-                "src/test-acceptance/resources/key1.key");
+        nodeConfig(
+            firstNodeBaseUrl,
+            firstNodePort,
+            firstNodePrivacyUrl,
+            firstNodePrivacyPort,
+            "node1",
+            secondNodeBaseUrl,
+            "src/test-acceptance/resources/key1.pub",
+            "src/test-acceptance/resources/key1.key");
     secondNodeConfig =
-        utils()
-            .nodeConfig(
-                secondNodeBaseUrl,
-                secondNodePort,
-                secondNodePrivacyUrl,
-                secondNodePrivacyPort,
-                "node2",
-                firstNodeBaseUrl,
-                "src/test-acceptance/resources/key2.pub",
-                "src/test-acceptance/resources/key2.key");
+        nodeConfig(
+            secondNodeBaseUrl,
+            secondNodePort,
+            secondNodePrivacyUrl,
+            secondNodePrivacyPort,
+            "node2",
+            firstNodeBaseUrl,
+            "src/test-acceptance/resources/key2.pub",
+            "src/test-acceptance/resources/key2.key");
   }
 
   @Before
   public void setUp() throws ExecutionException, InterruptedException {
-    firstOrionLauncher = utils().startOrion(firstNodeConfig);
-    secondOrionLauncher = utils().startOrion(secondNodeConfig);
+    firstOrionLauncher = startOrion(firstNodeConfig);
+    secondOrionLauncher = startOrion(secondNodeConfig);
   }
 
   @After
@@ -92,8 +90,8 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
 
   @Test
   public void receiverCanView() throws Exception {
-    final EthNodeStub firstNode = utils().ethNode(firstNodePrivacyUrl);
-    final EthNodeStub secondNode = utils().ethNode(secondNodePrivacyUrl);
+    final EthNodeStub firstNode = node(firstNodePrivacyUrl);
+    final EthNodeStub secondNode = node(secondNodePrivacyUrl);
     ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
@@ -104,7 +102,7 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
 
   @Test
   public void senderCanView() throws Exception {
-    final EthNodeStub firstNode = utils().ethNode(firstNodePrivacyUrl);
+    final EthNodeStub firstNode = node(firstNodePrivacyUrl);
     ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
