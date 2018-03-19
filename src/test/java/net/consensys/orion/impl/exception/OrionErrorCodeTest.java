@@ -15,7 +15,7 @@ public class OrionErrorCodeTest {
 
   @Test
   public void propagationToAllParticipantsFailed() {
-    final OrionErrorCode expected = OrionErrorCode.NODE_PROPAGATION_TO_ALL_PEERS;
+    final OrionErrorCode expected = OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS;
 
     final Optional<OrionErrorCode> actual = OrionErrorCode.get(expected.code());
 
@@ -25,7 +25,7 @@ public class OrionErrorCodeTest {
 
   @Test
   public void absent() {
-    final Byte missingCode = Byte.decode("0x000000");
+    final String missingCode = "I don't really exist";
 
     final Optional<OrionErrorCode> actual = OrionErrorCode.get(missingCode);
 

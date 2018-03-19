@@ -168,6 +168,6 @@ public abstract class HandlerTest {
 
   protected void assertError(final OrionErrorCode expected, final Response actual)
       throws IOException {
-    assertEquals("{\"error\":" + expected.code() + "}", actual.body().string());
+    assertEquals(String.format("{\"error\":\"%s\"}", expected.code()), actual.body().string());
   }
 }
