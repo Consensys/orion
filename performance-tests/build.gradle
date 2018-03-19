@@ -1,0 +1,61 @@
+apply plugin: 'scala'
+
+repositories {
+  jcenter()
+}
+
+dependencies {
+  testCompile group: 'io.gatling', name: 'gatling-core', version: '2.3.1'
+  testCompile group: 'io.gatling', name: 'gatling-http', version: '2.3.1'
+  testCompile group: 'io.gatling', name: 'gatling-app', version: '2.3.1'
+  testCompile group: 'io.gatling.highcharts', name: 'gatling-charts-highcharts', version: '2.3.1'
+
+  testCompile 'org.scala-lang:scala-library:2.12.4'
+  testCompile 'org.scalatest:scalatest_2.12:3.0.4'
+  testCompile 'junit:junit:4.12'
+}
+
+static def gatlingURL() {
+  def appUrl = System.getProperty('gatlingURL')
+  appUrl ?: 'http://localhost:8295'
+}
+
+task gatling(type : JavaExec) {
+  main = 'io.gatling.app.Gatling'
+  classpath = sourceSets.test.runtimeClasspath
+  args = ['--simulation',
+          'net.consensys.orion.load.LoadSimulation',
+          '--results-folder',
+          file('build/reports/gatling').absolutePath,
+          '--mute']
+  environment = ['appUrl': gatlingURL()]
+  systemProperties = ['gatling.core.directory.binaries': sourceSets.test.output.classesDirs]
+}
+
+task startOrion {
+  doLast {
+    copy {
+      from "$project.projectDir/src/test/resources"
+      into "$rootProject.buildDir/install/orion"
+      include '*'
+    }
+    ext.process = new ProcessBuilder()
+            .directory(new File("$rootProject.buildDir/install/orion"))
+            .command("bin/orion", "config.txt")
+            .start()
+  }
+}
+
+task stopOrion {
+  doLast {
+    if (tasks.startOrion.process != null) {
+      tasks.startOrion.process.destroy()
+    }
+  }
+}
+
+startOrion.dependsOn rootProject.installDist
+gatling.dependsOn startOrion
+gatling.dependsOn compileTestScala
+gatling.finalizedBy stopOrion
+
