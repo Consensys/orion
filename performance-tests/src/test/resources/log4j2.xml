@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
+  <Properties>
+    <Property name="logfile">orion.log</Property>
+  </Properties>
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT">
       <PatternLayout pattern="%d{HH:mm:ss.SSS} %highlight{%level - %msg}%n" />
     </Console>
+    <File name="File" fileName="${logfile}">
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} %level - %msg%n" />
+    </File>
   </Appenders>
   <Loggers>
-    <Root level="warn">
-      <AppenderRef ref="Console"/>
+    <Root level="info">
+      <AppenderRef ref="File"/>
     </Root>
   </Loggers>
 </Configuration>

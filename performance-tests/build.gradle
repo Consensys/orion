@@ -5,6 +5,10 @@ repositories {
 }
 
 dependencies {
+
+  testCompile(rootProject) {
+    transitive = false
+  }
   testCompile group: 'io.gatling', name: 'gatling-core', version: '2.3.1'
   testCompile group: 'io.gatling', name: 'gatling-http', version: '2.3.1'
   testCompile group: 'io.gatling', name: 'gatling-app', version: '2.3.1'
@@ -39,17 +43,31 @@ task startOrion {
       into "$rootProject.buildDir/install/orion"
       include '*'
     }
-    ext.process = new ProcessBuilder()
+    ext.process1 = new ProcessBuilder()
             .directory(new File("$rootProject.buildDir/install/orion"))
-            .command("bin/orion", "config.txt")
+            .command('bin/orion', 'config-8081.txt')
+            .start()
+    ext.process2 = new ProcessBuilder()
+            .directory(new File("$rootProject.buildDir/install/orion"))
+            .command('bin/orion', 'config-8083.txt')
+            .start()
+    ext.process3 = new ProcessBuilder()
+            .directory(new File("$rootProject.buildDir/install/orion"))
+            .command('bin/orion', 'config-8085.txt')
             .start()
   }
 }
 
 task stopOrion {
   doLast {
-    if (tasks.startOrion.process != null) {
-      tasks.startOrion.process.destroy()
+    if (tasks.startOrion.process1 != null) {
+      tasks.startOrion.process1.destroy()
+    }
+    if (tasks.startOrion.process2 != null) {
+      tasks.startOrion.process2.destroy()
+    }
+    if (tasks.startOrion.process3 != null) {
+      tasks.startOrion.process3.destroy()
     }
   }
 }
