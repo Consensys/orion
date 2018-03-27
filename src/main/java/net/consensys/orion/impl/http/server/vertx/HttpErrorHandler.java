@@ -46,8 +46,7 @@ public class HttpErrorHandler implements Handler<RoutingContext> {
     final HttpError httpError = new HttpError(orionError);
     final Buffer buffer = Buffer.buffer(serializer.serialize(HttpContentType.JSON, httpError));
 
-    log.error(failureRoute.getPath() + " failed " + httpError);
-    log.error(failure.getStackTrace());
+    log.error(failureRoute.getPath() + " failed " + httpError, failure);
 
     return buffer;
   }
