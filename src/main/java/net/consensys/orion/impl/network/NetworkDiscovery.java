@@ -9,16 +9,12 @@ import java.net.URL;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,10 +22,10 @@ public class NetworkDiscovery extends AbstractVerticle {
   private static final Logger log = LogManager.getLogger();
 
   public static final int HTTP_CLIENT_TIMEOUT_MS = 1500;
-  private static final long REFRESH_DELAY_MS = 1000;
+  private static final long REFRESH_DELAY_MS = 500;
   private static final long MAX_REFRESH_DELAY_MS = 60000;
 
-  private final OkHttpClient httpClient;
+  private HttpClient httpClient;
 
   private final ConcurrentNetworkNodes nodes;
   private final Map<URL, Discoverer> discoverers;
@@ -39,16 +35,24 @@ public class NetworkDiscovery extends AbstractVerticle {
     this.serializer = serializer;
     this.nodes = nodes;
     this.discoverers = new HashMap<>();
-    this.httpClient =
-        new OkHttpClient.Builder()
-            .connectTimeout(HTTP_CLIENT_TIMEOUT_MS, TimeUnit.MILLISECONDS)
-            .readTimeout(HTTP_CLIENT_TIMEOUT_MS, TimeUnit.MILLISECONDS)
-            .build();
   }
 
   @Override
   public void start() {
+    HttpClientOptions options =
+        new HttpClientOptions()
+            .setConnectTimeout(HTTP_CLIENT_TIMEOUT_MS)
+            .setIdleTimeout(HTTP_CLIENT_TIMEOUT_MS);
+    this.httpClient = vertx.createHttpClient(options);
     updateDiscoverers();
+  }
+
+  @Override
+  public void stop() {
+    for (Discoverer discoverer : discoverers.values()) {
+      discoverer.cancel();
+    }
+    httpClient.close();
   }
 
   /**
@@ -61,7 +65,7 @@ public class NetworkDiscovery extends AbstractVerticle {
       if (!discoverers.containsKey(nodeUrl)) {
         Discoverer d = new Discoverer(nodeUrl);
         discoverers.put(nodeUrl, d);
-        vertx.setTimer(REFRESH_DELAY_MS, d);
+        d.engageNextTimerTick();
       }
     }
   }
@@ -71,14 +75,17 @@ public class NetworkDiscovery extends AbstractVerticle {
   }
 
   /**
-   * Discoverer handle() is fired by a timer Its job is to call /partyInfo periodically on a
-   * specified URL and merge results if needed in NetworkDiscovery state
+   * Discoverer handle() is fired by a timer
+   *
+   * <p>Its job is to call /partyInfo periodically on a specified URL and merge results if needed in
+   * NetworkDiscovery state
    */
   class Discoverer implements Handler<Long> {
     private URL nodeUrl;
     public long currentRefreshDelay = REFRESH_DELAY_MS;
     public Instant lastUpdate = Instant.MIN;
     public long attempts = 0;
+    private long timerId;
 
     Discoverer(URL nodeUrl) {
       this.nodeUrl = nodeUrl;
@@ -88,69 +95,52 @@ public class NetworkDiscovery extends AbstractVerticle {
     public void handle(Long timerId) {
       // This is called on timer event, in the event loop of the Verticle (NetworkDiscovery)
       // we call /partyInfo API on the peer and update NetworkDiscovery state if needed
-      vertx.executeBlocking(
-          future -> {
-            // executes outside the event loop (vertx worker pool).
-            Optional<ConcurrentNetworkNodes> result = peerPartyInfo();
-            future.complete(result);
-          },
-          res -> {
-            // executes in the event loop.
 
-            // let's re-fire the timer.
-            currentRefreshDelay = (long) ((double) currentRefreshDelay * 2.0);
-            if (currentRefreshDelay > MAX_REFRESH_DELAY_MS) {
-              currentRefreshDelay = MAX_REFRESH_DELAY_MS;
-            }
-            vertx.setTimer(currentRefreshDelay, this);
+      log.trace("calling partyInfo on {}", nodeUrl);
+      attempts++;
 
-            // process the result, and merge new nodes if any
-            Optional<ConcurrentNetworkNodes> result =
-                (Optional<ConcurrentNetworkNodes>) res.result();
-            if (result.isPresent() && nodes.merge(result.get())) {
-              // we merged something new, let's start discovery on this new nodes
-              log.info("merged new nodes from {} discoverer", nodeUrl);
-            }
+      httpClient
+          .post(
+              nodeUrl.getPort(),
+              nodeUrl.getHost(),
+              OrionRoutes.PARTYINFO,
+              resp -> {
+                if (resp.statusCode() == 200) {
+                  lastUpdate = Instant.now();
 
-            // each timer tick, we update our discoverers
-            // merging nodes can occur in this timer or in /partyinfo handler
-            NetworkDiscovery.this.updateDiscoverers();
-          });
+                  resp.bodyHandler(
+                      respBody -> {
+                        // deserialize response
+                        ConcurrentNetworkNodes partyInfoResponse =
+                            serializer.deserialize(
+                                CBOR, ConcurrentNetworkNodes.class, respBody.getBytes());
+                        if (nodes.merge(partyInfoResponse)) {
+                          log.info("merged new nodes from {} discoverer", nodeUrl);
+                        }
+                        NetworkDiscovery.this.updateDiscoverers();
+                      });
+                }
+                engageNextTimerTick();
+              })
+          .exceptionHandler(
+              ex -> {
+                log.error("calling partyInfo on {} failed {}", nodeUrl, ex.getMessage());
+                engageNextTimerTick();
+              })
+          .putHeader("Content-Type", "application/cbor")
+          .setTimeout(HTTP_CLIENT_TIMEOUT_MS)
+          .end(Buffer.buffer(serializer.serialize(CBOR, nodes)));
     }
 
-    /** calls http endpoint PartyInfo; returns Optional.empty() if error. */
-    private Optional<ConcurrentNetworkNodes> peerPartyInfo() {
-      try {
-        log.trace("calling partyInfo on {}", nodeUrl);
-        attempts++;
+    public void engageNextTimerTick() {
+      currentRefreshDelay = (long) ((double) currentRefreshDelay * 2.0);
+      currentRefreshDelay = Math.min(currentRefreshDelay, MAX_REFRESH_DELAY_MS);
 
-        // prepare /partyinfo payload (our known peers)
-        RequestBody partyInfoBody =
-            RequestBody.create(
-                MediaType.parse(CBOR.httpHeaderValue), serializer.serialize(CBOR, nodes));
+      this.timerId = vertx.setTimer(currentRefreshDelay, this);
+    }
 
-        // call http endpoint
-        Request request =
-            new Request.Builder()
-                .post(partyInfoBody)
-                .url(nodeUrl + OrionRoutes.PARTYINFO.substring(1))
-                .build();
-        Response resp = httpClient.newCall(request).execute();
-
-        if (resp.code() == 200) {
-          lastUpdate = Instant.now();
-          // deserialize response
-          ConcurrentNetworkNodes partyInfoResponse =
-              serializer.deserialize(CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
-
-          return Optional.of(partyInfoResponse);
-        }
-
-      } catch (Exception io) {
-        // timeout or connectivity issue / serialization issue
-        log.error("calling partyInfo on {} failed {}", nodeUrl, io.getMessage());
-      }
-      return Optional.empty();
+    public void cancel() {
+      vertx.cancelTimer(timerId);
     }
   }
 }
