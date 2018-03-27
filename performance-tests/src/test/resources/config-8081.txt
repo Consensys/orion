@@ -1,0 +1,9 @@
+# Default Orion Configuration File.
+url = "http://127.0.0.1:8080/"
+port = 8080
+privacyurl = "http://127.0.0.1:8081/"
+privacyport = 8081
+publickeys = ["foo.pub"]
+privatekeys = ["foo.key"]
+othernodes = ["http://127.0.0.1:8082/", "http://127.0.0.1:8084/"]
+storage = "leveldb:orion1"
