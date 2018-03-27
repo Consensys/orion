@@ -101,13 +101,14 @@ public class OrionRoutes {
         .post(SEND)
         .produces(JSON.httpHeaderValue)
         .consumes(JSON.httpHeaderValue)
-        .handler(new SendHandler(enclave, storage, networkNodes, serializer, JSON));
+        .handler(new SendHandler(vertx, enclave, storage, networkNodes, serializer, JSON));
     privateRouter
         .post(SEND_RAW)
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .handler(
-            new SendHandler(enclave, storage, networkNodes, serializer, APPLICATION_OCTET_STREAM));
+            new SendHandler(
+                vertx, enclave, storage, networkNodes, serializer, APPLICATION_OCTET_STREAM));
 
     privateRouter
         .post(RECEIVE)
