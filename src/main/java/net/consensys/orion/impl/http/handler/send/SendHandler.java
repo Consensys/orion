@@ -65,15 +65,24 @@ public class SendHandler implements Handler<RoutingContext> {
     } else {
       sendRequest = binaryRequest(routingContext);
     }
-    log.debug(sendRequest.rawPayload());
+    log.debug(sendRequest);
 
     if (!sendRequest.isValid()) {
-      throw new IllegalArgumentException();
+      throw new OrionException(OrionErrorCode.INVALID_PAYLOAD);
     }
 
     log.debug("reading public keys from SendRequest object");
     // read provided public keys
-    final PublicKey fromKey = enclave.readKey(sendRequest.from());
+    PublicKey fromKey = null;
+    if (sendRequest.from().isPresent()) {
+      fromKey = enclave.readKey(sendRequest.from().get());
+    } else {
+      if (nodeKeys.isEmpty()) {
+        throw new OrionException(OrionErrorCode.NO_SENDER_KEY);
+      }
+      fromKey = nodeKeys.get(0);
+    }
+
     final List<PublicKey> toKeys =
         Arrays.stream(sendRequest.to()).map(enclave::readKey).collect(Collectors.toList());
 

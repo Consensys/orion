@@ -5,6 +5,7 @@ import net.consensys.orion.impl.utils.Base64;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -17,8 +18,8 @@ public class SendRequest implements Serializable {
   private final byte[] rawPayload;
 
   @JsonProperty("from")
-  public String from() {
-    return from;
+  public Optional<String> from() {
+    return Optional.ofNullable(from);
   }
 
   @JsonProperty("to")
@@ -58,7 +59,7 @@ public class SendRequest implements Serializable {
 
   @JsonIgnore
   public boolean isValid() {
-    if (Stream.of(rawPayload, from, to).anyMatch(Objects::isNull)) {
+    if (Stream.of(rawPayload, to).anyMatch(Objects::isNull)) {
       return false;
     }
     for (int i = 0; i < to.length; i++) {
@@ -66,7 +67,7 @@ public class SendRequest implements Serializable {
         return false;
       }
     }
-    return rawPayload.length >= 0 && from.length() > 0 && to.length > 0;
+    return rawPayload.length >= 0 && (from == null || from.length() > 0) && to.length > 0;
   }
 
   @Override
