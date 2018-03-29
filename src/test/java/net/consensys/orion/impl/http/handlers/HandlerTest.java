@@ -82,10 +82,9 @@ public abstract class HandlerTest {
     String path = "routerdb";
     new File(path).mkdirs();
     storageEngine = new MapDbStorage(SodiumEncryptedPayload.class, path, serializer);
-    routes = new OrionRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
-
     // create our vertx object
     vertx = Vertx.vertx();
+    routes = new OrionRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
 
     setupPublicAPIServer();
     setupPrivateAPIServer();
