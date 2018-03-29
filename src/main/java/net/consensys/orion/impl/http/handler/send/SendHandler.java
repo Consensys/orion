@@ -14,7 +14,6 @@ import net.consensys.orion.impl.utils.Serializer;
 
 import java.net.URL;
 import java.security.PublicKey;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -85,6 +84,7 @@ public class SendHandler implements Handler<RoutingContext> {
 
     // convert payload from b64 to bytes
     final byte[] rawPayload = sendRequest.rawPayload();
+
     // encrypting payload
     log.debug("encrypting payload from SendRequest object");
     final EncryptedPayload encryptedPayload = enclave.encrypt(rawPayload, fromKey, arrToKeys);
@@ -96,75 +96,79 @@ public class SendHandler implements Handler<RoutingContext> {
       CompletableFuture<Boolean> errorFuture = new CompletableFuture<>();
       routingContext.fail(
           new OrionException(OrionErrorCode.NODE_MISSING_PEER_URL, "couldn't find peer URL"));
-    } else {
-      List<CompletableFuture> futures = new ArrayList<>();
-      futures.add(CompletableFuture.completedFuture(true));
-      // storing payload
-      log.debug("storing payload");
-      final String digest = storage.put(encryptedPayload);
-      // propagate payload
-      log.debug("propagating payload");
-      keys.forEach(
-          pKey -> {
-            URL recipientURL = networkNodes.urlForRecipient(pKey);
-
-            CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
-            futures.add(responseFuture);
-
-            // serialize payload and build RequestBody. we also strip non relevant combinedKeys
-            final byte[] payload =
-                serializer.serialize(HttpContentType.CBOR, encryptedPayload.stripFor(pKey));
-
-            // execute request
-            httpClient
-                .post(recipientURL.getPort(), recipientURL.getHost(), OrionRoutes.PUSH)
-                .putHeader("Content-Type", "application/cbor")
-                .handler(
-                    response -> {
-                      response.bodyHandler(
-                          responseBody -> {
-                            if (response.statusCode() != 200
-                                || !digest.equals(responseBody.toString())) {
-                              responseFuture.completeExceptionally(
-                                  new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS));
-                            } else {
-                              responseFuture.complete(true);
-                            }
-                          });
-                    })
-                .exceptionHandler(
-                    ex -> {
-                      responseFuture.completeExceptionally(
-                          new OrionException(OrionErrorCode.NODE_PUSHING_TO_PEER, ex));
-                    })
-                .end(Buffer.buffer(payload));
-          });
-
-      CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
-          .whenComplete(
-              (all, ex) -> {
-                if (ex != null) {
-                  log.warn("propagating the payload failed, removing stored encrypted payload");
-                  storage.remove(digest);
-                  Throwable cause = ex.getCause();
-                  if (cause instanceof OrionException) {
-                    routingContext.fail(cause);
-                  } else {
-                    routingContext.fail(
-                        new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS, ex));
-                  }
-                  return;
-                }
-                final Buffer responseData;
-                if (contentType == JSON) {
-                  responseData =
-                      Buffer.buffer(serializer.serialize(JSON, new SendResponse(digest)));
-                } else {
-                  responseData = Buffer.buffer(digest);
-                }
-                routingContext.response().end(responseData);
-              });
+      return;
     }
+
+    // storing payload
+    log.debug("storing payload");
+    final String digest = storage.put(encryptedPayload);
+
+    // propagate payload
+    log.debug("propagating payload");
+    List<CompletableFuture<Boolean>> futures =
+        keys.stream()
+            .map(
+                pKey -> {
+                  URL recipientURL = networkNodes.urlForRecipient(pKey);
+
+                  CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
+
+                  // serialize payload, stripping non-relevant combinedKeys, and build payload
+                  final byte[] payload =
+                      serializer.serialize(HttpContentType.CBOR, encryptedPayload.stripFor(pKey));
+
+                  // execute request
+                  httpClient
+                      .post(recipientURL.getPort(), recipientURL.getHost(), OrionRoutes.PUSH)
+                      .putHeader("Content-Type", "application/cbor")
+                      .handler(
+                          response ->
+                              response.bodyHandler(
+                                  responseBody -> {
+                                    if (response.statusCode() != 200
+                                        || !digest.equals(responseBody.toString())) {
+                                      responseFuture.completeExceptionally(
+                                          new OrionException(
+                                              OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS));
+                                    } else {
+                                      responseFuture.complete(true);
+                                    }
+                                  }))
+                      .exceptionHandler(
+                          ex ->
+                              responseFuture.completeExceptionally(
+                                  new OrionException(OrionErrorCode.NODE_PUSHING_TO_PEER, ex)))
+                      .end(Buffer.buffer(payload));
+
+                  return responseFuture;
+                })
+            .collect(Collectors.toList());
+
+    CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
+        .whenComplete(
+            (all, ex) -> {
+              if (ex != null) {
+                log.warn("propagating the payload failed, removing stored encrypted payload");
+                storage.remove(digest);
+
+                Throwable cause = ex.getCause();
+                if (cause instanceof OrionException) {
+                  routingContext.fail(cause);
+                } else {
+                  routingContext.fail(
+                      new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS, ex));
+                }
+                return;
+              }
+
+              final Buffer responseData;
+              if (contentType == JSON) {
+                responseData = Buffer.buffer(serializer.serialize(JSON, new SendResponse(digest)));
+              } else {
+                responseData = Buffer.buffer(digest);
+              }
+              routingContext.response().end(responseData);
+            });
   }
 
   private SendRequest binaryRequest(RoutingContext routingContext) {
