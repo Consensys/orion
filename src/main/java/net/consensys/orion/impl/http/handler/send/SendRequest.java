@@ -59,13 +59,11 @@ public class SendRequest implements Serializable {
 
   @JsonIgnore
   public boolean isValid() {
-    if (Stream.of(rawPayload, to).anyMatch(Objects::isNull)) {
+    if (rawPayload == null || to == null) {
       return false;
     }
-    for (int i = 0; i < to.length; i++) {
-      if (to[i].length() <= 0) {
-        return false;
-      }
+    if (Arrays.stream(to).anyMatch(String::isEmpty)) {
+      return false;
     }
     return rawPayload.length >= 0 && (from == null || from.length() > 0) && to.length > 0;
   }
