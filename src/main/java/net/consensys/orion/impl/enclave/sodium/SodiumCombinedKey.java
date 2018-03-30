@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SodiumCombinedKey implements CombinedKey, Serializable {
 
-  byte[] encoded;
+  private final byte[] encoded;
 
   @JsonCreator
   public SodiumCombinedKey(@JsonProperty("encoded") byte[] encoded) {

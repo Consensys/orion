@@ -3,16 +3,12 @@ package net.consensys.orion.impl.http.server;
 import net.consensys.orion.api.exception.OrionErrorCode;
 
 import java.util.Objects;
-import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public final class HttpError {
-  private static final Logger log = LogManager.getLogger();
 
-  private OrionErrorCode error;
+  private final OrionErrorCode error;
 
   public HttpError(OrionErrorCode error) {
     this.error = error;
@@ -43,17 +39,5 @@ public final class HttpError {
   @JsonProperty("error")
   public String error() {
     return error.code();
-  }
-
-  @JsonProperty("error")
-  public void error(final String code) {
-    final Optional<OrionErrorCode> potential = OrionErrorCode.get(code);
-
-    if (potential.isPresent()) {
-      this.error = potential.get();
-    } else {
-      log.warn(String.format("Unmapped error code %s", code));
-      this.error = OrionErrorCode.UNMAPPED;
-    }
   }
 }

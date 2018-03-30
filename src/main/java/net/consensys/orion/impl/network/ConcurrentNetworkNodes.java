@@ -5,11 +5,11 @@ import net.consensys.orion.api.network.NetworkNodes;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKeyDeserializer;
 
-import java.io.Serializable;
 import java.net.URL;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -18,11 +18,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-public class ConcurrentNetworkNodes implements NetworkNodes, Serializable {
+public class ConcurrentNetworkNodes implements NetworkNodes {
 
   private final URL url;
-  private CopyOnWriteArraySet<URL> nodeURLs;
-  private ConcurrentHashMap<PublicKey, URL> nodePKs;
+  private final CopyOnWriteArraySet<URL> nodeURLs;
+  private final ConcurrentHashMap<PublicKey, URL> nodePKs;
 
   public ConcurrentNetworkNodes(Config config, PublicKey[] publicKeys) {
     url = config.url();
@@ -116,20 +116,13 @@ public class ConcurrentNetworkNodes implements NetworkNodes, Serializable {
 
     ConcurrentNetworkNodes that = (ConcurrentNetworkNodes) o;
 
-    if (url != null ? !url.equals(that.url) : that.url != null) {
-      return false;
-    }
-    if (nodeURLs != null ? !nodeURLs.equals(that.nodeURLs) : that.nodeURLs != null) {
-      return false;
-    }
-    return nodePKs != null ? nodePKs.equals(that.nodePKs) : that.nodePKs == null;
+    return Objects.equals(that.url, url)
+        && Objects.equals(nodeURLs, that.nodeURLs)
+        && Objects.equals(nodePKs, that.nodePKs);
   }
 
   @Override
   public int hashCode() {
-    int result = url != null ? url.hashCode() : 0;
-    result = 31 * result + (nodeURLs != null ? nodeURLs.hashCode() : 0);
-    result = 31 * result + (nodePKs != null ? nodePKs.hashCode() : 0);
-    return result;
+    return Objects.hash(url, nodeURLs, nodePKs);
   }
 }

@@ -1,6 +1,7 @@
 package net.consensys.orion.impl.http.handlers;
 
 import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
+import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -13,11 +14,12 @@ import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.http.handler.receive.ReceiveRequest;
-import net.consensys.orion.impl.http.handler.receive.ReceiveResponse;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 
 import java.security.PublicKey;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -55,10 +57,9 @@ public class ReceiveHandlerTest extends HandlerTest {
 
     assertEquals(200, resp.code());
 
-    ReceiveResponse receiveResponse =
-        serializer.deserialize(HttpContentType.JSON, ReceiveResponse.class, resp.body().bytes());
+    final Map receiveResponse = serializer.deserialize(JSON, Map.class, resp.body().bytes());
 
-    byte[] decodedPayload = Base64.decode(receiveResponse.payload);
+    byte[] decodedPayload = Base64.decode((String) receiveResponse.get("payload"));
     assertArrayEquals(toEncrypt, decodedPayload);
   }
 
@@ -178,9 +179,9 @@ public class ReceiveHandlerTest extends HandlerTest {
 
   @Test
   public void roundTripSerialization() {
-    ReceiveResponse receiveResponse = new ReceiveResponse("some payload");
-    assertEquals(receiveResponse, serializer.roundTrip(HttpContentType.CBOR, ReceiveResponse.class, receiveResponse));
-    assertEquals(receiveResponse, serializer.roundTrip(HttpContentType.JSON, ReceiveResponse.class, receiveResponse));
+    Map<String, String> receiveResponse = Collections.singletonMap("payload", "some payload");
+    assertEquals(receiveResponse, serializer.roundTrip(HttpContentType.CBOR, Map.class, receiveResponse));
+    assertEquals(receiveResponse, serializer.roundTrip(HttpContentType.JSON, Map.class, receiveResponse));
 
     SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     ReceiveRequest receiveRequest = new ReceiveRequest("some key", senderKey.toString());
