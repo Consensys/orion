@@ -33,9 +33,7 @@ public class HttpErrorHandler implements Handler<RoutingContext> {
     if (hasError(failureContext)) {
       final Buffer buffer = errorJson(failureContext.failure(), failureContext.currentRoute());
 
-      response
-          .putHeader(HttpHeaders.CONTENT_TYPE, HttpContentType.JSON.httpHeaderValue)
-          .end(buffer);
+      response.putHeader(HttpHeaders.CONTENT_TYPE, HttpContentType.JSON.httpHeaderValue).end(buffer);
     } else {
       response.end();
     }
@@ -52,12 +50,10 @@ public class HttpErrorHandler implements Handler<RoutingContext> {
   }
 
   /**
-   * Status code may not have been set (left as a negative number), in which case assume server side
-   * issue.
+   * Status code may not have been set (left as a negative number), in which case assume server side issue.
    */
   private int statusCode(RoutingContext failureContext) {
-    return failureContext.statusCode() < 0
-        ? HttpResponseStatus.INTERNAL_SERVER_ERROR.code()
+    return failureContext.statusCode() < 0 ? HttpResponseStatus.INTERNAL_SERVER_ERROR.code()
         : failureContext.statusCode();
   }
 

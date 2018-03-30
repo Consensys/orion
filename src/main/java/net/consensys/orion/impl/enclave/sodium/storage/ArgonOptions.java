@@ -8,12 +8,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Encapsulates the options to use with Argon encryption.
  *
- * <p>If we are using the lib sodium implementation, use: opsLimit and memLimit
+ * <p>
+ * If we are using the lib sodium implementation, use: opsLimit and memLimit
  *
- * <p>At the end of the day, this is an internal class, that is currently tightly coupled to the
- * SodiumFileKeyStore. It's just a tool to help with the json serialisation/deserialisation.
+ * <p>
+ * At the end of the day, this is an internal class, that is currently tightly coupled to the SodiumFileKeyStore. It's
+ * just a tool to help with the json serialisation/deserialisation.
  *
- * <p>Memory, Iterations and Parallelism are used by the native lib argon implementation.
+ * <p>
+ * Memory, Iterations and Parallelism are used by the native lib argon implementation.
  */
 public class ArgonOptions {
 

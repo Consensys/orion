@@ -13,8 +13,8 @@ import java.util.concurrent.ExecutionException;
 import junit.framework.AssertionFailedError;
 
 /**
- * SendReceiveBase contains the common attributes and behaviours to tests that focus on sending and
- * receiving private transactions.
+ * SendReceiveBase contains the common attributes and behaviours to tests that focus on sending and receiving private
+ * transactions.
  */
 public class SendReceiveBase {
   private static final NodeUtils nodeUtils = new NodeUtils();
@@ -36,10 +36,8 @@ public class SendReceiveBase {
       String nodeName,
       String otherNodes,
       String pubKeys,
-      String privKeys)
-      throws UnsupportedEncodingException {
-    return nodeUtils.nodeConfig(
-        baseUrl, port, privacyUrl, privacyPort, nodeName, otherNodes, pubKeys, privKeys);
+      String privKeys) throws UnsupportedEncodingException {
+    return nodeUtils.nodeConfig(baseUrl, port, privacyUrl, privacyPort, nodeName, otherNodes, pubKeys, privKeys);
   }
 
   protected byte[] viewTransaction(EthNodeStub viewer, String viewerKey, String digest) {
@@ -47,9 +45,7 @@ public class SendReceiveBase {
   }
 
   protected String sendTransaction(EthNodeStub sender, String senderKey, String... recipientsKey) {
-    return sender
-        .send(originalPayload, senderKey, recipientsKey)
-        .orElseThrow(AssertionFailedError::new);
+    return sender.send(originalPayload, senderKey, recipientsKey).orElseThrow(AssertionFailedError::new);
   }
 
   /** Asserts the received payload matches that sent. */

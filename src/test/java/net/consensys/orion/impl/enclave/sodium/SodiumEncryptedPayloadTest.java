@@ -21,32 +21,28 @@ public class SodiumEncryptedPayloadTest {
     Map<SodiumPublicKey, Integer> combinedKeysOwners = new HashMap<>();
     SodiumPublicKey key = new SodiumPublicKey("fake remote publickey".getBytes());
     combinedKeysOwners.put(key, 1);
-    SodiumEncryptedPayload payload =
-        new SodiumEncryptedPayload(
-            new SodiumPublicKey("fakekey".getBytes()),
-            "fake nonce".getBytes(),
-            "fake combinedNonce".getBytes(),
-            new SodiumCombinedKey[] {sodiumCombinedKey},
-            "fake ciphertext".getBytes(),
-            Optional.of(combinedKeysOwners));
+    SodiumEncryptedPayload payload = new SodiumEncryptedPayload(
+        new SodiumPublicKey("fakekey".getBytes()),
+        "fake nonce".getBytes(),
+        "fake combinedNonce".getBytes(),
+        new SodiumCombinedKey[] {sodiumCombinedKey},
+        "fake ciphertext".getBytes(),
+        Optional.of(combinedKeysOwners));
     Serializer serializer = new Serializer();
-    assertEquals(
-        payload, serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, payload));
-    assertEquals(
-        payload, serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, payload));
+    assertEquals(payload, serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, payload));
+    assertEquals(payload, serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, payload));
   }
 
   @Test
   public void serializationToJsonWithoutCombinedKeyOwners() throws Exception {
     SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes());
-    SodiumEncryptedPayload payload =
-        new SodiumEncryptedPayload(
-            new SodiumPublicKey("fakekey".getBytes()),
-            "fake nonce".getBytes(),
-            "fake combinedNonce".getBytes(),
-            new SodiumCombinedKey[] {sodiumCombinedKey},
-            "fake ciphertext".getBytes(),
-            Optional.empty());
+    SodiumEncryptedPayload payload = new SodiumEncryptedPayload(
+        new SodiumPublicKey("fakekey".getBytes()),
+        "fake nonce".getBytes(),
+        "fake combinedNonce".getBytes(),
+        new SodiumCombinedKey[] {sodiumCombinedKey},
+        "fake ciphertext".getBytes(),
+        Optional.empty());
     Serializer serializer = new Serializer();
     byte[] serialized = serializer.serialize(HttpContentType.JSON, payload);
     ObjectMapper mapper = new ObjectMapper();

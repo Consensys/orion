@@ -34,10 +34,8 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
   @AfterClass
   public static void tearDownSingleNode() throws Exception {
     final Path rootPath = Paths.get("database");
-    Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS)
-        .sorted(Comparator.reverseOrder())
-        .map(Path::toFile)
-        .forEach(File::delete);
+    Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(
+        File::delete);
   }
 
   @BeforeClass
@@ -48,16 +46,15 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
     String baseUrl = url(HOST_NAME, port);
     privacyUrl = url(HOST_NAME, privacyPort);
 
-    config =
-        nodeConfig(
-            baseUrl,
-            port,
-            privacyUrl,
-            privacyPort,
-            "node1",
-            baseUrl,
-            "src/test-acceptance/resources/key1.pub\", \"src/test-acceptance/resources/key2.pub",
-            "src/test-acceptance/resources/key1.key\", \"src/test-acceptance/resources/key2.key");
+    config = nodeConfig(
+        baseUrl,
+        port,
+        privacyUrl,
+        privacyPort,
+        "node1",
+        baseUrl,
+        "src/test-acceptance/resources/key1.pub\", \"src/test-acceptance/resources/key2.pub",
+        "src/test-acceptance/resources/key1.key\", \"src/test-acceptance/resources/key2.key");
   }
 
   @Before

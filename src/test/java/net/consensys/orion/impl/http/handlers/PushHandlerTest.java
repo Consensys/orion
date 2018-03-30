@@ -44,13 +44,11 @@ public class PushHandlerTest extends HandlerTest {
     EncryptedPayload encryptedPayload = mockPayload();
 
     // PUSH operation, sending an encrypted payload
-    RequestBody body =
-        RequestBody.create(
-            MediaType.parse(HttpContentType.CBOR.httpHeaderValue),
-            serializer.serialize(HttpContentType.CBOR, encryptedPayload));
+    RequestBody body = RequestBody.create(
+        MediaType.parse(HttpContentType.CBOR.httpHeaderValue),
+        serializer.serialize(HttpContentType.CBOR, encryptedPayload));
 
-    Request request =
-        new Request.Builder().post(body).url(publicBaseUrl + OrionRoutes.PUSH).build();
+    Request request = new Request.Builder().post(body).url(publicBaseUrl + OrionRoutes.PUSH).build();
 
     Response resp = httpClient.newCall(request).execute();
 
@@ -67,12 +65,8 @@ public class PushHandlerTest extends HandlerTest {
   @Test
   public void roundTripSerialization() {
     EncryptedPayload pushRequest = mockPayload();
-    assertEquals(
-        pushRequest,
-        serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, pushRequest));
-    assertEquals(
-        pushRequest,
-        serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, pushRequest));
+    assertEquals(pushRequest, serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, pushRequest));
+    assertEquals(pushRequest, serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, pushRequest));
   }
 
   @Test
@@ -81,13 +75,11 @@ public class PushHandlerTest extends HandlerTest {
     EncryptedPayload encryptedPayload = mockPayload();
 
     // PUSH operation with invalid content type
-    RequestBody body =
-        RequestBody.create(
-            MediaType.parse(HttpContentType.JSON.httpHeaderValue),
-            serializer.serialize(HttpContentType.JSON, encryptedPayload));
+    RequestBody body = RequestBody.create(
+        MediaType.parse(HttpContentType.JSON.httpHeaderValue),
+        serializer.serialize(HttpContentType.JSON, encryptedPayload));
 
-    Request request =
-        new Request.Builder().post(body).url(publicBaseUrl + OrionRoutes.PUSH).build();
+    Request request = new Request.Builder().post(body).url(publicBaseUrl + OrionRoutes.PUSH).build();
 
     Response resp = httpClient.newCall(request).execute();
 
@@ -96,11 +88,9 @@ public class PushHandlerTest extends HandlerTest {
 
   @Test
   public void pushWithInvalidBody() throws Exception {
-    RequestBody body =
-        RequestBody.create(MediaType.parse(HttpContentType.CBOR.httpHeaderValue), "foo");
+    RequestBody body = RequestBody.create(MediaType.parse(HttpContentType.CBOR.httpHeaderValue), "foo");
 
-    Request request =
-        new Request.Builder().post(body).url(publicBaseUrl + OrionRoutes.PUSH).build();
+    Request request = new Request.Builder().post(body).url(publicBaseUrl + OrionRoutes.PUSH).build();
 
     Response resp = httpClient.newCall(request).execute();
 

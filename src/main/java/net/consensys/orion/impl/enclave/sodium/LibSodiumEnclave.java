@@ -65,8 +65,7 @@ public class LibSodiumEnclave implements Enclave {
     final byte[] secretNonce = secretNonce();
     final byte[] cipherText = encrypt(plaintext, secretNonce, secretKey);
     final byte[] nonce = nonce();
-    final SodiumCombinedKey[] combinedKeys =
-        combinedKeys(recipientsAndSender, senderPrivateKey, secretKey, nonce);
+    final SodiumCombinedKey[] combinedKeys = combinedKeys(recipientsAndSender, senderPrivateKey, secretKey, nonce);
 
     return new SodiumEncryptedPayload(
         senderPublicKey,
@@ -100,7 +99,8 @@ public class LibSodiumEnclave implements Enclave {
     }
 
     throw new EnclaveException(
-        OrionErrorCode.ENCLAVE_UNSUPPORTED_PUBLIC_KEY_TYPE, "SodiumEnclave needs SodiumPublicKey");
+        OrionErrorCode.ENCLAVE_UNSUPPORTED_PUBLIC_KEY_TYPE,
+        "SodiumEnclave needs SodiumPublicKey");
   }
 
   private PublicKey[] addSenderToRecipients(final PublicKey[] recipients, final PublicKey sender) {
@@ -111,8 +111,8 @@ public class LibSodiumEnclave implements Enclave {
 
   private byte[] decrypt(EncryptedPayload ciphertextAndMetadata, byte[] secretKey) {
     try {
-      return SodiumLibrary.cryptoSecretBoxOpenEasy(
-          ciphertextAndMetadata.cipherText(), ciphertextAndMetadata.nonce(), secretKey);
+      return SodiumLibrary
+          .cryptoSecretBoxOpenEasy(ciphertextAndMetadata.cipherText(), ciphertextAndMetadata.nonce(), secretKey);
     } catch (final SodiumLibraryException e) {
       throw new EnclaveException(OrionErrorCode.ENCLAVE_DECRYPT, e);
     }
@@ -151,7 +151,8 @@ public class LibSodiumEnclave implements Enclave {
     final Optional<PrivateKey> privateKey = keyStore.privateKey(identity);
     if (!privateKey.isPresent()) {
       throw new EnclaveException(
-          OrionErrorCode.ENCLAVE_NO_MATCHING_PRIVATE_KEY, "No StoredPrivateKey found in keystore");
+          OrionErrorCode.ENCLAVE_NO_MATCHING_PRIVATE_KEY,
+          "No StoredPrivateKey found in keystore");
     }
 
     return privateKey.get();
@@ -186,15 +187,17 @@ public class LibSodiumEnclave implements Enclave {
   }
 
   private SodiumCombinedKey[] combinedKeys(
-      PublicKey[] recipients, PrivateKey senderPrivateKey, byte[] secretKey, byte[] nonce) {
+      PublicKey[] recipients,
+      PrivateKey senderPrivateKey,
+      byte[] secretKey,
+      byte[] nonce) {
 
     try {
       final SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[recipients.length];
       for (int i = 0; i < recipients.length; i++) {
         final PublicKey recipient = recipients[i];
         final byte[] encryptedKey =
-            SodiumLibrary.cryptoBoxEasy(
-                secretKey, nonce, recipient.getEncoded(), senderPrivateKey.getEncoded());
+            SodiumLibrary.cryptoBoxEasy(secretKey, nonce, recipient.getEncoded(), senderPrivateKey.getEncoded());
         final SodiumCombinedKey combinedKey = new SodiumCombinedKey(encryptedKey);
         combinedKeys[i] = combinedKey;
       }

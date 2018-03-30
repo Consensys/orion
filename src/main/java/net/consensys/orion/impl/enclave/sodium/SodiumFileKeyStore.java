@@ -56,8 +56,7 @@ public class SodiumFileKeyStore implements KeyStore {
     for (int i = 0; i < config.publicKeys().length; i++) {
       final File publicKeyFile = config.publicKeys()[i];
       final File privateKeyFile = config.privateKeys()[i];
-      final Optional<String> password =
-          passwordList.isPresent() ? Optional.of(passwordList.get()[i]) : empty();
+      final Optional<String> password = passwordList.isPresent() ? Optional.of(passwordList.get()[i]) : empty();
       final PublicKey publicKey = readPublicKey(publicKeyFile);
       final PrivateKey privateKey = readPrivateKey(privateKeyFile, password);
 
@@ -162,8 +161,7 @@ public class SodiumFileKeyStore implements KeyStore {
   }
 
   @NotNull
-  private StoredPrivateKey createStoredPrivateKey(
-      SodiumKeyPair keyPair, Optional<String> password) {
+  private StoredPrivateKey createStoredPrivateKey(SodiumKeyPair keyPair, Optional<String> password) {
     final PrivateKeyData data;
 
     if (password.isPresent()) {
@@ -172,15 +170,13 @@ public class SodiumFileKeyStore implements KeyStore {
       final byte[] snonce = sodiumArgon2Sbox.generateSnonce();
       final byte[] asalt = sodiumArgon2Sbox.generateAsalt();
       final byte[] sbox =
-          sodiumArgon2Sbox.encrypt(
-              keyPair.getPrivateKey(), password.get(), asalt, snonce, argonOptions);
-      data =
-          new PrivateKeyData(
-              empty(),
-              of(Base64.encode(asalt)),
-              of(argonOptions),
-              of(Base64.encode(snonce)),
-              of(Base64.encode(sbox)));
+          sodiumArgon2Sbox.encrypt(keyPair.getPrivateKey(), password.get(), asalt, snonce, argonOptions);
+      data = new PrivateKeyData(
+          empty(),
+          of(Base64.encode(asalt)),
+          of(argonOptions),
+          of(Base64.encode(snonce)),
+          of(Base64.encode(sbox)));
       return new StoredPrivateKey(data, StoredPrivateKey.ARGON2_SBOX);
     } else {
       data = new PrivateKeyData(Base64.encode(keyPair.getPrivateKey()));

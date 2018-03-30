@@ -15,7 +15,8 @@ import java.util.Map;
 import java.util.Optional;
 
 /*
- * A very simple test class that implements the enclave interface and does minimal encryption operations that do not do much at all.
+ * A very simple test class that implements the enclave interface and does minimal encryption operations that do not do
+ * much at all.
  */
 public class StubEnclave implements Enclave {
 

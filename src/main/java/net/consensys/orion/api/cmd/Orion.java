@@ -59,14 +59,13 @@ public class Orion {
   public void stop() {
     CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
 
-    vertx.close(
-        result -> {
-          if (result.succeeded()) {
-            resultFuture.complete(true);
-          } else {
-            resultFuture.completeExceptionally(result.cause());
-          }
-        });
+    vertx.close(result -> {
+      if (result.succeeded()) {
+        resultFuture.complete(true);
+      } else {
+        resultFuture.completeExceptionally(result.cause());
+      }
+    });
 
     try {
       resultFuture.get();
@@ -80,8 +79,7 @@ public class Orion {
     }
   }
 
-  public void run(String... args)
-      throws FileNotFoundException, ExecutionException, InterruptedException {
+  public void run(String... args) throws FileNotFoundException, ExecutionException, InterruptedException {
     // parsing arguments
     OrionArguments arguments = new OrionArguments(args);
 
@@ -135,8 +133,7 @@ public class Orion {
     OrionRoutes routes = new OrionRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
 
     // asynchronously start the vertx http server for public API
-    CompletableFuture<Boolean> publicFuture =
-        startHttpServerAsync(config.port(), vertx, routes.publicRouter());
+    CompletableFuture<Boolean> publicFuture = startHttpServerAsync(config.port(), vertx, routes.publicRouter());
 
     // asynchronously start the vertx http server for private API
     CompletableFuture<Boolean> privateFuture =
@@ -153,8 +150,7 @@ public class Orion {
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
   }
 
-  private CompletableFuture<Boolean> startHttpServerAsync(
-      int port, Vertx vertx, Router publicRouter) {
+  private CompletableFuture<Boolean> startHttpServerAsync(int port, Vertx vertx, Router publicRouter) {
     HttpServerOptions publicServerOptions = new HttpServerOptions();
     publicServerOptions.setPort(port);
 
@@ -183,7 +179,7 @@ public class Orion {
 
   private void displayVersion() {
     try (InputStream versionAsStream = Orion.class.getResourceAsStream("/version.txt");
-        BufferedReader buffer = new BufferedReader(new InputStreamReader(versionAsStream)); ) {
+        BufferedReader buffer = new BufferedReader(new InputStreamReader(versionAsStream));) {
       String contents = buffer.lines().collect(Collectors.joining("\n"));
       System.out.println(contents);
     } catch (IOException e) {

@@ -49,8 +49,7 @@ public class LibSodiumEnclaveTest {
     final byte[] message = "hello".getBytes();
     assertEncryptDecrypt(nonce, senderPair, recipientPair, message);
 
-    final byte[] secretKey =
-        SodiumLibrary.randomBytes(SodiumLibrary.cryptoSecretBoxKeyBytes().intValue());
+    final byte[] secretKey = SodiumLibrary.randomBytes(SodiumLibrary.cryptoSecretBoxKeyBytes().intValue());
     assertEncryptDecrypt(nonce, senderPair, recipientPair, secretKey);
   }
 
@@ -86,8 +85,7 @@ public class LibSodiumEnclaveTest {
     final PublicKey recipientBKey = generateKey();
     final String plaintext = "the other original message";
 
-    final EncryptedPayload encryptedPayload =
-        encrypt(plaintext, senderKey, recipientAKey, recipientBKey);
+    final EncryptedPayload encryptedPayload = encrypt(plaintext, senderKey, recipientAKey, recipientBKey);
     final String decryptedPlainText = decrypt(encryptedPayload, senderKey);
 
     assertEquals(plaintext, decryptedPlainText);
@@ -113,8 +111,7 @@ public class LibSodiumEnclaveTest {
 
     try {
       final EncryptedPayload payload =
-          new SodiumEncryptedPayload(
-              sender, new byte[] {}, new byte[] {}, new SodiumCombinedKey[] {}, new byte[] {});
+          new SodiumEncryptedPayload(sender, new byte[] {}, new byte[] {}, new SodiumCombinedKey[] {}, new byte[] {});
       enclave.decrypt(payload, fake);
       fail("Should have thrown an Enclave Exception");
     } catch (EnclaveException e) {
@@ -129,13 +126,12 @@ public class LibSodiumEnclaveTest {
 
     final EncryptedPayload encryptedPayload = encrypt("hello", senderKey, recipientKey);
 
-    final EncryptedPayload payload =
-        new SodiumEncryptedPayload(
-            (SodiumPublicKey) encryptedPayload.sender(),
-            encryptedPayload.nonce(),
-            encryptedPayload.combinedKeyNonce(),
-            new SodiumCombinedKey[] {},
-            encryptedPayload.cipherText());
+    final EncryptedPayload payload = new SodiumEncryptedPayload(
+        (SodiumPublicKey) encryptedPayload.sender(),
+        encryptedPayload.nonce(),
+        encryptedPayload.combinedKeyNonce(),
+        new SodiumCombinedKey[] {},
+        encryptedPayload.cipherText());
 
     decrypt(payload, recipientKey);
   }
@@ -159,13 +155,12 @@ public class LibSodiumEnclaveTest {
 
     final EncryptedPayload encryptedPayload = encrypt("hello", senderKey, recipientKey);
 
-    final EncryptedPayload payload =
-        new SodiumEncryptedPayload(
-            (SodiumPublicKey) encryptedPayload.sender(),
-            encryptedPayload.nonce(),
-            new byte[0],
-            (SodiumCombinedKey[]) encryptedPayload.combinedKeys(),
-            encryptedPayload.cipherText());
+    final EncryptedPayload payload = new SodiumEncryptedPayload(
+        (SodiumPublicKey) encryptedPayload.sender(),
+        encryptedPayload.nonce(),
+        new byte[0],
+        (SodiumCombinedKey[]) encryptedPayload.combinedKeys(),
+        encryptedPayload.cipherText());
 
     try {
       decrypt(payload, recipientKey);
@@ -184,13 +179,12 @@ public class LibSodiumEnclaveTest {
 
     final EncryptedPayload encryptedPayload = encrypt("hello", senderKey, recipientKey);
 
-    final EncryptedPayload payload =
-        new SodiumEncryptedPayload(
-            (SodiumPublicKey) encryptedPayload.sender(),
-            new byte[0],
-            encryptedPayload.combinedKeyNonce(),
-            (SodiumCombinedKey[]) encryptedPayload.combinedKeys(),
-            encryptedPayload.cipherText());
+    final EncryptedPayload payload = new SodiumEncryptedPayload(
+        (SodiumPublicKey) encryptedPayload.sender(),
+        new byte[0],
+        encryptedPayload.combinedKeyNonce(),
+        (SodiumCombinedKey[]) encryptedPayload.combinedKeys(),
+        encryptedPayload.cipherText());
 
     try {
       decrypt(payload, recipientKey);
@@ -236,27 +230,22 @@ public class LibSodiumEnclaveTest {
     return new String(enclave.decrypt(encryptedPayload, senderKey));
   }
 
-  private EncryptedPayload encrypt(
-      String plaintext, PublicKey senderKey, PublicKey... recipientKey) {
+  private EncryptedPayload encrypt(String plaintext, PublicKey senderKey, PublicKey... recipientKey) {
     return enclave.encrypt(plaintext.getBytes(), senderKey, recipientKey);
   }
 
-  private void assertEncryptDecrypt(
-      byte[] nonce, SodiumKeyPair senderPair, SodiumKeyPair recipientPair, byte[] message)
+  private void assertEncryptDecrypt(byte[] nonce, SodiumKeyPair senderPair, SodiumKeyPair recipientPair, byte[] message)
       throws SodiumLibraryException {
     final byte[] ciphertext =
-        SodiumLibrary.cryptoBoxEasy(
-            message, nonce, recipientPair.getPublicKey(), senderPair.getPrivateKey());
+        SodiumLibrary.cryptoBoxEasy(message, nonce, recipientPair.getPublicKey(), senderPair.getPrivateKey());
     final byte[] decrypted =
-        SodiumLibrary.cryptoBoxOpenEasy(
-            ciphertext, nonce, senderPair.getPublicKey(), recipientPair.getPrivateKey());
+        SodiumLibrary.cryptoBoxOpenEasy(ciphertext, nonce, senderPair.getPublicKey(), recipientPair.getPrivateKey());
 
     assertArrayEquals(message, decrypted);
   }
 
   private SodiumPublicKey generateKey() {
-    return (SodiumPublicKey)
-        memoryKeyStore.generateKeyPair(new KeyConfig("ignore", Optional.empty()));
+    return (SodiumPublicKey) memoryKeyStore.generateKeyPair(new KeyConfig("ignore", Optional.empty()));
   }
 
   private PublicKey generateNonSodiumKey() {

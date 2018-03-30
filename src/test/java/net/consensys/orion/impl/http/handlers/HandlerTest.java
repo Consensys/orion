@@ -65,12 +65,11 @@ public abstract class HandlerTest {
 
     // Initialise the base HTTP url in two forms: String and OkHttp's HttpUrl object to allow for simpler composition
     // of complex URLs with path parameters, query strings, etc.
-    HttpUrl publicHTTP =
-        new Builder()
-            .scheme("http")
-            .host(InetAddress.getLocalHost().getHostAddress())
-            .port(publicHTTPServerPort)
-            .build();
+    HttpUrl publicHTTP = new Builder()
+        .scheme("http")
+        .host(InetAddress.getLocalHost().getHostAddress())
+        .port(publicHTTPServerPort)
+        .build();
     publicBaseUrl = publicHTTP.toString();
 
     // orion dependencies, reset them all between tests
@@ -90,8 +89,7 @@ public abstract class HandlerTest {
     setupPrivateAPIServer();
   }
 
-  private void setupPublicAPIServer()
-      throws InterruptedException, java.util.concurrent.ExecutionException {
+  private void setupPublicAPIServer() throws InterruptedException, java.util.concurrent.ExecutionException {
     HttpServerOptions publicServerOptions = new HttpServerOptions();
     publicServerOptions.setPort(publicHTTPServerPort);
 
@@ -101,12 +99,11 @@ public abstract class HandlerTest {
 
   private void setupPrivateAPIServer()
       throws UnknownHostException, InterruptedException, java.util.concurrent.ExecutionException {
-    HttpUrl privateHTTP =
-        new Builder()
-            .scheme("http")
-            .host(InetAddress.getLocalHost().getHostAddress())
-            .port(privateHTTPServerPort)
-            .build();
+    HttpUrl privateHTTP = new Builder()
+        .scheme("http")
+        .host(InetAddress.getLocalHost().getHostAddress())
+        .port(privateHTTPServerPort)
+        .build();
     privateBaseUrl = privateHTTP.toString();
 
     HttpServerOptions privateServerOptions = new HttpServerOptions();
@@ -142,20 +139,15 @@ public abstract class HandlerTest {
     return new StubEnclave();
   }
 
-  protected Request buildPrivateAPIRequest(
-      String path, HttpContentType contentType, Object payload) {
-    return buildPostRequest(
-        privateBaseUrl, path, contentType, serializer.serialize(contentType, payload));
+  protected Request buildPrivateAPIRequest(String path, HttpContentType contentType, Object payload) {
+    return buildPostRequest(privateBaseUrl, path, contentType, serializer.serialize(contentType, payload));
   }
 
-  protected Request buildPublicAPIRequest(
-      String path, HttpContentType contentType, Object payload) {
-    return buildPostRequest(
-        publicBaseUrl, path, contentType, serializer.serialize(contentType, payload));
+  protected Request buildPublicAPIRequest(String path, HttpContentType contentType, Object payload) {
+    return buildPostRequest(publicBaseUrl, path, contentType, serializer.serialize(contentType, payload));
   }
 
-  private Request buildPostRequest(
-      String baseurl, String path, HttpContentType contentType, byte[] payload) {
+  private Request buildPostRequest(String baseurl, String path, HttpContentType contentType, byte[] payload) {
     RequestBody body = RequestBody.create(MediaType.parse(contentType.httpHeaderValue), payload);
 
     if (path.startsWith("/")) {
@@ -165,8 +157,7 @@ public abstract class HandlerTest {
     return new Request.Builder().post(body).url(baseurl + path).build();
   }
 
-  protected void assertError(final OrionErrorCode expected, final Response actual)
-      throws IOException {
+  protected void assertError(final OrionErrorCode expected, final Response actual) throws IOException {
     assertEquals(String.format("{\"error\":\"%s\"}", expected.code()), actual.body().string());
   }
 }

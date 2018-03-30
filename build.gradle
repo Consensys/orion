@@ -20,26 +20,24 @@ version = '0.1.0-' + versionDetails().gitHash[0..4] + '-' + getTimestamp()
 
 // JVM Settings for Log4J and VertX
 applicationDefaultJvmArgs = [
-        '-Dlog4j.configurationFile=log4j2.xml',
-        "-Dvertx.disableFileCPResolving=true",
-        "-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory"
+  '-Dlog4j.configurationFile=log4j2.xml',
+  "-Dvertx.disableFileCPResolving=true",
+  "-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory"
 ]
 
 def buildAliases = ['dev': [
-        'spotlessApply',
-        'checkLicenses',
-        'build'
-]]
+    'spotlessApply',
+    'checkLicenses',
+    'build'
+  ]]
 
 def expandedTaskList = []
 gradle.startParameter.taskNames.each {
-    expandedTaskList << (buildAliases[it] ? buildAliases[it] : it)
+  expandedTaskList << (buildAliases[it] ? buildAliases[it] : it)
 }
 gradle.startParameter.taskNames = expandedTaskList.flatten()
 
-repositories {
-    jcenter()
-}
+repositories { jcenter() }
 
 // added source sets (acceptance and integration tests)
 sourceSets {
@@ -85,15 +83,13 @@ dependencies {
 }
 
 jar {
-    doFirst {
-        versionTxt()
-    }
-    manifest {
-        attributes('Implementation-Title': project.name,
-                'Implementation-Version': version,
-                'Main-Class': 'net.consensys.orion.api.cmd.Orion'
-        )
-    }
+  doFirst { versionTxt() }
+  manifest {
+    attributes('Implementation-Title': project.name,
+    'Implementation-Version': version,
+    'Main-Class': 'net.consensys.orion.api.cmd.Orion'
+    )
+  }
 }
 
 run {
@@ -115,9 +111,7 @@ task acceptanceTest(type: Test) {
   dependsOn(test)
 }
 
-check {
-  dependsOn(acceptanceTest)
-}
+check { dependsOn(acceptanceTest) }
 
 spotless {
   java {
@@ -134,44 +128,42 @@ spotless {
 }
 
 task deleteTarGzip() {
-    doFirst {
-        delete fileTree(dir:'build/distributions', include: '*.tar.gz')
-    }
+  doFirst {
+    delete fileTree(dir:'build/distributions', include: '*.tar.gz')
+  }
 }
 
 distTar {
-    compression = Compression.GZIP
-    extension = 'tar.gz'
+  compression = Compression.GZIP
+  extension = 'tar.gz'
 }
 distTar.dependsOn deleteTarGzip
 
 distZip {
-    doFirst {
-        delete fileTree(dir:'build/distributions', include: '*.zip')
-    }
+  doFirst {
+    delete fileTree(dir:'build/distributions', include: '*.zip')
+  }
 }
 
 project.ext.fatJarBaseName = "orion-fat-jar"
 shadowDistTar {
-    baseName = project.fatJarBaseName
-    compression = Compression.GZIP
-    extension = 'tar.gz'
+  baseName = project.fatJarBaseName
+  compression = Compression.GZIP
+  extension = 'tar.gz'
 }
 shadowDistTar.dependsOn deleteTarGzip
 
-shadowDistZip {
-    baseName = project.fatJarBaseName
-}
+shadowDistZip { baseName = project.fatJarBaseName }
 
 shadowJar {
-    baseName = project.fatJarBaseName
-    classifier = null
+  baseName = project.fatJarBaseName
+  classifier = null
 }
 
 // Generate the Timestamp for the version
 def getTimestamp() {
-    def date = new Date()
-    return date.format('yyyy-MM-dd-HH-mm-ss-SSS')
+  def date = new Date()
+  return date.format('yyyy-MM-dd-HH-mm-ss-SSS')
 }
 
 // Create the version.txt file
@@ -186,16 +178,12 @@ Version: $version
 }
 
 distributions {
-    main {
-        contents {
-            from(checkLicenses) {
-                into "license"
-            }
-            from("./LICENSE") {
-                into "license"
-            }
-        }
+  main {
+    contents {
+      from(checkLicenses) { into "license" }
+      from("./LICENSE") { into "license" }
     }
+  }
 }
 
 publishing {
@@ -208,9 +196,7 @@ publishing {
           name 'Orion'
           description 'A java implementation of Constellation'
           url 'https://github.com/ConsenSys/orion'
-          scm {
-            url 'https://github.com/ConsenSys/orion'
-          }
+          scm { url 'https://github.com/ConsenSys/orion' }
           licenses {
             license {
               name 'The Apache Software License, Version 2.0'
@@ -234,8 +220,6 @@ bintray {
     userOrg = "consensys"
     licenses = ["Apache-2.0"]
     vcsUrl = "https://github.com/ConsenSys/orion"
-    version {
-      name = project.version
-    }
+    version { name = project.version }
   }
 }

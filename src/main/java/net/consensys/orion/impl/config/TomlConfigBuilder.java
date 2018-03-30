@@ -58,8 +58,7 @@ public final class TomlConfigBuilder {
     setFile(baseDir, toml.getString("socket"), memoryConfig::setSocket);
     setString(toml.getString("libsodiumpath"), memoryConfig::setLibSodiumPath);
 
-    StringBuilder othernodesError =
-        setURLArray(toml.getList("othernodes"), memoryConfig::setOtherNodes);
+    StringBuilder othernodesError = setURLArray(toml.getList("othernodes"), memoryConfig::setOtherNodes);
 
     setFileArray(baseDir, toml.getList("publickeys"), memoryConfig::setPublicKeys);
     setFileArray(baseDir, toml.getList("privatekeys"), memoryConfig::setPrivateKeys);
@@ -99,13 +98,11 @@ public final class TomlConfigBuilder {
     }
 
     if (memoryConfig.publicKeys().length != memoryConfig.privateKeys().length) {
-      errorMsg.append(
-          "Error: the number of keys specified for keys 'publickeys' and 'privatekeys' must be the same\n");
+      errorMsg.append("Error: the number of keys specified for keys 'publickeys' and 'privatekeys' must be the same\n");
     }
 
     if (!validateStorageTypes(memoryConfig.storage())) {
-      errorMsg.append(
-          "Error: value for key 'storage' type must start with: ['leveldb', 'mapdb'] or be 'memory'\n");
+      errorMsg.append("Error: value for key 'storage' type must start with: ['leveldb', 'mapdb'] or be 'memory'\n");
     }
 
     if (!validateTLS(memoryConfig.tls())) {
@@ -174,12 +171,7 @@ public final class TomlConfigBuilder {
         try {
           urlArray[i] = new URL(urls.get(i));
         } catch (MalformedURLException e) {
-          errorMsg
-              .append("\tURL [")
-              .append(urls.get(i))
-              .append("] ")
-              .append(e.getMessage())
-              .append("\n");
+          errorMsg.append("\tURL [").append(urls.get(i)).append("] ").append(e.getMessage()).append("\n");
         }
       }
       setter.accept(urlArray);
@@ -191,8 +183,7 @@ public final class TomlConfigBuilder {
   // Validators
   // If options change, error message must also be changed
   boolean validateTrustMode(String mode) {
-    List<String> validModes =
-        Arrays.asList("whitelist", "tofu", "ca", "ca-or-tofu", "insecure-no-validation");
+    List<String> validModes = Arrays.asList("whitelist", "tofu", "ca", "ca-or-tofu", "insecure-no-validation");
     return validModes.stream().anyMatch(mode::equals);
   }
 

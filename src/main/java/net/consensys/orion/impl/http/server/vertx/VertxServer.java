@@ -19,16 +19,13 @@ public class VertxServer {
 
   public Future<Boolean> start() {
     CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
-    httpServer
-        .requestHandler(router::accept)
-        .listen(
-            result -> {
-              if (result.succeeded()) {
-                resultFuture.complete(true);
-              } else {
-                resultFuture.completeExceptionally(result.cause());
-              }
-            });
+    httpServer.requestHandler(router::accept).listen(result -> {
+      if (result.succeeded()) {
+        resultFuture.complete(true);
+      } else {
+        resultFuture.completeExceptionally(result.cause());
+      }
+    });
 
     return resultFuture;
   }
@@ -36,14 +33,13 @@ public class VertxServer {
   public Future<Boolean> stop() {
     CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
 
-    httpServer.close(
-        result -> {
-          if (result.succeeded()) {
-            resultFuture.complete(true);
-          } else {
-            resultFuture.completeExceptionally(result.cause());
-          }
-        });
+    httpServer.close(result -> {
+      if (result.succeeded()) {
+        resultFuture.complete(true);
+      } else {
+        resultFuture.completeExceptionally(result.cause());
+      }
+    });
 
     return resultFuture;
   }

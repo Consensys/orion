@@ -21,14 +21,11 @@ public class ConcurrentNetworkNodesTest {
     urls.add(u);
     ConcurrentHashMap<SodiumPublicKey, URL> pks = new ConcurrentHashMap<>();
     pks.put(new SodiumPublicKey("bytes".getBytes()), u);
-    ConcurrentNetworkNodes nodes =
-        new ConcurrentNetworkNodes(new URL("http://some.server:8080/"), urls, pks);
+    ConcurrentNetworkNodes nodes = new ConcurrentNetworkNodes(new URL("http://some.server:8080/"), urls, pks);
     Serializer serializer = new Serializer();
     byte[] bytes = serializer.serialize(HttpContentType.JSON, nodes);
-    assertEquals(
-        nodes, serializer.deserialize(HttpContentType.JSON, ConcurrentNetworkNodes.class, bytes));
+    assertEquals(nodes, serializer.deserialize(HttpContentType.JSON, ConcurrentNetworkNodes.class, bytes));
     bytes = serializer.serialize(HttpContentType.CBOR, nodes);
-    assertEquals(
-        nodes, serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, bytes));
+    assertEquals(nodes, serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, bytes));
   }
 }

@@ -38,8 +38,7 @@ public class Serializer {
         case CBOR:
           return cborObjectMapper.writeValueAsBytes(obj);
         default:
-          throw new SerializationException(
-              OrionErrorCode.OBJECT_JSON_SERIALIZATION, new NotSerializableException());
+          throw new SerializationException(OrionErrorCode.OBJECT_JSON_SERIALIZATION, new NotSerializableException());
       }
     } catch (final IOException io) {
       throw new SerializationException(OrionErrorCode.OBJECT_JSON_SERIALIZATION, io);
@@ -56,8 +55,7 @@ public class Serializer {
         case TEXT:
           return valueType.cast(new String(bytes, StandardCharsets.UTF_8));
         default:
-          throw new SerializationException(
-              OrionErrorCode.OBJECT_JSON_DESERIALIZATION, new NotSerializableException());
+          throw new SerializationException(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, new NotSerializableException());
       }
     } catch (final Exception e) {
       throw new SerializationException(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, e);
@@ -91,8 +89,7 @@ public class Serializer {
       case CBOR:
         return cborObjectMapper;
       default:
-        throw new SerializationException(
-            OrionErrorCode.OBJECT_UNSUPPORTED_TYPE, new NotSerializableException());
+        throw new SerializationException(OrionErrorCode.OBJECT_UNSUPPORTED_TYPE, new NotSerializableException());
     }
   }
 }

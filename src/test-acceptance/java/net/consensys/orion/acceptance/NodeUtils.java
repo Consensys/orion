@@ -30,34 +30,24 @@ public class NodeUtils {
       String nodeName,
       String otherNodes,
       String pubKeys,
-      String privKeys)
-      throws UnsupportedEncodingException {
+      String privKeys) throws UnsupportedEncodingException {
 
-    final String confString =
-        new StringBuilder()
-            .append("url = \"")
-            .append(baseUrl)
-            .append("\"\nport = ")
-            .append(port)
-            .append("\nprivacyurl = \"")
-            .append(privacyUrl)
-            .append("\"\nprivacyport = ")
-            .append(privacyPort)
-            .append("\nstorage = \"leveldb:database/" + nodeName + "\"")
-            .append("\nothernodes = [\"")
-            .append(otherNodes)
-            .append(
-                "\"]\n"
-                    + "publickeys = [\""
-                    + pubKeys
-                    + "\"]\n"
-                    + "privatekeys = [\""
-                    + privKeys
-                    + "\"]")
-            .toString();
+    final String confString = new StringBuilder()
+        .append("url = \"")
+        .append(baseUrl)
+        .append("\"\nport = ")
+        .append(port)
+        .append("\nprivacyurl = \"")
+        .append(privacyUrl)
+        .append("\"\nprivacyport = ")
+        .append(privacyPort)
+        .append("\nstorage = \"leveldb:database/" + nodeName + "\"")
+        .append("\nothernodes = [\"")
+        .append(otherNodes)
+        .append("\"]\n" + "publickeys = [\"" + pubKeys + "\"]\n" + "privatekeys = [\"" + privKeys + "\"]")
+        .toString();
 
-    return new TomlConfigBuilder()
-        .build(new ByteArrayInputStream(confString.getBytes(StandardCharsets.UTF_8.name())));
+    return new TomlConfigBuilder().build(new ByteArrayInputStream(confString.getBytes(StandardCharsets.UTF_8.name())));
   }
 
   public int freePort() throws Exception {
@@ -74,14 +64,14 @@ public class NodeUtils {
   }
 
   public String sendTransactionExpectingError(
-      EthNodeStub sender, byte[] payload, String senderKey, String... recipientsKey) {
-    return sender
-        .sendExpectingError(payload, senderKey, recipientsKey)
-        .orElseThrow(AssertionFailedError::new);
+      EthNodeStub sender,
+      byte[] payload,
+      String senderKey,
+      String... recipientsKey) {
+    return sender.sendExpectingError(payload, senderKey, recipientsKey).orElseThrow(AssertionFailedError::new);
   }
 
-  public String sendTransaction(
-      EthNodeStub sender, byte[] payload, String senderKey, String... recipientsKey) {
+  public String sendTransaction(EthNodeStub sender, byte[] payload, String senderKey, String... recipientsKey) {
     return sender.send(payload, senderKey, recipientsKey).orElseThrow(AssertionFailedError::new);
   }
 

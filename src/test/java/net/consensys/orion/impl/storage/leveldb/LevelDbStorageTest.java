@@ -28,21 +28,17 @@ public class LevelDbStorageTest {
       SodiumPublicKey sender = new SodiumPublicKey("fake key".getBytes());
       byte[] nonce = "nonce".getBytes();
       byte[] ckNonce = "combined nonce".getBytes();
-      SodiumCombinedKey[] keys =
-          new SodiumCombinedKey[] {new SodiumCombinedKey("recipient".getBytes())};
+      SodiumCombinedKey[] keys = new SodiumCombinedKey[] {new SodiumCombinedKey("recipient".getBytes())};
       byte[] cipherText = "encrypted".getBytes();
-      SodiumEncryptedPayload payload =
-          new SodiumEncryptedPayload(sender, nonce, ckNonce, keys, cipherText);
+      SodiumEncryptedPayload payload = new SodiumEncryptedPayload(sender, nonce, ckNonce, keys, cipherText);
       storage.put("key", payload);
       Optional<SodiumEncryptedPayload> fromDB = storage.get("key");
       assertEquals(payload, fromDB.get());
     } finally {
       storage.close();
       Path rootPath = Paths.get(path);
-      Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS)
-          .sorted(Comparator.reverseOrder())
-          .map(Path::toFile)
-          .forEach(File::delete);
+      Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(
+          File::delete);
     }
   }
 }

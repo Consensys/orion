@@ -36,10 +36,8 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
   @AfterClass
   public static void tearDownDualNodes() throws Exception {
     final Path rootPath = Paths.get("database");
-    Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS)
-        .sorted(Comparator.reverseOrder())
-        .map(Path::toFile)
-        .forEach(File::delete);
+    Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(
+        File::delete);
   }
 
   @BeforeClass
@@ -54,26 +52,24 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
     String secondNodeBaseUrl = url(HOST_NAME, secondNodePort);
     secondNodePrivacyUrl = url(HOST_NAME, secondNodePrivacyPort);
 
-    firstNodeConfig =
-        nodeConfig(
-            firstNodeBaseUrl,
-            firstNodePort,
-            firstNodePrivacyUrl,
-            firstNodePrivacyPort,
-            "node1",
-            secondNodeBaseUrl,
-            "src/test-acceptance/resources/key1.pub",
-            "src/test-acceptance/resources/key1.key");
-    secondNodeConfig =
-        nodeConfig(
-            secondNodeBaseUrl,
-            secondNodePort,
-            secondNodePrivacyUrl,
-            secondNodePrivacyPort,
-            "node2",
-            firstNodeBaseUrl,
-            "src/test-acceptance/resources/key2.pub",
-            "src/test-acceptance/resources/key2.key");
+    firstNodeConfig = nodeConfig(
+        firstNodeBaseUrl,
+        firstNodePort,
+        firstNodePrivacyUrl,
+        firstNodePrivacyPort,
+        "node1",
+        secondNodeBaseUrl,
+        "src/test-acceptance/resources/key1.pub",
+        "src/test-acceptance/resources/key1.key");
+    secondNodeConfig = nodeConfig(
+        secondNodeBaseUrl,
+        secondNodePort,
+        secondNodePrivacyUrl,
+        secondNodePrivacyPort,
+        "node2",
+        firstNodeBaseUrl,
+        "src/test-acceptance/resources/key2.pub",
+        "src/test-acceptance/resources/key2.key");
   }
 
   @Before
