@@ -16,6 +16,8 @@ public enum OrionErrorCode {
   NODE_PUSHING_TO_PEER("NodePushingToPeer"),
   NODE_PUSHING_TO_PEER_RESPONSE("NodePushingToPeerResponse"),
   NODE_PROPAGATING_TO_ALL_PEERS("NodePropagatingToAllPeers"),
+  NO_SENDER_KEY("NoSenderKey"),
+  INVALID_PAYLOAD("InvalidPayload"),
 
   /** 0x2xxxxx object mapping issues. */
   OBJECT_JSON_DESERIALIZATION("ObjectJsonDeserialization"),
@@ -28,7 +30,7 @@ public enum OrionErrorCode {
   CONFIGURATION_OPTION("ConfigurationOption"),
   CONFIGURATION_STORAGE_MECHANISM("ConfigurationStorageMechanism"),
 
-  /** 0x4xxxxx Encalve category of issues. */
+  /** 0x4xxxxx Enclave category of issues. */
   ENCLAVE_CREATE_KEY_PAIR("EnclaveCreateKeyPair"),
   ENCLAVE_DECODE_PUBLIC_KEY("EnclaveDecodePublicKey"),
   ENCLAVE_DECRYPT("EnclaveDecrypt"),

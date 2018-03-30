@@ -34,8 +34,8 @@ import org.junit.Test;
 
 public class SendHandlerTest extends HandlerTest {
 
-  private final KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
-  private SodiumMemoryKeyStore memoryKeyStore;
+  final KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
+  SodiumMemoryKeyStore memoryKeyStore;
 
   @Override
   @Before
@@ -382,6 +382,41 @@ public class SendHandlerTest extends HandlerTest {
     assertEquals(500, resp.code());
     // checks if the failure reason was with de-serialisation
     assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
+  }
+
+  @Test
+  public void sendWithNoFrom() throws Exception {
+    // note: we need to do this as the fakePeers need to know in advance the digest to return.
+    // not possible with libSodium due to random nonce
+
+    // generate random byte content
+    byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    // encrypt it here to compute digest
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
+    String digest =
+        Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+
+    // create fake peer
+    FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
+    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+
+    // build our sendRequest
+    String payload = Base64.encode(toEncrypt);
+
+    String[] to = new String[] {Base64.encode(fakePeer.publicKey.getEncoded())};
+
+    SendRequest sendRequest = new SendRequest(payload, null, to);
+    Request request = buildPrivateAPIRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
+
+    // execute request
+    Response resp = httpClient.newCall(request).execute();
+
+    // ensure we got an error back.
+    assertEquals(500, resp.code());
+
+    assertError(OrionErrorCode.NO_SENDER_KEY, resp);
   }
 
   private SendRequest buildFakeRequest(List<FakePeer> forPeers, byte[] toEncrypt) {
