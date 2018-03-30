@@ -12,6 +12,7 @@ import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.security.PublicKey;
+import java.util.Collections;
 import java.util.Optional;
 
 import io.vertx.core.Handler;
@@ -75,7 +76,8 @@ public class ReceiveHandler implements Handler<RoutingContext> {
     // build a ReceiveResponse
     Buffer toReturn;
     if (contentType == JSON) {
-      toReturn = Buffer.buffer(serializer.serialize(JSON, new ReceiveResponse(Base64.encode(decryptedPayload))));
+      toReturn = Buffer
+          .buffer(serializer.serialize(JSON, Collections.singletonMap("payload", Base64.encode(decryptedPayload))));
     } else {
       toReturn = Buffer.buffer(decryptedPayload);
     }

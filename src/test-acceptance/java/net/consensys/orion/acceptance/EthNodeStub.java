@@ -4,13 +4,13 @@ import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 
 import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.impl.http.handler.receive.ReceiveRequest;
-import net.consensys.orion.impl.http.handler.receive.ReceiveResponse;
 import net.consensys.orion.impl.http.handler.send.SendRequest;
 import net.consensys.orion.impl.http.handler.send.SendResponse;
 import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 
 import okhttp3.MediaType;
@@ -110,10 +110,9 @@ public class EthNodeStub {
       }
 
       // deserialize the response
-      final ReceiveResponse receiveResponse =
-          serializer.deserialize(JSON, ReceiveResponse.class, httpReceiveResponse.body().bytes());
+      final Map receiveResponse = serializer.deserialize(JSON, Map.class, httpReceiveResponse.body().bytes());
 
-      return Optional.of(Base64.decode(receiveResponse.payload));
+      return Optional.of(Base64.decode((String) receiveResponse.get("payload")));
 
     } catch (IOException io) {
       log.error(io.getMessage());

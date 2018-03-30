@@ -5,10 +5,9 @@ import java.util.Arrays;
 
 public class SodiumPrivateKey implements PrivateKey {
 
-  private byte[] privateKey;
+  private final byte[] privateKey;
 
   public SodiumPrivateKey(byte[] privateKey) {
-
     this.privateKey = privateKey;
   }
 
