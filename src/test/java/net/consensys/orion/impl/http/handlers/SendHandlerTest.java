@@ -6,7 +6,6 @@ import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_O
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static org.junit.Assert.assertArrayEquals;
 
-import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.HashAlgorithm;
 import net.consensys.orion.api.enclave.KeyConfig;
@@ -48,7 +47,7 @@ public class SendHandlerTest extends HandlerTest {
   public void invalidRequest() throws Exception {
     SendRequest sendRequest = new SendRequest((byte[]) null, "me", null);
 
-    Request request = buildPrivateAPIRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
+    Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -59,7 +58,7 @@ public class SendHandlerTest extends HandlerTest {
   @Test
   public void emptyPayload() throws Exception {
     RequestBody body = RequestBody.create(null, new byte[0]);
-    Request request = new Request.Builder().post(body).url(privateBaseUrl + OrionRoutes.SEND).build();
+    Request request = new Request.Builder().post(body).url(privateBaseUrl + "/send").build();
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -77,10 +76,10 @@ public class SendHandlerTest extends HandlerTest {
     // add peer push URL to networkNodes
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    // build our sendRequest
+    // configureRoutes our sendRequest
     SendRequest sendRequest = buildFakeRequest(Collections.singletonList(fakePeer));
 
-    Request request = buildPrivateAPIRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
+    Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -91,7 +90,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // ensure the fakePeer got a good formatted request
     RecordedRequest recordedRequest = fakePeer.server.takeRequest();
-    assertEquals(OrionRoutes.PUSH, recordedRequest.getPath());
+    assertEquals("/push", recordedRequest.getPath());
     assertEquals("POST", recordedRequest.getMethod());
   }
 
@@ -103,9 +102,9 @@ public class SendHandlerTest extends HandlerTest {
     // add peer push URL to networkNodes
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    // build our sendRequest
+    // configureRoutes our sendRequest
     SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer));
-    Request request = buildPrivateAPIRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
+    Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -131,9 +130,9 @@ public class SendHandlerTest extends HandlerTest {
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    // build our sendRequest
+    // configureRoutes our sendRequest
     SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer), toEncrypt);
-    Request request = buildPrivateAPIRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
+    Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -174,9 +173,9 @@ public class SendHandlerTest extends HandlerTest {
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    // build our sendRequest
+    // configureRoutes our sendRequest
     SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer), toEncrypt);
-    Request request = buildPublicAPIRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
+    Request request = buildPublicAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -207,9 +206,9 @@ public class SendHandlerTest extends HandlerTest {
       fakePeers.add(fakePeer);
     }
 
-    // build our sendRequest
+    // configureRoutes our sendRequest
     SendRequest sendRequest = buildFakeRequest(fakePeers, toEncrypt);
-    Request request = buildPrivateAPIRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
+    Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -239,10 +238,10 @@ public class SendHandlerTest extends HandlerTest {
   public void sendWithInvalidContentType() throws Exception {
     String b64String = Base64.encode("foo".getBytes());
 
-    // build our sendRequest
+    // configureRoutes our sendRequest
     SendRequest sendRequest = new SendRequest(b64String, b64String, new String[] {b64String});
     // CBOR type is not available
-    Request request = buildPrivateAPIRequest(OrionRoutes.SEND, HttpContentType.CBOR, sendRequest);
+    Request request = buildPrivateAPIRequest("/send", HttpContentType.CBOR, sendRequest);
     Response resp = httpClient.newCall(request).execute();
 
     // produces 404 because there is no route for the content type in the request.
@@ -270,7 +269,7 @@ public class SendHandlerTest extends HandlerTest {
       fakePeers.add(fakePeer);
     }
 
-    // build the binary sendRequest
+    // configureRoutes the binary sendRequest
     RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
     PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
 
@@ -331,7 +330,7 @@ public class SendHandlerTest extends HandlerTest {
     // add peer push URL to networkNodes
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    // build the binary sendRequest
+    // configureRoutes the binary sendRequest
     RequestBody body =
         RequestBody.create(MediaType.parse(HttpContentType.APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
     PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
@@ -356,8 +355,7 @@ public class SendHandlerTest extends HandlerTest {
 
   @Test
   public void sendWithInvalidBody() throws Exception {
-    Request requestWithInvalidBody =
-        buildPrivateAPIRequest(OrionRoutes.SEND, HttpContentType.JSON, "{\"foo\": \"bar\"}");
+    Request requestWithInvalidBody = buildPrivateAPIRequest("/send", HttpContentType.JSON, "{\"foo\": \"bar\"}");
 
     Response resp = httpClient.newCall(requestWithInvalidBody).execute();
 
@@ -384,13 +382,13 @@ public class SendHandlerTest extends HandlerTest {
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    // build our sendRequest
+    // configureRoutes our sendRequest
     String payload = Base64.encode(toEncrypt);
 
     String[] to = new String[] {Base64.encode(fakePeer.publicKey.getEncoded())};
 
     SendRequest sendRequest = new SendRequest(payload, null, to);
-    Request request = buildPrivateAPIRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
+    Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();

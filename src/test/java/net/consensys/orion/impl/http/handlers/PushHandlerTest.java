@@ -4,11 +4,9 @@ package net.consensys.orion.impl.http.handlers;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
-import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
@@ -37,10 +35,8 @@ public class PushHandlerTest extends HandlerTest {
 
   @Test
   public void payloadIsStored() throws Exception {
-    // ref to storage
-    final Storage storage = routes.getStorage();
 
-    // build & serialize our payload
+    // configureRoutes & serialize our payload
     EncryptedPayload encryptedPayload = mockPayload();
 
     // PUSH operation, sending an encrypted payload
@@ -48,7 +44,7 @@ public class PushHandlerTest extends HandlerTest {
         MediaType.parse(HttpContentType.CBOR.httpHeaderValue),
         serializer.serialize(HttpContentType.CBOR, encryptedPayload));
 
-    Request request = new Request.Builder().post(body).url(publicBaseUrl + OrionRoutes.PUSH).build();
+    Request request = new Request.Builder().post(body).url(publicBaseUrl + "/push").build();
 
     Response resp = httpClient.newCall(request).execute();
 
@@ -71,7 +67,7 @@ public class PushHandlerTest extends HandlerTest {
 
   @Test
   public void pushWithInvalidContentType() throws Exception {
-    // build & serialize our payload
+    // configureRoutes & serialize our payload
     EncryptedPayload encryptedPayload = mockPayload();
 
     // PUSH operation with invalid content type
@@ -79,7 +75,7 @@ public class PushHandlerTest extends HandlerTest {
         MediaType.parse(HttpContentType.JSON.httpHeaderValue),
         serializer.serialize(HttpContentType.JSON, encryptedPayload));
 
-    Request request = new Request.Builder().post(body).url(publicBaseUrl + OrionRoutes.PUSH).build();
+    Request request = new Request.Builder().post(body).url(publicBaseUrl + "/push").build();
 
     Response resp = httpClient.newCall(request).execute();
 
@@ -90,7 +86,7 @@ public class PushHandlerTest extends HandlerTest {
   public void pushWithInvalidBody() throws Exception {
     RequestBody body = RequestBody.create(MediaType.parse(HttpContentType.CBOR.httpHeaderValue), "foo");
 
-    Request request = new Request.Builder().post(body).url(publicBaseUrl + OrionRoutes.PUSH).build();
+    Request request = new Request.Builder().post(body).url(publicBaseUrl + "/push").build();
 
     Response resp = httpClient.newCall(request).execute();
 

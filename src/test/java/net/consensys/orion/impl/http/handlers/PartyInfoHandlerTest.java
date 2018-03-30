@@ -4,7 +4,6 @@ import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import static org.junit.Assert.assertEquals;
 
-import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
@@ -31,7 +30,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
         RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), serializer.serialize(CBOR, networkNodes));
 
     // call http endpoint
-    Request request = new Request.Builder().post(partyInfoBody).url(publicBaseUrl + OrionRoutes.PARTYINFO).build();
+    Request request = new Request.Builder().post(partyInfoBody).url(publicBaseUrl + "/partyinfo").build();
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
@@ -59,7 +58,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
     RequestBody partyInfoBody =
         RequestBody.create(MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, networkNodes));
 
-    Request request = new Request.Builder().post(partyInfoBody).url(publicBaseUrl + OrionRoutes.PARTYINFO).build();
+    Request request = new Request.Builder().post(partyInfoBody).url(publicBaseUrl + "/partyinfo").build();
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(404, resp.code());
@@ -69,7 +68,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
   public void partyInfoWithInvalidBody() throws Exception {
     RequestBody partyInfoBody = RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), "foo");
 
-    Request request = new Request.Builder().post(partyInfoBody).url(publicBaseUrl + OrionRoutes.PARTYINFO).build();
+    Request request = new Request.Builder().post(partyInfoBody).url(publicBaseUrl + "/partyinfo").build();
 
     Response resp = httpClient.newCall(request).execute();
 

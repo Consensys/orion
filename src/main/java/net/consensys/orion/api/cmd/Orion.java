@@ -1,6 +1,10 @@
 package net.consensys.orion.api.cmd;
 
 import static io.vertx.core.Vertx.vertx;
+import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
+import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
+import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
+import static net.consensys.orion.impl.http.server.HttpContentType.TEXT;
 
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.config.ConfigException;
@@ -8,15 +12,25 @@ import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
+import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageEngine;
+import net.consensys.orion.api.storage.StorageKeyBuilder;
 import net.consensys.orion.impl.cmd.OrionArguments;
 import net.consensys.orion.impl.config.TomlConfigBuilder;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumFileKeyStore;
+import net.consensys.orion.impl.http.handler.partyinfo.PartyInfoHandler;
+import net.consensys.orion.impl.http.handler.push.PushHandler;
+import net.consensys.orion.impl.http.handler.receive.ReceiveHandler;
+import net.consensys.orion.impl.http.handler.send.SendHandler;
+import net.consensys.orion.impl.http.handler.upcheck.UpcheckHandler;
+import net.consensys.orion.impl.http.server.vertx.HttpErrorHandler;
 import net.consensys.orion.impl.http.server.vertx.VertxServer;
 import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 import net.consensys.orion.impl.network.NetworkDiscovery;
+import net.consensys.orion.impl.storage.EncryptedPayloadStorage;
+import net.consensys.orion.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.impl.storage.file.MapDbStorage;
 import net.consensys.orion.impl.storage.leveldb.LevelDbStorage;
 import net.consensys.orion.impl.utils.Serializer;
@@ -37,6 +51,9 @@ import java.util.stream.Collectors;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.LoggerHandler;
+import io.vertx.ext.web.handler.ResponseContentTypeHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -54,6 +71,64 @@ public class Orion {
     log.info("starting orion");
     Orion orion = new Orion();
     orion.run(args);
+  }
+
+  public static void configureRoutes(
+      Vertx vertx,
+      ConcurrentNetworkNodes networkNodes,
+      Serializer serializer,
+      Enclave enclave,
+      Storage<EncryptedPayload> storage,
+      Router publicRouter,
+      Router privateRouter) {
+
+
+    // sets response content-type from Accept header
+    // and handle errors
+
+    LoggerHandler loggerHandler = LoggerHandler.create();
+
+    //Setup Public APIs
+    publicRouter
+        .route()
+        .handler(BodyHandler.create())
+        .handler(loggerHandler)
+        .handler(ResponseContentTypeHandler.create())
+        .failureHandler(new HttpErrorHandler(serializer));
+
+    publicRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
+
+    publicRouter.post("/partyinfo").produces(CBOR.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
+        new PartyInfoHandler(networkNodes, serializer));
+
+    publicRouter.post("/push").produces(TEXT.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
+        new PushHandler(storage, serializer));
+
+    //Setup Private APIs
+    privateRouter
+        .route()
+        .handler(BodyHandler.create())
+        .handler(loggerHandler)
+        .handler(ResponseContentTypeHandler.create())
+        .failureHandler(new HttpErrorHandler(serializer));
+
+    privateRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
+
+    privateRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
+        new SendHandler(vertx, enclave, storage, networkNodes, serializer, JSON));
+    privateRouter
+        .post("/sendraw")
+        .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .handler(new SendHandler(vertx, enclave, storage, networkNodes, serializer, APPLICATION_OCTET_STREAM));
+
+    privateRouter.post("/receive").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
+        new ReceiveHandler(enclave, storage, serializer, JSON));
+    privateRouter
+        .post("/receiveraw")
+        .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .handler(new ReceiveHandler(enclave, storage, serializer, APPLICATION_OCTET_STREAM));
   }
 
   public void stop() {
@@ -130,14 +205,19 @@ public class Orion {
 
     // create our storage engine
     storageEngine = createStorageEngine(config, storagePath);
-    OrionRoutes routes = new OrionRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
+    // Vertx routers
+    Router publicRouter = Router.router(vertx);
+    Router privateRouter = Router.router(vertx);
+    // controller dependencies
+    StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
+    EncryptedPayloadStorage storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
+    configureRoutes(vertx, networkNodes, serializer, enclave, storage, publicRouter, privateRouter);
 
     // asynchronously start the vertx http server for public API
-    CompletableFuture<Boolean> publicFuture = startHttpServerAsync(config.port(), vertx, routes.publicRouter());
+    CompletableFuture<Boolean> publicFuture = startHttpServerAsync(config.port(), vertx, publicRouter);
 
     // asynchronously start the vertx http server for private API
-    CompletableFuture<Boolean> privateFuture =
-        startHttpServerAsync(config.privacyPort(), vertx, routes.privateRouter());
+    CompletableFuture<Boolean> privateFuture = startHttpServerAsync(config.privacyPort(), vertx, privateRouter);
 
     // Block and wait for the two servers to start.
     CompletableFuture.allOf(publicFuture, privateFuture).get();

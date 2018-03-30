@@ -5,7 +5,6 @@ import static junit.framework.TestCase.assertTrue;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static org.junit.Assert.assertArrayEquals;
 
-import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.HashAlgorithm;
@@ -69,13 +68,13 @@ public class SendHandlerWithNodeKeysTest extends SendHandlerTest {
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    // build our sendRequest
+    // configureRoutes our sendRequest
     String payload = Base64.encode(toEncrypt);
 
     String[] to = new String[] {Base64.encode(fakePeer.publicKey.getEncoded())};
 
     SendRequest sendRequest = new SendRequest(payload, null, to);
-    Request request = buildPrivateAPIRequest(OrionRoutes.SEND, HttpContentType.JSON, sendRequest);
+    Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();

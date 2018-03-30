@@ -2,11 +2,13 @@ package net.consensys.orion.impl.http.handlers;
 
 import static org.junit.Assert.assertEquals;
 
-import net.consensys.orion.api.cmd.OrionRoutes;
+import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.exception.OrionErrorCode;
+import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageEngine;
+import net.consensys.orion.api.storage.StorageKeyBuilder;
 import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
@@ -14,6 +16,8 @@ import net.consensys.orion.impl.helpers.StubEnclave;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.http.server.vertx.VertxServer;
 import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
+import net.consensys.orion.impl.storage.EncryptedPayloadStorage;
+import net.consensys.orion.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.impl.storage.file.MapDbStorage;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -25,6 +29,7 @@ import java.net.UnknownHostException;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.ext.web.Router;
 import okhttp3.HttpUrl;
 import okhttp3.HttpUrl.Builder;
 import okhttp3.MediaType;
@@ -53,9 +58,9 @@ public abstract class HandlerTest {
   private VertxServer publicVertxServer;
   private Integer privateHTTPServerPort;
   private VertxServer privateVertxServer;
-  OrionRoutes routes;
 
   private StorageEngine<EncryptedPayload> storageEngine;
+  protected Storage<EncryptedPayload> storage;
 
   @Before
   public void setUp() throws Exception {
@@ -83,21 +88,26 @@ public abstract class HandlerTest {
     storageEngine = new MapDbStorage(SodiumEncryptedPayload.class, path, serializer);
     // create our vertx object
     vertx = Vertx.vertx();
-    routes = new OrionRoutes(vertx, networkNodes, serializer, enclave, storageEngine);
+    StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
+    storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
+    Router publicRouter = Router.router(vertx);
+    Router privateRouter = Router.router(vertx);
+    Orion.configureRoutes(vertx, networkNodes, serializer, enclave, storage, publicRouter, privateRouter);
 
-    setupPublicAPIServer();
-    setupPrivateAPIServer();
+    setupPublicAPIServer(publicRouter);
+    setupPrivateAPIServer(privateRouter);
   }
 
-  private void setupPublicAPIServer() throws InterruptedException, java.util.concurrent.ExecutionException {
+  private void setupPublicAPIServer(Router router)
+      throws InterruptedException, java.util.concurrent.ExecutionException {
     HttpServerOptions publicServerOptions = new HttpServerOptions();
     publicServerOptions.setPort(publicHTTPServerPort);
 
-    publicVertxServer = new VertxServer(vertx, routes.publicRouter(), publicServerOptions);
+    publicVertxServer = new VertxServer(vertx, router, publicServerOptions);
     publicVertxServer.start().get();
   }
 
-  private void setupPrivateAPIServer()
+  private void setupPrivateAPIServer(Router router)
       throws UnknownHostException, InterruptedException, java.util.concurrent.ExecutionException {
     HttpUrl privateHTTP = new Builder()
         .scheme("http")
@@ -109,7 +119,7 @@ public abstract class HandlerTest {
     HttpServerOptions privateServerOptions = new HttpServerOptions();
     privateServerOptions.setPort(privateHTTPServerPort);
 
-    privateVertxServer = new VertxServer(vertx, routes.privateRouter(), privateServerOptions);
+    privateVertxServer = new VertxServer(vertx, router, privateServerOptions);
 
     privateVertxServer.start().get();
   }

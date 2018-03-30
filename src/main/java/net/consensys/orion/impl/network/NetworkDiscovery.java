@@ -2,7 +2,6 @@ package net.consensys.orion.impl.network;
 
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 
-import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.net.URL;
@@ -97,7 +96,7 @@ public class NetworkDiscovery extends AbstractVerticle {
       log.trace("calling partyInfo on {}", nodeUrl);
       attempts++;
 
-      httpClient.post(nodeUrl.getPort(), nodeUrl.getHost(), OrionRoutes.PARTYINFO, resp -> {
+      httpClient.post(nodeUrl.getPort(), nodeUrl.getHost(), "/partyinfo", resp -> {
         if (resp.statusCode() == 200) {
           lastUpdate = Instant.now();
 
