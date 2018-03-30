@@ -122,8 +122,14 @@ check {
 spotless {
   java {
     removeUnusedImports()
-    googleJavaFormat()
+    eclipse().configFile(rootProject.file('gradle/eclipse-java-consensys-style.xml'))
     importOrder 'net.consensys', 'java', ''
+    endWithNewline()
+  }
+  groovyGradle {
+    target '*.gradle'
+    greclipse().configFile(rootProject.file('gradle/greclipse-gradle-consensys-style.properties'))
+    endWithNewline()
   }
 }
 
