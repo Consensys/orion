@@ -45,10 +45,8 @@ public class SingleNodeSendTest {
   @AfterClass
   public static void tearDownSingleNode() throws Exception {
     final Path rootPath = Paths.get("database");
-    Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS)
-        .sorted(Comparator.reverseOrder())
-        .map(Path::toFile)
-        .forEach(File::delete);
+    Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(
+        File::delete);
   }
 
   @BeforeClass
@@ -60,16 +58,15 @@ public class SingleNodeSendTest {
     baseUrl = nodeUtils.url(HOST_NAME, port);
     ethUrl = nodeUtils.url(HOST_NAME, ethPort);
 
-    config =
-        nodeUtils.nodeConfig(
-            baseUrl,
-            port,
-            ethUrl,
-            ethPort,
-            "node1",
-            baseUrl,
-            "src/test-acceptance/resources/key1.pub\", \"src/test-acceptance/resources/key2.pub",
-            "src/test-acceptance/resources/key1.key\", \"src/test-acceptance/resources/key2.key");
+    config = nodeUtils.nodeConfig(
+        baseUrl,
+        port,
+        ethUrl,
+        ethPort,
+        "node1",
+        baseUrl,
+        "src/test-acceptance/resources/key1.pub\", \"src/test-acceptance/resources/key2.pub",
+        "src/test-acceptance/resources/key1.key\", \"src/test-acceptance/resources/key2.key");
   }
 
   @Before
@@ -111,10 +108,7 @@ public class SingleNodeSendTest {
     assertEquals(String.format("{\"error\":\"%s\"}", expected.code()), actual);
   }
 
-  private String sendTransactionExpectingError(
-      EthNodeStub sender, String senderKey, String... recipientsKey) {
-    return sender
-        .sendExpectingError(originalPayload, senderKey, recipientsKey)
-        .orElseThrow(AssertionFailedError::new);
+  private String sendTransactionExpectingError(EthNodeStub sender, String senderKey, String... recipientsKey) {
+    return sender.sendExpectingError(originalPayload, senderKey, recipientsKey).orElseThrow(AssertionFailedError::new);
   }
 }

@@ -5,8 +5,8 @@ import java.security.PublicKey;
 import java.util.Optional;
 
 /**
- * Interface for key put. Provides a mechanism for generating keys, and looking up a private key for
- * a given public key. Typically used internally by an enclave to look up private keys.
+ * Interface for key put. Provides a mechanism for generating keys, and looking up a private key for a given public key.
+ * Typically used internally by an enclave to look up private keys.
  */
 public interface KeyStore {
 

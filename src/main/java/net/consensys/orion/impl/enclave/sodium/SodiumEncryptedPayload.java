@@ -41,8 +41,7 @@ public class SodiumEncryptedPayload implements EncryptedPayload, Serializable {
       @JsonProperty("combinedKeyNonce") byte[] combinedKeyNonce,
       @JsonProperty("combinedKeys") SodiumCombinedKey[] combinedKeys,
       @JsonProperty("cipherText") byte[] cipherText,
-      @JsonProperty("combinedKeysOwners")
-          Optional<Map<SodiumPublicKey, Integer>> combinedKeysOwners) {
+      @JsonProperty("combinedKeysOwners") Optional<Map<SodiumPublicKey, Integer>> combinedKeysOwners) {
     this.combinedKeyNonce = combinedKeyNonce;
     this.sender = sender;
     this.cipherText = cipherText;

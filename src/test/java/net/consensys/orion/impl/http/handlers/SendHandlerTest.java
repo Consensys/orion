@@ -59,8 +59,7 @@ public class SendHandlerTest extends HandlerTest {
   @Test
   public void emptyPayload() throws Exception {
     RequestBody body = RequestBody.create(null, new byte[0]);
-    Request request =
-        new Request.Builder().post(body).url(privateBaseUrl + OrionRoutes.SEND).build();
+    Request request = new Request.Builder().post(body).url(privateBaseUrl + OrionRoutes.SEND).build();
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -126,8 +125,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest =
-        Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+    String digest = Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
 
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
@@ -155,8 +153,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // ensure cipher text is same.
     SodiumEncryptedPayload receivedPayload =
-        serializer.deserialize(
-            CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
+        serializer.deserialize(CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
     assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
   }
 
@@ -171,8 +168,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest =
-        Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+    String digest = Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
 
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
@@ -200,8 +196,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest =
-        Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+    String digest = Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
 
     // create fake peers
     List<FakePeer> fakePeers = new ArrayList<>(5);
@@ -235,8 +230,7 @@ public class SendHandlerTest extends HandlerTest {
 
       // ensure cipher text is same.
       SodiumEncryptedPayload receivedPayload =
-          serializer.deserialize(
-              CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
+          serializer.deserialize(CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
       assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
     }
   }
@@ -265,8 +259,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest =
-        Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+    String digest = Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
 
     // create fake peers
     List<FakePeer> fakePeers = new ArrayList<>(5);
@@ -278,27 +271,21 @@ public class SendHandlerTest extends HandlerTest {
     }
 
     // build the binary sendRequest
-    RequestBody body =
-        RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
+    RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
     PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
 
     String from = Base64.encode(sender.getEncoded());
 
-    String[] to =
-        fakePeers
-            .stream()
-            .map(fp -> Base64.encode(fp.publicKey.getEncoded()))
-            .toArray(String[]::new);
+    String[] to = fakePeers.stream().map(fp -> Base64.encode(fp.publicKey.getEncoded())).toArray(String[]::new);
 
-    Request request =
-        new Request.Builder()
-            .post(body)
-            .url(privateBaseUrl + "sendraw")
-            .addHeader("c11n-from", from)
-            .addHeader("c11n-to", String.join(",", to))
-            .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
-            .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
-            .build();
+    Request request = new Request.Builder()
+        .post(body)
+        .url(privateBaseUrl + "sendraw")
+        .addHeader("c11n-from", from)
+        .addHeader("c11n-to", String.join(",", to))
+        .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .build();
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -322,8 +309,7 @@ public class SendHandlerTest extends HandlerTest {
 
       // ensure cipher text is same.
       SodiumEncryptedPayload receivedPayload =
-          serializer.deserialize(
-              CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
+          serializer.deserialize(CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
       assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
     }
   }
@@ -338,8 +324,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest =
-        Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+    String digest = Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
 
     // create fake peers
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
@@ -348,21 +333,19 @@ public class SendHandlerTest extends HandlerTest {
 
     // build the binary sendRequest
     RequestBody body =
-        RequestBody.create(
-            MediaType.parse(HttpContentType.APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
+        RequestBody.create(MediaType.parse(HttpContentType.APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
     PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
 
     String from = Base64.encode(sender.getEncoded());
 
-    Request request =
-        new Request.Builder()
-            .post(body)
-            .url(publicBaseUrl + "sendraw")
-            .addHeader("c11n-from", from)
-            .addHeader("c11n-to", Base64.encode(fakePeer.publicKey.getEncoded()))
-            .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
-            .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
-            .build();
+    Request request = new Request.Builder()
+        .post(body)
+        .url(publicBaseUrl + "sendraw")
+        .addHeader("c11n-from", from)
+        .addHeader("c11n-to", Base64.encode(fakePeer.publicKey.getEncoded()))
+        .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .build();
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -395,8 +378,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest =
-        Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+    String digest = Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
 
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
@@ -425,11 +407,7 @@ public class SendHandlerTest extends HandlerTest {
     String from = Base64.encode(sender.getEncoded());
     String payload = Base64.encode(toEncrypt);
 
-    String[] to =
-        forPeers
-            .stream()
-            .map(fp -> Base64.encode(fp.publicKey.getEncoded()))
-            .toArray(String[]::new);
+    String[] to = forPeers.stream().map(fp -> Base64.encode(fp.publicKey.getEncoded())).toArray(String[]::new);
 
     return new SendRequest(payload, from, to);
   }

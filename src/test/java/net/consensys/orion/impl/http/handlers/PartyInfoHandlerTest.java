@@ -28,37 +28,26 @@ public class PartyInfoHandlerTest extends HandlerTest {
 
     // prepare /partyinfo payload (our known peers)
     RequestBody partyInfoBody =
-        RequestBody.create(
-            MediaType.parse(CBOR.httpHeaderValue), serializer.serialize(CBOR, networkNodes));
+        RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), serializer.serialize(CBOR, networkNodes));
 
     // call http endpoint
-    Request request =
-        new Request.Builder()
-            .post(partyInfoBody)
-            .url(publicBaseUrl + OrionRoutes.PARTYINFO)
-            .build();
+    Request request = new Request.Builder().post(partyInfoBody).url(publicBaseUrl + OrionRoutes.PARTYINFO).build();
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
 
     ConcurrentNetworkNodes partyInfoResponse =
-        serializer.deserialize(
-            HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
+        serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
 
     assertEquals(networkNodes, partyInfoResponse);
   }
 
   @Test
   public void roundTripSerialization() throws Exception {
-    ConcurrentNetworkNodes networkNodes =
-        new ConcurrentNetworkNodes(new URL("http://localhost:1234/"));
+    ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(new URL("http://localhost:1234/"));
     networkNodes.addNode(new SodiumPublicKey("fake".getBytes()), new URL("http://localhost/"));
-    assertEquals(
-        networkNodes,
-        serializer.roundTrip(HttpContentType.CBOR, ConcurrentNetworkNodes.class, networkNodes));
-    assertEquals(
-        networkNodes,
-        serializer.roundTrip(HttpContentType.JSON, ConcurrentNetworkNodes.class, networkNodes));
+    assertEquals(networkNodes, serializer.roundTrip(HttpContentType.CBOR, ConcurrentNetworkNodes.class, networkNodes));
+    assertEquals(networkNodes, serializer.roundTrip(HttpContentType.JSON, ConcurrentNetworkNodes.class, networkNodes));
   }
 
   @Test
@@ -68,14 +57,9 @@ public class PartyInfoHandlerTest extends HandlerTest {
 
     // prepare /partyinfo payload (our known peers) with invalid content type (json)
     RequestBody partyInfoBody =
-        RequestBody.create(
-            MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, networkNodes));
+        RequestBody.create(MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, networkNodes));
 
-    Request request =
-        new Request.Builder()
-            .post(partyInfoBody)
-            .url(publicBaseUrl + OrionRoutes.PARTYINFO)
-            .build();
+    Request request = new Request.Builder().post(partyInfoBody).url(publicBaseUrl + OrionRoutes.PARTYINFO).build();
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(404, resp.code());
@@ -85,11 +69,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
   public void partyInfoWithInvalidBody() throws Exception {
     RequestBody partyInfoBody = RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), "foo");
 
-    Request request =
-        new Request.Builder()
-            .post(partyInfoBody)
-            .url(publicBaseUrl + OrionRoutes.PARTYINFO)
-            .build();
+    Request request = new Request.Builder().post(partyInfoBody).url(publicBaseUrl + OrionRoutes.PARTYINFO).build();
 
     Response resp = httpClient.newCall(request).execute();
 

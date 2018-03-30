@@ -55,7 +55,6 @@ public class LibSodiumEnclaveStub implements Enclave {
     SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[0];
     byte[] combinedKeyNonce = {};
     byte[] nonce = {};
-    return new SodiumEncryptedPayload(
-        (SodiumPublicKey) senderKey, nonce, combinedKeyNonce, combinedKeys, cipherText);
+    return new SodiumEncryptedPayload((SodiumPublicKey) senderKey, nonce, combinedKeyNonce, combinedKeys, cipherText);
   }
 }

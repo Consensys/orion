@@ -11,8 +11,7 @@ public class StoredPrivateKey {
   private final String type;
 
   @JsonCreator
-  public StoredPrivateKey(
-      @JsonProperty("data") PrivateKeyData data, @JsonProperty("type") String type) {
+  public StoredPrivateKey(@JsonProperty("data") PrivateKeyData data, @JsonProperty("type") String type) {
     this.data = data;
     this.type = type;
   }

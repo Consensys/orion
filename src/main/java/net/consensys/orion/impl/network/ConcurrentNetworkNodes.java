@@ -44,8 +44,8 @@ public class ConcurrentNetworkNodes implements NetworkNodes, Serializable {
   public ConcurrentNetworkNodes(
       @JsonProperty("url") URL url,
       @JsonProperty("nodeURLs") Set<URL> nodeURLs,
-      @JsonProperty("nodePKs") @JsonDeserialize(keyUsing = SodiumPublicKeyDeserializer.class)
-          Map<SodiumPublicKey, URL> nodePKs) {
+      @JsonProperty("nodePKs") @JsonDeserialize(
+          keyUsing = SodiumPublicKeyDeserializer.class) Map<SodiumPublicKey, URL> nodePKs) {
     this.url = url;
     this.nodeURLs = new CopyOnWriteArraySet<>(nodeURLs);
     this.nodePKs = new ConcurrentHashMap<>(nodePKs);

@@ -35,8 +35,7 @@ public class LevelDbStorage<T> implements StorageEngine<T> {
   @Override
   public void put(String key, T data) {
     if (!db.isPresent()) {
-      throw new StorageException(
-          OrionErrorCode.STORAGE_CLOSED_WRITE, "Database was already closed");
+      throw new StorageException(OrionErrorCode.STORAGE_CLOSED_WRITE, "Database was already closed");
     }
     db.get().put(key.getBytes(), serializer.serialize(HttpContentType.CBOR, data));
   }
@@ -57,8 +56,7 @@ public class LevelDbStorage<T> implements StorageEngine<T> {
   @Override
   public void remove(String key) {
     if (!db.isPresent()) {
-      throw new StorageException(
-          OrionErrorCode.STORAGE_CLOSED_DELETE, "Database was already closed");
+      throw new StorageException(OrionErrorCode.STORAGE_CLOSED_DELETE, "Database was already closed");
     }
     db.get().delete(key.getBytes());
   }

@@ -20,13 +20,12 @@ public class SodiumArgon2Sbox {
     final String asalt = storedPrivateKey.data().asalt().get();
     final int algorithm = lookupAlgorithm(argonOptions);
     try {
-      final byte[] pwhash =
-          SodiumLibrary.cryptoPwhash(
-              password.getBytes(),
-              decode(asalt),
-              argonOptions.opsLimit().get(),
-              new NativeLong(argonOptions.memLimit().get()),
-              algorithm);
+      final byte[] pwhash = SodiumLibrary.cryptoPwhash(
+          password.getBytes(),
+          decode(asalt),
+          argonOptions.opsLimit().get(),
+          new NativeLong(argonOptions.memLimit().get()),
+          algorithm);
       return SodiumLibrary.cryptoSecretBoxOpenEasy(
           decode(storedPrivateKey.data().sbox().get()),
           decode(storedPrivateKey.data().snonce().get()),
@@ -68,13 +67,12 @@ public class SodiumArgon2Sbox {
       byte[] snonce,
       ArgonOptions argonOptions) {
     try {
-      final byte[] pwhash =
-          SodiumLibrary.cryptoPwhash(
-              password.getBytes(),
-              asalt,
-              argonOptions.opsLimit().get(),
-              new NativeLong(argonOptions.memLimit().get()),
-              lookupAlgorithm(argonOptions));
+      final byte[] pwhash = SodiumLibrary.cryptoPwhash(
+          password.getBytes(),
+          asalt,
+          argonOptions.opsLimit().get(),
+          new NativeLong(argonOptions.memLimit().get()),
+          lookupAlgorithm(argonOptions));
       return SodiumLibrary.cryptoSecretBoxEasy(privateKey, snonce, pwhash);
 
     } catch (final SodiumLibraryException e) {

@@ -13,8 +13,7 @@ public class EncryptedPayloadStorage implements Storage<EncryptedPayload> {
   private final StorageEngine<EncryptedPayload> storageEngine;
   private final StorageKeyBuilder keyBuilder;
 
-  public EncryptedPayloadStorage(
-      StorageEngine<EncryptedPayload> storageEngine, StorageKeyBuilder keyBuilder) {
+  public EncryptedPayloadStorage(StorageEngine<EncryptedPayload> storageEngine, StorageKeyBuilder keyBuilder) {
     this.storageEngine = storageEngine;
     this.keyBuilder = keyBuilder;
   }

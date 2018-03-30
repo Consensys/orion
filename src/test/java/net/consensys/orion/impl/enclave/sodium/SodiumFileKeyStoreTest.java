@@ -23,8 +23,7 @@ import org.junit.Test;
 
 public class SodiumFileKeyStoreTest {
 
-  private InputStream configAsStream =
-      this.getClass().getClassLoader().getResourceAsStream("keyStoreTest.toml");
+  private InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("keyStoreTest.toml");
   private TomlConfigBuilder configBuilder = new TomlConfigBuilder();
   private final Serializer serializer = new Serializer();
   private Config config = configBuilder.build(configAsStream);
@@ -76,22 +75,15 @@ public class SodiumFileKeyStoreTest {
 
   @Test
   public void configLoadsMultipleKeys() {
-    InputStream configAsStream =
-        this.getClass().getClassLoader().getResourceAsStream("multipleKeyStoreTest.toml");
+    InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("multipleKeyStoreTest.toml");
 
     Config config = configBuilder.build(configAsStream);
     keyStore = new SodiumFileKeyStore(config, serializer);
     String[] encodedPublicKeys =
-        new String[] {
-          "BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=",
-          "8SjRHlUBe4hAmTk3KDeJ96RhN+s10xRrHDrxEi1O5W0="
-        };
+        new String[] {"BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=", "8SjRHlUBe4hAmTk3KDeJ96RhN+s10xRrHDrxEi1O5W0="};
 
     String[] encodedPrivateKeys =
-        new String[] {
-          "Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA=",
-          "wGEar7J9G0JAgdisp61ZChyrJWeW2QPyKvecjjeVHOY="
-        };
+        new String[] {"Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA=", "wGEar7J9G0JAgdisp61ZChyrJWeW2QPyKvecjjeVHOY="};
 
     for (int i = 0; i < encodedPrivateKeys.length; i++) {
       PrivateKey privateKey = new SodiumPrivateKey(Base64.decode(encodedPrivateKeys[i]));
@@ -103,16 +95,12 @@ public class SodiumFileKeyStoreTest {
 
   @Test
   public void alwaysSendTo() {
-    InputStream configAsStream =
-        this.getClass().getClassLoader().getResourceAsStream("alwaysSendToKeyStoreTest.toml");
+    InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("alwaysSendToKeyStoreTest.toml");
 
     Config config = configBuilder.build(configAsStream);
     keyStore = new SodiumFileKeyStore(config, serializer);
     String[] encodedPublicKeys =
-        new String[] {
-          "BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=",
-          "8SjRHlUBe4hAmTk3KDeJ96RhN+s10xRrHDrxEi1O5W0="
-        };
+        new String[] {"BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=", "8SjRHlUBe4hAmTk3KDeJ96RhN+s10xRrHDrxEi1O5W0="};
 
     PublicKey[] publicKeys = new PublicKey[encodedPublicKeys.length];
     for (int i = 0; i < encodedPublicKeys.length; i++) {

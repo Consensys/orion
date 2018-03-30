@@ -75,17 +75,11 @@ public class OrionRoutes {
 
     publicRouter.get(UPCHECK).produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
-    publicRouter
-        .post(PARTYINFO)
-        .produces(CBOR.httpHeaderValue)
-        .consumes(CBOR.httpHeaderValue)
-        .handler(new PartyInfoHandler(networkNodes, serializer));
+    publicRouter.post(PARTYINFO).produces(CBOR.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
+        new PartyInfoHandler(networkNodes, serializer));
 
-    publicRouter
-        .post(PUSH)
-        .produces(TEXT.httpHeaderValue)
-        .consumes(CBOR.httpHeaderValue)
-        .handler(new PushHandler(storage, serializer));
+    publicRouter.post(PUSH).produces(TEXT.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
+        new PushHandler(storage, serializer));
 
     //Setup Private APIs
     privateRouter
@@ -97,24 +91,16 @@ public class OrionRoutes {
 
     privateRouter.get(UPCHECK).produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
-    privateRouter
-        .post(SEND)
-        .produces(JSON.httpHeaderValue)
-        .consumes(JSON.httpHeaderValue)
-        .handler(new SendHandler(vertx, enclave, storage, networkNodes, serializer, JSON));
+    privateRouter.post(SEND).produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
+        new SendHandler(vertx, enclave, storage, networkNodes, serializer, JSON));
     privateRouter
         .post(SEND_RAW)
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
-        .handler(
-            new SendHandler(
-                vertx, enclave, storage, networkNodes, serializer, APPLICATION_OCTET_STREAM));
+        .handler(new SendHandler(vertx, enclave, storage, networkNodes, serializer, APPLICATION_OCTET_STREAM));
 
-    privateRouter
-        .post(RECEIVE)
-        .produces(JSON.httpHeaderValue)
-        .consumes(JSON.httpHeaderValue)
-        .handler(new ReceiveHandler(enclave, storage, serializer, JSON));
+    privateRouter.post(RECEIVE).produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
+        new ReceiveHandler(enclave, storage, serializer, JSON));
     privateRouter
         .post(RECEIVE_RAW)
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)

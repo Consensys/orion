@@ -9,8 +9,8 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * Used as a part of the network discovery process. Look up the binary list of constellation nodes
- * that a node has knowledge of.
+ * Used as a part of the network discovery process. Look up the binary list of constellation nodes that a node has
+ * knowledge of.
  */
 public class PartyInfoHandler implements Handler<RoutingContext> {
 
@@ -25,10 +25,7 @@ public class PartyInfoHandler implements Handler<RoutingContext> {
   @Override
   public void handle(RoutingContext routingContext) {
     ConcurrentNetworkNodes callerPeers =
-        serializer.deserialize(
-            HttpContentType.CBOR,
-            ConcurrentNetworkNodes.class,
-            routingContext.getBody().getBytes());
+        serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, routingContext.getBody().getBytes());
     Buffer toReturn = Buffer.buffer(serializer.serialize(HttpContentType.CBOR, networkNodes));
     routingContext.response().end(toReturn);
 

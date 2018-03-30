@@ -56,8 +56,7 @@ public class PrivateKeyData {
   }
 
   /**
-   * @return base64 encoded nonce to use with the secret box encryption, using the password
-   *     generated key.
+   * @return base64 encoded nonce to use with the secret box encryption, using the password generated key.
    */
   @JsonProperty("snonce")
   public Optional<String> snonce() {

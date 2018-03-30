@@ -51,8 +51,7 @@ public class ReceiveHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     ReceiveRequest receiveRequest = buildReceiveRequest(storage, toEncrypt);
-    Request request =
-        buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
+    Request request = buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -82,17 +81,15 @@ public class ReceiveHandlerTest extends HandlerTest {
     // store it
     String key = storage.put(originalPayload);
     // Receive operation, sending a ReceivePayload request
-    RequestBody body =
-        RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
+    RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
-    Request request =
-        new Request.Builder()
-            .post(body)
-            .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
-            .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
-            .addHeader("c11n-key", key)
-            .url(privateBaseUrl + "receiveraw")
-            .build();
+    Request request = new Request.Builder()
+        .post(body)
+        .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .addHeader("c11n-key", key)
+        .url(privateBaseUrl + "receiveraw")
+        .build();
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -112,8 +109,7 @@ public class ReceiveHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     ReceiveRequest receiveRequest = buildReceiveRequest(storage, toEncrypt);
-    Request request =
-        buildPublicAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
+    Request request = buildPublicAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -137,17 +133,15 @@ public class ReceiveHandlerTest extends HandlerTest {
     // store it
     String key = storage.put(originalPayload);
     // Receive operation, sending a ReceivePayload request
-    RequestBody body =
-        RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
+    RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
-    Request request =
-        new Request.Builder()
-            .post(body)
-            .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
-            .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
-            .addHeader("c11n-key", key)
-            .url(publicBaseUrl + "receiveraw")
-            .build();
+    Request request = new Request.Builder()
+        .post(body)
+        .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .addHeader("c11n-key", key)
+        .url(publicBaseUrl + "receiveraw")
+        .build();
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -159,8 +153,7 @@ public class ReceiveHandlerTest extends HandlerTest {
     // Receive operation, sending a ReceivePayload request
     ReceiveRequest receiveRequest = new ReceiveRequest("notForMe", null);
 
-    Request request =
-        buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
+    Request request = buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -176,21 +169,18 @@ public class ReceiveHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
-    EncryptedPayload originalPayload =
-        enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {senderKey});
+    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {senderKey});
 
     String key = storage.put(originalPayload);
-    RequestBody body =
-        RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
+    RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
-    Request request =
-        new Request.Builder()
-            .post(body)
-            .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
-            .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
-            .addHeader("c11n-key", key)
-            .url(privateBaseUrl + "receiveraw")
-            .build();
+    Request request = new Request.Builder()
+        .post(body)
+        .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .addHeader("c11n-key", key)
+        .url(privateBaseUrl + "receiveraw")
+        .build();
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(404, resp.code());
@@ -199,21 +189,13 @@ public class ReceiveHandlerTest extends HandlerTest {
   @Test
   public void roundTripSerialization() {
     ReceiveResponse receiveResponse = new ReceiveResponse("some payload");
-    assertEquals(
-        receiveResponse,
-        serializer.roundTrip(HttpContentType.CBOR, ReceiveResponse.class, receiveResponse));
-    assertEquals(
-        receiveResponse,
-        serializer.roundTrip(HttpContentType.JSON, ReceiveResponse.class, receiveResponse));
+    assertEquals(receiveResponse, serializer.roundTrip(HttpContentType.CBOR, ReceiveResponse.class, receiveResponse));
+    assertEquals(receiveResponse, serializer.roundTrip(HttpContentType.JSON, ReceiveResponse.class, receiveResponse));
 
     SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     ReceiveRequest receiveRequest = new ReceiveRequest("some key", senderKey.toString());
-    assertEquals(
-        receiveRequest,
-        serializer.roundTrip(HttpContentType.CBOR, ReceiveRequest.class, receiveRequest));
-    assertEquals(
-        receiveRequest,
-        serializer.roundTrip(HttpContentType.JSON, ReceiveRequest.class, receiveRequest));
+    assertEquals(receiveRequest, serializer.roundTrip(HttpContentType.CBOR, ReceiveRequest.class, receiveRequest));
+    assertEquals(receiveRequest, serializer.roundTrip(HttpContentType.JSON, ReceiveRequest.class, receiveRequest));
   }
 
   @Test
@@ -224,8 +206,7 @@ public class ReceiveHandlerTest extends HandlerTest {
 
     // build receive request with payload
     ReceiveRequest receiveRequest = buildReceiveRequest(routes.getStorage(), toEncrypt);
-    Request request =
-        buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.CBOR, receiveRequest);
+    Request request = buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.CBOR, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -235,8 +216,7 @@ public class ReceiveHandlerTest extends HandlerTest {
 
   @Test
   public void receiveWithInvalidBody() throws Exception {
-    Request request =
-        buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, "{\"foo\": \"bar\"}");
+    Request request = buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, "{\"foo\": \"bar\"}");
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -251,8 +231,7 @@ public class ReceiveHandlerTest extends HandlerTest {
     // encrypt a payload
     SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     SodiumPublicKey recipientKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
-    EncryptedPayload originalPayload =
-        enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {recipientKey});
+    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {recipientKey});
 
     // store it
     String key = storage.put(originalPayload);

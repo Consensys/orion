@@ -20,8 +20,7 @@ public class TomlConfigBuilderTest {
     File expectedFile;
     File expectedFilesArray[];
 
-    InputStream configAsStream =
-        this.getClass().getClassLoader().getResourceAsStream("fullConfigTest.toml");
+    InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("fullConfigTest.toml");
     TomlConfigBuilder configBuilder = new TomlConfigBuilder();
 
     Config testConf = configBuilder.build(configAsStream);
@@ -102,8 +101,7 @@ public class TomlConfigBuilderTest {
   @Test
   public void fullFileReadUsingDefaults() {
 
-    InputStream configAsStream =
-        this.getClass().getClassLoader().getResourceAsStream("defaultConfigTest.toml");
+    InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("defaultConfigTest.toml");
     TomlConfigBuilder configBuilder = new TomlConfigBuilder();
 
     Config testConf = configBuilder.build(configAsStream);
@@ -154,28 +152,26 @@ public class TomlConfigBuilderTest {
   @Test
   public void invalidConfigsThrowException() {
 
-    InputStream configAsStream =
-        this.getClass().getClassLoader().getResourceAsStream("invalidConfigTest.toml");
+    InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("invalidConfigTest.toml");
     TomlConfigBuilder configBuilder = new TomlConfigBuilder();
 
     try {
       Config testConf = configBuilder.build(configAsStream);
       fail("Expected Config Exception to be thrown");
     } catch (ConfigException e) {
-      String message =
-          "Invalid Configuration Options\n"
-              + "Error: key 'url' in config is malformed.\n\tunknown protocol: htt\n"
-              + "Error: key 'privacyurl' in config is malformed.\n\tunknown protocol: htt\n"
-              + "Error: value for key 'privacyport' in config must be different to 'port'\n"
-              + "Error: key 'othernodes' in config containes malformed URLS.\n"
-              + "\tURL [htt://127.0.0.1:9000/] unknown protocol: htt\n"
-              + "\tURL [10.1.1.1] no protocol: 10.1.1.1\n"
-              + "Error: the number of keys specified for keys 'publickeys' and 'privatekeys' must be the same\n"
-              + "Error: value for key 'storage' type must start with: ['leveldb', 'mapdb'] or be 'memory'\n"
-              + "Error: value for key 'tls' status must be 'strict' or 'off'\n"
-              + "Error: value for key 'tlsservertrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n"
-              + "Error: value for key 'tlsclienttrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n"
-              + "Error: value for key 'verbosity' must be within range 0 to 3\n";
+      String message = "Invalid Configuration Options\n"
+          + "Error: key 'url' in config is malformed.\n\tunknown protocol: htt\n"
+          + "Error: key 'privacyurl' in config is malformed.\n\tunknown protocol: htt\n"
+          + "Error: value for key 'privacyport' in config must be different to 'port'\n"
+          + "Error: key 'othernodes' in config containes malformed URLS.\n"
+          + "\tURL [htt://127.0.0.1:9000/] unknown protocol: htt\n"
+          + "\tURL [10.1.1.1] no protocol: 10.1.1.1\n"
+          + "Error: the number of keys specified for keys 'publickeys' and 'privatekeys' must be the same\n"
+          + "Error: value for key 'storage' type must start with: ['leveldb', 'mapdb'] or be 'memory'\n"
+          + "Error: value for key 'tls' status must be 'strict' or 'off'\n"
+          + "Error: value for key 'tlsservertrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n"
+          + "Error: value for key 'tlsclienttrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n"
+          + "Error: value for key 'verbosity' must be within range 0 to 3\n";
       assertEquals(message, e.getMessage());
     }
   }
@@ -191,13 +187,12 @@ public class TomlConfigBuilderTest {
       Config testConf = configBuilder.build(configAsStream);
       fail("Expected Config Exception to be thrown");
     } catch (ConfigException e) {
-      String message =
-          "Invalid Configuration Options\n"
-              + "Error: value for key 'url' in config must be specified\n"
-              + "Error: value for key 'privacyurl' in config must be specified\n"
-              + "Error: value for key 'port' in config must be specified\n"
-              + "Error: value for key 'privacyport' in config must be specified\n"
-              + "Error: value for key 'privacyport' in config must be different to 'port'\n";
+      String message = "Invalid Configuration Options\n"
+          + "Error: value for key 'url' in config must be specified\n"
+          + "Error: value for key 'privacyurl' in config must be specified\n"
+          + "Error: value for key 'port' in config must be specified\n"
+          + "Error: value for key 'privacyport' in config must be specified\n"
+          + "Error: value for key 'privacyport' in config must be different to 'port'\n";
       assertEquals(message, e.getMessage());
     }
   }

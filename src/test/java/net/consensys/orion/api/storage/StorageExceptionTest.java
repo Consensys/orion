@@ -22,8 +22,7 @@ public class StorageExceptionTest {
     assertEquals(OrionErrorCode.STORAGE_OPEN, exception.code());
 
     final Throwable cause = new Throwable();
-    final StorageException anotherException =
-        new StorageException(OrionErrorCode.STORAGE_CLOSE, cause);
+    final StorageException anotherException = new StorageException(OrionErrorCode.STORAGE_CLOSE, cause);
     assertEquals(cause, anotherException.getCause());
     assertEquals(OrionErrorCode.STORAGE_CLOSE, anotherException.code());
   }

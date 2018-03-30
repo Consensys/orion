@@ -38,14 +38,13 @@ public class NetworkDiscoveryTest {
   public void tearDown() throws Exception {
     CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
 
-    vertx.close(
-        result -> {
-          if (result.succeeded()) {
-            resultFuture.complete(true);
-          } else {
-            resultFuture.completeExceptionally(result.cause());
-          }
-        });
+    vertx.close(result -> {
+      if (result.succeeded()) {
+        resultFuture.complete(true);
+      } else {
+        resultFuture.completeExceptionally(result.cause());
+      }
+    });
 
     resultFuture.get();
   }
@@ -64,10 +63,9 @@ public class NetworkDiscoveryTest {
   @Test
   public void networkDiscoveryWithUnresponsivePeer() throws Exception {
     // add peers
-    FakePeer fakePeer =
-        new FakePeer(
-            new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE),
-            new SodiumPublicKey("pk1".getBytes()));
+    FakePeer fakePeer = new FakePeer(
+        new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE),
+        new SodiumPublicKey("pk1".getBytes()));
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // start network discovery
@@ -97,19 +95,15 @@ public class NetworkDiscoveryTest {
     unknownPeerBody.write(unknownPeerNetworkNodes);
     // create a peer that's not in our current network nodes
     FakePeer unknownPeer =
-        new FakePeer(
-            new MockResponse().setBody(unknownPeerBody),
-            new SodiumPublicKey("unknown.pk1".getBytes()));
+        new FakePeer(new MockResponse().setBody(unknownPeerBody), new SodiumPublicKey("unknown.pk1".getBytes()));
 
     // create a peer that we know, and that knows the lonely unknown peer.
-    ConcurrentNetworkNodes knownPeerNetworkNodes =
-        new ConcurrentNetworkNodes(new URL("http://localhost/"));
+    ConcurrentNetworkNodes knownPeerNetworkNodes = new ConcurrentNetworkNodes(new URL("http://localhost/"));
     knownPeerNetworkNodes.addNode(unknownPeer.publicKey, unknownPeer.getURL());
     Buffer knownPeerBody = new Buffer();
     knownPeerBody.write(serializer.serialize(CBOR, knownPeerNetworkNodes));
     FakePeer knownPeer =
-        new FakePeer(
-            new MockResponse().setBody(knownPeerBody), new SodiumPublicKey("known.pk1".getBytes()));
+        new FakePeer(new MockResponse().setBody(knownPeerBody), new SodiumPublicKey("known.pk1".getBytes()));
 
     // we know this peer, add it to our network nodes
     networkNodes.addNode(knownPeer.publicKey, knownPeer.getURL());
@@ -123,12 +117,10 @@ public class NetworkDiscoveryTest {
     assertEquals(1, networkDiscovery.discoverers().size());
 
     // ensure the discoverer match our peer URL
-    NetworkDiscovery.Discoverer knownPeerDiscoverer =
-        networkDiscovery.discoverers().get(knownPeer.getURL());
+    NetworkDiscovery.Discoverer knownPeerDiscoverer = networkDiscovery.discoverers().get(knownPeer.getURL());
     assertNotNull(knownPeerDiscoverer);
 
-    Thread.sleep(
-        3 * (knownPeerDiscoverer.currentRefreshDelay + NetworkDiscovery.HTTP_CLIENT_TIMEOUT_MS));
+    Thread.sleep(3 * (knownPeerDiscoverer.currentRefreshDelay + NetworkDiscovery.HTTP_CLIENT_TIMEOUT_MS));
 
     // ensure knownPeer responded and that his party info was called at least twice
     assertTrue(knownPeerDiscoverer.lastUpdate.isAfter(discoveryStart));
@@ -139,8 +131,7 @@ public class NetworkDiscoveryTest {
     assertEquals(unknownPeer.getURL(), networkNodes.nodePKs().get(unknownPeer.publicKey));
 
     // ensure unknown peer discoverer is set and being called
-    NetworkDiscovery.Discoverer unknownPeerDiscoverer =
-        networkDiscovery.discoverers().get(unknownPeer.getURL());
+    NetworkDiscovery.Discoverer unknownPeerDiscoverer = networkDiscovery.discoverers().get(unknownPeer.getURL());
     assertNotNull(unknownPeerDiscoverer);
 
     assertTrue(unknownPeerDiscoverer.lastUpdate.isAfter(discoveryStart));
@@ -150,15 +141,13 @@ public class NetworkDiscoveryTest {
   private Future<Boolean> deployVerticle(Verticle verticle) {
     CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
 
-    vertx.deployVerticle(
-        verticle,
-        result -> {
-          if (result.succeeded()) {
-            resultFuture.complete(true);
-          } else {
-            resultFuture.completeExceptionally(result.cause());
-          }
-        });
+    vertx.deployVerticle(verticle, result -> {
+      if (result.succeeded()) {
+        resultFuture.complete(true);
+      } else {
+        resultFuture.completeExceptionally(result.cause());
+      }
+    });
 
     return resultFuture;
   }

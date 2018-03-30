@@ -40,8 +40,7 @@ public class EthNodeStub {
     }
 
     // setup immutable upCheck request
-    upRequest =
-        new Request.Builder().get().url(orionPrivateUrl + OrionRoutes.UPCHECK.substring(1)).build();
+    upRequest = new Request.Builder().get().url(orionPrivateUrl + OrionRoutes.UPCHECK.substring(1)).build();
   }
 
   public boolean upCheck() {
@@ -98,14 +97,10 @@ public class EthNodeStub {
     // create the okHttp Request object
     final ReceiveRequest receiveRequest = new ReceiveRequest(digest, publicKey);
     final RequestBody receiveBody =
-        RequestBody.create(
-            MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, receiveRequest));
+        RequestBody.create(MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, receiveRequest));
 
     final Request httpReceiveRequest =
-        new Request.Builder()
-            .post(receiveBody)
-            .url(baseUrl + OrionRoutes.RECEIVE.substring(1))
-            .build();
+        new Request.Builder().post(receiveBody).url(baseUrl + OrionRoutes.RECEIVE.substring(1)).build();
 
     // executes the request
     try (Response httpReceiveResponse = httpClient.newCall(httpReceiveRequest).execute()) {
@@ -131,15 +126,11 @@ public class EthNodeStub {
   }
 
   private Request httpSendRequest(RequestBody sendBody) {
-    return new Request.Builder()
-        .post(sendBody)
-        .url(baseUrl + OrionRoutes.SEND.substring(1))
-        .build();
+    return new Request.Builder().post(sendBody).url(baseUrl + OrionRoutes.SEND.substring(1)).build();
   }
 
   private RequestBody sendBody(SendRequest sendRequest) {
-    return RequestBody.create(
-        MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, sendRequest));
+    return RequestBody.create(MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, sendRequest));
   }
 
   private SendRequest sendRequest(byte[] payload, String from, String[] to) {

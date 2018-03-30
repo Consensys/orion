@@ -13,18 +13,17 @@ import org.junit.Test;
 
 public class OrionArgumentsTest {
 
-  private final String usageOut =
-      String.format(
-          "Usage: "
-              + Orion.name
-              + " [options] [config file]%n"
-              + "where options include:%n"
-              + "\t-g%n"
-              + "\t--generatekeys <names>%n\t\tgenerate key pairs for each of the names supplied.%n\t\twhere <names> are a comma-seperated list%n"
-              + "\t-h%n"
-              + "\t--help\tprint this help message%n"
-              + "\t-v%n"
-              + "\t--version\tprint version information%n");
+  private final String usageOut = String.format(
+      "Usage: "
+          + Orion.name
+          + " [options] [config file]%n"
+          + "where options include:%n"
+          + "\t-g%n"
+          + "\t--generatekeys <names>%n\t\tgenerate key pairs for each of the names supplied.%n\t\twhere <names> are a comma-seperated list%n"
+          + "\t-h%n"
+          + "\t--help\tprint this help message%n"
+          + "\t-v%n"
+          + "\t--version\tprint version information%n");
 
   private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
   private PrintStream originalSystemOut;

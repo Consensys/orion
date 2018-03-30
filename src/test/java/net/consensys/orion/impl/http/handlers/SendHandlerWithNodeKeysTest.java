@@ -63,8 +63,7 @@ public class SendHandlerWithNodeKeysTest extends SendHandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest =
-        Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+    String digest = Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
 
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
@@ -96,8 +95,7 @@ public class SendHandlerWithNodeKeysTest extends SendHandlerTest {
 
     // ensure cipher text is same.
     SodiumEncryptedPayload receivedPayload =
-        serializer.deserialize(
-            CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
+        serializer.deserialize(CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
     assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
   }
 }
