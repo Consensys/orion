@@ -46,7 +46,7 @@ jobs:
 
       - run:
          name: Run gradle build
-         command: ./gradlew build bintrayUpload
+         command: ./gradlew build
 
       - run:
           name: Save test results

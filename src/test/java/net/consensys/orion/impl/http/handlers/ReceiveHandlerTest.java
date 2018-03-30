@@ -4,7 +4,6 @@ import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_O
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
@@ -43,15 +42,13 @@ public class ReceiveHandlerTest extends HandlerTest {
 
   @Test
   public void payloadIsRetrieved() throws Exception {
-    // ref to storage
-    final Storage storage = routes.getStorage();
 
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
     ReceiveRequest receiveRequest = buildReceiveRequest(storage, toEncrypt);
-    Request request = buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
+    Request request = buildPrivateAPIRequest("/receive", HttpContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -67,8 +64,6 @@ public class ReceiveHandlerTest extends HandlerTest {
 
   @Test
   public void rawPayloadIsRetrieved() throws Exception {
-    // ref to storage
-    final Storage storage = routes.getStorage();
 
     // generate random byte content
     byte[] toEncrypt = new byte[342];
@@ -101,15 +96,13 @@ public class ReceiveHandlerTest extends HandlerTest {
 
   @Test
   public void receiveApiOnlyWorksOnPrivatePort() throws Exception {
-    // ref to storage
-    final Storage storage = routes.getStorage();
 
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
     ReceiveRequest receiveRequest = buildReceiveRequest(storage, toEncrypt);
-    Request request = buildPublicAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
+    Request request = buildPublicAPIRequest("/receive", HttpContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -119,8 +112,6 @@ public class ReceiveHandlerTest extends HandlerTest {
 
   @Test
   public void receiveRawApiOnlyWorksOnPrivatePort() throws Exception {
-    // ref to storage
-    final Storage storage = routes.getStorage();
 
     // generate random byte content
     byte[] toEncrypt = new byte[342];
@@ -153,7 +144,7 @@ public class ReceiveHandlerTest extends HandlerTest {
     // Receive operation, sending a ReceivePayload request
     ReceiveRequest receiveRequest = new ReceiveRequest("notForMe", null);
 
-    Request request = buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, receiveRequest);
+    Request request = buildPrivateAPIRequest("/receive", HttpContentType.JSON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -163,7 +154,6 @@ public class ReceiveHandlerTest extends HandlerTest {
 
   @Test
   public void responseWhenDecryptFails() throws Exception {
-    final Storage storage = routes.getStorage();
 
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
@@ -204,9 +194,9 @@ public class ReceiveHandlerTest extends HandlerTest {
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    // build receive request with payload
-    ReceiveRequest receiveRequest = buildReceiveRequest(routes.getStorage(), toEncrypt);
-    Request request = buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.CBOR, receiveRequest);
+    // configureRoutes receive request with payload
+    ReceiveRequest receiveRequest = buildReceiveRequest(storage, toEncrypt);
+    Request request = buildPrivateAPIRequest("/receive", HttpContentType.CBOR, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -216,7 +206,7 @@ public class ReceiveHandlerTest extends HandlerTest {
 
   @Test
   public void receiveWithInvalidBody() throws Exception {
-    Request request = buildPrivateAPIRequest(OrionRoutes.RECEIVE, HttpContentType.JSON, "{\"foo\": \"bar\"}");
+    Request request = buildPrivateAPIRequest("/receive", HttpContentType.JSON, "{\"foo\": \"bar\"}");
 
     // execute request
     Response resp = httpClient.newCall(request).execute();

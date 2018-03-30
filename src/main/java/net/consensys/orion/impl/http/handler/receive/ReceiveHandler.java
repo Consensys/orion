@@ -72,7 +72,7 @@ public class ReceiveHandler implements Handler<RoutingContext> {
       return;
     }
 
-    // build a ReceiveResponse
+    // configureRoutes a ReceiveResponse
     Buffer toReturn;
     if (contentType == JSON) {
       toReturn = Buffer.buffer(serializer.serialize(JSON, new ReceiveResponse(Base64.encode(decryptedPayload))));

@@ -2,7 +2,6 @@ package net.consensys.orion.acceptance;
 
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 
-import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.impl.http.handler.receive.ReceiveRequest;
 import net.consensys.orion.impl.http.handler.receive.ReceiveResponse;
 import net.consensys.orion.impl.http.handler.send.SendRequest;
@@ -40,7 +39,7 @@ public class EthNodeStub {
     }
 
     // setup immutable upCheck request
-    upRequest = new Request.Builder().get().url(orionPrivateUrl + OrionRoutes.UPCHECK.substring(1)).build();
+    upRequest = new Request.Builder().get().url(orionPrivateUrl + "upcheck").build();
   }
 
   public boolean upCheck() {
@@ -99,8 +98,7 @@ public class EthNodeStub {
     final RequestBody receiveBody =
         RequestBody.create(MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, receiveRequest));
 
-    final Request httpReceiveRequest =
-        new Request.Builder().post(receiveBody).url(baseUrl + OrionRoutes.RECEIVE.substring(1)).build();
+    final Request httpReceiveRequest = new Request.Builder().post(receiveBody).url(baseUrl + "receive").build();
 
     // executes the request
     try (Response httpReceiveResponse = httpClient.newCall(httpReceiveRequest).execute()) {
@@ -126,7 +124,7 @@ public class EthNodeStub {
   }
 
   private Request httpSendRequest(RequestBody sendBody) {
-    return new Request.Builder().post(sendBody).url(baseUrl + OrionRoutes.SEND.substring(1)).build();
+    return new Request.Builder().post(sendBody).url(baseUrl + "send").build();
   }
 
   private RequestBody sendBody(SendRequest sendRequest) {

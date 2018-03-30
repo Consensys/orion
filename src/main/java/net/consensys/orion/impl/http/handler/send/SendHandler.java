@@ -2,7 +2,6 @@ package net.consensys.orion.impl.http.handler.send;
 
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 
-import net.consensys.orion.api.cmd.OrionRoutes;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.exception.OrionErrorCode;
@@ -113,12 +112,12 @@ public class SendHandler implements Handler<RoutingContext> {
 
       CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
 
-      // serialize payload, stripping non-relevant combinedKeys, and build payload
+      // serialize payload, stripping non-relevant combinedKeys, and configureRoutes payload
       final byte[] payload = serializer.serialize(HttpContentType.CBOR, encryptedPayload.stripFor(pKey));
 
       // execute request
       httpClient
-          .post(recipientURL.getPort(), recipientURL.getHost(), OrionRoutes.PUSH)
+          .post(recipientURL.getPort(), recipientURL.getHost(), "/push")
           .putHeader("Content-Type", "application/cbor")
           .handler(response -> response.bodyHandler(responseBody -> {
             if (response.statusCode() != 200 || !digest.equals(responseBody.toString())) {
