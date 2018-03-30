@@ -15,6 +15,7 @@ import net.consensys.orion.impl.utils.Serializer;
 import java.net.URL;
 import java.security.PublicKey;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -149,7 +150,7 @@ public class SendHandler implements Handler<RoutingContext> {
 
       final Buffer responseData;
       if (contentType == JSON) {
-        responseData = Buffer.buffer(serializer.serialize(JSON, new SendResponse(digest)));
+        responseData = Buffer.buffer(serializer.serialize(JSON, Collections.singletonMap("key", digest)));
       } else {
         responseData = Buffer.buffer(digest);
       }
