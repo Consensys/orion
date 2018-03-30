@@ -10,6 +10,7 @@ import java.util.Optional;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 
 public class SendRequest implements Serializable {
   private final String from; // b64 encoded
@@ -43,10 +44,13 @@ public class SendRequest implements Serializable {
   }
 
   private static byte[] decodePayload(String payload) {
-    if (payload != null) {
-      return Base64.decode(payload);
-    } else {
+    if (payload == null) {
       return new byte[0];
+    }
+    try {
+      return Base64.decode(payload);
+    } catch (IllegalArgumentException e) {
+      return null;
     }
   }
 
@@ -58,13 +62,12 @@ public class SendRequest implements Serializable {
 
   @JsonIgnore
   public boolean isValid() {
-    if (rawPayload == null || to == null) {
-      return false;
-    }
-    if (Arrays.stream(to).anyMatch(String::isEmpty)) {
-      return false;
-    }
-    return rawPayload.length >= 0 && (from == null || from.length() > 0) && to.length > 0;
+    return to != null
+        && to.length > 0
+        && Arrays.stream(to).noneMatch(Strings::isNullOrEmpty)
+        && rawPayload != null
+        && rawPayload.length > 0
+        && (from == null || from.length() > 0);
   }
 
   @Override
@@ -81,10 +84,7 @@ public class SendRequest implements Serializable {
 
   @Override
   public int hashCode() {
-    int result = Objects.hash(from);
-    result = 31 * result + Arrays.hashCode(rawPayload);
-    result = 31 * result + Arrays.hashCode(to);
-    return result;
+    return Objects.hash(from, Arrays.hashCode(to), rawPayload);
   }
 
   @Override
