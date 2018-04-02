@@ -9,6 +9,7 @@ plugins {
 apply plugin: 'java-library'
 apply plugin: 'application'
 apply plugin: "jacoco"
+apply plugin: "scala"
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'maven-publish'
 
@@ -28,7 +29,9 @@ applicationDefaultJvmArgs = [
 def buildAliases = ['dev': [
     'spotlessApply',
     'checkLicenses',
-    'build'
+    'assemble',
+    'test',
+    'acceptanceTest'
   ]]
 
 def expandedTaskList = []
@@ -39,48 +42,136 @@ gradle.startParameter.taskNames = expandedTaskList.flatten()
 
 repositories { jcenter() }
 
-// added source sets (acceptance and integration tests)
+// additional source sets (acceptance and performance tests)
 sourceSets {
   acceptance {
     java.srcDir file('src/test-acceptance/java')
     resources.srcDir file('src/test-acceptance/resources')
-    compileClasspath += main.output + test.output + configurations.testRuntime + main.compileClasspath + test.compileClasspath
-    runtimeClasspath += output + compileClasspath
+    compileClasspath += main.runtimeClasspath + configurations.testRuntime
+    runtimeClasspath += main.runtimeClasspath + configurations.testRuntime
+  }
+  performance {
+    scala.srcDir file('src/performance-test/scala')
+    resources.srcDir file('src/performance-test/resources')
+    compileClasspath += main.runtimeClasspath
+    runtimeClasspath += main.runtimeClasspath
   }
 }
 
+task acceptanceTest(type: Test) {
+  description = 'Runs the acceptance tests'
+  group = 'verification'
+  setTestClassesDirs(sourceSets.acceptance.output.getClassesDirs())
+  classpath = sourceSets.acceptance.runtimeClasspath
+  reports.junitXml.setDestination(file("$buildDir/acceptance-results"))
+  reports.html.setDestination(file("$buildDir/reports/acceptance"))
+}
+
+static def gatlingURL() {
+  def appUrl = System.getProperty('gatlingURL')
+  appUrl ?: 'http://localhost:8295'
+}
+
+task startOrion {
+  dependsOn installDist
+  doLast {
+    copy {
+      from "$projectDir/src/performance-test/resources"
+      into "$buildDir/install/orion"
+      include '*'
+    }
+    ext.process1 = new ProcessBuilder()
+      .directory(new File("$buildDir/install/orion"))
+      .command('bin/orion', 'config-8081.txt')
+      .start()
+    ext.process2 = new ProcessBuilder()
+      .directory(new File("$buildDir/install/orion"))
+      .command('bin/orion', 'config-8083.txt')
+      .start()
+    ext.process3 = new ProcessBuilder()
+      .directory(new File("$buildDir/install/orion"))
+      .command('bin/orion', 'config-8085.txt')
+      .start()
+  }
+}
+
+task stopOrion {
+  doLast {
+    if (tasks.startOrion.process1 != null) {
+      tasks.startOrion.process1.destroy()
+    }
+    if (tasks.startOrion.process2 != null) {
+      tasks.startOrion.process2.destroy()
+    }
+    if (tasks.startOrion.process3 != null) {
+      tasks.startOrion.process3.destroy()
+    }
+  }
+}
+
+task performanceTest(type: JavaExec) {
+  description = 'Runs the performance tests'
+  group = 'verification'
+
+  dependsOn startOrion
+  finalizedBy stopOrion
+
+  main = 'io.gatling.app.Gatling'
+  classpath = sourceSets.performance.runtimeClasspath
+  args = [
+    '--simulation',
+    'net.consensys.orion.load.LoadSimulation',
+    '--results-folder',
+    file('build/reports/performance').absolutePath,
+    '--mute'
+  ]
+  environment = ['appUrl': gatlingURL()]
+  systemProperties = ['gatling.core.directory.binaries': sourceSets.test.output.classesDirs]
+}
+
+
 dependencies {
-
-  compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.58'
-  compile 'com.moandjiezana.toml:toml4j:0.7.2'
-
-  implementation 'org.mapdb:mapdb:3.0.5'
-  implementation group: 'com.muquit.libsodiumjna', name: 'libsodium-jna', version: '1.0.4'
-  testImplementation 'junit:junit:4.12'
-
   // vertx
-  implementation 'io.vertx:vertx-core:3.5.0'
-  implementation 'io.vertx:vertx-web:3.5.0'
+  compile 'io.vertx:vertx-core:3.5.0'
+  compile 'io.vertx:vertx-web:3.5.0'
+
+  // crypto
+  compile 'org.bouncycastle:bcprov-jdk15on:1.58'
+  compile 'com.muquit.libsodiumjna:libsodium-jna:1.0.4'
 
   // http client
-  implementation 'com.squareup.okhttp3:okhttp:3.9.1'
+  compile 'com.squareup.okhttp3:okhttp:3.9.1'
 
-  //Storage
-  implementation 'org.fusesource.leveldbjni:leveldbjni-all:1.8'
-
-  // mock http server (unit test purposes)
-  testImplementation 'com.squareup.okhttp3:mockwebserver:3.9.1'
+  // storage
+  compile 'org.fusesource.leveldbjni:leveldbjni-all:1.8'
+  compile 'org.mapdb:mapdb:3.0.5'
 
   // serialization
-  implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
-  implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.0'
-  implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.0'
+  compile 'com.moandjiezana.toml:toml4j:0.7.2'
+  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
+  compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.0'
+  compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.0'
 
-  // logger
-  compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.10.0'
-  compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
-  compile group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.10.0'
+  // logging
+  compile 'org.apache.logging.log4j:log4j-api:2.10.0'
+  compile 'org.apache.logging.log4j:log4j-core:2.10.0'
+  compile 'org.apache.logging.log4j:log4j-1.2-api:2.10.0'
+
+  // testing
+  testCompile 'junit:junit:4.12'
+
+  // mock http server (unit test purposes)
+  testCompile 'com.squareup.okhttp3:mockwebserver:3.9.1'
+
+  // performance testing
+  performanceCompile 'org.scala-lang:scala-library:2.12.4'
+  performanceCompile 'org.scalatest:scalatest_2.12:3.0.4'
+  performanceCompile 'io.gatling:gatling-core:2.3.1'
+  performanceCompile 'io.gatling:gatling-http:2.3.1'
+  performanceCompile 'io.gatling:gatling-app:2.3.1'
+  performanceCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.3.1'
 }
+
 
 jar {
   doFirst { versionTxt() }
@@ -92,6 +183,7 @@ jar {
   }
 }
 
+
 run {
   description = 'Run Orion. Use -Pargs="" to pass arguments'
   standardInput = System.in
@@ -100,18 +192,6 @@ run {
     args project.getProperty('args').split()
   }
 }
-
-task acceptanceTest(type: Test) {
-  description = 'Runs the acceptance tests'
-  group = 'verification'
-  setTestClassesDirs(sourceSets.acceptance.output.getClassesDirs())
-  classpath = sourceSets.acceptance.runtimeClasspath
-  reports.junitXml.setDestination(file("$buildDir/acceptance-results"))
-  reports.html.setDestination(file("$buildDir/reports/acceptance"))
-  dependsOn(test)
-}
-
-check { dependsOn(acceptanceTest) }
 
 spotless {
   java {
