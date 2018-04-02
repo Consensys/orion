@@ -53,8 +53,8 @@ public class SingleNodeSendReceiveTest extends SendReceiveBase {
         privacyPort,
         "node1",
         baseUrl,
-        "src/test-acceptance/resources/key1.pub\", \"src/test-acceptance/resources/key2.pub",
-        "src/test-acceptance/resources/key1.key\", \"src/test-acceptance/resources/key2.key");
+        "src/acceptance-test/resources/key1.pub\", \"src/acceptance-test/resources/key2.pub",
+        "src/acceptance-test/resources/key1.key\", \"src/acceptance-test/resources/key2.key");
   }
 
   @Before

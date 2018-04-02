@@ -59,8 +59,8 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
         firstNodePrivacyPort,
         "node1",
         secondNodeBaseUrl,
-        "src/test-acceptance/resources/key1.pub",
-        "src/test-acceptance/resources/key1.key");
+        "src/acceptance-test/resources/key1.pub",
+        "src/acceptance-test/resources/key1.key");
     secondNodeConfig = nodeConfig(
         secondNodeBaseUrl,
         secondNodePort,
@@ -68,8 +68,8 @@ public class DualNodesSendReceiveTest extends SendReceiveBase {
         secondNodePrivacyPort,
         "node2",
         firstNodeBaseUrl,
-        "src/test-acceptance/resources/key2.pub",
-        "src/test-acceptance/resources/key2.key");
+        "src/acceptance-test/resources/key2.pub",
+        "src/acceptance-test/resources/key2.key");
   }
 
   @Before
