@@ -12,7 +12,6 @@ import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
-import net.consensys.orion.impl.http.handler.send.SendRequest;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 
@@ -45,7 +44,7 @@ public class SendHandlerTest extends HandlerTest {
 
   @Test
   public void invalidRequest() throws Exception {
-    SendRequest sendRequest = new SendRequest((byte[]) null, "me", null);
+    Map<String, Object> sendRequest = buildRequest(new String[] {"me"}, new byte[] {'a'}, null);
 
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
@@ -76,8 +75,8 @@ public class SendHandlerTest extends HandlerTest {
     // add peer push URL to networkNodes
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    // configureRoutes our sendRequest
-    SendRequest sendRequest = buildFakeRequest(Collections.singletonList(fakePeer));
+
+    Map<String, Object> sendRequest = buildRequest(Collections.singletonList(fakePeer), "foo".getBytes());
 
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
@@ -103,7 +102,7 @@ public class SendHandlerTest extends HandlerTest {
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // configureRoutes our sendRequest
-    SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer));
+    Map<String, Object> sendRequest = buildRequest(Arrays.asList(fakePeer), "foo".getBytes());
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
@@ -131,7 +130,7 @@ public class SendHandlerTest extends HandlerTest {
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // configureRoutes our sendRequest
-    SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer), toEncrypt);
+    Map<String, Object> sendRequest = buildRequest(Arrays.asList(fakePeer), toEncrypt);
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
@@ -174,7 +173,7 @@ public class SendHandlerTest extends HandlerTest {
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // configureRoutes our sendRequest
-    SendRequest sendRequest = buildFakeRequest(Arrays.asList(fakePeer), toEncrypt);
+    Map<String, Object> sendRequest = buildRequest(Arrays.asList(fakePeer), toEncrypt);
     Request request = buildPublicAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
@@ -207,7 +206,7 @@ public class SendHandlerTest extends HandlerTest {
     }
 
     // configureRoutes our sendRequest
-    SendRequest sendRequest = buildFakeRequest(fakePeers, toEncrypt);
+    Map<String, Object> sendRequest = buildRequest(fakePeers, toEncrypt);
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
@@ -238,8 +237,7 @@ public class SendHandlerTest extends HandlerTest {
   public void sendWithInvalidContentType() throws Exception {
     String b64String = Base64.encode("foo".getBytes());
 
-    // configureRoutes our sendRequest
-    SendRequest sendRequest = new SendRequest(b64String, b64String, new String[] {b64String});
+    Map<String, Object> sendRequest = buildRequest(new String[] {b64String}, b64String.getBytes(), b64String);
     // CBOR type is not available
     Request request = buildPrivateAPIRequest("/send", HttpContentType.CBOR, sendRequest);
     Response resp = httpClient.newCall(request).execute();
@@ -387,7 +385,7 @@ public class SendHandlerTest extends HandlerTest {
 
     String[] to = new String[] {Base64.encode(fakePeer.publicKey.getEncoded())};
 
-    SendRequest sendRequest = new SendRequest(payload, null, to);
+    Map<String, Object> sendRequest = buildRequest(to, payload.getBytes(), null);
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
@@ -399,22 +397,34 @@ public class SendHandlerTest extends HandlerTest {
     assertError(OrionErrorCode.NO_SENDER_KEY, resp);
   }
 
-  private SendRequest buildFakeRequest(List<FakePeer> forPeers, byte[] toEncrypt) {
-    // create sendRequest
+  private Map<String, Object> buildRequest(List<FakePeer> forPeers, byte[] toEncrypt) {
     PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
     String from = Base64.encode(sender.getEncoded());
-    String payload = Base64.encode(toEncrypt);
-
-    String[] to = forPeers.stream().map(fp -> Base64.encode(fp.publicKey.getEncoded())).toArray(String[]::new);
-
-    return new SendRequest(payload, from, to);
+    return buildRequest(forPeers, toEncrypt, from);
   }
 
-  private SendRequest buildFakeRequest(List<FakePeer> forPeers) {
+  private Map<String, Object> buildRequest(List<FakePeer> forPeers, byte[] toEncrypt, String from) {
+    String[] to = forPeers.stream().map(fp -> Base64.encode(fp.publicKey.getEncoded())).toArray(String[]::new);
+    return buildRequest(to, toEncrypt, from);
+  }
+
+  Map<String, Object> buildRequest(String[] to, byte[] toEncrypt, String from) {
+    String payload = Base64.encode(toEncrypt);
+
+    Map<String, Object> result = new HashMap<>();
+    result.put("to", to);
+    result.put("payload", payload);
+    if (from != null) {
+      result.put("from", from);
+    }
+    return result;
+  }
+
+  private Map<String, Object> buildRequest(List<FakePeer> forPeers) {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
-    return buildFakeRequest(forPeers, toEncrypt);
+    return buildRequest(forPeers, toEncrypt);
   }
 
   class FakePeer {

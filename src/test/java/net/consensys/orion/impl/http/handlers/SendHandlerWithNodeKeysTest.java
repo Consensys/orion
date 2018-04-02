@@ -12,11 +12,11 @@ import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.helpers.StubEnclave;
-import net.consensys.orion.impl.http.handler.send.SendRequest;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 
 import java.security.PublicKey;
+import java.util.Map;
 import java.util.Random;
 
 import com.muquit.libsodiumjna.SodiumKeyPair;
@@ -68,12 +68,9 @@ public class SendHandlerWithNodeKeysTest extends SendHandlerTest {
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    // configureRoutes our sendRequest
-    String payload = Base64.encode(toEncrypt);
-
     String[] to = new String[] {Base64.encode(fakePeer.publicKey.getEncoded())};
 
-    SendRequest sendRequest = new SendRequest(payload, null, to);
+    Map<String, Object> sendRequest = buildRequest(to, toEncrypt, null);
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
