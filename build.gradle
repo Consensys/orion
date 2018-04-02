@@ -45,8 +45,8 @@ repositories { jcenter() }
 // additional source sets (acceptance and performance tests)
 sourceSets {
   acceptance {
-    java.srcDir file('src/test-acceptance/java')
-    resources.srcDir file('src/test-acceptance/resources')
+    java.srcDir file('src/acceptance-test/java')
+    resources.srcDir file('src/acceptance-test/resources')
     compileClasspath += main.runtimeClasspath + configurations.testRuntime
     runtimeClasspath += main.runtimeClasspath + configurations.testRuntime
   }
