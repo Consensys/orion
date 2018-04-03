@@ -17,12 +17,10 @@ import org.iq80.leveldb.Options;
 public class LevelDbStorage<T> implements StorageEngine<T> {
 
   private Optional<DB> db;
-  private final Serializer serializer;
   private final Class<? extends T> typeParameterClass;
 
-  public LevelDbStorage(Class<? extends T> typeParameterClass, String path, Serializer serializer) {
+  public LevelDbStorage(Class<? extends T> typeParameterClass, String path) {
     this.typeParameterClass = typeParameterClass;
-    this.serializer = serializer;
     final Options options = new Options();
     options.createIfMissing(true);
     try {
@@ -37,7 +35,7 @@ public class LevelDbStorage<T> implements StorageEngine<T> {
     if (!db.isPresent()) {
       throw new StorageException(OrionErrorCode.STORAGE_CLOSED_WRITE, "Database was already closed");
     }
-    db.get().put(key.getBytes(), serializer.serialize(HttpContentType.CBOR, data));
+    db.get().put(key.getBytes(), Serializer.serialize(HttpContentType.CBOR, data));
   }
 
   @Override
@@ -50,7 +48,7 @@ public class LevelDbStorage<T> implements StorageEngine<T> {
     if (bytes == null) {
       return Optional.empty();
     }
-    return Optional.of(serializer.deserialize(HttpContentType.CBOR, typeParameterClass, bytes));
+    return Optional.of(Serializer.deserialize(HttpContentType.CBOR, typeParameterClass, bytes));
   }
 
   @Override

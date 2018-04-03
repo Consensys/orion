@@ -11,6 +11,7 @@ import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.orion.impl.http.server.HttpContentType;
+import net.consensys.orion.impl.utils.Serializer;
 
 import java.security.PublicKey;
 import java.util.Optional;
@@ -42,7 +43,7 @@ public class PushHandlerTest extends HandlerTest {
     // PUSH operation, sending an encrypted payload
     RequestBody body = RequestBody.create(
         MediaType.parse(HttpContentType.CBOR.httpHeaderValue),
-        serializer.serialize(HttpContentType.CBOR, encryptedPayload));
+        Serializer.serialize(HttpContentType.CBOR, encryptedPayload));
 
     Request request = new Request.Builder().post(body).url(publicBaseUrl + "/push").build();
 
@@ -61,8 +62,8 @@ public class PushHandlerTest extends HandlerTest {
   @Test
   public void roundTripSerialization() {
     EncryptedPayload pushRequest = mockPayload();
-    assertEquals(pushRequest, serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, pushRequest));
-    assertEquals(pushRequest, serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, pushRequest));
+    assertEquals(pushRequest, Serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, pushRequest));
+    assertEquals(pushRequest, Serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, pushRequest));
   }
 
   @Test
@@ -73,7 +74,7 @@ public class PushHandlerTest extends HandlerTest {
     // PUSH operation with invalid content type
     RequestBody body = RequestBody.create(
         MediaType.parse(HttpContentType.JSON.httpHeaderValue),
-        serializer.serialize(HttpContentType.JSON, encryptedPayload));
+        Serializer.serialize(HttpContentType.JSON, encryptedPayload));
 
     Request request = new Request.Builder().post(body).url(publicBaseUrl + "/push").build();
 

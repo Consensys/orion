@@ -28,10 +28,8 @@ public class NetworkDiscovery extends AbstractVerticle {
 
   private final ConcurrentNetworkNodes nodes;
   private final Map<URL, Discoverer> discoverers;
-  private final Serializer serializer;
 
-  public NetworkDiscovery(ConcurrentNetworkNodes nodes, Serializer serializer) {
-    this.serializer = serializer;
+  public NetworkDiscovery(ConcurrentNetworkNodes nodes) {
     this.nodes = nodes;
     this.discoverers = new HashMap<>();
   }
@@ -103,7 +101,7 @@ public class NetworkDiscovery extends AbstractVerticle {
           resp.bodyHandler(respBody -> {
             // deserialize response
             ConcurrentNetworkNodes partyInfoResponse =
-                serializer.deserialize(CBOR, ConcurrentNetworkNodes.class, respBody.getBytes());
+                Serializer.deserialize(CBOR, ConcurrentNetworkNodes.class, respBody.getBytes());
             if (nodes.merge(partyInfoResponse)) {
               log.info("merged new nodes from {} discoverer", nodeUrl);
             }
@@ -115,7 +113,7 @@ public class NetworkDiscovery extends AbstractVerticle {
         log.error("calling partyInfo on {} failed {}", nodeUrl, ex.getMessage());
         engageNextTimerTick();
       }).putHeader("Content-Type", "application/cbor").setTimeout(HTTP_CLIENT_TIMEOUT_MS).end(
-          Buffer.buffer(serializer.serialize(CBOR, nodes)));
+          Buffer.buffer(Serializer.serialize(CBOR, nodes)));
     }
 
     public void engageNextTimerTick() {

@@ -24,7 +24,6 @@ public class EthNodeStub {
   private static final Logger log = LogManager.getLogger();
 
   private final OkHttpClient httpClient = new OkHttpClient();
-  private final Serializer serializer = new Serializer();
 
   private final String baseUrl;
   private final Request upRequest;
@@ -95,7 +94,7 @@ public class EthNodeStub {
     // create the okHttp Request object
     final ReceiveRequest receiveRequest = new ReceiveRequest(digest, publicKey);
     final RequestBody receiveBody =
-        RequestBody.create(MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, receiveRequest));
+        RequestBody.create(MediaType.parse(JSON.httpHeaderValue), Serializer.serialize(JSON, receiveRequest));
 
     final Request httpReceiveRequest = new Request.Builder().post(receiveBody).url(baseUrl + "receive").build();
 
@@ -107,7 +106,7 @@ public class EthNodeStub {
       }
 
       // deserialize the response
-      final Map receiveResponse = serializer.deserialize(JSON, Map.class, httpReceiveResponse.body().bytes());
+      final Map receiveResponse = Serializer.deserialize(JSON, Map.class, httpReceiveResponse.body().bytes());
 
       return Optional.of(Base64.decode((String) receiveResponse.get("payload")));
 
@@ -118,7 +117,7 @@ public class EthNodeStub {
   }
 
   private Map deserialize(Response httpSendResponse) throws IOException {
-    return serializer.deserialize(JSON, Map.class, httpSendResponse.body().bytes());
+    return Serializer.deserialize(JSON, Map.class, httpSendResponse.body().bytes());
   }
 
   private Request httpSendRequest(RequestBody sendBody) {
@@ -126,7 +125,7 @@ public class EthNodeStub {
   }
 
   private RequestBody sendBody(Map<String, Object> sendRequest) {
-    return RequestBody.create(MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, sendRequest));
+    return RequestBody.create(MediaType.parse(JSON.httpHeaderValue), Serializer.serialize(JSON, sendRequest));
   }
 
   private Map<String, Object> sendRequest(byte[] payload, String from, String[] to) {

@@ -11,7 +11,6 @@ import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.config.TomlConfigBuilder;
 import net.consensys.orion.impl.utils.Base64;
-import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.File;
 import java.io.InputStream;
@@ -25,9 +24,8 @@ public class SodiumFileKeyStoreTest {
 
   private InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("keyStoreTest.toml");
   private TomlConfigBuilder configBuilder = new TomlConfigBuilder();
-  private final Serializer serializer = new Serializer();
   private Config config = configBuilder.build(configAsStream);
-  private SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
+  private SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
   private String publicKey1Base64Encoded = "BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=";
   private String privateKey1Base64Encoded = "Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA=";
   private PublicKey publicKey1 = new SodiumPublicKey(Base64.decode(publicKey1Base64Encoded));
@@ -52,7 +50,7 @@ public class SodiumFileKeyStoreTest {
     config.setPublicKeys(new File[] {new File("Does not exist")});
     config.setAlwaysSendTo(new File[] {new File("Does not exist")});
     try {
-      keyStore = new SodiumFileKeyStore(config, serializer);
+      keyStore = new SodiumFileKeyStore(config);
       fail("should have thrown an EnclaveException");
     } catch (EnclaveException e) {
       // expected
@@ -66,7 +64,7 @@ public class SodiumFileKeyStoreTest {
     config.setPublicKeys(new File[] {new File("keys/tm1a.pub")});
     config.setAlwaysSendTo(new File[] {new File("keys/tm1a.pub")});
     try {
-      keyStore = new SodiumFileKeyStore(config, serializer);
+      keyStore = new SodiumFileKeyStore(config);
       fail("should have thrown an EnclaveException");
     } catch (EnclaveException e) {
       // expected
@@ -78,7 +76,7 @@ public class SodiumFileKeyStoreTest {
     InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("multipleKeyStoreTest.toml");
 
     Config config = configBuilder.build(configAsStream);
-    keyStore = new SodiumFileKeyStore(config, serializer);
+    keyStore = new SodiumFileKeyStore(config);
     String[] encodedPublicKeys =
         new String[] {"BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=", "8SjRHlUBe4hAmTk3KDeJ96RhN+s10xRrHDrxEi1O5W0="};
 
@@ -98,7 +96,7 @@ public class SodiumFileKeyStoreTest {
     InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("alwaysSendToKeyStoreTest.toml");
 
     Config config = configBuilder.build(configAsStream);
-    keyStore = new SodiumFileKeyStore(config, serializer);
+    keyStore = new SodiumFileKeyStore(config);
     String[] encodedPublicKeys =
         new String[] {"BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=", "8SjRHlUBe4hAmTk3KDeJ96RhN+s10xRrHDrxEi1O5W0="};
 
@@ -114,14 +112,14 @@ public class SodiumFileKeyStoreTest {
     MemoryConfig config = new MemoryConfig();
     config.setPrivateKeys(new File[] {new File("keys/password.key")});
     config.setPublicKeys(new File[] {new File("keys/password.pub")});
-    keyStore = new SodiumFileKeyStore(config, serializer);
+    keyStore = new SodiumFileKeyStore(config);
   }
 
   @Test
   public void generateUnlockedProtectedKeyPair() {
     String keyPrefix = "keys/generated";
     try {
-      keyStore = new SodiumFileKeyStore(config, serializer);
+      keyStore = new SodiumFileKeyStore(config);
       keyStore.generateKeyPair(new KeyConfig(keyPrefix, Optional.empty()));
 
       // Load the a config using the generated key, and confirm that it is valid.
@@ -129,7 +127,7 @@ public class SodiumFileKeyStoreTest {
       MemoryConfig config = new MemoryConfig();
       config.setPrivateKeys(new File[] {new File("keys/generated.key")});
       config.setPublicKeys(new File[] {new File("keys/generated.pub")});
-      keyStore = new SodiumFileKeyStore(config, serializer);
+      keyStore = new SodiumFileKeyStore(config);
       PublicKey fromStore = keyStore.nodeKeys()[0];
       assertNotNull(keyStore.privateKey(fromStore));
     } finally {
@@ -152,7 +150,7 @@ public class SodiumFileKeyStoreTest {
   public void generatePasswordProtectedKeyPair() {
     String keyPrefix = "keys/generated_password";
     try {
-      keyStore = new SodiumFileKeyStore(config, serializer);
+      keyStore = new SodiumFileKeyStore(config);
       keyStore.generateKeyPair(new KeyConfig(keyPrefix, Optional.of("yolo")));
 
       // Load the a config using the generated key, and confirm that it is valid.
@@ -161,7 +159,7 @@ public class SodiumFileKeyStoreTest {
       config.setPasswords(new File("keys/password.txt"));
       config.setPrivateKeys(new File[] {new File("keys/generated_password.key")});
       config.setPublicKeys(new File[] {new File("keys/generated_password.pub")});
-      keyStore = new SodiumFileKeyStore(config, serializer);
+      keyStore = new SodiumFileKeyStore(config);
       PublicKey fromStore = keyStore.nodeKeys()[0];
       assertNotNull(keyStore.privateKey(fromStore));
     } finally {

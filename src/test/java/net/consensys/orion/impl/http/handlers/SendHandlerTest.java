@@ -14,6 +14,7 @@ import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
+import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.IOException;
 import java.net.URL;
@@ -151,7 +152,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // ensure cipher text is same.
     SodiumEncryptedPayload receivedPayload =
-        serializer.deserialize(CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
+        Serializer.deserialize(CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
     assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
   }
 
@@ -228,7 +229,7 @@ public class SendHandlerTest extends HandlerTest {
 
       // ensure cipher text is same.
       SodiumEncryptedPayload receivedPayload =
-          serializer.deserialize(CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
+          Serializer.deserialize(CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
       assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
     }
   }
@@ -306,7 +307,7 @@ public class SendHandlerTest extends HandlerTest {
 
       // ensure cipher text is same.
       SodiumEncryptedPayload receivedPayload =
-          serializer.deserialize(CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
+          Serializer.deserialize(CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
       assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
     }
   }

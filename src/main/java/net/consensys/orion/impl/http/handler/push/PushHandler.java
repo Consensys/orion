@@ -15,17 +15,15 @@ import org.apache.logging.log4j.Logger;
 public class PushHandler implements Handler<RoutingContext> {
   private static final Logger log = LogManager.getLogger();
   private final Storage storage;
-  private final Serializer serializer;
 
-  public PushHandler(Storage storage, Serializer serializer) {
-    this.serializer = serializer;
+  public PushHandler(Storage storage) {
     this.storage = storage;
   }
 
   @Override
   public void handle(RoutingContext routingContext) {
     EncryptedPayload pushRequest =
-        serializer.deserialize(HttpContentType.CBOR, SodiumEncryptedPayload.class, routingContext.getBody().getBytes());
+        Serializer.deserialize(HttpContentType.CBOR, SodiumEncryptedPayload.class, routingContext.getBody().getBytes());
 
     // we receive a EncryptedPayload and
     String digest = storage.put(pushRequest);

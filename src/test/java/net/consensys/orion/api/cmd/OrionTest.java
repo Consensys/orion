@@ -102,9 +102,8 @@ public class OrionTest {
     File publicKey1 = new File("testkey1.pub");
 
     if (privateKey1.exists()) {
-      Serializer serializer = new Serializer();
       StoredPrivateKey storedPrivateKey =
-          serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
+          Serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
 
       assertEquals(StoredPrivateKey.UNLOCKED, storedPrivateKey.type());
 
@@ -131,9 +130,8 @@ public class OrionTest {
     File publicKey1 = new File("testkey1.pub");
 
     if (privateKey1.exists()) {
-      Serializer serializer = new Serializer();
       StoredPrivateKey storedPrivateKey =
-          serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
+          Serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
 
       assertEquals(StoredPrivateKey.ARGON2_SBOX, storedPrivateKey.type());
 

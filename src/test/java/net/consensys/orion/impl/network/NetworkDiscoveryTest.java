@@ -24,7 +24,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class NetworkDiscoveryTest {
-  private static final Serializer serializer = new Serializer();
   private Vertx vertx;
   private ConcurrentNetworkNodes networkNodes;
 
@@ -54,7 +53,7 @@ public class NetworkDiscoveryTest {
     // add peers
 
     // start network discovery
-    NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, serializer);
+    NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes);
     deployVerticle(networkDiscovery).get();
 
     assertEquals(0, networkDiscovery.discoverers().size());
@@ -69,7 +68,7 @@ public class NetworkDiscoveryTest {
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // start network discovery
-    NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, serializer);
+    NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes);
     deployVerticle(networkDiscovery).get();
 
     // assert the discoverer started
@@ -90,7 +89,7 @@ public class NetworkDiscoveryTest {
   public void networkDiscoveryWithMerge() throws Exception {
     // empty memory nodes, lets' say one peer is alone in his network
     byte[] unknownPeerNetworkNodes =
-        serializer.serialize(CBOR, new ConcurrentNetworkNodes(new URL("http://localhost/")));
+        Serializer.serialize(CBOR, new ConcurrentNetworkNodes(new URL("http://localhost/")));
     Buffer unknownPeerBody = new Buffer();
     unknownPeerBody.write(unknownPeerNetworkNodes);
     // create a peer that's not in our current network nodes
@@ -101,7 +100,7 @@ public class NetworkDiscoveryTest {
     ConcurrentNetworkNodes knownPeerNetworkNodes = new ConcurrentNetworkNodes(new URL("http://localhost/"));
     knownPeerNetworkNodes.addNode(unknownPeer.publicKey, unknownPeer.getURL());
     Buffer knownPeerBody = new Buffer();
-    knownPeerBody.write(serializer.serialize(CBOR, knownPeerNetworkNodes));
+    knownPeerBody.write(Serializer.serialize(CBOR, knownPeerNetworkNodes));
     FakePeer knownPeer =
         new FakePeer(new MockResponse().setBody(knownPeerBody), new SodiumPublicKey("known.pk1".getBytes()));
 
@@ -110,7 +109,7 @@ public class NetworkDiscoveryTest {
 
     // start network discovery
     final Instant discoveryStart = Instant.now();
-    NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, serializer);
+    NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes);
     deployVerticle(networkDiscovery).get();
 
     // assert the discoverer started, we should only have 1 discoverer for knownPeer

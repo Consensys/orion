@@ -38,13 +38,11 @@ import org.jetbrains.annotations.NotNull;
 public class SodiumFileKeyStore implements KeyStore {
 
   private final Config config;
-  private final Serializer serializer;
 
   private final Map<PublicKey, PrivateKey> cache = new HashMap<>();
 
-  public SodiumFileKeyStore(Config config, Serializer serializer) {
+  public SodiumFileKeyStore(Config config) {
     this.config = config;
-    this.serializer = serializer;
     SodiumLibrary.setLibraryPath(config.libSodiumPath());
     // load keys
     loadKeysFromConfig(config);
@@ -66,7 +64,7 @@ public class SodiumFileKeyStore implements KeyStore {
 
   private PrivateKey readPrivateKey(File privateKeyFile, Optional<String> password) {
     final StoredPrivateKey storedPrivateKey =
-        serializer.readFile(HttpContentType.JSON, privateKeyFile, StoredPrivateKey.class);
+        Serializer.readFile(HttpContentType.JSON, privateKeyFile, StoredPrivateKey.class);
 
     final byte[] decoded;
     switch (storedPrivateKey.type()) {
@@ -149,7 +147,7 @@ public class SodiumFileKeyStore implements KeyStore {
   }
 
   private void storePrivateKey(StoredPrivateKey privKey, File privateFile) {
-    serializer.writeFile(HttpContentType.JSON, privateFile, privKey);
+    Serializer.writeFile(HttpContentType.JSON, privateFile, privKey);
   }
 
   private void storePublicKey(byte[] publicKey, File publicFile) {

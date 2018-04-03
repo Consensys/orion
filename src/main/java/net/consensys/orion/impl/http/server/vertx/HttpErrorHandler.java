@@ -19,11 +19,7 @@ import org.apache.logging.log4j.Logger;
 public class HttpErrorHandler implements Handler<RoutingContext> {
   private static final Logger log = LogManager.getLogger();
 
-  private final Serializer serializer;
-
-  public HttpErrorHandler(Serializer serializer) {
-    this.serializer = serializer;
-  }
+  public HttpErrorHandler() {}
 
   @Override
   public void handle(RoutingContext failureContext) {
@@ -42,7 +38,7 @@ public class HttpErrorHandler implements Handler<RoutingContext> {
   private Buffer errorJson(final Throwable failure, final Route failureRoute) {
     final OrionErrorCode orionError = orionError(failure);
     final HttpError httpError = new HttpError(orionError);
-    final Buffer buffer = Buffer.buffer(serializer.serialize(HttpContentType.JSON, httpError));
+    final Buffer buffer = Buffer.buffer(Serializer.serialize(HttpContentType.JSON, httpError));
 
     log.error(failureRoute.getPath() + " failed " + httpError, failure);
 

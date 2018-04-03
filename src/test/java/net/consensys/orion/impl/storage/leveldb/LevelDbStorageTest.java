@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import net.consensys.orion.impl.enclave.sodium.SodiumCombinedKey;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
-import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.File;
 import java.nio.file.FileVisitOption;
@@ -22,8 +21,7 @@ public class LevelDbStorageTest {
   @Test
   public void itemThatIsPutCanBeRetrievedWithGet() throws Exception {
     String path = "level-db-test";
-    LevelDbStorage<SodiumEncryptedPayload> storage =
-        new LevelDbStorage<>(SodiumEncryptedPayload.class, path, new Serializer());
+    LevelDbStorage<SodiumEncryptedPayload> storage = new LevelDbStorage<>(SodiumEncryptedPayload.class, path);
     try {
       SodiumPublicKey sender = new SodiumPublicKey("fake key".getBytes());
       byte[] nonce = "nonce".getBytes();

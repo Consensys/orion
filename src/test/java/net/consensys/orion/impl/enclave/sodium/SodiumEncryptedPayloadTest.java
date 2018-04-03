@@ -28,9 +28,8 @@ public class SodiumEncryptedPayloadTest {
         new SodiumCombinedKey[] {sodiumCombinedKey},
         "fake ciphertext".getBytes(),
         Optional.of(combinedKeysOwners));
-    Serializer serializer = new Serializer();
-    assertEquals(payload, serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, payload));
-    assertEquals(payload, serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, payload));
+    assertEquals(payload, Serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, payload));
+    assertEquals(payload, Serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, payload));
   }
 
   @Test
@@ -43,8 +42,7 @@ public class SodiumEncryptedPayloadTest {
         new SodiumCombinedKey[] {sodiumCombinedKey},
         "fake ciphertext".getBytes(),
         Optional.empty());
-    Serializer serializer = new Serializer();
-    byte[] serialized = serializer.serialize(HttpContentType.JSON, payload);
+    byte[] serialized = Serializer.serialize(HttpContentType.JSON, payload);
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readTree(serialized);
     jsonNode.fieldNames();
