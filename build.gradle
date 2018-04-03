@@ -25,12 +25,13 @@ version = versionNumber + '-' +
 //////
 // Default tasks and build aliases
 
-defaultTasks 'checkLicenses', 'assemble', 'test', 'acceptanceTest'
+defaultTasks 'checkLicenses', 'assemble', 'javadoc', 'test', 'acceptanceTest'
 
 def buildAliases = ['dev': [
     'spotlessApply',
     'checkLicenses',
     'assemble',
+    'javadoc',
     'test',
     'acceptanceTest'
   ]]
