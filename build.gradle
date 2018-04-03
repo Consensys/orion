@@ -2,7 +2,6 @@ plugins {
   id "com.diffplug.gradle.spotless" version "3.6.0"
   id 'com.palantir.git-version' version '0.10.0'
   id "com.github.hierynomus.license" version "0.14.0"
-  id "com.github.johnrengelman.shadow" version "2.0.2"
   id "com.jfrog.bintray" version "1.7.3"
 }
 
@@ -10,21 +9,23 @@ apply plugin: 'java-library'
 apply plugin: 'application'
 apply plugin: "jacoco"
 apply plugin: "scala"
-apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'maven-publish'
-
 apply from: "gradle/check-licenses.gradle"
 
-mainClassName = 'net.consensys.orion.api.cmd.Orion'
-group = 'net.consensys'
-version = '0.1.0-' + versionDetails().gitHash[0..4] + '-' + getTimestamp()
 
-// JVM Settings for Log4J and VertX
-applicationDefaultJvmArgs = [
-  '-Dlog4j.configurationFile=log4j2.xml',
-  "-Dvertx.disableFileCPResolving=true",
-  "-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory"
-]
+//////
+// Version numbering
+
+def versionNumber = '0.1.0'
+version = versionNumber + '-' +
+  (versionDetails().gitHash[0..4] + String.format("%2d", new Random().nextInt(256), 16)).toUpperCase() +
+  (System.getenv('BUILD_ENVIRONMENT_TAG') ?: '-dev')
+
+
+//////
+// Default tasks and build aliases
+
+defaultTasks 'checkLicenses', 'assemble', 'test', 'acceptanceTest'
 
 def buildAliases = ['dev': [
     'spotlessApply',
@@ -40,9 +41,28 @@ gradle.startParameter.taskNames.each {
 }
 gradle.startParameter.taskNames = expandedTaskList.flatten()
 
-repositories { jcenter() }
 
-// additional source sets (acceptance and performance tests)
+/////
+// Source formatting
+
+spotless {
+  java {
+    removeUnusedImports()
+    eclipse().configFile(rootProject.file('gradle/eclipse-java-consensys-style.xml'))
+    importOrder 'net.consensys', 'java', ''
+    endWithNewline()
+  }
+  groovyGradle {
+    target '*.gradle'
+    greclipse().configFile(rootProject.file('gradle/greclipse-gradle-consensys-style.properties'))
+    endWithNewline()
+  }
+}
+
+
+//////
+// Additional source sets (acceptance and performance tests)
+
 sourceSets {
   acceptance {
     java.srcDir file('src/acceptance-test/java')
@@ -130,6 +150,11 @@ task performanceTest(type: JavaExec) {
 }
 
 
+//////
+// Dependencies
+
+repositories { jcenter() }
+
 dependencies {
   // vertx
   compile 'io.vertx:vertx-core:3.5.0'
@@ -173,16 +198,62 @@ dependencies {
 }
 
 
+//////
+// Packaging
+
+mainClassName = 'net.consensys.orion.api.cmd.Orion'
+group = 'net.consensys'
+
 jar {
-  doFirst { versionTxt() }
+  doFirst {
+    delete fileTree(dir:'build/libs', include: '*.jar')
+    delete "$projectDir/src/main/resources/version.txt"
+    delete "$buildDir/resources/main/version.txt"
+
+    new File("$buildDir/resources/main/version.txt").text = """Application-name: $project.name
+Version: $version
+"""
+    new File("$buildDir/version").text = """$version"""
+  }
   manifest {
     attributes('Implementation-Title': project.name,
     'Implementation-Version': version,
-    'Main-Class': 'net.consensys.orion.api.cmd.Orion'
+    'Main-Class': mainClassName
     )
   }
 }
 
+distributions {
+  main {
+    contents {
+      from("./LICENSE") { into "." }
+    }
+  }
+}
+
+distTar {
+  doFirst {
+    delete fileTree(dir:'build/distributions', include: '*.tar.gz')
+  }
+  compression = Compression.GZIP
+  extension = 'tar.gz'
+}
+
+distZip {
+  doFirst {
+    delete fileTree(dir:'build/distributions', include: '*.zip')
+  }
+}
+
+
+//////
+// Runtime
+
+applicationDefaultJvmArgs = [
+  '-Dlog4j.configurationFile=log4j2.xml',
+  "-Dvertx.disableFileCPResolving=true",
+  "-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory"
+]
 
 run {
   description = 'Run Orion. Use -Pargs="" to pass arguments'
@@ -193,78 +264,9 @@ run {
   }
 }
 
-spotless {
-  java {
-    removeUnusedImports()
-    eclipse().configFile(rootProject.file('gradle/eclipse-java-consensys-style.xml'))
-    importOrder 'net.consensys', 'java', ''
-    endWithNewline()
-  }
-  groovyGradle {
-    target '*.gradle'
-    greclipse().configFile(rootProject.file('gradle/greclipse-gradle-consensys-style.properties'))
-    endWithNewline()
-  }
-}
 
-task deleteTarGzip() {
-  doFirst {
-    delete fileTree(dir:'build/distributions', include: '*.tar.gz')
-  }
-}
-
-distTar {
-  compression = Compression.GZIP
-  extension = 'tar.gz'
-}
-distTar.dependsOn deleteTarGzip
-
-distZip {
-  doFirst {
-    delete fileTree(dir:'build/distributions', include: '*.zip')
-  }
-}
-
-project.ext.fatJarBaseName = "orion-fat-jar"
-shadowDistTar {
-  baseName = project.fatJarBaseName
-  compression = Compression.GZIP
-  extension = 'tar.gz'
-}
-shadowDistTar.dependsOn deleteTarGzip
-
-shadowDistZip { baseName = project.fatJarBaseName }
-
-shadowJar {
-  baseName = project.fatJarBaseName
-  classifier = null
-}
-
-// Generate the Timestamp for the version
-def getTimestamp() {
-  def date = new Date()
-  return date.format('yyyy-MM-dd-HH-mm-ss-SSS')
-}
-
-// Create the version.txt file
-def versionTxt()  {
-  delete "$projectDir/src/main/resources/version.txt"
-  delete "$projectDir/build/resources/main/version.txt"
-
-  new File("$projectDir/build/resources/main/version.txt").text = """Application-name: $project.name
-Version: $version
-"""
-  new File("$projectDir/build/version").text = """$version"""
-}
-
-distributions {
-  main {
-    contents {
-      from(checkLicenses) { into "license" }
-      from("./LICENSE") { into "license" }
-    }
-  }
-}
+//////
+// Publishing & release
 
 publishing {
   publications {
