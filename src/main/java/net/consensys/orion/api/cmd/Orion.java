@@ -97,11 +97,8 @@ public class Orion {
     publicRouter.post("/partyinfo").produces(CBOR.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
         new PartyInfoHandler(networkNodes));
 
-    publicRouter
-        .post("/push")
-        .produces(TEXT.httpHeaderValue)
-        .consumes(CBOR.httpHeaderValue)
-        .handler(new PushHandler(storage));
+    publicRouter.post("/push").produces(TEXT.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
+        new PushHandler(storage));
 
     //Setup Private APIs
     privateRouter

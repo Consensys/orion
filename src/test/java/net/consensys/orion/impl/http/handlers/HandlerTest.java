@@ -97,8 +97,8 @@ public abstract class HandlerTest {
     setupPrivateAPIServer(privateRouter);
   }
 
-  private void setupPublicAPIServer(Router router)
-      throws InterruptedException, java.util.concurrent.ExecutionException {
+  private void setupPublicAPIServer(Router router) throws InterruptedException,
+      java.util.concurrent.ExecutionException {
     HttpServerOptions publicServerOptions = new HttpServerOptions();
     publicServerOptions.setPort(publicHTTPServerPort);
 
@@ -106,8 +106,9 @@ public abstract class HandlerTest {
     publicVertxServer.start().get();
   }
 
-  private void setupPrivateAPIServer(Router router)
-      throws UnknownHostException, InterruptedException, java.util.concurrent.ExecutionException {
+  private void setupPrivateAPIServer(Router router) throws UnknownHostException,
+      InterruptedException,
+      java.util.concurrent.ExecutionException {
     HttpUrl privateHTTP = new Builder()
         .scheme("http")
         .host(InetAddress.getLocalHost().getHostAddress())
