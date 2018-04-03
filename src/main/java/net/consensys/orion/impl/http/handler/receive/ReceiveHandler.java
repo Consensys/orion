@@ -26,13 +26,11 @@ public class ReceiveHandler implements Handler<RoutingContext> {
   private static final Logger log = LogManager.getLogger();
   private final Enclave enclave;
   private final Storage storage;
-  private final Serializer serializer;
   private final HttpContentType contentType;
 
-  public ReceiveHandler(Enclave enclave, Storage storage, Serializer serializer, HttpContentType contentType) {
+  public ReceiveHandler(Enclave enclave, Storage storage, HttpContentType contentType) {
     this.enclave = enclave;
     this.storage = storage;
-    this.serializer = serializer;
     this.contentType = contentType;
   }
 
@@ -43,7 +41,7 @@ public class ReceiveHandler implements Handler<RoutingContext> {
     String key;
     PublicKey to = null;
     if (contentType == JSON) {
-      receiveRequest = serializer.deserialize(JSON, ReceiveRequest.class, routingContext.getBody().getBytes());
+      receiveRequest = Serializer.deserialize(JSON, ReceiveRequest.class, routingContext.getBody().getBytes());
       log.debug("got receive request {}", receiveRequest);
       key = receiveRequest.key;
       if (receiveRequest.to != null) {
@@ -77,7 +75,7 @@ public class ReceiveHandler implements Handler<RoutingContext> {
     Buffer toReturn;
     if (contentType == JSON) {
       toReturn = Buffer
-          .buffer(serializer.serialize(JSON, Collections.singletonMap("payload", Base64.encode(decryptedPayload))));
+          .buffer(Serializer.serialize(JSON, Collections.singletonMap("payload", Base64.encode(decryptedPayload))));
     } else {
       toReturn = Buffer.buffer(decryptedPayload);
     }

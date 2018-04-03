@@ -17,20 +17,18 @@ public class MapDbStorage<T> implements StorageEngine<T> {
 
   private final Class<? extends T> typeParameterClass;
   private final DB db;
-  private final Serializer serializer;
   private final HTreeMap<byte[], byte[]> storageData;
 
-  public MapDbStorage(Class<? extends T> typeParameterClass, String path, Serializer serializer) {
+  public MapDbStorage(Class<? extends T> typeParameterClass, String path) {
     this.typeParameterClass = typeParameterClass;
     db = DBMaker.fileDB(path + "/mapdb").transactionEnable().make();
-    this.serializer = serializer;
     storageData = db.hashMap("storageData", BYTE_ARRAY, BYTE_ARRAY).createOrOpen();
   }
 
   @Override
   public void put(String key, T data) {
     // store data
-    storageData.put(key.getBytes(StandardCharsets.UTF_8), serializer.serialize(CBOR, data));
+    storageData.put(key.getBytes(StandardCharsets.UTF_8), Serializer.serialize(CBOR, data));
     db.commit();
   }
 
@@ -41,7 +39,7 @@ public class MapDbStorage<T> implements StorageEngine<T> {
       return Optional.empty();
     }
 
-    return Optional.of(serializer.deserialize(CBOR, typeParameterClass, bytes));
+    return Optional.of(Serializer.deserialize(CBOR, typeParameterClass, bytes));
   }
 
   @Override

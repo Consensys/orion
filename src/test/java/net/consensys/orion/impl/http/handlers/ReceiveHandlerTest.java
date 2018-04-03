@@ -16,6 +16,7 @@ import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.http.handler.receive.ReceiveRequest;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
+import net.consensys.orion.impl.utils.Serializer;
 
 import java.security.PublicKey;
 import java.util.Collections;
@@ -57,7 +58,7 @@ public class ReceiveHandlerTest extends HandlerTest {
 
     assertEquals(200, resp.code());
 
-    final Map receiveResponse = serializer.deserialize(JSON, Map.class, resp.body().bytes());
+    final Map receiveResponse = Serializer.deserialize(JSON, Map.class, resp.body().bytes());
 
     byte[] decodedPayload = Base64.decode((String) receiveResponse.get("payload"));
     assertArrayEquals(toEncrypt, decodedPayload);
@@ -180,13 +181,13 @@ public class ReceiveHandlerTest extends HandlerTest {
   @Test
   public void roundTripSerialization() {
     Map<String, String> receiveResponse = Collections.singletonMap("payload", "some payload");
-    assertEquals(receiveResponse, serializer.roundTrip(HttpContentType.CBOR, Map.class, receiveResponse));
-    assertEquals(receiveResponse, serializer.roundTrip(HttpContentType.JSON, Map.class, receiveResponse));
+    assertEquals(receiveResponse, Serializer.roundTrip(HttpContentType.CBOR, Map.class, receiveResponse));
+    assertEquals(receiveResponse, Serializer.roundTrip(HttpContentType.JSON, Map.class, receiveResponse));
 
     SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     ReceiveRequest receiveRequest = new ReceiveRequest("some key", senderKey.toString());
-    assertEquals(receiveRequest, serializer.roundTrip(HttpContentType.CBOR, ReceiveRequest.class, receiveRequest));
-    assertEquals(receiveRequest, serializer.roundTrip(HttpContentType.JSON, ReceiveRequest.class, receiveRequest));
+    assertEquals(receiveRequest, Serializer.roundTrip(HttpContentType.CBOR, ReceiveRequest.class, receiveRequest));
+    assertEquals(receiveRequest, Serializer.roundTrip(HttpContentType.JSON, ReceiveRequest.class, receiveRequest));
   }
 
   @Test

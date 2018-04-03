@@ -33,7 +33,6 @@ import net.consensys.orion.impl.storage.EncryptedPayloadStorage;
 import net.consensys.orion.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.impl.storage.file.MapDbStorage;
 import net.consensys.orion.impl.storage.leveldb.LevelDbStorage;
-import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -62,8 +61,6 @@ public class Orion {
   private static final Logger log = LogManager.getLogger();
   public static final String name = "orion";
 
-  private static final Serializer serializer = new Serializer();
-
   private final Vertx vertx = vertx();
   private StorageEngine<EncryptedPayload> storageEngine;
 
@@ -76,7 +73,6 @@ public class Orion {
   public static void configureRoutes(
       Vertx vertx,
       ConcurrentNetworkNodes networkNodes,
-      Serializer serializer,
       Enclave enclave,
       Storage<EncryptedPayload> storage,
       Router publicRouter,
@@ -94,15 +90,18 @@ public class Orion {
         .handler(BodyHandler.create())
         .handler(loggerHandler)
         .handler(ResponseContentTypeHandler.create())
-        .failureHandler(new HttpErrorHandler(serializer));
+        .failureHandler(new HttpErrorHandler());
 
     publicRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
     publicRouter.post("/partyinfo").produces(CBOR.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
-        new PartyInfoHandler(networkNodes, serializer));
+        new PartyInfoHandler(networkNodes));
 
-    publicRouter.post("/push").produces(TEXT.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
-        new PushHandler(storage, serializer));
+    publicRouter
+        .post("/push")
+        .produces(TEXT.httpHeaderValue)
+        .consumes(CBOR.httpHeaderValue)
+        .handler(new PushHandler(storage));
 
     //Setup Private APIs
     privateRouter
@@ -110,25 +109,25 @@ public class Orion {
         .handler(BodyHandler.create())
         .handler(loggerHandler)
         .handler(ResponseContentTypeHandler.create())
-        .failureHandler(new HttpErrorHandler(serializer));
+        .failureHandler(new HttpErrorHandler());
 
     privateRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
     privateRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
-        new SendHandler(vertx, enclave, storage, networkNodes, serializer, JSON));
+        new SendHandler(vertx, enclave, storage, networkNodes, JSON));
     privateRouter
         .post("/sendraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
-        .handler(new SendHandler(vertx, enclave, storage, networkNodes, serializer, APPLICATION_OCTET_STREAM));
+        .handler(new SendHandler(vertx, enclave, storage, networkNodes, APPLICATION_OCTET_STREAM));
 
     privateRouter.post("/receive").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
-        new ReceiveHandler(enclave, storage, serializer, JSON));
+        new ReceiveHandler(enclave, storage, JSON));
     privateRouter
         .post("/receiveraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
-        .handler(new ReceiveHandler(enclave, storage, serializer, APPLICATION_OCTET_STREAM));
+        .handler(new ReceiveHandler(enclave, storage, APPLICATION_OCTET_STREAM));
   }
 
   public void stop() {
@@ -181,7 +180,7 @@ public class Orion {
   }
 
   public void run(Config config) throws ExecutionException, InterruptedException {
-    SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
+    SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
     ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(config, keyStore.nodeKeys());
     Enclave enclave = new LibSodiumEnclave(config, keyStore);
 
@@ -211,7 +210,7 @@ public class Orion {
     // controller dependencies
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
     EncryptedPayloadStorage storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
-    configureRoutes(vertx, networkNodes, serializer, enclave, storage, publicRouter, privateRouter);
+    configureRoutes(vertx, networkNodes, enclave, storage, publicRouter, privateRouter);
 
     // asynchronously start the vertx http server for public API
     CompletableFuture<Boolean> publicFuture = startHttpServerAsync(config.port(), vertx, publicRouter);
@@ -223,7 +222,7 @@ public class Orion {
     CompletableFuture.allOf(publicFuture, privateFuture).get();
 
     // start network discovery of other peers
-    NetworkDiscovery discovery = new NetworkDiscovery(networkNodes, serializer);
+    NetworkDiscovery discovery = new NetworkDiscovery(networkNodes);
     vertx.deployVerticle(discovery);
 
     // set shutdown hook
@@ -247,9 +246,9 @@ public class Orion {
     }
     new File(storagePath + dbPath).mkdirs();
     if (storage.startsWith("mapdb")) {
-      return new MapDbStorage<>(SodiumEncryptedPayload.class, storagePath + dbPath, serializer);
+      return new MapDbStorage<>(SodiumEncryptedPayload.class, storagePath + dbPath);
     } else if (storage.startsWith("leveldb")) {
-      return new LevelDbStorage<>(SodiumEncryptedPayload.class, storagePath + dbPath, serializer);
+      return new LevelDbStorage<>(SodiumEncryptedPayload.class, storagePath + dbPath);
     } else {
       throw new ConfigException(
           OrionErrorCode.CONFIGURATION_STORAGE_MECHANISM,
@@ -270,7 +269,7 @@ public class Orion {
   private void generateKeyPairs(Config config, String[] keysToGenerate) {
     log.info("generating Key Pairs");
 
-    SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config, serializer);
+    SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
 
     Scanner scanner = new Scanner(System.in);
 

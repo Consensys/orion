@@ -2,8 +2,6 @@ package net.consensys.orion.impl.storage.file;
 
 import static org.junit.Assert.assertEquals;
 
-import net.consensys.orion.impl.utils.Serializer;
-
 import java.util.Optional;
 
 import org.junit.After;
@@ -11,8 +9,7 @@ import org.junit.Test;
 
 public class MapDbStorageTest {
   String path = ".";
-  private Serializer serializer = new Serializer();
-  MapDbStorage<String> storage = new MapDbStorage<>(String.class, path, serializer);
+  MapDbStorage<String> storage = new MapDbStorage<>(String.class, path);
 
   private final String toStore = "data";
 
@@ -40,7 +37,7 @@ public class MapDbStorageTest {
   public void storeAndRetrieveAcrossSessions() {
     storage.put("key", toStore);
     storage.close();
-    MapDbStorage<byte[]> secondStorage = new MapDbStorage(String.class, path, serializer);
+    MapDbStorage<byte[]> secondStorage = new MapDbStorage(String.class, path);
     assertEquals(toStore, secondStorage.get("key").get());
   }
 

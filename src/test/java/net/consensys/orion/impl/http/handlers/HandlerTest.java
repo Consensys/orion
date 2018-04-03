@@ -41,7 +41,6 @@ import org.junit.After;
 import org.junit.Before;
 
 public abstract class HandlerTest {
-  protected final Serializer serializer = new Serializer();
 
   // http client
   OkHttpClient httpClient = new OkHttpClient();
@@ -85,14 +84,14 @@ public abstract class HandlerTest {
 
     String path = "routerdb";
     new File(path).mkdirs();
-    storageEngine = new MapDbStorage(SodiumEncryptedPayload.class, path, serializer);
+    storageEngine = new MapDbStorage(SodiumEncryptedPayload.class, path);
     // create our vertx object
     vertx = Vertx.vertx();
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
     storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
     Router publicRouter = Router.router(vertx);
     Router privateRouter = Router.router(vertx);
-    Orion.configureRoutes(vertx, networkNodes, serializer, enclave, storage, publicRouter, privateRouter);
+    Orion.configureRoutes(vertx, networkNodes, enclave, storage, publicRouter, privateRouter);
 
     setupPublicAPIServer(publicRouter);
     setupPrivateAPIServer(privateRouter);
@@ -150,11 +149,11 @@ public abstract class HandlerTest {
   }
 
   protected Request buildPrivateAPIRequest(String path, HttpContentType contentType, Object payload) {
-    return buildPostRequest(privateBaseUrl, path, contentType, serializer.serialize(contentType, payload));
+    return buildPostRequest(privateBaseUrl, path, contentType, Serializer.serialize(contentType, payload));
   }
 
   protected Request buildPublicAPIRequest(String path, HttpContentType contentType, Object payload) {
-    return buildPostRequest(publicBaseUrl, path, contentType, serializer.serialize(contentType, payload));
+    return buildPostRequest(publicBaseUrl, path, contentType, Serializer.serialize(contentType, payload));
   }
 
   private Request buildPostRequest(String baseurl, String path, HttpContentType contentType, byte[] payload) {

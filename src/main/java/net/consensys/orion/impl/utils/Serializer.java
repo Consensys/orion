@@ -14,21 +14,18 @@ import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 public class Serializer {
-  private final ObjectMapper jsonObjectMapper;
-  private final ObjectMapper cborObjectMapper;
+  private static final ObjectMapper jsonObjectMapper = setupObjectMapper(new ObjectMapper());
+  private static final ObjectMapper cborObjectMapper = setupObjectMapper(new ObjectMapper(new CBORFactory()));
 
-  public Serializer() {
-    cborObjectMapper = setupObjectMapper(new ObjectMapper(new CBORFactory()));
-    jsonObjectMapper = setupObjectMapper(new ObjectMapper());
-  }
+  private Serializer() {}
 
-  private ObjectMapper setupObjectMapper(ObjectMapper objectMapper) {
+  private static ObjectMapper setupObjectMapper(ObjectMapper objectMapper) {
     objectMapper.setSerializationInclusion(Include.NON_NULL);
     objectMapper.registerModule(new Jdk8Module());
     return objectMapper;
   }
 
-  public byte[] serialize(HttpContentType contentType, Object obj) {
+  public static byte[] serialize(HttpContentType contentType, Object obj) {
     try {
       switch (contentType) {
         case JSON:
@@ -45,7 +42,7 @@ public class Serializer {
     }
   }
 
-  public <T> T deserialize(HttpContentType contentType, Class<T> valueType, byte[] bytes) {
+  public static <T> T deserialize(HttpContentType contentType, Class<T> valueType, byte[] bytes) {
     try {
       switch (contentType) {
         case JSON:
@@ -62,7 +59,7 @@ public class Serializer {
     }
   }
 
-  public void writeFile(HttpContentType contentType, File file, Object obj) {
+  public static void writeFile(HttpContentType contentType, File file, Object obj) {
     try {
       getMapperOrThrows(contentType).writeValue(file, obj);
     } catch (final IOException io) {
@@ -70,7 +67,7 @@ public class Serializer {
     }
   }
 
-  public <T> T readFile(HttpContentType contentType, File file, Class<T> valueType) {
+  public static <T> T readFile(HttpContentType contentType, File file, Class<T> valueType) {
     try {
       return getMapperOrThrows(contentType).readValue(file, valueType);
     } catch (final IOException io) {
@@ -78,11 +75,11 @@ public class Serializer {
     }
   }
 
-  public <T> T roundTrip(HttpContentType contentType, Class<T> valueType, Object obj) {
+  public static <T> T roundTrip(HttpContentType contentType, Class<T> valueType, Object obj) {
     return deserialize(contentType, valueType, serialize(contentType, obj));
   }
 
-  private ObjectMapper getMapperOrThrows(HttpContentType contentType) {
+  private static ObjectMapper getMapperOrThrows(HttpContentType contentType) {
     switch (contentType) {
       case JSON:
         return jsonObjectMapper;

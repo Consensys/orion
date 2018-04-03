@@ -35,7 +35,6 @@ public class SendHandler implements Handler<RoutingContext> {
   private final Storage storage;
   private final List<PublicKey> nodeKeys;
   private final ConcurrentNetworkNodes networkNodes;
-  private final Serializer serializer;
   private final HttpContentType contentType;
 
   private final HttpClient httpClient;
@@ -45,13 +44,11 @@ public class SendHandler implements Handler<RoutingContext> {
       Enclave enclave,
       Storage storage,
       ConcurrentNetworkNodes networkNodes,
-      Serializer serializer,
       HttpContentType contentType) {
     this.enclave = enclave;
     this.storage = storage;
     this.nodeKeys = Arrays.asList(enclave.nodeKeys());
     this.networkNodes = networkNodes;
-    this.serializer = serializer;
     this.contentType = contentType;
     this.httpClient = vertx.createHttpClient();
   }
@@ -60,7 +57,7 @@ public class SendHandler implements Handler<RoutingContext> {
   public void handle(RoutingContext routingContext) {
     final SendRequest sendRequest;
     if (contentType == JSON) {
-      sendRequest = serializer.deserialize(JSON, SendRequest.class, routingContext.getBody().getBytes());
+      sendRequest = Serializer.deserialize(JSON, SendRequest.class, routingContext.getBody().getBytes());
     } else {
       sendRequest = binaryRequest(routingContext);
     }
@@ -113,7 +110,7 @@ public class SendHandler implements Handler<RoutingContext> {
       CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
 
       // serialize payload, stripping non-relevant combinedKeys, and configureRoutes payload
-      final byte[] payload = serializer.serialize(HttpContentType.CBOR, encryptedPayload.stripFor(pKey));
+      final byte[] payload = Serializer.serialize(HttpContentType.CBOR, encryptedPayload.stripFor(pKey));
 
       // execute request
       httpClient
@@ -149,7 +146,7 @@ public class SendHandler implements Handler<RoutingContext> {
 
       final Buffer responseData;
       if (contentType == JSON) {
-        responseData = Buffer.buffer(serializer.serialize(JSON, Collections.singletonMap("key", digest)));
+        responseData = Buffer.buffer(Serializer.serialize(JSON, Collections.singletonMap("key", digest)));
       } else {
         responseData = Buffer.buffer(digest);
       }

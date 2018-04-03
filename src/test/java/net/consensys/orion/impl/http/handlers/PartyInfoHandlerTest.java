@@ -8,6 +8,7 @@ import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
+import net.consensys.orion.impl.utils.Serializer;
 
 import java.net.URL;
 
@@ -27,7 +28,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
 
     // prepare /partyinfo payload (our known peers)
     RequestBody partyInfoBody =
-        RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), serializer.serialize(CBOR, networkNodes));
+        RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), Serializer.serialize(CBOR, networkNodes));
 
     // call http endpoint
     Request request = new Request.Builder().post(partyInfoBody).url(publicBaseUrl + "/partyinfo").build();
@@ -36,7 +37,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
     assertEquals(200, resp.code());
 
     ConcurrentNetworkNodes partyInfoResponse =
-        serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
+        Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
 
     assertEquals(networkNodes, partyInfoResponse);
   }
@@ -45,8 +46,8 @@ public class PartyInfoHandlerTest extends HandlerTest {
   public void roundTripSerialization() throws Exception {
     ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(new URL("http://localhost:1234/"));
     networkNodes.addNode(new SodiumPublicKey("fake".getBytes()), new URL("http://localhost/"));
-    assertEquals(networkNodes, serializer.roundTrip(HttpContentType.CBOR, ConcurrentNetworkNodes.class, networkNodes));
-    assertEquals(networkNodes, serializer.roundTrip(HttpContentType.JSON, ConcurrentNetworkNodes.class, networkNodes));
+    assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.CBOR, ConcurrentNetworkNodes.class, networkNodes));
+    assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.JSON, ConcurrentNetworkNodes.class, networkNodes));
   }
 
   @Test
@@ -56,7 +57,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
 
     // prepare /partyinfo payload (our known peers) with invalid content type (json)
     RequestBody partyInfoBody =
-        RequestBody.create(MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, networkNodes));
+        RequestBody.create(MediaType.parse(JSON.httpHeaderValue), Serializer.serialize(JSON, networkNodes));
 
     Request request = new Request.Builder().post(partyInfoBody).url(publicBaseUrl + "/partyinfo").build();
 

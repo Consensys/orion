@@ -33,11 +33,10 @@ public class SodiumPublicKeyTest {
   @Test
   public void roundTripSerialization() {
     SodiumPublicKey key = new SodiumPublicKey("fake encoded".getBytes());
-    Serializer serializer = new Serializer();
-    byte[] bytes = serializer.serialize(HttpContentType.JSON, key);
-    assertEquals(key, serializer.deserialize(HttpContentType.JSON, SodiumPublicKey.class, bytes));
-    bytes = serializer.serialize(HttpContentType.CBOR, key);
-    assertEquals(key, serializer.deserialize(HttpContentType.CBOR, SodiumPublicKey.class, bytes));
+    byte[] bytes = Serializer.serialize(HttpContentType.JSON, key);
+    assertEquals(key, Serializer.deserialize(HttpContentType.JSON, SodiumPublicKey.class, bytes));
+    bytes = Serializer.serialize(HttpContentType.CBOR, key);
+    assertEquals(key, Serializer.deserialize(HttpContentType.CBOR, SodiumPublicKey.class, bytes));
   }
 
   @Test

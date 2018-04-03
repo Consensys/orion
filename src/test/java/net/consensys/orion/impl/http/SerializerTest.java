@@ -24,21 +24,19 @@ import org.junit.Test;
 
 public class SerializerTest {
 
-  private final Serializer serializer = new Serializer();
-
   @Test
   public void jsonSerialization() {
     DummyObject dummyObjectOriginal = new DummyObject();
-    byte[] bytes = serializer.serialize(HttpContentType.JSON, dummyObjectOriginal);
-    DummyObject dummyObject = serializer.deserialize(HttpContentType.JSON, DummyObject.class, bytes);
+    byte[] bytes = Serializer.serialize(HttpContentType.JSON, dummyObjectOriginal);
+    DummyObject dummyObject = Serializer.deserialize(HttpContentType.JSON, DummyObject.class, bytes);
     assert(dummyObject.equals(dummyObjectOriginal));
   }
 
   @Test
   public void cborSerialization() {
     DummyObject dummyObjectOriginal = new DummyObject();
-    byte[] bytes = serializer.serialize(HttpContentType.CBOR, dummyObjectOriginal);
-    DummyObject dummyObject = serializer.deserialize(HttpContentType.CBOR, DummyObject.class, bytes);
+    byte[] bytes = Serializer.serialize(HttpContentType.CBOR, dummyObjectOriginal);
+    DummyObject dummyObject = Serializer.deserialize(HttpContentType.CBOR, DummyObject.class, bytes);
     assert(dummyObject.equals(dummyObjectOriginal));
   }
 
@@ -62,10 +60,10 @@ public class SerializerTest {
     SodiumEncryptedPayload original =
         new SodiumEncryptedPayload(sender, nonce, combinedKeyNonce, combinedKeys, toEncrypt);
 
-    SodiumEncryptedPayload processed = serializer.deserialize(
+    SodiumEncryptedPayload processed = Serializer.deserialize(
         HttpContentType.CBOR,
         SodiumEncryptedPayload.class,
-        serializer.serialize(HttpContentType.CBOR, original));
+        Serializer.serialize(HttpContentType.CBOR, original));
 
     assertEquals(original, processed);
   }
