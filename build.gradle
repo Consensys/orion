@@ -3,12 +3,14 @@ plugins {
   id "com.github.hierynomus.license" version "0.14.0"
   id "com.jfrog.bintray" version "1.8.0"
   id 'com.palantir.git-version' version '0.10.1'
+  id 'net.ltgt.errorprone' version '0.0.13'
 }
 
 apply plugin: 'java-library'
-apply plugin: 'application'
-apply plugin: "jacoco"
 apply plugin: "scala"
+apply plugin: "jacoco"
+apply plugin: 'net.ltgt.errorprone'
+apply plugin: 'application'
 apply plugin: 'maven-publish'
 apply from: "gradle/check-licenses.gradle"
 
@@ -58,6 +60,24 @@ spotless {
     greclipse().configFile(rootProject.file('gradle/greclipse-gradle-consensys-style.properties'))
     endWithNewline()
   }
+}
+
+
+//////
+// Compiler arguments
+
+tasks.withType(JavaCompile) {
+  options.compilerArgs += [
+    '-Xlint:unchecked',
+    '-Xlint:cast',
+    '-Xlint:rawtypes',
+    '-Xlint:overloads',
+    '-Xlint:divzero',
+    '-Xlint:finally',
+    '-Xlint:static',
+    '-Werror',
+    '-Xep:FutureReturnValueIgnored:OFF'
+  ]
 }
 
 
