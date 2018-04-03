@@ -43,9 +43,9 @@ jobs:
           name: Running acceptance tests
           command: ./gradlew --stacktrace acceptanceTest
 
-#      - run:
-#          name: Building JavaDoc
-#          command: ./gradlew javadoc
+      - run:
+          name: Building JavaDoc
+          command: ./gradlew javadoc
 
       - store_artifacts:
           name: Uploading artifacts
@@ -88,19 +88,19 @@ jobs:
           path: ~/reports
           destination: reports
 
-#      - run:
-#          name: Collecting JavaDoc
-#          command: |
-#              find . -type d -regex ".*/build/docs/javadoc" | while read dir; do
-#                  module=`echo $dir | sed -e 's/build\/docs\/javadoc//'`
-#                  mkdir -p ~/docs/"$module"
-#                  (cd "$dir" && tar c .) | (cd ~/docs/"$module" && tar x)
-#              done
+      - run:
+          name: Collecting JavaDoc
+          command: |
+              find . -type d -regex ".*/build/docs/javadoc" | while read dir; do
+                  module=`echo $dir | sed -e 's/build\/docs\/javadoc//'`
+                  mkdir -p ~/docs/"$module"
+                  (cd "$dir" && tar c .) | (cd ~/docs/"$module" && tar x)
+              done
 
-#      - store_artifacts:
-#          name: Uploading JavaDoc
-#          path: ~/docs
-#          destination: javadoc
+      - store_artifacts:
+          name: Uploading JavaDoc
+          path: ~/docs
+          destination: javadoc
 
       - save_cache:
           name: Caching gradle dependencies
