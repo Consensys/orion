@@ -17,17 +17,14 @@ public class SendRequest implements Serializable {
   private final String[] to; // b64 encoded
   private final byte[] rawPayload;
 
-  @JsonProperty("from")
   public Optional<String> from() {
     return Optional.ofNullable(from);
   }
 
-  @JsonProperty("to")
   public String[] to() {
     return to;
   }
 
-  @JsonProperty("payload")
   public String payload() {
     if (rawPayload == null) {
       return null;

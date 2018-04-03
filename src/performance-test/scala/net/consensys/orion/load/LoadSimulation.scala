@@ -1,11 +1,11 @@
 package net.consensys.orion.load
 
 import java.util.Base64
+import collection.JavaConverters._
 
 import io.gatling.core.Predef._
 import io.gatling.core.structure._
 import io.gatling.http.Predef._
-import net.consensys.orion.impl.http.handler.send.SendRequest
 import com.fasterxml.jackson.databind.ObjectMapper
 import scala.concurrent.duration._
 
@@ -29,7 +29,7 @@ class LoadSimulation extends Simulation {
   def buildSendRequests(host: String, from : String, to : Seq[String]): ChainBuilder = {
     return exec(http("sends")
     .post(s"$host/send")
-    .body(StringBody(mapper.writeValueAsString(new SendRequest(base64payload, from, to.toArray))))
+    .body(StringBody(mapper.writeValueAsString(Map("payload" -> base64payload, "from" -> from, "to" -> to.toArray).asJava)))
     .asJSON.check(jsonPath("$.key").saveAs("sendResponse")))
   }
 
@@ -55,6 +55,6 @@ class LoadSimulation extends Simulation {
     scenario("SendThenReceiveOneNode").exec(fooToFooRequests).exec(receiveFooRequests).inject(rampUsers(1000) over (2 minutes)),
     scenario("SendThenReceiveOtherNode").exec(fooToBarRequests).exec(receiveBarRequests).inject(rampUsers(1000) over (2 minutes)),
     scenario("SendThenReceiveTwoOtherNodes").exec(fooToBarAndFoobarRequests).exec(receiveBarRequests).
-      exec(receiveFooBarRequests).inject(atOnceUsers(10), rampUsers(100000) over (2 minutes))
+      exec(receiveFooBarRequests).inject(atOnceUsers(10), rampUsers(20000) over (2 minutes))
   )
 }
