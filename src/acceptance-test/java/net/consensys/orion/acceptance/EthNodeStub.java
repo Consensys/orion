@@ -3,11 +3,11 @@ package net.consensys.orion.acceptance;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 
 import net.consensys.orion.impl.http.handler.receive.ReceiveRequest;
-import net.consensys.orion.impl.http.handler.send.SendRequest;
 import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -50,7 +50,7 @@ public class EthNodeStub {
   }
 
   public Optional<String> send(byte[] payload, String from, String[] to) {
-    final SendRequest sendRequest = sendRequest(payload, from, to);
+    final Map<String, Object> sendRequest = sendRequest(payload, from, to);
     final RequestBody sendBody = sendBody(sendRequest);
     final Request httpSendRequest = httpSendRequest(sendBody);
 
@@ -71,7 +71,7 @@ public class EthNodeStub {
   }
 
   public Optional<String> sendExpectingError(byte[] payload, String from, String[] to) {
-    final SendRequest sendRequest = sendRequest(payload, from, to);
+    final Map<String, Object> sendRequest = sendRequest(payload, from, to);
     final RequestBody sendBody = sendBody(sendRequest);
     final Request httpSendRequest = httpSendRequest(sendBody);
 
@@ -125,11 +125,15 @@ public class EthNodeStub {
     return new Request.Builder().post(sendBody).url(baseUrl + "send").build();
   }
 
-  private RequestBody sendBody(SendRequest sendRequest) {
+  private RequestBody sendBody(Map<String, Object> sendRequest) {
     return RequestBody.create(MediaType.parse(JSON.httpHeaderValue), serializer.serialize(JSON, sendRequest));
   }
 
-  private SendRequest sendRequest(byte[] payload, String from, String[] to) {
-    return new SendRequest(Base64.encode(payload), from, to);
+  private Map<String, Object> sendRequest(byte[] payload, String from, String[] to) {
+    Map<String, Object> map = new HashMap<>();
+    map.put("payload", payload);
+    map.put("from", from);
+    map.put("to", to);
+    return map;
   }
 }
