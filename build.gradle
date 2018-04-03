@@ -68,8 +68,8 @@ sourceSets {
   acceptance {
     java.srcDir file('src/acceptance-test/java')
     resources.srcDir file('src/acceptance-test/resources')
-    compileClasspath += main.runtimeClasspath + configurations.testRuntime
-    runtimeClasspath += main.runtimeClasspath + configurations.testRuntime
+    compileClasspath += main.runtimeClasspath + test.runtimeClasspath
+    runtimeClasspath += main.runtimeClasspath + test.runtimeClasspath
   }
   performance {
     scala.srcDir file('src/performance-test/scala')

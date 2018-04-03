@@ -1,5 +1,7 @@
 package net.consensys.orion.acceptance.send;
 
+import static java.nio.file.Files.createTempDirectory;
+import static net.consensys.util.Files.deleteRecursively;
 import static org.junit.Assert.assertEquals;
 
 import net.consensys.orion.acceptance.EthNodeStub;
@@ -8,12 +10,7 @@ import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.exception.OrionErrorCode;
 
-import java.io.File;
-import java.nio.file.FileVisitOption;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Comparator;
 import java.util.concurrent.ExecutionException;
 
 import junit.framework.AssertionFailedError;
@@ -34,6 +31,7 @@ public class SingleNodeSendTest {
   private static final String PK_MISSING_PEER = "A1aVtMxLCUlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String HOST_NAME = "127.0.0.1";
 
+  private static Path tempDir;
   private static String baseUrl;
   private static String ethUrl;
 
@@ -42,15 +40,9 @@ public class SingleNodeSendTest {
 
   private Orion orionLauncher;
 
-  @AfterClass
-  public static void tearDownSingleNode() throws Exception {
-    final Path rootPath = Paths.get("database");
-    Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(
-        File::delete);
-  }
-
   @BeforeClass
   public static void setUpSingleNode() throws Exception {
+    tempDir = createTempDirectory(SingleNodeSendTest.class.getSimpleName() + "-data");
     port = nodeUtils.freePort();
     final int port = nodeUtils.freePort();
     final int ethPort = nodeUtils.freePort();
@@ -67,6 +59,11 @@ public class SingleNodeSendTest {
         baseUrl,
         "src/acceptance-test/resources/key1.pub\", \"src/acceptance-test/resources/key2.pub",
         "src/acceptance-test/resources/key1.key\", \"src/acceptance-test/resources/key2.key");
+  }
+
+  @AfterClass
+  public static void tearDownSingleNode() throws Exception {
+    deleteRecursively(tempDir);
   }
 
   @Before
