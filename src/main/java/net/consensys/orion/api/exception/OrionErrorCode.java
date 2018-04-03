@@ -5,8 +5,8 @@ import java.util.Optional;
 /**
  * The set of error conditions that can be expected as output from an Orion.
  *
- * <p>The error codes are granular, ideally with each code mapping to a single permutation of each
- * error scenario.
+ * <p>
+ * The error codes are granular, ideally with each code mapping to a single permutation of each error scenario.
  */
 public enum OrionErrorCode {
   UNMAPPED("0x000000F"),
