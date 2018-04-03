@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.network;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
@@ -20,7 +21,7 @@ public class ConcurrentNetworkNodesTest {
     URL u = new URL("http://nowhere:9090/");
     urls.add(u);
     ConcurrentHashMap<SodiumPublicKey, URL> pks = new ConcurrentHashMap<>();
-    pks.put(new SodiumPublicKey("bytes".getBytes()), u);
+    pks.put(new SodiumPublicKey("bytes".getBytes(UTF_8)), u);
     ConcurrentNetworkNodes nodes = new ConcurrentNetworkNodes(new URL("http://some.server:8080/"), urls, pks);
     byte[] bytes = Serializer.serialize(HttpContentType.JSON, nodes);
     assertEquals(nodes, Serializer.deserialize(HttpContentType.JSON, ConcurrentNetworkNodes.class, bytes));

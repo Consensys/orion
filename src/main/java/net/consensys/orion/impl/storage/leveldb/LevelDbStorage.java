@@ -1,5 +1,7 @@
 package net.consensys.orion.impl.storage.leveldb;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.api.storage.StorageException;
@@ -35,7 +37,7 @@ public class LevelDbStorage<T> implements StorageEngine<T> {
     if (!db.isPresent()) {
       throw new StorageException(OrionErrorCode.STORAGE_CLOSED_WRITE, "Database was already closed");
     }
-    db.get().put(key.getBytes(), Serializer.serialize(HttpContentType.CBOR, data));
+    db.get().put(key.getBytes(UTF_8), Serializer.serialize(HttpContentType.CBOR, data));
   }
 
   @Override
@@ -44,7 +46,7 @@ public class LevelDbStorage<T> implements StorageEngine<T> {
       throw new StorageException(OrionErrorCode.STORAGE_CLOSED_READ, "Database was already closed");
     }
 
-    byte[] bytes = db.get().get(key.getBytes());
+    byte[] bytes = db.get().get(key.getBytes(UTF_8));
     if (bytes == null) {
       return Optional.empty();
     }
@@ -56,7 +58,7 @@ public class LevelDbStorage<T> implements StorageEngine<T> {
     if (!db.isPresent()) {
       throw new StorageException(OrionErrorCode.STORAGE_CLOSED_DELETE, "Database was already closed");
     }
-    db.get().delete(key.getBytes());
+    db.get().delete(key.getBytes(UTF_8));
   }
 
   @Override

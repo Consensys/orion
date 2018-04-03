@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.storage.leveldb;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.createTempDirectory;
 import static net.consensys.util.Files.deleteRecursively;
 import static org.junit.Assert.assertEquals;
@@ -34,11 +35,11 @@ public class LevelDbStorageTest {
     LevelDbStorage<SodiumEncryptedPayload> storage =
         new LevelDbStorage<>(SodiumEncryptedPayload.class, tempDir.toString());
     try {
-      SodiumPublicKey sender = new SodiumPublicKey("fake key".getBytes());
-      byte[] nonce = "nonce".getBytes();
-      byte[] ckNonce = "combined nonce".getBytes();
-      SodiumCombinedKey[] keys = new SodiumCombinedKey[] {new SodiumCombinedKey("recipient".getBytes())};
-      byte[] cipherText = "encrypted".getBytes();
+      SodiumPublicKey sender = new SodiumPublicKey("fake key".getBytes(UTF_8));
+      byte[] nonce = "nonce".getBytes(UTF_8);
+      byte[] ckNonce = "combined nonce".getBytes(UTF_8);
+      SodiumCombinedKey[] keys = new SodiumCombinedKey[] {new SodiumCombinedKey("recipient".getBytes(UTF_8))};
+      byte[] cipherText = "encrypted".getBytes(UTF_8);
       SodiumEncryptedPayload payload = new SodiumEncryptedPayload(sender, nonce, ckNonce, keys, cipherText);
       storage.put("key", payload);
       Optional<SodiumEncryptedPayload> fromDB = storage.get("key");

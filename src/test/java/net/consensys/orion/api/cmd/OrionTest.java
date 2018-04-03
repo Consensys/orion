@@ -1,5 +1,6 @@
 package net.consensys.orion.api.cmd;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 import net.consensys.orion.api.config.Config;
@@ -40,7 +41,7 @@ public class OrionTest {
     //Test "--generatekeys" option
     String[] args1 = {"--generatekeys", "testkey1"};
     String input = "\n";
-    InputStream in = new ByteArrayInputStream(input.getBytes());
+    InputStream in = new ByteArrayInputStream(input.getBytes(UTF_8));
     System.setIn(in);
     orion.run(args1);
 
@@ -59,7 +60,7 @@ public class OrionTest {
     args1 = new String[] {"-g", "testkey2,testkey3"};
 
     String input2 = "\n\n";
-    InputStream in2 = new ByteArrayInputStream(input2.getBytes());
+    InputStream in2 = new ByteArrayInputStream(input2.getBytes(UTF_8));
     System.setIn(in2);
 
     orion.run(args1);
@@ -94,7 +95,7 @@ public class OrionTest {
 
     String[] args1 = {"--generatekeys", "testkey1"};
     String input = "\n";
-    InputStream in = new ByteArrayInputStream(input.getBytes());
+    InputStream in = new ByteArrayInputStream(input.getBytes(UTF_8));
     System.setIn(in);
     orion.run(args1);
 
@@ -122,7 +123,7 @@ public class OrionTest {
 
     String[] args1 = {"--generatekeys", "testkey1"};
     String input = "abc\n";
-    InputStream in = new ByteArrayInputStream(input.getBytes());
+    InputStream in = new ByteArrayInputStream(input.getBytes(UTF_8));
     System.setIn(in);
     orion.run(args1);
 

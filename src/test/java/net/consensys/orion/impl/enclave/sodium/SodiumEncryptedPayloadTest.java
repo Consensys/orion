@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.enclave.sodium;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 
 import net.consensys.orion.impl.http.server.HttpContentType;
@@ -17,16 +18,16 @@ public class SodiumEncryptedPayloadTest {
 
   @Test
   public void roundTripSerialization() {
-    SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes());
+    SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes(UTF_8));
     Map<SodiumPublicKey, Integer> combinedKeysOwners = new HashMap<>();
-    SodiumPublicKey key = new SodiumPublicKey("fake remote publickey".getBytes());
+    SodiumPublicKey key = new SodiumPublicKey("fake remote publickey".getBytes(UTF_8));
     combinedKeysOwners.put(key, 1);
     SodiumEncryptedPayload payload = new SodiumEncryptedPayload(
-        new SodiumPublicKey("fakekey".getBytes()),
-        "fake nonce".getBytes(),
-        "fake combinedNonce".getBytes(),
+        new SodiumPublicKey("fakekey".getBytes(UTF_8)),
+        "fake nonce".getBytes(UTF_8),
+        "fake combinedNonce".getBytes(UTF_8),
         new SodiumCombinedKey[] {sodiumCombinedKey},
-        "fake ciphertext".getBytes(),
+        "fake ciphertext".getBytes(UTF_8),
         Optional.of(combinedKeysOwners));
     assertEquals(payload, Serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, payload));
     assertEquals(payload, Serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, payload));
@@ -34,13 +35,13 @@ public class SodiumEncryptedPayloadTest {
 
   @Test
   public void serializationToJsonWithoutCombinedKeyOwners() throws Exception {
-    SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes());
+    SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes(UTF_8));
     SodiumEncryptedPayload payload = new SodiumEncryptedPayload(
-        new SodiumPublicKey("fakekey".getBytes()),
-        "fake nonce".getBytes(),
-        "fake combinedNonce".getBytes(),
+        new SodiumPublicKey("fakekey".getBytes(UTF_8)),
+        "fake nonce".getBytes(UTF_8),
+        "fake combinedNonce".getBytes(UTF_8),
         new SodiumCombinedKey[] {sodiumCombinedKey},
-        "fake ciphertext".getBytes(),
+        "fake ciphertext".getBytes(UTF_8),
         Optional.empty());
     byte[] serialized = Serializer.serialize(HttpContentType.JSON, payload);
     ObjectMapper mapper = new ObjectMapper();

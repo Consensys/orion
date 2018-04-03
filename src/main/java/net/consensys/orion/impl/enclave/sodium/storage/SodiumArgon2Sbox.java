@@ -1,5 +1,7 @@
 package net.consensys.orion.impl.enclave.sodium.storage;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.exception.OrionErrorCode;
@@ -21,7 +23,7 @@ public class SodiumArgon2Sbox {
     final int algorithm = lookupAlgorithm(argonOptions);
     try {
       final byte[] pwhash = SodiumLibrary.cryptoPwhash(
-          password.getBytes(),
+          password.getBytes(UTF_8),
           decode(asalt),
           argonOptions.opsLimit().get(),
           new NativeLong(argonOptions.memLimit().get()),
@@ -68,7 +70,7 @@ public class SodiumArgon2Sbox {
       ArgonOptions argonOptions) {
     try {
       final byte[] pwhash = SodiumLibrary.cryptoPwhash(
-          password.getBytes(),
+          password.getBytes(UTF_8),
           asalt,
           argonOptions.opsLimit().get(),
           new NativeLong(argonOptions.memLimit().get()),

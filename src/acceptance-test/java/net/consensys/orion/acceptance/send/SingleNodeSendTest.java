@@ -1,5 +1,6 @@
 package net.consensys.orion.acceptance.send;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.createTempDirectory;
 import static net.consensys.util.Files.deleteRecursively;
 import static org.junit.Assert.assertEquals;
@@ -24,7 +25,7 @@ import org.junit.Test;
 public class SingleNodeSendTest {
 
   private static final NodeUtils nodeUtils = new NodeUtils();
-  private static final byte[] originalPayload = "another wonderful transaction".getBytes();
+  private static final byte[] originalPayload = "another wonderful transaction".getBytes(UTF_8);
 
   private static final String PK_1_B_64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
   private static final String PK_CORRUPTED = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGoAAA=";

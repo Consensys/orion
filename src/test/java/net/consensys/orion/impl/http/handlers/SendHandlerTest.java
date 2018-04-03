@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.http.handlers;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
@@ -77,7 +78,7 @@ public class SendHandlerTest extends HandlerTest {
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
 
-    Map<String, Object> sendRequest = buildRequest(Collections.singletonList(fakePeer), "foo".getBytes());
+    Map<String, Object> sendRequest = buildRequest(Collections.singletonList(fakePeer), "foo".getBytes(UTF_8));
 
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
@@ -103,7 +104,7 @@ public class SendHandlerTest extends HandlerTest {
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // configureRoutes our sendRequest
-    Map<String, Object> sendRequest = buildRequest(Arrays.asList(fakePeer), "foo".getBytes());
+    Map<String, Object> sendRequest = buildRequest(Arrays.asList(fakePeer), "foo".getBytes(UTF_8));
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
@@ -236,9 +237,9 @@ public class SendHandlerTest extends HandlerTest {
 
   @Test
   public void sendWithInvalidContentType() throws Exception {
-    String b64String = Base64.encode("foo".getBytes());
+    String b64String = Base64.encode("foo".getBytes(UTF_8));
 
-    Map<String, Object> sendRequest = buildRequest(new String[] {b64String}, b64String.getBytes(), b64String);
+    Map<String, Object> sendRequest = buildRequest(new String[] {b64String}, b64String.getBytes(UTF_8), b64String);
     // CBOR type is not available
     Request request = buildPrivateAPIRequest("/send", HttpContentType.CBOR, sendRequest);
     Response resp = httpClient.newCall(request).execute();
@@ -386,7 +387,7 @@ public class SendHandlerTest extends HandlerTest {
 
     String[] to = new String[] {Base64.encode(fakePeer.publicKey.getEncoded())};
 
-    Map<String, Object> sendRequest = buildRequest(to, payload.getBytes(), null);
+    Map<String, Object> sendRequest = buildRequest(to, payload.getBytes(UTF_8), null);
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request

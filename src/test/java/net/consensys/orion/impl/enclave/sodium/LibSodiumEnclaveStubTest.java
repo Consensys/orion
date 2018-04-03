@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.enclave.sodium;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 import net.consensys.orion.api.enclave.EncryptedPayload;
@@ -12,7 +13,7 @@ public class LibSodiumEnclaveStubTest {
 
   @Test
   public void roundTripEncryption() {
-    byte[] message = "hello".getBytes();
+    byte[] message = "hello".getBytes(UTF_8);
     LibSodiumEnclaveStub enclave = new LibSodiumEnclaveStub();
     EncryptedPayload encryptedPayload = enclave.encrypt(message, null, null);
     byte[] bytes = enclave.decrypt(encryptedPayload, null);

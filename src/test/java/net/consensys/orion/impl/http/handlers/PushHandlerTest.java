@@ -1,6 +1,7 @@
 
 package net.consensys.orion.impl.http.handlers;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -101,6 +102,6 @@ public class PushHandlerTest extends HandlerTest {
     LibSodiumEnclave sEnclave = new LibSodiumEnclave(config, memoryKeyStore);
     PublicKey k1 = memoryKeyStore.generateKeyPair(keyConfig);
     PublicKey k2 = memoryKeyStore.generateKeyPair(keyConfig);
-    return sEnclave.encrypt("something important".getBytes(), k1, new PublicKey[] {k2});
+    return sEnclave.encrypt("something important".getBytes(UTF_8), k1, new PublicKey[] {k2});
   }
 }

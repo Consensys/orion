@@ -1,6 +1,7 @@
 package net.consensys.orion.api.cmd;
 
 import static io.vertx.core.Vertx.vertx;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
@@ -255,7 +256,7 @@ public class Orion {
 
   private void displayVersion() {
     try (InputStream versionAsStream = Orion.class.getResourceAsStream("/version.txt");
-        BufferedReader buffer = new BufferedReader(new InputStreamReader(versionAsStream));) {
+        BufferedReader buffer = new BufferedReader(new InputStreamReader(versionAsStream, UTF_8))) {
       String contents = buffer.lines().collect(Collectors.joining("\n"));
       System.out.println(contents);
     } catch (IOException e) {
@@ -268,7 +269,7 @@ public class Orion {
 
     SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
 
-    Scanner scanner = new Scanner(System.in);
+    Scanner scanner = new Scanner(System.in, UTF_8.name());
 
     for (String keyName : keysToGenerate) {
 
