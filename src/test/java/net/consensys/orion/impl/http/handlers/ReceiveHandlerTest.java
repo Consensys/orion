@@ -43,9 +43,9 @@ public class ReceiveHandlerTest extends HandlerTest {
     return new LibSodiumEnclave(config, memoryKeyStore);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void payloadIsRetrieved() throws Exception {
-
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
@@ -58,9 +58,9 @@ public class ReceiveHandlerTest extends HandlerTest {
 
     assertEquals(200, resp.code());
 
-    final Map receiveResponse = Serializer.deserialize(JSON, Map.class, resp.body().bytes());
+    final Map<String, String> receiveResponse = Serializer.deserialize(JSON, Map.class, resp.body().bytes());
 
-    byte[] decodedPayload = Base64.decode((String) receiveResponse.get("payload"));
+    byte[] decodedPayload = Base64.decode(receiveResponse.get("payload"));
     assertArrayEquals(toEncrypt, decodedPayload);
   }
 
@@ -219,7 +219,7 @@ public class ReceiveHandlerTest extends HandlerTest {
     assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
   }
 
-  private ReceiveRequest buildReceiveRequest(Storage storage, byte[] toEncrypt) {
+  private ReceiveRequest buildReceiveRequest(Storage<EncryptedPayload> storage, byte[] toEncrypt) {
     // encrypt a payload
     SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     SodiumPublicKey recipientKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);

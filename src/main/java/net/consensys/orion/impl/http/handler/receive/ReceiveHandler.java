@@ -25,10 +25,10 @@ import org.apache.logging.log4j.Logger;
 public class ReceiveHandler implements Handler<RoutingContext> {
   private static final Logger log = LogManager.getLogger();
   private final Enclave enclave;
-  private final Storage storage;
+  private final Storage<EncryptedPayload> storage;
   private final HttpContentType contentType;
 
-  public ReceiveHandler(Enclave enclave, Storage storage, HttpContentType contentType) {
+  public ReceiveHandler(Enclave enclave, Storage<EncryptedPayload> storage, HttpContentType contentType) {
     this.enclave = enclave;
     this.storage = storage;
     this.contentType = contentType;

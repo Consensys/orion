@@ -32,7 +32,7 @@ public class SendHandler implements Handler<RoutingContext> {
   private static final Logger log = LogManager.getLogger();
 
   private final Enclave enclave;
-  private final Storage storage;
+  private final Storage<EncryptedPayload> storage;
   private final List<PublicKey> nodeKeys;
   private final ConcurrentNetworkNodes networkNodes;
   private final HttpContentType contentType;
@@ -42,7 +42,7 @@ public class SendHandler implements Handler<RoutingContext> {
   public SendHandler(
       Vertx vertx,
       Enclave enclave,
-      Storage storage,
+      Storage<EncryptedPayload> storage,
       ConcurrentNetworkNodes networkNodes,
       HttpContentType contentType) {
     this.enclave = enclave;
@@ -104,7 +104,9 @@ public class SendHandler implements Handler<RoutingContext> {
 
     // propagate payload
     log.debug("propagating payload");
-    List<CompletableFuture<Boolean>> futures = keys.stream().map(pKey -> {
+
+    @SuppressWarnings("rawtypes")
+    CompletableFuture[] cfs = keys.stream().map(pKey -> {
       URL recipientURL = networkNodes.urlForRecipient(pKey);
 
       CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
@@ -128,9 +130,9 @@ public class SendHandler implements Handler<RoutingContext> {
           .end(Buffer.buffer(payload));
 
       return responseFuture;
-    }).collect(Collectors.toList());
+    }).toArray(CompletableFuture[]::new);
 
-    CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).whenComplete((all, ex) -> {
+    CompletableFuture.allOf(cfs).whenComplete((all, ex) -> {
       if (ex != null) {
         log.warn("propagating the payload failed, removing stored encrypted payload");
         storage.remove(digest);

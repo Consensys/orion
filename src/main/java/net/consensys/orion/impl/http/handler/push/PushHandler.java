@@ -14,9 +14,9 @@ import org.apache.logging.log4j.Logger;
 /** used to push a payload to a node. */
 public class PushHandler implements Handler<RoutingContext> {
   private static final Logger log = LogManager.getLogger();
-  private final Storage storage;
+  private final Storage<EncryptedPayload> storage;
 
-  public PushHandler(Storage storage) {
+  public PushHandler(Storage<EncryptedPayload> storage) {
     this.storage = storage;
   }
 
