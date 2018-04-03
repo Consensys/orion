@@ -29,7 +29,7 @@ public class SerializerTest {
     DummyObject dummyObjectOriginal = new DummyObject();
     byte[] bytes = Serializer.serialize(HttpContentType.JSON, dummyObjectOriginal);
     DummyObject dummyObject = Serializer.deserialize(HttpContentType.JSON, DummyObject.class, bytes);
-    assert (dummyObject.equals(dummyObjectOriginal));
+    assertEquals(dummyObjectOriginal, dummyObject);
   }
 
   @Test
@@ -37,7 +37,7 @@ public class SerializerTest {
     DummyObject dummyObjectOriginal = new DummyObject();
     byte[] bytes = Serializer.serialize(HttpContentType.CBOR, dummyObjectOriginal);
     DummyObject dummyObject = Serializer.deserialize(HttpContentType.CBOR, DummyObject.class, bytes);
-    assert (dummyObject.equals(dummyObjectOriginal));
+    assertEquals(dummyObjectOriginal, dummyObject);
   }
 
   @Test
