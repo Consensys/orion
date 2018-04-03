@@ -128,9 +128,6 @@ jobs:
       - run:
           name: Upload skinny zip file to Bintray
           command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/distributions/orion-$(cat build/version).zip consensys binaries orion $(cat build/version)"
-      - run:
-          name: Upload jar file to Bintray
-          command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/libs/orion-$(cat build/version).jar consensys binaries orion $(cat build/version)"
 
 workflows:
   version: 2
