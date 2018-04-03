@@ -93,7 +93,7 @@ public final class TomlConfigBuilder {
     }
 
     if (othernodesError.length() != 0) {
-      errorMsg.append("Error: key 'othernodes' in config containes malformed URLS.\n");
+      errorMsg.append("Error: key 'othernodes' in config contains malformed URLS.\n");
       errorMsg.append(othernodesError);
     }
 

@@ -13,6 +13,8 @@ import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
+import net.consensys.orion.api.exception.OrionException;
+import net.consensys.orion.api.exception.OrionStartException;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
@@ -27,7 +29,6 @@ import net.consensys.orion.impl.http.handler.receive.ReceiveHandler;
 import net.consensys.orion.impl.http.handler.send.SendHandler;
 import net.consensys.orion.impl.http.handler.upcheck.UpcheckHandler;
 import net.consensys.orion.impl.http.server.vertx.HttpErrorHandler;
-import net.consensys.orion.impl.http.server.vertx.VertxServer;
 import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 import net.consensys.orion.impl.network.NetworkDiscovery;
 import net.consensys.orion.impl.storage.EncryptedPayloadStorage;
@@ -35,20 +36,21 @@ import net.consensys.orion.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.impl.storage.file.MapDbStorage;
 import net.consensys.orion.impl.storage.leveldb.LevelDbStorage;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -62,13 +64,29 @@ public class Orion {
   private static final Logger log = LogManager.getLogger();
   public static final String name = "orion";
 
-  private final Vertx vertx = vertx();
+  private final Vertx vertx;
   private StorageEngine<EncryptedPayload> storageEngine;
+  private NetworkDiscovery discovery;
+  private HttpServer publicHTTPServer;
+  private HttpServer privateHTTPServer;
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     log.info("starting orion");
     Orion orion = new Orion();
-    orion.run(args);
+    try {
+      orion.run(System.out, System.err, args);
+    } catch (OrionStartException e) {
+      System.err.println("Orion failed to start: " + e.getMessage());
+      System.exit(1);
+    } catch (ConfigException e) {
+      System.err.println(e.getMessage());
+      System.exit(1);
+    } catch (Throwable t) {
+      log.error("Unexpected exception upon starting Orion", t);
+      System.err.println(
+          "An unexpected exception was reported while starting Orion. Please refer to the logs for more information");
+      System.exit(1);
+    }
   }
 
   public static void configureRoutes(
@@ -82,7 +100,6 @@ public class Orion {
 
     // sets response content-type from Accept header
     // and handle errors
-
     LoggerHandler loggerHandler = LoggerHandler.create();
 
     //Setup Public APIs
@@ -128,7 +145,52 @@ public class Orion {
         .handler(new ReceiveHandler(enclave, storage, APPLICATION_OCTET_STREAM));
   }
 
+  public Orion() {
+    this(vertx());
+  }
+
+  Orion(Vertx vertx) {
+    this.vertx = vertx;
+  }
+
   public void stop() {
+    CompletableFuture<Boolean> publicServerFuture = new CompletableFuture<>();
+    CompletableFuture<Boolean> privateServerFuture = new CompletableFuture<>();
+    CompletableFuture<Boolean> discoveryFuture = new CompletableFuture<>();
+    publicHTTPServer.close(result -> {
+      if (result.succeeded()) {
+        publicServerFuture.complete(true);
+      } else {
+        publicServerFuture.completeExceptionally(result.cause());
+      }
+    });
+    privateHTTPServer.close(result -> {
+      if (result.succeeded()) {
+        privateServerFuture.complete(true);
+      } else {
+        privateServerFuture.completeExceptionally(result.cause());
+      }
+    });
+    try {
+      Future<Void> future = Future.future();
+      future.setHandler(result -> {
+        if (result.succeeded()) {
+          discoveryFuture.complete(true);
+        } else {
+          discoveryFuture.completeExceptionally(result.cause());
+        }
+      });
+      discovery.stop(future);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    try {
+      CompletableFuture.allOf(publicServerFuture, privateServerFuture, discoveryFuture).get();
+    } catch (InterruptedException | ExecutionException e) {
+      log.error("Error stopping vert.x HTTP servers and discovery", e);
+    }
+
     CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
 
     vertx.close(result -> {
@@ -141,9 +203,8 @@ public class Orion {
 
     try {
       resultFuture.get();
-
     } catch (InterruptedException | ExecutionException io) {
-      log.error(io.getMessage());
+      log.error("Error stopping vert.x", io);
     }
 
     if (storageEngine != null) {
@@ -151,33 +212,33 @@ public class Orion {
     }
   }
 
-  public void run(String... args) throws FileNotFoundException, ExecutionException, InterruptedException {
+  public void run(PrintStream out, PrintStream err, String... args) {
     // parsing arguments
-    OrionArguments arguments = new OrionArguments(args);
+    OrionArguments arguments = new OrionArguments(out, err, args);
 
     if (arguments.argumentExit()) {
       return;
     }
 
-    if (arguments.displayVersion()) {
-      displayVersion();
-      return;
-    }
-
     // load config file
-    Config config = loadConfig(arguments.configFileName());
+    Config config = loadConfig(arguments.configFileName().map(fileName -> {
+      File file = new File(fileName);
+      if (!file.exists()) {
+        throw new OrionException(OrionErrorCode.CONFIG_FILE_MISSING);
+      }
+      return file;
+    }));
 
     // generate key pair and exit
     if (arguments.keysToGenerate().isPresent()) {
-      generateKeyPairs(config, arguments.keysToGenerate().get());
+      generateKeyPairs(out, err, config, arguments.keysToGenerate().get());
       return;
     }
 
-    // start our API server
-    run(config);
+    run(out, err, config);
   }
 
-  public void run(Config config) throws ExecutionException, InterruptedException {
+  public void run(PrintStream out, PrintStream err, Config config) {
     SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
     ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(config, keyStore.nodeKeys());
     Enclave enclave = new LibSodiumEnclave(config, keyStore);
@@ -195,7 +256,8 @@ public class Orion {
     if (!dirStoragePath.exists()) {
       log.warn("storage path {} doesn't exist, creating...", storagePath);
       if (!dirStoragePath.mkdirs()) {
-        log.error("couldn't create storage path {}", storagePath);
+        log.error("Couldn't create storage path {}", storagePath);
+        err.println("Couldn't create storage path " + storagePath);
         System.exit(-1);
       }
     }
@@ -211,28 +273,52 @@ public class Orion {
     configureRoutes(vertx, networkNodes, enclave, storage, publicRouter, privateRouter);
 
     // asynchronously start the vertx http server for public API
-    CompletableFuture<Boolean> publicFuture = startHttpServerAsync(config.port(), vertx, publicRouter);
+    CompletableFuture<Boolean> publicFuture = new CompletableFuture<>();
+    publicHTTPServer = vertx
+        .createHttpServer(new HttpServerOptions().setPort(config.port()))
+        .requestHandler(publicRouter::accept)
+        .listen(completeFutureInHandler(publicFuture));
 
-    // asynchronously start the vertx http server for private API
-    CompletableFuture<Boolean> privateFuture = startHttpServerAsync(config.privacyPort(), vertx, privateRouter);
-
-    // Block and wait for the two servers to start.
-    CompletableFuture.allOf(publicFuture, privateFuture).get();
+    CompletableFuture<Boolean> privateFuture = new CompletableFuture<>();
+    privateHTTPServer = vertx
+        .createHttpServer(new HttpServerOptions().setPort(config.privacyPort()))
+        .requestHandler(privateRouter::accept)
+        .listen(completeFutureInHandler(privateFuture));
 
     // start network discovery of other peers
-    NetworkDiscovery discovery = new NetworkDiscovery(networkNodes);
-    vertx.deployVerticle(discovery);
+    discovery = new NetworkDiscovery(networkNodes);
+    CompletableFuture<Boolean> verticleFuture = new CompletableFuture<>();
+    vertx.deployVerticle(discovery, result -> {
+      if (result.succeeded()) {
+        verticleFuture.complete(true);
+      } else {
+        verticleFuture.completeExceptionally(result.cause());
+      }
+    });
+
+    try {
+      CompletableFuture.allOf(publicFuture, privateFuture, verticleFuture).get();
+    } catch (ExecutionException e) {
+      log.error("Error reported while starting Orion", e.getCause());
+      throw new OrionStartException(OrionErrorCode.SERVICE_START_ERROR, e.getCause().getMessage());
+    } catch (InterruptedException e) {
+      throw new OrionStartException(
+          OrionErrorCode.SERVICE_START_INTERRUPTED,
+          "Orion was interrupted while starting services");
+    }
 
     // set shutdown hook
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
   }
 
-  private CompletableFuture<Boolean> startHttpServerAsync(int port, Vertx vertx, Router publicRouter) {
-    HttpServerOptions publicServerOptions = new HttpServerOptions();
-    publicServerOptions.setPort(port);
-
-    VertxServer publicHTTPServer = new VertxServer(vertx, publicRouter, publicServerOptions);
-    return (CompletableFuture<Boolean>) publicHTTPServer.start();
+  private Handler<AsyncResult<HttpServer>> completeFutureInHandler(CompletableFuture<Boolean> future) {
+    return result -> {
+      if (result.succeeded()) {
+        future.complete(true);
+      } else {
+        future.completeExceptionally(result.cause());
+      }
+    };
   }
 
   private StorageEngine<EncryptedPayload> createStorageEngine(Config config, String storagePath) {
@@ -254,17 +340,7 @@ public class Orion {
     }
   }
 
-  private void displayVersion() {
-    try (InputStream versionAsStream = Orion.class.getResourceAsStream("/version.txt");
-        BufferedReader buffer = new BufferedReader(new InputStreamReader(versionAsStream, UTF_8))) {
-      String contents = buffer.lines().collect(Collectors.joining("\n"));
-      System.out.println(contents);
-    } catch (IOException e) {
-      log.error("Read of Version file failed", e);
-    }
-  }
-
-  private void generateKeyPairs(Config config, String[] keysToGenerate) {
+  private void generateKeyPairs(PrintStream out, PrintStream err, Config config, String[] keysToGenerate) {
     log.info("generating Key Pairs");
 
     SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
@@ -274,21 +350,25 @@ public class Orion {
     for (String keyName : keysToGenerate) {
 
       //Prompt for Password from user
-      System.out.format("Enter password for key pair [%s] : ", keyName);
+      out.format("Enter password for key pair [%s] : ", keyName);
       String pwd = scanner.nextLine().trim();
       Optional<String> password = pwd.length() > 0 ? Optional.of(pwd) : Optional.empty();
 
-      log.debug("Password for key [" + keyName + "] - [" + password + "]");
+      out.println("Password for key [" + keyName + "] - [" + password + "]");
 
       keyStore.generateKeyPair(new KeyConfig(keyName, password));
     }
   }
 
-  Config loadConfig(Optional<String> configFileName) throws FileNotFoundException {
+  Config loadConfig(Optional<File> configFile) {
     InputStream configAsStream;
-    if (configFileName.isPresent()) {
-      log.info("using {} provided config file", configFileName.get());
-      configAsStream = new FileInputStream(new File(configFileName.get()));
+    if (configFile.isPresent()) {
+      log.info("using {} provided config file", configFile.get().getAbsolutePath());
+      try {
+        configAsStream = new FileInputStream(configFile.get());
+      } catch (FileNotFoundException e) {
+        throw new RuntimeException(e);
+      }
     } else {
       log.warn("no config file provided, using default.conf");
       configAsStream = Orion.class.getResourceAsStream("/default.conf");

@@ -163,7 +163,7 @@ public class TomlConfigBuilderTest {
           + "Error: key 'url' in config is malformed.\n\tunknown protocol: htt\n"
           + "Error: key 'privacyurl' in config is malformed.\n\tunknown protocol: htt\n"
           + "Error: value for key 'privacyport' in config must be different to 'port'\n"
-          + "Error: key 'othernodes' in config containes malformed URLS.\n"
+          + "Error: key 'othernodes' in config contains malformed URLS.\n"
           + "\tURL [htt://127.0.0.1:9000/] unknown protocol: htt\n"
           + "\tURL [10.1.1.1] no protocol: 10.1.1.1\n"
           + "Error: the number of keys specified for keys 'publickeys' and 'privatekeys' must be the same\n"

@@ -93,7 +93,6 @@ public class SendHandler implements Handler<RoutingContext> {
     List<PublicKey> keys = toKeys.stream().filter(pKey -> !nodeKeys.contains(pKey)).collect(Collectors.toList());
 
     if (keys.stream().anyMatch(pKey -> networkNodes.urlForRecipient(pKey) == null)) {
-      CompletableFuture<Boolean> errorFuture = new CompletableFuture<>();
       routingContext.fail(new OrionException(OrionErrorCode.NODE_MISSING_PEER_URL, "couldn't find peer URL"));
       return;
     }
