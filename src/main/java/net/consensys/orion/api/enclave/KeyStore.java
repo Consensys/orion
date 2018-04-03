@@ -21,6 +21,7 @@ public interface KeyStore {
   /**
    * Generate and put a new keypair, returning the public key for external use.
    *
+   * @param keyConfig Configuration for key generation.
    * @return Return the public key part of the key pair.
    */
   PublicKey generateKeyPair(KeyConfig keyConfig);

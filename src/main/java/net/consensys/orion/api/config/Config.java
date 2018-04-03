@@ -38,7 +38,7 @@ public interface Config {
   int privacyPort();
 
   /**
-   * Path at which to locate the lib sodium shared library.
+   * Path to the lib sodium shared library.
    *
    * <p>
    * <strong>Default:</strong>
@@ -48,6 +48,8 @@ public interface Config {
    * <li><b>Mac</b> /usr/local/lib/libsodium.dylib
    * <li><b>Windows</b> C:/libsodium/libsodium.dll
    * </ul>
+   *
+   * @return Path to the lib sodium shared library.
    */
   String libSodiumPath();
 
@@ -207,7 +209,7 @@ public interface Config {
    *
    * <ul>
    * <li><strong>whitelist:</strong> Only nodes that have previously connected to this node and been added to the
-   * <i>tlsKnownClients</> file will be allowed to connect. This mode will not add any new clients to the
+   * <i>tlsKnownClients</i> file will be allowed to connect. This mode will not add any new clients to the
    * <i>tlsKnownClients</i> file.
    * <li><strong>tofu:</strong> (Trust-on-first-use) Only the first node that connects identifying as a certain host
    * will be allowed to connect as the same host in the future. Note that nodes identifying as other hosts will still be
