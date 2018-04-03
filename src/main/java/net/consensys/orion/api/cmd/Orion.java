@@ -237,7 +237,7 @@ public class Orion {
   private StorageEngine<EncryptedPayload> createStorageEngine(Config config, String storagePath) {
     String storage = config.storage();
     String dbPath = "routerdb";
-    String[] storageOptions = storage.split(":");
+    String[] storageOptions = storage.split(":", 2);
     if (storageOptions.length > 1) {
       dbPath = storageOptions[1];
     }
