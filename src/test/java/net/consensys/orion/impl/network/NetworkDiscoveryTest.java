@@ -76,7 +76,7 @@ public class NetworkDiscoveryTest {
     assertEquals(1, networkDiscovery.discoverers().size());
 
     // ensure the discoverer match our peer URL
-    NetworkDiscovery.Discoverer discoverer = networkDiscovery.discoverers().get(fakePeer.getURL());
+    NetworkDiscovery.Discoverer discoverer = networkDiscovery.discoverers().get(fakePeer.getURL().toString());
     assertNotNull(discoverer);
 
     Thread.sleep(3 * (discoverer.currentRefreshDelay + NetworkDiscovery.HTTP_CLIENT_TIMEOUT_MS));
@@ -117,7 +117,7 @@ public class NetworkDiscoveryTest {
     assertEquals(1, networkDiscovery.discoverers().size());
 
     // ensure the discoverer match our peer URL
-    NetworkDiscovery.Discoverer knownPeerDiscoverer = networkDiscovery.discoverers().get(knownPeer.getURL());
+    NetworkDiscovery.Discoverer knownPeerDiscoverer = networkDiscovery.discoverers().get(knownPeer.getURL().toString());
     assertNotNull(knownPeerDiscoverer);
 
     Thread.sleep(3 * (knownPeerDiscoverer.currentRefreshDelay + NetworkDiscovery.HTTP_CLIENT_TIMEOUT_MS));
@@ -131,7 +131,8 @@ public class NetworkDiscoveryTest {
     assertEquals(unknownPeer.getURL(), networkNodes.nodePKs().get(unknownPeer.publicKey));
 
     // ensure unknown peer discoverer is set and being called
-    NetworkDiscovery.Discoverer unknownPeerDiscoverer = networkDiscovery.discoverers().get(unknownPeer.getURL());
+    NetworkDiscovery.Discoverer unknownPeerDiscoverer =
+        networkDiscovery.discoverers().get(unknownPeer.getURL().toString());
     assertNotNull(unknownPeerDiscoverer);
 
     assertTrue(unknownPeerDiscoverer.lastUpdate.isAfter(discoveryStart));

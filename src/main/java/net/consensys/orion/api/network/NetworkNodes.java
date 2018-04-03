@@ -4,8 +4,8 @@ import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 
 import java.net.URL;
 import java.security.PublicKey;
+import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 /** Details of other nodes on the network */
 public interface NetworkNodes {
@@ -18,7 +18,7 @@ public interface NetworkNodes {
   /**
    * @return List of URLs of other nodes on the network
    */
-  Set<URL> nodeURLs();
+  Collection<URL> nodeURLs();
 
   URL urlForRecipient(PublicKey recipient);
 
