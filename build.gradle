@@ -68,6 +68,7 @@ spotless {
 
 tasks.withType(JavaCompile) {
   options.compilerArgs += [
+    '-proc:none',
     '-Xlint:unchecked',
     '-Xlint:cast',
     '-Xlint:rawtypes',
