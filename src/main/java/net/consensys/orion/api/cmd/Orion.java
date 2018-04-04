@@ -14,7 +14,6 @@ import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.exception.OrionException;
-import net.consensys.orion.api.exception.OrionStartException;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
@@ -36,11 +35,12 @@ import net.consensys.orion.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.impl.storage.file.MapDbStorage;
 import net.consensys.orion.impl.storage.leveldb.LevelDbStorage;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
@@ -75,10 +75,8 @@ public class Orion {
     Orion orion = new Orion();
     try {
       orion.run(System.out, System.err, args);
-    } catch (OrionStartException e) {
-      System.err.println("Orion failed to start: " + e.getMessage());
-      System.exit(1);
-    } catch (ConfigException e) {
+    } catch (OrionStartException | ConfigException e) {
+      log.error(e.getMessage(), e.getCause());
       System.err.println(e.getMessage());
       System.exit(1);
     } catch (Throwable t) {
@@ -221,12 +219,13 @@ public class Orion {
     }
 
     // load config file
-    Config config = loadConfig(arguments.configFileName().map(fileName -> {
-      File file = new File(fileName);
-      if (!file.exists()) {
+    Config config;
+    config = loadConfig(arguments.configFileName().map(fileName -> {
+      Path configFile = Paths.get(fileName);
+      if (!Files.exists(configFile)) {
         throw new OrionException(OrionErrorCode.CONFIG_FILE_MISSING);
       }
-      return file;
+      return configFile;
     }));
 
     // generate key pair and exit
@@ -243,30 +242,22 @@ public class Orion {
     ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(config, keyStore.nodeKeys());
     Enclave enclave = new LibSodiumEnclave(config, keyStore);
 
-    // storage path
-    String storagePath = config.workDir().orElse(new File(".")).getPath() + "/";
-    String configStorage = config.storage();
-    if (configStorage.startsWith("dir:")) {
-      storagePath += configStorage.substring(4) + "/";
-    }
+    Path workDir = config.workDir();
+    log.info("using working directory {}", workDir);
 
-    // if path doesn't exist, create it.
-    File dirStoragePath = new File(storagePath);
-    log.info("using storage path {}", storagePath);
-    if (!dirStoragePath.exists()) {
-      log.warn("storage path {} doesn't exist, creating...", storagePath);
-      if (!dirStoragePath.mkdirs()) {
-        log.error("Couldn't create storage path {}", storagePath);
-        err.println("Couldn't create storage path " + storagePath);
-        System.exit(-1);
-      }
+    try {
+      Files.createDirectories(workDir);
+    } catch (IOException ex) {
+      throw new OrionStartException("Couldn't create working directory '" + workDir + "': " + ex.getMessage(), ex);
     }
 
     // create our storage engine
-    storageEngine = createStorageEngine(config, storagePath);
+    storageEngine = createStorageEngine(config, workDir);
+
     // Vertx routers
     Router publicRouter = Router.router(vertx);
     Router privateRouter = Router.router(vertx);
+
     // controller dependencies
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
     EncryptedPayloadStorage storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
@@ -299,12 +290,9 @@ public class Orion {
     try {
       CompletableFuture.allOf(publicFuture, privateFuture, verticleFuture).get();
     } catch (ExecutionException e) {
-      log.error("Error reported while starting Orion", e.getCause());
-      throw new OrionStartException(OrionErrorCode.SERVICE_START_ERROR, e.getCause().getMessage());
+      throw new OrionStartException("Orion failed to start: " + e.getCause().getMessage(), e.getCause());
     } catch (InterruptedException e) {
-      throw new OrionStartException(
-          OrionErrorCode.SERVICE_START_INTERRUPTED,
-          "Orion was interrupted while starting services");
+      throw new OrionStartException("Orion was interrupted while starting services");
     }
 
     // set shutdown hook
@@ -321,22 +309,27 @@ public class Orion {
     };
   }
 
-  private StorageEngine<EncryptedPayload> createStorageEngine(Config config, String storagePath) {
+  private StorageEngine<EncryptedPayload> createStorageEngine(Config config, Path storagePath) {
     String storage = config.storage();
-    String dbPath = "routerdb";
+    String dbDir = "routerdb";
     String[] storageOptions = storage.split(":", 2);
     if (storageOptions.length > 1) {
-      dbPath = storageOptions[1];
+      dbDir = storageOptions[1];
     }
-    new File(storagePath + dbPath).mkdirs();
+
+    Path dbPath = storagePath.resolve(dbDir);
+    try {
+      Files.createDirectories(dbPath);
+    } catch (IOException ex) {
+      throw new OrionStartException("Couldn't create storage path '" + dbPath + "': " + ex.getMessage(), ex);
+    }
+
     if (storage.startsWith("mapdb")) {
-      return new MapDbStorage<>(SodiumEncryptedPayload.class, storagePath + dbPath);
+      return new MapDbStorage<>(SodiumEncryptedPayload.class, dbPath);
     } else if (storage.startsWith("leveldb")) {
-      return new LevelDbStorage<>(SodiumEncryptedPayload.class, storagePath + dbPath);
+      return new LevelDbStorage<>(SodiumEncryptedPayload.class, dbPath);
     } else {
-      throw new ConfigException(
-          OrionErrorCode.CONFIGURATION_STORAGE_MECHANISM,
-          "unsupported storage mechanism: " + storage);
+      throw new OrionStartException("unsupported storage mechanism: " + storage);
     }
   }
 
@@ -360,22 +353,20 @@ public class Orion {
     }
   }
 
-  Config loadConfig(Optional<File> configFile) {
+  Config loadConfig(Optional<Path> configFile) {
     InputStream configAsStream;
     if (configFile.isPresent()) {
-      log.info("using {} provided config file", configFile.get().getAbsolutePath());
+      log.info("using {} provided config file", configFile.get().toAbsolutePath());
       try {
-        configAsStream = new FileInputStream(configFile.get());
-      } catch (FileNotFoundException e) {
-        throw new RuntimeException(e);
+        configAsStream = Files.newInputStream(configFile.get());
+      } catch (IOException ex) {
+        throw new OrionStartException("Could not open " + configFile.get() + ": " + ex.getMessage(), ex);
       }
     } else {
-      log.warn("no config file provided, using default.conf");
-      configAsStream = Orion.class.getResourceAsStream("/default.conf");
+      log.warn("no config file provided, using default");
+      configAsStream = this.getClass().getResourceAsStream("/default.conf");
     }
 
-    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
-
-    return configBuilder.build(configAsStream);
+    return new TomlConfigBuilder().build(configAsStream);
   }
 }

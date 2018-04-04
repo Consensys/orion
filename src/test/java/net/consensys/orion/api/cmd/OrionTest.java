@@ -11,8 +11,10 @@ import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import io.vertx.core.AsyncResult;
@@ -29,10 +31,10 @@ public class OrionTest {
 
   @Test
   public void loadSampleConfig() throws Exception {
-    Config config = orion.loadConfig(Optional.of(new File("src/main/resources/sample.conf")));
+    Config config = orion.loadConfig(Optional.of(Paths.get("src/main/resources/sample.conf")));
     assertEquals(8080, config.port());
 
-    File expectedSocket = new File("data/orion.ipc");
+    Path expectedSocket = Paths.get("data/orion.ipc");
     assertTrue(config.socket().isPresent());
     assertEquals(expectedSocket, config.socket().get());
   }
@@ -54,16 +56,12 @@ public class OrionTest {
     System.setIn(in);
     orion.run(System.out, System.err, args1);
 
-    File privateKey1 = new File("testkey1.key");
-    File publicKey1 = new File("testkey1.pub");
-    assertTrue(privateKey1.exists());
-    assertTrue(publicKey1.exists());
-    if (privateKey1.exists()) {
-      privateKey1.delete();
-    }
-    if (publicKey1.exists()) {
-      publicKey1.delete();
-    }
+    Path privateKey1 = Paths.get("testkey1.key");
+    Path publicKey1 = Paths.get("testkey1.pub");
+    assertTrue(Files.exists(privateKey1));
+    assertTrue(Files.exists(publicKey1));
+    Files.delete(privateKey1);
+    Files.delete(publicKey1);
 
     //Test "-g" option and multiple key files
     args1 = new String[] {"-g", "testkey2,testkey3"};
@@ -74,29 +72,21 @@ public class OrionTest {
 
     orion.run(System.out, System.err, args1);
 
-    File privateKey2 = new File("testkey2.key");
-    File publicKey2 = new File("testkey2.pub");
-    File privateKey3 = new File("testkey3.key");
-    File publicKey3 = new File("testkey3.pub");
+    Path privateKey2 = Paths.get("testkey2.key");
+    Path publicKey2 = Paths.get("testkey2.pub");
+    Path privateKey3 = Paths.get("testkey3.key");
+    Path publicKey3 = Paths.get("testkey3.pub");
 
-    assertTrue(privateKey2.exists());
-    assertTrue(publicKey2.exists());
+    assertTrue(Files.exists(privateKey2));
+    assertTrue(Files.exists(publicKey2));
 
-    assertTrue(privateKey3.exists());
-    assertTrue(publicKey3.exists());
+    assertTrue(Files.exists(privateKey3));
+    assertTrue(Files.exists(publicKey3));
 
-    if (privateKey2.exists()) {
-      privateKey2.delete();
-    }
-    if (publicKey2.exists()) {
-      publicKey2.delete();
-    }
-    if (privateKey3.exists()) {
-      privateKey3.delete();
-    }
-    if (publicKey3.exists()) {
-      publicKey3.delete();
-    }
+    Files.delete(privateKey2);
+    Files.delete(publicKey2);
+    Files.delete(privateKey3);
+    Files.delete(publicKey3);
   }
 
   @Test
@@ -108,23 +98,21 @@ public class OrionTest {
     System.setIn(in);
     orion.run(System.out, System.err, args1);
 
-    File privateKey1 = new File("testkey1.key");
-    File publicKey1 = new File("testkey1.pub");
+    Path privateKey1 = Paths.get("testkey1.key");
+    Path publicKey1 = Paths.get("testkey1.pub");
 
-    if (privateKey1.exists()) {
+    if (Files.exists(privateKey1)) {
       StoredPrivateKey storedPrivateKey =
           Serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
 
       assertEquals(StoredPrivateKey.UNLOCKED, storedPrivateKey.type());
 
-      privateKey1.delete();
+      Files.delete(privateKey1);
     } else {
       fail("Key was not created");
     }
 
-    if (publicKey1.exists()) {
-      publicKey1.delete();
-    }
+    Files.delete(publicKey1);
   }
 
   @Test
@@ -136,23 +124,21 @@ public class OrionTest {
     System.setIn(in);
     orion.run(System.out, System.err, args1);
 
-    File privateKey1 = new File("testkey1.key");
-    File publicKey1 = new File("testkey1.pub");
+    Path privateKey1 = Paths.get("testkey1.key");
+    Path publicKey1 = Paths.get("testkey1.pub");
 
-    if (privateKey1.exists()) {
+    if (Files.exists(privateKey1)) {
       StoredPrivateKey storedPrivateKey =
           Serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
 
       assertEquals(StoredPrivateKey.ARGON2_SBOX, storedPrivateKey.type());
 
-      privateKey1.delete();
+      Files.delete(privateKey1);
     } else {
       fail("Key was not created");
     }
 
-    if (publicKey1.exists()) {
-      publicKey1.delete();
-    }
+    Files.delete(publicKey1);
   }
 
   @Test
@@ -183,13 +169,13 @@ public class OrionTest {
       handler.handle(Future.failedFuture("Didn't work"));
       return null;
     }).when(vertx).deployVerticle(Mockito.any(Verticle.class), Mockito.any(Handler.class));
+
     Orion orion = new Orion(vertx);
     try {
       orion.run(System.out, System.err);
       fail();
-    } catch (OrionException e) {
-      assertEquals(OrionErrorCode.SERVICE_START_ERROR, e.code());
-      assertEquals("Didn't work", e.getMessage());
+    } catch (OrionStartException e) {
+      assertEquals("Orion failed to start: Didn't work", e.getMessage());
     }
   }
 }

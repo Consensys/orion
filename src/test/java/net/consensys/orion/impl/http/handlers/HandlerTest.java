@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.http.handlers;
 
+import static java.nio.file.Files.createTempDirectory;
 import static org.junit.Assert.assertEquals;
 
 import net.consensys.orion.api.cmd.Orion;
@@ -20,11 +21,12 @@ import net.consensys.orion.impl.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.impl.storage.file.MapDbStorage;
 import net.consensys.orion.impl.utils.Serializer;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
@@ -42,6 +44,8 @@ import org.junit.After;
 import org.junit.Before;
 
 public abstract class HandlerTest {
+
+  private Path tempDir;
 
   // http client
   OkHttpClient httpClient = new OkHttpClient();
@@ -64,6 +68,7 @@ public abstract class HandlerTest {
 
   @Before
   public void setUp() throws Exception {
+    tempDir = createTempDirectory(this.getClass().getSimpleName() + "-data");
 
     // Setup ports for Public and Private API Servers
     setupPorts();
@@ -83,8 +88,8 @@ public abstract class HandlerTest {
     networkNodes = new ConcurrentNetworkNodes(publicHTTP.url());
     enclave = buildEnclave();
 
-    String path = "routerdb";
-    new File(path).mkdirs();
+    Path path = tempDir.resolve("routerdb");
+    Files.createDirectories(path);
     storageEngine = new MapDbStorage<>(SodiumEncryptedPayload.class, path);
     // create our vertx object
     vertx = Vertx.vertx();

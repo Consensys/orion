@@ -3,10 +3,10 @@ package net.consensys.orion.impl.utils;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.http.server.HttpContentType;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,17 +59,17 @@ public class Serializer {
     }
   }
 
-  public static void writeFile(HttpContentType contentType, File file, Object obj) {
+  public static void writeFile(HttpContentType contentType, Path file, Object obj) {
     try {
-      getMapperOrThrows(contentType).writeValue(file, obj);
+      getMapperOrThrows(contentType).writeValue(file.toFile(), obj);
     } catch (final IOException io) {
       throw new SerializationException(OrionErrorCode.OBJECT_WRITE, io);
     }
   }
 
-  public static <T> T readFile(HttpContentType contentType, File file, Class<T> valueType) {
+  public static <T> T readFile(HttpContentType contentType, Path file, Class<T> valueType) {
     try {
-      return getMapperOrThrows(contentType).readValue(file, valueType);
+      return getMapperOrThrows(contentType).readValue(file.toFile(), valueType);
     } catch (final IOException io) {
       throw new SerializationException(OrionErrorCode.OBJECT_READ, io);
     }

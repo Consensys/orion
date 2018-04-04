@@ -7,6 +7,7 @@ import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Optional;
 
 import org.mapdb.DB;
@@ -19,9 +20,10 @@ public class MapDbStorage<T> implements StorageEngine<T> {
   private final DB db;
   private final HTreeMap<byte[], byte[]> storageData;
 
-  public MapDbStorage(Class<? extends T> typeParameterClass, String path) {
+  public MapDbStorage(Class<? extends T> typeParameterClass, Path dbDir) {
     this.typeParameterClass = typeParameterClass;
-    db = DBMaker.fileDB(path + "/mapdb").transactionEnable().make();
+    Path dbFile = dbDir.resolve("mapdb");
+    db = DBMaker.fileDB(dbFile.toFile()).transactionEnable().make();
     storageData = db.hashMap("storageData", BYTE_ARRAY, BYTE_ARRAY).createOrOpen();
   }
 

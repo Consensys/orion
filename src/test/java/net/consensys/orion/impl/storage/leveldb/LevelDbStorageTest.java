@@ -32,8 +32,7 @@ public class LevelDbStorageTest {
 
   @Test
   public void itemThatIsPutCanBeRetrievedWithGet() throws Exception {
-    LevelDbStorage<SodiumEncryptedPayload> storage =
-        new LevelDbStorage<>(SodiumEncryptedPayload.class, tempDir.toString());
+    LevelDbStorage<SodiumEncryptedPayload> storage = new LevelDbStorage<>(SodiumEncryptedPayload.class, tempDir);
     try {
       SodiumPublicKey sender = new SodiumPublicKey("fake key".getBytes(UTF_8));
       byte[] nonce = "nonce".getBytes(UTF_8);

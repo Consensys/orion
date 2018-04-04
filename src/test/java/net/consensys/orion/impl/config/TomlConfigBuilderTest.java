@@ -9,6 +9,8 @@ import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.junit.Test;
 
@@ -17,8 +19,8 @@ public class TomlConfigBuilderTest {
   @Test
   public void fullFileRead() throws Exception {
 
-    File expectedFile;
-    File expectedFilesArray[];
+    Path expectedFile;
+    Path expectedFilesArray[];
 
     InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("fullConfigTest.toml");
     TomlConfigBuilder configBuilder = new TomlConfigBuilder();
@@ -35,36 +37,34 @@ public class TomlConfigBuilderTest {
     assertEquals(3, testConf.verbosity());
 
     // Optionals
-    final String expectedWorkdir = "data";
-    expectedFile = new File(expectedWorkdir);
-    assertTrue(testConf.workDir().isPresent());
-    assertEquals(expectedFile, testConf.workDir().get());
+    final Path expectedWorkdir = Paths.get("data");
+    assertEquals(expectedWorkdir, testConf.workDir());
 
-    expectedFile = new File(expectedWorkdir, "orion.ipc");
+    expectedFile = expectedWorkdir.resolve("orion.ipc");
     assertTrue(testConf.socket().isPresent());
     assertEquals(expectedFile, testConf.socket().get());
 
-    expectedFile = new File(expectedWorkdir, "keys/password.txt");
+    expectedFile = expectedWorkdir.resolve("keys/password.txt");
     assertTrue(testConf.passwords().isPresent());
     assertEquals(expectedFile, testConf.passwords().get());
 
     // File Arrays
-    expectedFilesArray = new File[1];
-    expectedFilesArray[0] = new File(expectedWorkdir, "keys/tm1.pub");
+    expectedFilesArray = new Path[1];
+    expectedFilesArray[0] = expectedWorkdir.resolve("keys/tm1.pub");
     assertArrayEquals(expectedFilesArray, testConf.publicKeys());
 
-    expectedFilesArray = new File[1];
-    expectedFilesArray[0] = new File(expectedWorkdir, "keys/tm1.key");
+    expectedFilesArray = new Path[1];
+    expectedFilesArray[0] = expectedWorkdir.resolve("keys/tm1.key");
     assertArrayEquals(expectedFilesArray, testConf.privateKeys());
 
-    expectedFilesArray = new File[1];
-    expectedFilesArray[0] = new File(expectedWorkdir, "keys/tm1.pub");
+    expectedFilesArray = new Path[1];
+    expectedFilesArray[0] = expectedWorkdir.resolve("keys/tm1.pub");
     assertArrayEquals(expectedFilesArray, testConf.alwaysSendTo());
 
-    expectedFilesArray = new File[0];
+    expectedFilesArray = new Path[0];
     assertArrayEquals(expectedFilesArray, testConf.tlsServerChain());
 
-    expectedFilesArray = new File[0];
+    expectedFilesArray = new Path[0];
     assertArrayEquals(expectedFilesArray, testConf.tlsClientChain());
 
     // URL Array
@@ -77,22 +77,22 @@ public class TomlConfigBuilderTest {
     assertArrayEquals(expectedStringArray, testConf.ipWhitelist());
 
     // Files
-    expectedFile = new File(expectedWorkdir, "server-cert.pem");
+    expectedFile = expectedWorkdir.resolve("server-cert.pem");
     assertEquals(expectedFile, testConf.tlsServerCert());
 
-    expectedFile = new File(expectedWorkdir, "server-key.pem");
+    expectedFile = expectedWorkdir.resolve("server-key.pem");
     assertEquals(expectedFile, testConf.tlsServerKey());
 
-    expectedFile = new File(expectedWorkdir, "known-clients");
+    expectedFile = expectedWorkdir.resolve("known-clients");
     assertEquals(expectedFile, testConf.tlsKnownClients());
 
-    expectedFile = new File(expectedWorkdir, "client-cert.pem");
+    expectedFile = expectedWorkdir.resolve("client-cert.pem");
     assertEquals(expectedFile, testConf.tlsClientCert());
 
-    expectedFile = new File(expectedWorkdir, "client-key.pem");
+    expectedFile = expectedWorkdir.resolve("client-key.pem");
     assertEquals(expectedFile, testConf.tlsClientKey());
 
-    expectedFile = new File(expectedWorkdir, "known-servers");
+    expectedFile = expectedWorkdir.resolve("known-servers");
     assertEquals(expectedFile, testConf.tlsKnownServers());
 
     assertEquals("/somepath", testConf.libSodiumPath());
@@ -120,30 +120,29 @@ public class TomlConfigBuilderTest {
     assertEquals("ca-or-tofu", testConf.tlsClientTrust());
     assertEquals(1, testConf.verbosity());
 
-    assertFalse(testConf.workDir().isPresent());
     assertFalse(testConf.socket().isPresent());
     assertFalse(testConf.passwords().isPresent());
 
     String expectedStringArray[] = new String[0];
     assertArrayEquals(expectedStringArray, testConf.ipWhitelist());
 
-    File expectedFile;
-    expectedFile = new File("tls-server-cert.pem");
+    Path expectedFile;
+    expectedFile = Paths.get("tls-server-cert.pem");
     assertEquals(expectedFile, testConf.tlsServerCert());
 
-    expectedFile = new File("tls-server-key.pem");
+    expectedFile = Paths.get("tls-server-key.pem");
     assertEquals(expectedFile, testConf.tlsServerKey());
 
-    expectedFile = new File("tls-known-clients");
+    expectedFile = Paths.get("tls-known-clients");
     assertEquals(expectedFile, testConf.tlsKnownClients());
 
-    expectedFile = new File("tls-client-cert.pem");
+    expectedFile = Paths.get("tls-client-cert.pem");
     assertEquals(expectedFile, testConf.tlsClientCert());
 
-    expectedFile = new File("tls-client-key.pem");
+    expectedFile = Paths.get("tls-client-key.pem");
     assertEquals(expectedFile, testConf.tlsClientKey());
 
-    expectedFile = new File("tls-known-servers");
+    expectedFile = Paths.get("tls-known-servers");
     assertEquals(expectedFile, testConf.tlsKnownServers());
 
     assertEquals(LibSodiumSettings.defaultLibSodiumPath(), testConf.libSodiumPath());
