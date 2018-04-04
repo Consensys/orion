@@ -81,7 +81,7 @@ public class SendRequest implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(from, Arrays.hashCode(to), rawPayload);
+    return Objects.hash(from, Arrays.hashCode(to), Arrays.hashCode(rawPayload));
   }
 
   @Override

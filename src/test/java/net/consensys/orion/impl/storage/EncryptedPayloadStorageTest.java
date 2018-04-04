@@ -18,7 +18,7 @@ public class EncryptedPayloadStorageTest {
 
   private Enclave enclave = new LibSodiumEnclaveStub();
   private StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
-  private MemoryStorage memory = new MemoryStorage();
+  private MemoryStorage<EncryptedPayload> memory = new MemoryStorage<>();
   private Storage<EncryptedPayload> storage = new EncryptedPayloadStorage(memory, keyBuilder);
 
   @Test

@@ -20,8 +20,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class ArgonOptions {
 
-  public static final Long OPS_LIMIT_MODERATE = new Long(3);
-  public static final Long MEM_LIMIT_MODERATE = new Long(268435456);
+  public static final long OPS_LIMIT_MODERATE = 3L;
+  public static final long MEM_LIMIT_MODERATE = 268435456L;
   public static final String VERSION = "1.3";
 
   private final String variant;

@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.enclave.sodium;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
@@ -18,9 +19,8 @@ import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -89,7 +89,7 @@ public class SodiumFileKeyStore implements KeyStore {
   }
 
   private PublicKey readPublicKey(File publicKeyFile) {
-    try (BufferedReader br = new BufferedReader(new FileReader(publicKeyFile))) {
+    try (BufferedReader br = Files.newBufferedReader(publicKeyFile.toPath(), UTF_8)) {
       final String base64Encoded = br.readLine();
       final byte[] decoded = Base64.decode(base64Encoded);
       return new SodiumPublicKey(decoded);
@@ -151,7 +151,7 @@ public class SodiumFileKeyStore implements KeyStore {
   }
 
   private void storePublicKey(byte[] publicKey, File publicFile) {
-    try (FileWriter fw = new FileWriter(publicFile)) {
+    try (Writer fw = Files.newBufferedWriter(publicFile.toPath(), UTF_8)) {
       fw.write(Base64.encode(publicKey));
     } catch (final IOException e) {
       throw new EnclaveException(OrionErrorCode.ENCLAVE_WRITE_PUBLIC_KEY, e);
@@ -194,6 +194,7 @@ public class SodiumFileKeyStore implements KeyStore {
         of(ArgonOptions.MEM_LIMIT_MODERATE));
   }
 
+  @Override
   public PublicKey[] alwaysSendTo() {
     final File[] alwaysSendTo = config.alwaysSendTo();
     return Arrays.stream(alwaysSendTo).map(this::readPublicKey).toArray(PublicKey[]::new);

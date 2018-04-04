@@ -27,7 +27,7 @@ public class NetworkDiscovery extends AbstractVerticle {
   private HttpClient httpClient;
 
   private final ConcurrentNetworkNodes nodes;
-  private final Map<URL, Discoverer> discoverers;
+  private final Map<String, Discoverer> discoverers;
 
   public NetworkDiscovery(ConcurrentNetworkNodes nodes) {
     this.nodes = nodes;
@@ -57,16 +57,17 @@ public class NetworkDiscovery extends AbstractVerticle {
   private void updateDiscoverers() {
     // for each peer that we know, we start a Discoverer (on timer)
     for (URL nodeUrl : nodes.nodeURLs()) {
-      if (!discoverers.containsKey(nodeUrl)) {
+      String urlString = nodeUrl.toString();
+      if (!discoverers.containsKey(urlString)) {
         Discoverer d = new Discoverer(nodeUrl);
-        discoverers.put(nodeUrl, d);
+        discoverers.put(urlString, d);
         d.engageNextTimerTick();
       }
     }
   }
 
-  public Map<URL, Discoverer> discoverers() {
-    return discoverers;
+  public Map<String, Discoverer> discoverers() {
+    return new HashMap<>(discoverers);
   }
 
   /**

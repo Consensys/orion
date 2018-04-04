@@ -8,11 +8,12 @@ import net.consensys.orion.impl.enclave.sodium.SodiumPublicKeyDeserializer;
 import java.net.URL;
 import java.security.PublicKey;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,17 +22,12 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 public class ConcurrentNetworkNodes implements NetworkNodes {
 
   private final URL url;
-  private final CopyOnWriteArraySet<URL> nodeURLs;
+  private final CopyOnWriteArrayList<URL> nodeURLs;
   private final ConcurrentHashMap<PublicKey, URL> nodePKs;
 
   public ConcurrentNetworkNodes(Config config, PublicKey[] publicKeys) {
     url = config.url();
-    if (config.otherNodes().length > 0) {
-      nodeURLs = new CopyOnWriteArraySet<>(Arrays.asList(config.otherNodes()));
-    } else {
-      nodeURLs = new CopyOnWriteArraySet<>();
-    }
-
+    nodeURLs = new CopyOnWriteArrayList<>(Arrays.asList(config.otherNodes()));
     nodePKs = new ConcurrentHashMap<>();
 
     // adding my publickey(s) so /partyinfo returns my info when called.
@@ -43,16 +39,16 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
   @JsonCreator
   public ConcurrentNetworkNodes(
       @JsonProperty("url") URL url,
-      @JsonProperty("nodeURLs") Set<URL> nodeURLs,
+      @JsonProperty("nodeURLs") List<URL> nodeURLs,
       @JsonProperty("nodePKs") @JsonDeserialize(
           keyUsing = SodiumPublicKeyDeserializer.class) Map<SodiumPublicKey, URL> nodePKs) {
     this.url = url;
-    this.nodeURLs = new CopyOnWriteArraySet<>(nodeURLs);
+    this.nodeURLs = new CopyOnWriteArrayList<>(nodeURLs);
     this.nodePKs = new ConcurrentHashMap<>(nodePKs);
   }
 
   public ConcurrentNetworkNodes(URL url) {
-    this(url, new CopyOnWriteArraySet<>(), new ConcurrentHashMap<>());
+    this(url, new CopyOnWriteArrayList<>(), new ConcurrentHashMap<>());
   }
 
   /**
@@ -74,7 +70,7 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
 
   @Override
   @JsonProperty("nodeURLs")
-  public Set<URL> nodeURLs() {
+  public Collection<URL> nodeURLs() {
     return nodeURLs;
   }
 

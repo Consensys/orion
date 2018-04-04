@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.enclave.sodium;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -46,7 +47,7 @@ public class LibSodiumEnclaveTest {
     final SodiumKeyPair senderPair = SodiumLibrary.cryptoBoxKeyPair();
     final SodiumKeyPair recipientPair = SodiumLibrary.cryptoBoxKeyPair();
 
-    final byte[] message = "hello".getBytes();
+    final byte[] message = "hello".getBytes(UTF_8);
     assertEncryptDecrypt(nonce, senderPair, recipientPair, message);
 
     final byte[] secretKey = SodiumLibrary.randomBytes(SodiumLibrary.cryptoSecretBoxKeyBytes().intValue());
@@ -93,7 +94,7 @@ public class LibSodiumEnclaveTest {
 
   @Test
   public void encryptThrowsExceptionWhenMissingKey() {
-    final PublicKey fake = new SodiumPublicKey("fake".getBytes());
+    final PublicKey fake = new SodiumPublicKey("fake".getBytes(UTF_8));
     final PublicKey recipientKey = generateKey();
 
     try {
@@ -106,7 +107,7 @@ public class LibSodiumEnclaveTest {
 
   @Test
   public void decryptThrowsExceptionWhenMissingKey() {
-    final PublicKey fake = new SodiumPublicKey("fake".getBytes());
+    final PublicKey fake = new SodiumPublicKey("fake".getBytes(UTF_8));
     final SodiumPublicKey sender = generateKey();
 
     try {
@@ -227,11 +228,11 @@ public class LibSodiumEnclaveTest {
   }
 
   private String decrypt(EncryptedPayload encryptedPayload, PublicKey senderKey) {
-    return new String(enclave.decrypt(encryptedPayload, senderKey));
+    return new String(enclave.decrypt(encryptedPayload, senderKey), UTF_8);
   }
 
   private EncryptedPayload encrypt(String plaintext, PublicKey senderKey, PublicKey... recipientKey) {
-    return enclave.encrypt(plaintext.getBytes(), senderKey, recipientKey);
+    return enclave.encrypt(plaintext.getBytes(UTF_8), senderKey, recipientKey);
   }
 
   private void assertEncryptDecrypt(byte[] nonce, SodiumKeyPair senderPair, SodiumKeyPair recipientPair, byte[] message)

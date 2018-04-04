@@ -3,12 +3,14 @@ plugins {
   id "com.github.hierynomus.license" version "0.14.0"
   id "com.jfrog.bintray" version "1.8.0"
   id 'com.palantir.git-version' version '0.10.1'
+  id 'net.ltgt.errorprone' version '0.0.13'
 }
 
 apply plugin: 'java-library'
-apply plugin: 'application'
-apply plugin: "jacoco"
 apply plugin: "scala"
+apply plugin: "jacoco"
+apply plugin: 'net.ltgt.errorprone'
+apply plugin: 'application'
 apply plugin: 'maven-publish'
 apply from: "gradle/check-licenses.gradle"
 
@@ -62,14 +64,32 @@ spotless {
 
 
 //////
+// Compiler arguments
+
+tasks.withType(JavaCompile) {
+  options.compilerArgs += [
+    '-Xlint:unchecked',
+    '-Xlint:cast',
+    '-Xlint:rawtypes',
+    '-Xlint:overloads',
+    '-Xlint:divzero',
+    '-Xlint:finally',
+    '-Xlint:static',
+    '-Werror',
+    '-Xep:FutureReturnValueIgnored:OFF'
+  ]
+}
+
+
+//////
 // Additional source sets (acceptance and performance tests)
 
 sourceSets {
   acceptance {
     java.srcDir file('src/acceptance-test/java')
     resources.srcDir file('src/acceptance-test/resources')
-    compileClasspath += main.runtimeClasspath + configurations.testRuntime
-    runtimeClasspath += main.runtimeClasspath + configurations.testRuntime
+    compileClasspath += main.runtimeClasspath + test.runtimeClasspath
+    runtimeClasspath += main.runtimeClasspath + test.runtimeClasspath
   }
   performance {
     scala.srcDir file('src/performance-test/scala')

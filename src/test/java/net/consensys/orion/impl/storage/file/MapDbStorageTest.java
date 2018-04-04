@@ -37,7 +37,7 @@ public class MapDbStorageTest {
   public void storeAndRetrieveAcrossSessions() {
     storage.put("key", toStore);
     storage.close();
-    MapDbStorage<byte[]> secondStorage = new MapDbStorage(String.class, path);
+    MapDbStorage<String> secondStorage = new MapDbStorage<>(String.class, path);
     assertEquals(toStore, secondStorage.get("key").get());
   }
 

@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.enclave.sodium;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static junit.framework.TestCase.assertEquals;
 
 import net.consensys.orion.api.enclave.Enclave;
@@ -32,7 +33,7 @@ public class SodiumPublicKeyTest {
 
   @Test
   public void roundTripSerialization() {
-    SodiumPublicKey key = new SodiumPublicKey("fake encoded".getBytes());
+    SodiumPublicKey key = new SodiumPublicKey("fake encoded".getBytes(UTF_8));
     byte[] bytes = Serializer.serialize(HttpContentType.JSON, key);
     assertEquals(key, Serializer.deserialize(HttpContentType.JSON, SodiumPublicKey.class, bytes));
     bytes = Serializer.serialize(HttpContentType.CBOR, key);

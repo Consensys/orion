@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.junit.Test;
 
 public class MemoryStorageTest {
-  MemoryStorage<String> storage = new MemoryStorage();
+  MemoryStorage<String> storage = new MemoryStorage<>();
 
   @Test
   public void storeAndRetrieve() {

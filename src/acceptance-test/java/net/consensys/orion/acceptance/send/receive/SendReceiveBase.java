@@ -1,5 +1,6 @@
 package net.consensys.orion.acceptance.send.receive;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertArrayEquals;
 
 import net.consensys.orion.acceptance.EthNodeStub;
@@ -18,7 +19,7 @@ import junit.framework.AssertionFailedError;
  */
 public class SendReceiveBase {
   private static final NodeUtils nodeUtils = new NodeUtils();
-  private static final byte[] originalPayload = "a wonderful transaction".getBytes();
+  private static final byte[] originalPayload = "a wonderful transaction".getBytes(UTF_8);
 
   protected static int freePort() throws Exception {
     return nodeUtils.freePort();

@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.network;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -64,7 +65,7 @@ public class NetworkDiscoveryTest {
     // add peers
     FakePeer fakePeer = new FakePeer(
         new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE),
-        new SodiumPublicKey("pk1".getBytes()));
+        new SodiumPublicKey("pk1".getBytes(UTF_8)));
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // start network discovery
@@ -75,7 +76,7 @@ public class NetworkDiscoveryTest {
     assertEquals(1, networkDiscovery.discoverers().size());
 
     // ensure the discoverer match our peer URL
-    NetworkDiscovery.Discoverer discoverer = networkDiscovery.discoverers().get(fakePeer.getURL());
+    NetworkDiscovery.Discoverer discoverer = networkDiscovery.discoverers().get(fakePeer.getURL().toString());
     assertNotNull(discoverer);
 
     Thread.sleep(3 * (discoverer.currentRefreshDelay + NetworkDiscovery.HTTP_CLIENT_TIMEOUT_MS));
@@ -94,7 +95,7 @@ public class NetworkDiscoveryTest {
     unknownPeerBody.write(unknownPeerNetworkNodes);
     // create a peer that's not in our current network nodes
     FakePeer unknownPeer =
-        new FakePeer(new MockResponse().setBody(unknownPeerBody), new SodiumPublicKey("unknown.pk1".getBytes()));
+        new FakePeer(new MockResponse().setBody(unknownPeerBody), new SodiumPublicKey("unknown.pk1".getBytes(UTF_8)));
 
     // create a peer that we know, and that knows the lonely unknown peer.
     ConcurrentNetworkNodes knownPeerNetworkNodes = new ConcurrentNetworkNodes(new URL("http://localhost/"));
@@ -102,7 +103,7 @@ public class NetworkDiscoveryTest {
     Buffer knownPeerBody = new Buffer();
     knownPeerBody.write(Serializer.serialize(CBOR, knownPeerNetworkNodes));
     FakePeer knownPeer =
-        new FakePeer(new MockResponse().setBody(knownPeerBody), new SodiumPublicKey("known.pk1".getBytes()));
+        new FakePeer(new MockResponse().setBody(knownPeerBody), new SodiumPublicKey("known.pk1".getBytes(UTF_8)));
 
     // we know this peer, add it to our network nodes
     networkNodes.addNode(knownPeer.publicKey, knownPeer.getURL());
@@ -116,7 +117,7 @@ public class NetworkDiscoveryTest {
     assertEquals(1, networkDiscovery.discoverers().size());
 
     // ensure the discoverer match our peer URL
-    NetworkDiscovery.Discoverer knownPeerDiscoverer = networkDiscovery.discoverers().get(knownPeer.getURL());
+    NetworkDiscovery.Discoverer knownPeerDiscoverer = networkDiscovery.discoverers().get(knownPeer.getURL().toString());
     assertNotNull(knownPeerDiscoverer);
 
     Thread.sleep(3 * (knownPeerDiscoverer.currentRefreshDelay + NetworkDiscovery.HTTP_CLIENT_TIMEOUT_MS));
@@ -130,7 +131,8 @@ public class NetworkDiscoveryTest {
     assertEquals(unknownPeer.getURL(), networkNodes.nodePKs().get(unknownPeer.publicKey));
 
     // ensure unknown peer discoverer is set and being called
-    NetworkDiscovery.Discoverer unknownPeerDiscoverer = networkDiscovery.discoverers().get(unknownPeer.getURL());
+    NetworkDiscovery.Discoverer unknownPeerDiscoverer =
+        networkDiscovery.discoverers().get(unknownPeer.getURL().toString());
     assertNotNull(unknownPeerDiscoverer);
 
     assertTrue(unknownPeerDiscoverer.lastUpdate.isAfter(discoveryStart));

@@ -61,7 +61,7 @@ public class EthNodeStub {
         return Optional.empty();
       }
 
-      return Optional.of((String) deserialize(httpSendResponse).get("key"));
+      return Optional.of(deserialize(httpSendResponse).get("key"));
 
     } catch (final IOException io) {
       log.error(io.getMessage());
@@ -90,6 +90,7 @@ public class EthNodeStub {
     return Optional.empty();
   }
 
+  @SuppressWarnings("unchecked")
   public Optional<byte[]> receive(String digest, String publicKey) {
     // create the okHttp Request object
     final ReceiveRequest receiveRequest = new ReceiveRequest(digest, publicKey);
@@ -106,9 +107,10 @@ public class EthNodeStub {
       }
 
       // deserialize the response
-      final Map receiveResponse = Serializer.deserialize(JSON, Map.class, httpReceiveResponse.body().bytes());
+      final Map<String, String> receiveResponse =
+          Serializer.deserialize(JSON, Map.class, httpReceiveResponse.body().bytes());
 
-      return Optional.of(Base64.decode((String) receiveResponse.get("payload")));
+      return Optional.of(Base64.decode(receiveResponse.get("payload")));
 
     } catch (IOException io) {
       log.error(io.getMessage());
@@ -116,7 +118,8 @@ public class EthNodeStub {
     }
   }
 
-  private Map deserialize(Response httpSendResponse) throws IOException {
+  @SuppressWarnings("unchecked")
+  private Map<String, String> deserialize(Response httpSendResponse) throws IOException {
     return Serializer.deserialize(JSON, Map.class, httpSendResponse.body().bytes());
   }
 

@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.http.handlers;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import static org.junit.Assert.assertEquals;
@@ -23,8 +24,8 @@ public class PartyInfoHandlerTest extends HandlerTest {
 
   @Test
   public void successfulProcessingOfRequest() throws Exception {
-    networkNodes.addNode(new SodiumPublicKey("pk1".getBytes()), new URL("http://127.0.0.1:9001/"));
-    networkNodes.addNode(new SodiumPublicKey("pk2".getBytes()), new URL("http://127.0.0.1:9002/"));
+    networkNodes.addNode(new SodiumPublicKey("pk1".getBytes(UTF_8)), new URL("http://127.0.0.1:9001/"));
+    networkNodes.addNode(new SodiumPublicKey("pk2".getBytes(UTF_8)), new URL("http://127.0.0.1:9002/"));
 
     // prepare /partyinfo payload (our known peers)
     RequestBody partyInfoBody =
@@ -45,15 +46,15 @@ public class PartyInfoHandlerTest extends HandlerTest {
   @Test
   public void roundTripSerialization() throws Exception {
     ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(new URL("http://localhost:1234/"));
-    networkNodes.addNode(new SodiumPublicKey("fake".getBytes()), new URL("http://localhost/"));
+    networkNodes.addNode(new SodiumPublicKey("fake".getBytes(UTF_8)), new URL("http://localhost/"));
     assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.CBOR, ConcurrentNetworkNodes.class, networkNodes));
     assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.JSON, ConcurrentNetworkNodes.class, networkNodes));
   }
 
   @Test
   public void partyInfoWithInvalidContentType() throws Exception {
-    networkNodes.addNode(new SodiumPublicKey("pk1".getBytes()), new URL("http://127.0.0.1:9001/"));
-    networkNodes.addNode(new SodiumPublicKey("pk2".getBytes()), new URL("http://127.0.0.1:9002/"));
+    networkNodes.addNode(new SodiumPublicKey("pk1".getBytes(UTF_8)), new URL("http://127.0.0.1:9001/"));
+    networkNodes.addNode(new SodiumPublicKey("pk2".getBytes(UTF_8)), new URL("http://127.0.0.1:9002/"));
 
     // prepare /partyinfo payload (our known peers) with invalid content type (json)
     RequestBody partyInfoBody =

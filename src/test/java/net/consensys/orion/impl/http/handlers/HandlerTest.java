@@ -84,7 +84,7 @@ public abstract class HandlerTest {
 
     String path = "routerdb";
     new File(path).mkdirs();
-    storageEngine = new MapDbStorage(SodiumEncryptedPayload.class, path);
+    storageEngine = new MapDbStorage<>(SodiumEncryptedPayload.class, path);
     // create our vertx object
     vertx = Vertx.vertx();
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
