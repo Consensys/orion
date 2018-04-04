@@ -26,10 +26,6 @@ public enum OrionErrorCode {
   OBJECT_UNSUPPORTED_TYPE("ObjectUnsupportedType"),
   OBJECT_WRITE("ObjectWrite"),
 
-  /** 0x3xxxxx application configuration issues. */
-  CONFIGURATION_OPTION("ConfigurationOption"),
-  CONFIGURATION_STORAGE_MECHANISM("ConfigurationStorageMechanism"),
-
   /** 0x4xxxxx Enclave category of issues. */
   ENCLAVE_CREATE_KEY_PAIR("EnclaveCreateKeyPair"),
   ENCLAVE_DECODE_PUBLIC_KEY("EnclaveDecodePublicKey"),
@@ -57,8 +53,6 @@ public enum OrionErrorCode {
   STORAGE_CLOSED_WRITE("StorageClosedWrite"),
   STORAGE_OPEN("StorageOpen"),
 
-  SERVICE_START_ERROR("ServiceStartError"),
-  SERVICE_START_INTERRUPTED("ServiceStartInterrupted"),
   CONFIG_FILE_MISSING("ConfigFileMissing");
 
   private final String code;

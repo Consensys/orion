@@ -183,13 +183,13 @@ public class OrionTest {
       handler.handle(Future.failedFuture("Didn't work"));
       return null;
     }).when(vertx).deployVerticle(Mockito.any(Verticle.class), Mockito.any(Handler.class));
+
     Orion orion = new Orion(vertx);
     try {
       orion.run(System.out, System.err);
       fail();
-    } catch (OrionException e) {
-      assertEquals(OrionErrorCode.SERVICE_START_ERROR, e.code());
-      assertEquals("Didn't work", e.getMessage());
+    } catch (OrionStartException e) {
+      assertEquals("Orion failed to start: Didn't work", e.getMessage());
     }
   }
 }

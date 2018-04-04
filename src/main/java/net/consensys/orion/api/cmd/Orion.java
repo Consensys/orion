@@ -14,7 +14,6 @@ import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.exception.OrionException;
-import net.consensys.orion.api.exception.OrionStartException;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
@@ -75,10 +74,8 @@ public class Orion {
     Orion orion = new Orion();
     try {
       orion.run(System.out, System.err, args);
-    } catch (OrionStartException e) {
-      System.err.println("Orion failed to start: " + e.getMessage());
-      System.exit(1);
-    } catch (ConfigException e) {
+    } catch (OrionStartException | ConfigException e) {
+      log.error(e.getMessage(), e.getCause());
       System.err.println(e.getMessage());
       System.exit(1);
     } catch (Throwable t) {
@@ -299,12 +296,9 @@ public class Orion {
     try {
       CompletableFuture.allOf(publicFuture, privateFuture, verticleFuture).get();
     } catch (ExecutionException e) {
-      log.error("Error reported while starting Orion", e.getCause());
-      throw new OrionStartException(OrionErrorCode.SERVICE_START_ERROR, e.getCause().getMessage());
+      throw new OrionStartException("Orion failed to start: " + e.getCause().getMessage(), e.getCause());
     } catch (InterruptedException e) {
-      throw new OrionStartException(
-          OrionErrorCode.SERVICE_START_INTERRUPTED,
-          "Orion was interrupted while starting services");
+      throw new OrionStartException("Orion was interrupted while starting services");
     }
 
     // set shutdown hook
@@ -334,9 +328,7 @@ public class Orion {
     } else if (storage.startsWith("leveldb")) {
       return new LevelDbStorage<>(SodiumEncryptedPayload.class, storagePath + dbPath);
     } else {
-      throw new ConfigException(
-          OrionErrorCode.CONFIGURATION_STORAGE_MECHANISM,
-          "unsupported storage mechanism: " + storage);
+      throw new OrionStartException("unsupported storage mechanism: " + storage);
     }
   }
 
