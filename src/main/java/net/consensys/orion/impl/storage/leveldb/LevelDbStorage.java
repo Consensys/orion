@@ -8,8 +8,8 @@ import net.consensys.orion.api.storage.StorageException;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Optional;
 
 import org.fusesource.leveldbjni.JniDBFactory;
@@ -21,12 +21,12 @@ public class LevelDbStorage<T> implements StorageEngine<T> {
   private Optional<DB> db;
   private final Class<? extends T> typeParameterClass;
 
-  public LevelDbStorage(Class<? extends T> typeParameterClass, String path) {
+  public LevelDbStorage(Class<? extends T> typeParameterClass, Path path) {
     this.typeParameterClass = typeParameterClass;
     final Options options = new Options();
     options.createIfMissing(true);
     try {
-      db = Optional.of(JniDBFactory.factory.open(new File(path), options));
+      db = Optional.of(JniDBFactory.factory.open(path.toFile(), options));
     } catch (final IOException e) {
       throw new StorageException(OrionErrorCode.STORAGE_OPEN, e);
     }

@@ -3,8 +3,9 @@ package net.consensys.orion.impl.config;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 
-import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 public class MemoryConfig implements Config {
@@ -13,26 +14,26 @@ public class MemoryConfig implements Config {
   private int port = Integer.MIN_VALUE;
   private URL privacyUrl;
   private int privacyPort = Integer.MIN_VALUE;
-  private Optional<File> workDir = Optional.empty();
-  private Optional<File> socket = Optional.empty();
+  private Path workDir = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
+  private Optional<Path> socket = Optional.empty();
   private URL[] otherNodes = new URL[] {};
-  private File[] publicKeys = new File[] {};
-  private File[] privateKeys = new File[] {};
-  private File[] alwaysSendTo = new File[] {};
-  private Optional<File> passwords = Optional.empty();
+  private Path[] publicKeys = new Path[] {};
+  private Path[] privateKeys = new Path[] {};
+  private Path[] alwaysSendTo = new Path[] {};
+  private Optional<Path> passwords = Optional.empty();
   private String storage = "leveldb";
   private String[] ipWhitelist = new String[] {};
   private String tls = "strict";
-  private File tlsServerCert = new File("tls-server-cert.pem");
-  private File[] tlsServerChain = new File[] {};
-  private File tlsServerKey = new File("tls-server-key.pem");
+  private Path tlsServerCert = Paths.get("tls-server-cert.pem");
+  private Path[] tlsServerChain = new Path[] {};
+  private Path tlsServerKey = Paths.get("tls-server-key.pem");
   private String tlsServerTrust = "tofu";
-  private File tlsKnownClients = new File("tls-known-clients");
-  private File tlsClientCert = new File("tls-client-cert.pem");
-  private File[] tlsClientChain = new File[] {};
-  private File tlsClientKey = new File("tls-client-key.pem");
+  private Path tlsKnownClients = Paths.get("tls-known-clients");
+  private Path tlsClientCert = Paths.get("tls-client-cert.pem");
+  private Path[] tlsClientChain = new Path[] {};
+  private Path tlsClientKey = Paths.get("tls-client-key.pem");
   private String tlsClientTrust = "ca-or-tofu";
-  private File tlsKnownServers = new File("tls-known-servers");
+  private Path tlsKnownServers = Paths.get("tls-known-servers");
   private Optional<String[]> generateKeys = Optional.empty();
   private Optional<Boolean> showVersion = Optional.empty();
   private long verbosity = 1;
@@ -54,11 +55,11 @@ public class MemoryConfig implements Config {
     this.privacyPort = port;
   }
 
-  public void setWorkDir(File workDir) {
-    this.workDir = Optional.ofNullable(workDir);
+  public void setWorkDir(Path workDir) {
+    this.workDir = workDir;
   }
 
-  public void setSocket(File socket) {
+  public void setSocket(Path socket) {
     this.socket = Optional.ofNullable(socket);
   }
 
@@ -66,19 +67,19 @@ public class MemoryConfig implements Config {
     this.otherNodes = otherNodes;
   }
 
-  public void setPublicKeys(File[] publicKeys) {
+  public void setPublicKeys(Path... publicKeys) {
     this.publicKeys = publicKeys;
   }
 
-  public void setPrivateKeys(File[] privateKeys) {
+  public void setPrivateKeys(Path... privateKeys) {
     this.privateKeys = privateKeys;
   }
 
-  public void setAlwaysSendTo(File[] alwaysSendTo) {
+  public void setAlwaysSendTo(Path... alwaysSendTo) {
     this.alwaysSendTo = alwaysSendTo;
   }
 
-  public void setPasswords(File passwords) {
+  public void setPasswords(Path passwords) {
     this.passwords = Optional.ofNullable(passwords);
   }
 
@@ -94,15 +95,15 @@ public class MemoryConfig implements Config {
     this.tls = tls;
   }
 
-  public void setTlsServerCert(File tlsServerCert) {
+  public void setTlsServerCert(Path tlsServerCert) {
     this.tlsServerCert = tlsServerCert;
   }
 
-  public void setTlsServerChain(File[] tlsServerChain) {
+  public void setTlsServerChain(Path[] tlsServerChain) {
     this.tlsServerChain = tlsServerChain;
   }
 
-  public void setTlsServerKey(File tlsServerKey) {
+  public void setTlsServerKey(Path tlsServerKey) {
     this.tlsServerKey = tlsServerKey;
   }
 
@@ -110,19 +111,19 @@ public class MemoryConfig implements Config {
     this.tlsServerTrust = tlsServerTrust;
   }
 
-  public void setTlsKnownClients(File tlsKnownClients) {
+  public void setTlsKnownClients(Path tlsKnownClients) {
     this.tlsKnownClients = tlsKnownClients;
   }
 
-  public void setTlsClientCert(File tlsClientCert) {
+  public void setTlsClientCert(Path tlsClientCert) {
     this.tlsClientCert = tlsClientCert;
   }
 
-  public void setTlsClientChain(File[] tlsClientChain) {
+  public void setTlsClientChain(Path[] tlsClientChain) {
     this.tlsClientChain = tlsClientChain;
   }
 
-  public void setTlsClientKey(File tlsClientKey) {
+  public void setTlsClientKey(Path tlsClientKey) {
     this.tlsClientKey = tlsClientKey;
   }
 
@@ -130,7 +131,7 @@ public class MemoryConfig implements Config {
     this.tlsClientTrust = tlsClientTrust;
   }
 
-  public void setTlsKnownServers(File tlsKnownServers) {
+  public void setTlsKnownServers(Path tlsKnownServers) {
     this.tlsKnownServers = tlsKnownServers;
   }
 
@@ -171,12 +172,12 @@ public class MemoryConfig implements Config {
   }
 
   @Override
-  public Optional<File> workDir() {
+  public Path workDir() {
     return workDir;
   }
 
   @Override
-  public Optional<File> socket() {
+  public Optional<Path> socket() {
     return socket;
   }
 
@@ -186,22 +187,22 @@ public class MemoryConfig implements Config {
   }
 
   @Override
-  public File[] publicKeys() {
+  public Path[] publicKeys() {
     return publicKeys;
   }
 
   @Override
-  public File[] privateKeys() {
+  public Path[] privateKeys() {
     return privateKeys;
   }
 
   @Override
-  public File[] alwaysSendTo() {
+  public Path[] alwaysSendTo() {
     return alwaysSendTo;
   }
 
   @Override
-  public Optional<File> passwords() {
+  public Optional<Path> passwords() {
     return passwords;
   }
 
@@ -221,17 +222,17 @@ public class MemoryConfig implements Config {
   }
 
   @Override
-  public File tlsServerCert() {
+  public Path tlsServerCert() {
     return tlsServerCert;
   }
 
   @Override
-  public File[] tlsServerChain() {
+  public Path[] tlsServerChain() {
     return tlsServerChain;
   }
 
   @Override
-  public File tlsServerKey() {
+  public Path tlsServerKey() {
     return tlsServerKey;
   }
 
@@ -241,22 +242,22 @@ public class MemoryConfig implements Config {
   }
 
   @Override
-  public File tlsKnownClients() {
+  public Path tlsKnownClients() {
     return tlsKnownClients;
   }
 
   @Override
-  public File tlsClientCert() {
+  public Path tlsClientCert() {
     return tlsClientCert;
   }
 
   @Override
-  public File[] tlsClientChain() {
+  public Path[] tlsClientChain() {
     return tlsClientChain;
   }
 
   @Override
-  public File tlsClientKey() {
+  public Path tlsClientKey() {
     return tlsClientKey;
   }
 
@@ -266,7 +267,7 @@ public class MemoryConfig implements Config {
   }
 
   @Override
-  public File tlsKnownServers() {
+  public Path tlsKnownServers() {
     return tlsKnownServers;
   }
 

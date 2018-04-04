@@ -5,10 +5,11 @@ import static java.lang.Math.toIntExact;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.config.ConfigException;
 
-import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -47,35 +48,39 @@ public final class TomlConfigBuilder {
     }
 
     // reading and setting workDir first;
-    String baseDir = toml.getString("workdir");
-    if (baseDir != null) {
-      memoryConfig.setWorkDir(new File(baseDir));
+    String workDir = toml.getString("workdir");
+    Path baseDir;
+    if (workDir != null) {
+      baseDir = Paths.get(workDir);
+      memoryConfig.setWorkDir(baseDir);
+    } else {
+      baseDir = memoryConfig.workDir();
     }
 
     setInt(toml.getLong("port"), memoryConfig::setPort);
     setInt(toml.getLong("privacyport"), memoryConfig::setPrivacyPort);
-    setFile(baseDir, toml.getString("socket"), memoryConfig::setSocket);
+    setPath(baseDir, toml.getString("socket"), memoryConfig::setSocket);
     setString(toml.getString("libsodiumpath"), memoryConfig::setLibSodiumPath);
 
     StringBuilder othernodesError = setURLArray(toml.getList("othernodes"), memoryConfig::setOtherNodes);
 
-    setFileArray(baseDir, toml.getList("publickeys"), memoryConfig::setPublicKeys);
-    setFileArray(baseDir, toml.getList("privatekeys"), memoryConfig::setPrivateKeys);
-    setFileArray(baseDir, toml.getList("alwayssendto"), memoryConfig::setAlwaysSendTo);
-    setFile(baseDir, toml.getString("passwords"), memoryConfig::setPasswords);
+    setPathArray(baseDir, toml.getList("publickeys"), memoryConfig::setPublicKeys);
+    setPathArray(baseDir, toml.getList("privatekeys"), memoryConfig::setPrivateKeys);
+    setPathArray(baseDir, toml.getList("alwayssendto"), memoryConfig::setAlwaysSendTo);
+    setPath(baseDir, toml.getString("passwords"), memoryConfig::setPasswords);
     setString(toml.getString("storage"), memoryConfig::setStorage);
     setStringArray(toml.getList("ipwhitelist"), memoryConfig::setIpWhitelist);
     setString(toml.getString("tls"), memoryConfig::setTls);
-    setFile(baseDir, toml.getString("tlsservercert"), memoryConfig::setTlsServerCert);
-    setFileArray(baseDir, toml.getList("tlsserverchain"), memoryConfig::setTlsServerChain);
-    setFile(baseDir, toml.getString("tlsserverkey"), memoryConfig::setTlsServerKey);
+    setPath(baseDir, toml.getString("tlsservercert"), memoryConfig::setTlsServerCert);
+    setPathArray(baseDir, toml.getList("tlsserverchain"), memoryConfig::setTlsServerChain);
+    setPath(baseDir, toml.getString("tlsserverkey"), memoryConfig::setTlsServerKey);
     setString(toml.getString("tlsservertrust"), memoryConfig::setTlsServerTrust);
-    setFile(baseDir, toml.getString("tlsknownclients"), memoryConfig::setTlsKnownClients);
-    setFile(baseDir, toml.getString("tlsclientcert"), memoryConfig::setTlsClientCert);
-    setFileArray(baseDir, toml.getList("tlsclientchain"), memoryConfig::setTlsClientChain);
-    setFile(baseDir, toml.getString("tlsclientkey"), memoryConfig::setTlsClientKey);
+    setPath(baseDir, toml.getString("tlsknownclients"), memoryConfig::setTlsKnownClients);
+    setPath(baseDir, toml.getString("tlsclientcert"), memoryConfig::setTlsClientCert);
+    setPathArray(baseDir, toml.getList("tlsclientchain"), memoryConfig::setTlsClientChain);
+    setPath(baseDir, toml.getString("tlsclientkey"), memoryConfig::setTlsClientKey);
     setString(toml.getString("tlsclienttrust"), memoryConfig::setTlsClientTrust);
-    setFile(baseDir, toml.getString("tlsknownservers"), memoryConfig::setTlsKnownServers);
+    setPath(baseDir, toml.getString("tlsknownservers"), memoryConfig::setTlsKnownServers);
     setInt(toml.getLong("verbosity"), memoryConfig::setVerbosity);
 
     // Validations
@@ -130,9 +135,9 @@ public final class TomlConfigBuilder {
     return memoryConfig;
   }
 
-  private void setFile(String baseDir, String value, Consumer<File> setter) {
+  private void setPath(Path baseDir, String value, Consumer<Path> setter) {
     if (value != null) {
-      setter.accept(new File(baseDir, value));
+      setter.accept(baseDir.resolve(value));
     }
   }
 
@@ -148,9 +153,9 @@ public final class TomlConfigBuilder {
     }
   }
 
-  private void setFileArray(String baseDir, List<String> paths, Consumer<File[]> setter) {
+  private void setPathArray(Path baseDir, List<String> paths, Consumer<Path[]> setter) {
     if (paths != null) {
-      setter.accept(paths.stream().map(p -> new File(baseDir, p)).toArray(File[]::new));
+      setter.accept(paths.stream().map(baseDir::resolve).toArray(Path[]::new));
     }
   }
 

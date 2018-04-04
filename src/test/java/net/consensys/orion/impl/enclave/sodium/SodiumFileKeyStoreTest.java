@@ -12,8 +12,10 @@ import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.config.TomlConfigBuilder;
 import net.consensys.orion.impl.utils.Base64;
 
-import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Optional;
@@ -46,9 +48,9 @@ public class SodiumFileKeyStoreTest {
   @Test
   public void missingKeyBehaviourIsNice() {
     MemoryConfig config = new MemoryConfig();
-    config.setPrivateKeys(new File[] {new File("Does not exist")});
-    config.setPublicKeys(new File[] {new File("Does not exist")});
-    config.setAlwaysSendTo(new File[] {new File("Does not exist")});
+    config.setPrivateKeys(Paths.get("Does not exist"));
+    config.setPublicKeys(Paths.get("Does not exist"));
+    config.setAlwaysSendTo(Paths.get("Does not exist"));
     try {
       keyStore = new SodiumFileKeyStore(config);
       fail("should have thrown an EnclaveException");
@@ -60,9 +62,9 @@ public class SodiumFileKeyStoreTest {
   @Test
   public void missingAlgorithimRaisesAppropriateException() {
     MemoryConfig config = new MemoryConfig();
-    config.setPrivateKeys(new File[] {new File("keys/noalgorithm.key")});
-    config.setPublicKeys(new File[] {new File("keys/tm1a.pub")});
-    config.setAlwaysSendTo(new File[] {new File("keys/tm1a.pub")});
+    config.setPrivateKeys(Paths.get("keys/noalgorithm.key"));
+    config.setPublicKeys(Paths.get("keys/tm1a.pub"));
+    config.setAlwaysSendTo(Paths.get("keys/tm1a.pub"));
     try {
       keyStore = new SodiumFileKeyStore(config);
       fail("should have thrown an EnclaveException");
@@ -110,13 +112,13 @@ public class SodiumFileKeyStoreTest {
 
   public void loadOfPasswordProtectedKeys() {
     MemoryConfig config = new MemoryConfig();
-    config.setPrivateKeys(new File[] {new File("keys/password.key")});
-    config.setPublicKeys(new File[] {new File("keys/password.pub")});
+    config.setPrivateKeys(Paths.get("keys/password.key"));
+    config.setPublicKeys(Paths.get("keys/password.pub"));
     keyStore = new SodiumFileKeyStore(config);
   }
 
   @Test
-  public void generateUnlockedProtectedKeyPair() {
+  public void generateUnlockedProtectedKeyPair() throws Exception {
     String keyPrefix = "keys/generated";
     try {
       keyStore = new SodiumFileKeyStore(config);
@@ -125,21 +127,21 @@ public class SodiumFileKeyStoreTest {
       // Load the a config using the generated key, and confirm that it is valid.
       // this shows that the key was stored and that we could load it.
       MemoryConfig config = new MemoryConfig();
-      config.setPrivateKeys(new File[] {new File("keys/generated.key")});
-      config.setPublicKeys(new File[] {new File("keys/generated.pub")});
+      config.setPrivateKeys(Paths.get("keys/generated.key"));
+      config.setPublicKeys(Paths.get("keys/generated.pub"));
       keyStore = new SodiumFileKeyStore(config);
       PublicKey fromStore = keyStore.nodeKeys()[0];
       assertNotNull(keyStore.privateKey(fromStore));
     } finally {
-      File privateKey = new File(keyPrefix + ".key");
-      File publicKey = new File(keyPrefix + ".pub");
-      if (privateKey.exists()) {
-        privateKey.delete();
+      Path privateKey = Paths.get(keyPrefix + ".key");
+      Path publicKey = Paths.get(keyPrefix + ".pub");
+      if (Files.exists(privateKey)) {
+        Files.delete(privateKey);
       } else {
         fail("private key did not get created");
       }
-      if (publicKey.exists()) {
-        publicKey.delete();
+      if (Files.exists(publicKey)) {
+        Files.delete(publicKey);
       } else {
         fail("public key did not get created");
       }
@@ -147,7 +149,7 @@ public class SodiumFileKeyStoreTest {
   }
 
   @Test
-  public void generatePasswordProtectedKeyPair() {
+  public void generatePasswordProtectedKeyPair() throws Exception {
     String keyPrefix = "keys/generated_password";
     try {
       keyStore = new SodiumFileKeyStore(config);
@@ -156,22 +158,22 @@ public class SodiumFileKeyStoreTest {
       // Load the a config using the generated key, and confirm that it is valid.
       // this shows that the key was stored and that we could load it.
       MemoryConfig config = new MemoryConfig();
-      config.setPasswords(new File("keys/password.txt"));
-      config.setPrivateKeys(new File[] {new File("keys/generated_password.key")});
-      config.setPublicKeys(new File[] {new File("keys/generated_password.pub")});
+      config.setPasswords(Paths.get("keys/password.txt"));
+      config.setPrivateKeys(Paths.get("keys/generated_password.key"));
+      config.setPublicKeys(Paths.get("keys/generated_password.pub"));
       keyStore = new SodiumFileKeyStore(config);
       PublicKey fromStore = keyStore.nodeKeys()[0];
       assertNotNull(keyStore.privateKey(fromStore));
     } finally {
-      File privateKey = new File(keyPrefix + ".key");
-      File publicKey = new File(keyPrefix + ".pub");
-      if (privateKey.exists()) {
-        privateKey.delete();
+      Path privateKey = Paths.get(keyPrefix + ".key");
+      Path publicKey = Paths.get(keyPrefix + ".pub");
+      if (Files.exists(privateKey)) {
+        Files.delete(privateKey);
       } else {
         fail("private key did not get created");
       }
-      if (publicKey.exists()) {
-        publicKey.delete();
+      if (Files.exists(publicKey)) {
+        Files.delete(publicKey);
       } else {
         fail("public key did not get created");
       }

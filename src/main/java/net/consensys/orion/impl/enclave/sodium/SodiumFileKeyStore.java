@@ -18,10 +18,11 @@ import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -52,8 +53,8 @@ public class SodiumFileKeyStore implements KeyStore {
     final Optional<String[]> passwordList = lookupPasswords();
 
     for (int i = 0; i < config.publicKeys().length; i++) {
-      final File publicKeyFile = config.publicKeys()[i];
-      final File privateKeyFile = config.privateKeys()[i];
+      final Path publicKeyFile = config.publicKeys()[i];
+      final Path privateKeyFile = config.privateKeys()[i];
       final Optional<String> password = passwordList.isPresent() ? Optional.of(passwordList.get()[i]) : empty();
       final PublicKey publicKey = readPublicKey(publicKeyFile);
       final PrivateKey privateKey = readPrivateKey(privateKeyFile, password);
@@ -62,7 +63,7 @@ public class SodiumFileKeyStore implements KeyStore {
     }
   }
 
-  private PrivateKey readPrivateKey(File privateKeyFile, Optional<String> password) {
+  private PrivateKey readPrivateKey(Path privateKeyFile, Optional<String> password) {
     final StoredPrivateKey storedPrivateKey =
         Serializer.readFile(HttpContentType.JSON, privateKeyFile, StoredPrivateKey.class);
 
@@ -88,8 +89,8 @@ public class SodiumFileKeyStore implements KeyStore {
     return new SodiumPrivateKey(decoded);
   }
 
-  private PublicKey readPublicKey(File publicKeyFile) {
-    try (BufferedReader br = Files.newBufferedReader(publicKeyFile.toPath(), UTF_8)) {
+  private PublicKey readPublicKey(Path publicKeyFile) {
+    try (BufferedReader br = Files.newBufferedReader(publicKeyFile, UTF_8)) {
       final String base64Encoded = br.readLine();
       final byte[] decoded = Base64.decode(base64Encoded);
       return new SodiumPublicKey(decoded);
@@ -111,11 +112,11 @@ public class SodiumFileKeyStore implements KeyStore {
   }
 
   private Optional<String[]> lookupPasswords() {
-    final Optional<File> passwords = config.passwords();
+    final Optional<Path> passwords = config.passwords();
 
     if (passwords.isPresent()) {
       try {
-        final List<String> strings = Files.readAllLines(passwords.get().toPath());
+        final List<String> strings = Files.readAllLines(passwords.get());
         return Optional.of(strings.toArray(new String[strings.size()]));
       } catch (final IOException e) {
         throw new EnclaveException(OrionErrorCode.ENCLAVE_READ_PASSWORDS, e);
@@ -125,10 +126,10 @@ public class SodiumFileKeyStore implements KeyStore {
     return empty();
   }
 
-  private PublicKey generateStoreAndCache(String key, Optional<String> password) {
+  private PublicKey generateStoreAndCache(String baseName, Optional<String> password) {
     final SodiumKeyPair keyPair = keyPair();
-    final File publicFile = new File(key + ".pub");
-    final File privateFile = new File(key + ".key");
+    final Path publicFile = Paths.get(baseName + ".pub");
+    final Path privateFile = Paths.get(baseName + ".key");
     storePublicKey(keyPair.getPublicKey(), publicFile);
     final StoredPrivateKey privKey = createStoredPrivateKey(keyPair, password);
     storePrivateKey(privKey, privateFile);
@@ -146,12 +147,12 @@ public class SodiumFileKeyStore implements KeyStore {
     }
   }
 
-  private void storePrivateKey(StoredPrivateKey privKey, File privateFile) {
+  private void storePrivateKey(StoredPrivateKey privKey, Path privateFile) {
     Serializer.writeFile(HttpContentType.JSON, privateFile, privKey);
   }
 
-  private void storePublicKey(byte[] publicKey, File publicFile) {
-    try (Writer fw = Files.newBufferedWriter(publicFile.toPath(), UTF_8)) {
+  private void storePublicKey(byte[] publicKey, Path publicFile) {
+    try (Writer fw = Files.newBufferedWriter(publicFile, UTF_8)) {
       fw.write(Base64.encode(publicKey));
     } catch (final IOException e) {
       throw new EnclaveException(OrionErrorCode.ENCLAVE_WRITE_PUBLIC_KEY, e);
@@ -196,13 +197,13 @@ public class SodiumFileKeyStore implements KeyStore {
 
   @Override
   public PublicKey[] alwaysSendTo() {
-    final File[] alwaysSendTo = config.alwaysSendTo();
+    final Path[] alwaysSendTo = config.alwaysSendTo();
     return Arrays.stream(alwaysSendTo).map(this::readPublicKey).toArray(PublicKey[]::new);
   }
 
   @Override
   public PublicKey[] nodeKeys() {
-    final File[] publicKeys = config.publicKeys();
+    final Path[] publicKeys = config.publicKeys();
     return Arrays.stream(publicKeys).map(this::readPublicKey).toArray(PublicKey[]::new);
   }
 }

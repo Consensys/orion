@@ -1,7 +1,7 @@
 package net.consensys.orion.api.config;
 
-import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Optional;
 
 /** Configuration for Orion. Refer to the "sample.conf" file for documentation on config elements */
@@ -54,21 +54,21 @@ public interface Config {
   String libSodiumPath();
 
   /**
-   * Directory to which paths to all other files referenced in the config are relative to.
+   * Directory to which all other paths referenced in the config are relative to.
    *
    * <p>
    * <strong>Default:</strong> The current directory
    *
    * @return Working directory to use
    */
-  Optional<File> workDir();
+  Path workDir();
 
   /**
-   * Socket file to use for the private API / IPC. NB. If this isn't set, the private API will not be accessible.
+   * Path to the socket for use in the private API / IPC. NB. If this isn't set, the private API will not be accessible.
    *
-   * @return Path to IPC socket file to create for private API access
+   * @return Path to IPC socket for private API access
    */
-  Optional<File> socket();
+  Optional<Path> socket();
 
   /**
    * Initial list of other nodes in the network. Orion will automatically connect to other nodes not in this list that
@@ -89,7 +89,7 @@ public interface Config {
    *
    * @return Array of paths to public keys
    */
-  File[] publicKeys();
+  Path[] publicKeys();
 
   /**
    * The corresponding set of private keys. These must correspond to the public keys listed <i>publicKeys</i>.
@@ -100,7 +100,7 @@ public interface Config {
    * @see #publicKeys()
    * @return Array of paths to corresponding private keys
    */
-  File[] privateKeys();
+  Path[] privateKeys();
 
   /**
    * Optional comma-separated list of paths to public keys to add as recipients for every transaction sent through this
@@ -114,7 +114,7 @@ public interface Config {
    * @see #privateKeys()
    * @return Array of paths to public keys that are always included as recipients
    */
-  File[] alwaysSendTo();
+  Path[] alwaysSendTo();
 
   /**
    * Optional file containing the passwords needed to unlock the given <i>privateKeys</i> The file should contain one
@@ -123,7 +123,7 @@ public interface Config {
    * @see #privateKeys()
    * @return A file containing the passwords for the specified privateKeys
    */
-  Optional<File> passwords();
+  Optional<Path> passwords();
 
   /**
    * Storage engine used to save payloads and related information. Options:
@@ -181,7 +181,7 @@ public interface Config {
    *
    * @return TLS certificate file to use for the public API
    */
-  File tlsServerCert();
+  Path tlsServerCert();
 
   /**
    * List of files that constitute the CA trust chain for the server certificate. This can be empty for
@@ -192,7 +192,7 @@ public interface Config {
    *
    * @return Array of TLS chain certificates to use for the public API
    */
-  File[] tlsServerChain();
+  Path[] tlsServerChain();
 
   /**
    * The private key file for the server TLS certificate. If the file doesn't exist it will be created.
@@ -202,7 +202,7 @@ public interface Config {
    *
    * @return TLS key to use for the public API
    */
-  File tlsServerKey();
+  Path tlsServerKey();
 
   /**
    * TLS trust mode for the server. This decides who's allowed to connect to it. Options:
@@ -241,7 +241,7 @@ public interface Config {
    * @see #tlsServerTrust()
    * @return TLS server known clients file
    */
-  File tlsKnownClients();
+  Path tlsKnownClients();
 
   /**
    * File containing the client's TLS certificate in Apache format. This is used to identify this node to other nodes in
@@ -252,7 +252,7 @@ public interface Config {
    *
    * @return TLS client certificate file
    */
-  File tlsClientCert();
+  Path tlsClientCert();
 
   /**
    * List of files that constitute the CA trust chain for the client certificate. This can be empty for
@@ -263,7 +263,7 @@ public interface Config {
    *
    * @return Array of TLS chain certificates to use for connections to other nodes
    */
-  File[] tlsClientChain();
+  Path[] tlsClientChain();
 
   /**
    * The private key file for the client TLS certificate. If it doesn't exist it will be created.
@@ -273,7 +273,7 @@ public interface Config {
    *
    * @return TLS key to use for connections to other nodes
    */
-  File tlsClientKey();
+  Path tlsClientKey();
 
   /**
    * TLS trust mode for the client. This decides which servers it will connect to. Options:
@@ -310,7 +310,7 @@ public interface Config {
    * @see #tlsKnownServers()
    * @return TLS client known servers file
    */
-  File tlsKnownServers();
+  Path tlsKnownServers();
 
   /**
    * Verbosity level (each level includes all prior levels)
