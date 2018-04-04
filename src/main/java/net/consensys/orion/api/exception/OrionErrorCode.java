@@ -55,7 +55,11 @@ public enum OrionErrorCode {
   STORAGE_CLOSED_DELETE("StorageClosedDelete"),
   STORAGE_CLOSED_READ("StorageClosedRead"),
   STORAGE_CLOSED_WRITE("StorageClosedWrite"),
-  STORAGE_OPEN("StorageOpen");
+  STORAGE_OPEN("StorageOpen"),
+
+  SERVICE_START_ERROR("ServiceStartError"),
+  SERVICE_START_INTERRUPTED("ServiceStartInterrupted"),
+  CONFIG_FILE_MISSING("ConfigFileMissing");
 
   private final String code;
 

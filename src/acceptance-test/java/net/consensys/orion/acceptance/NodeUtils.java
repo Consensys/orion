@@ -78,7 +78,7 @@ public class NodeUtils {
   /** It's the callers responsibility to stop the started Orion. */
   public Orion startOrion(Config config) throws ExecutionException, InterruptedException {
     final Orion orion = new Orion();
-    orion.run(config);
+    orion.run(System.out, System.err, config);
 
     return orion;
   }

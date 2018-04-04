@@ -14,7 +14,6 @@ import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.helpers.StubEnclave;
 import net.consensys.orion.impl.http.server.HttpContentType;
-import net.consensys.orion.impl.http.server.vertx.VertxServer;
 import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 import net.consensys.orion.impl.storage.EncryptedPayloadStorage;
 import net.consensys.orion.impl.storage.Sha512_256StorageKeyBuilder;
@@ -26,8 +25,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
 import okhttp3.HttpUrl;
@@ -54,9 +55,9 @@ public abstract class HandlerTest {
 
   private Vertx vertx;
   private Integer publicHTTPServerPort;
-  private VertxServer publicVertxServer;
+  private HttpServer publicVertxServer;
   private Integer privateHTTPServerPort;
-  private VertxServer privateVertxServer;
+  private HttpServer privateVertxServer;
 
   private StorageEngine<EncryptedPayload> storageEngine;
   protected Storage<EncryptedPayload> storage;
@@ -102,8 +103,15 @@ public abstract class HandlerTest {
     HttpServerOptions publicServerOptions = new HttpServerOptions();
     publicServerOptions.setPort(publicHTTPServerPort);
 
-    publicVertxServer = new VertxServer(vertx, router, publicServerOptions);
-    publicVertxServer.start().get();
+    CompletableFuture<Boolean> future = new CompletableFuture<>();
+    publicVertxServer = vertx.createHttpServer(publicServerOptions).requestHandler(router::accept).listen(result -> {
+      if (result.succeeded()) {
+        future.complete(true);
+      } else {
+        future.completeExceptionally(result.cause());
+      }
+    });
+    future.get();
   }
 
   private void setupPrivateAPIServer(Router router) throws UnknownHostException,
@@ -119,9 +127,15 @@ public abstract class HandlerTest {
     HttpServerOptions privateServerOptions = new HttpServerOptions();
     privateServerOptions.setPort(privateHTTPServerPort);
 
-    privateVertxServer = new VertxServer(vertx, router, privateServerOptions);
-
-    privateVertxServer.start().get();
+    CompletableFuture<Boolean> future = new CompletableFuture<>();
+    privateVertxServer = vertx.createHttpServer(privateServerOptions).requestHandler(router::accept).listen(result -> {
+      if (result.succeeded()) {
+        future.complete(true);
+      } else {
+        future.completeExceptionally(result.cause());
+      }
+    });
+    future.get();
   }
 
   private void setupPorts() throws IOException {
@@ -139,8 +153,8 @@ public abstract class HandlerTest {
 
   @After
   public void tearDown() throws Exception {
-    publicVertxServer.stop().get();
-    privateVertxServer.stop().get();
+    publicVertxServer.close();
+    privateVertxServer.close();
     vertx.close();
     storageEngine.close();
   }
