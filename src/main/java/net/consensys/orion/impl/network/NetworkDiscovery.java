@@ -47,7 +47,10 @@ public class NetworkDiscovery extends AbstractVerticle {
     for (Discoverer discoverer : discoverers.values()) {
       discoverer.cancel();
     }
-    httpClient.close();
+    if (httpClient != null) {
+      httpClient.close();
+      httpClient = null;
+    }
   }
 
   /**
