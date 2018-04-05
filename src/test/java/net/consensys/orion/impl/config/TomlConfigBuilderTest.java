@@ -116,7 +116,7 @@ public class TomlConfigBuilderTest {
 
     assertEquals("leveldb", testConf.storage());
     assertEquals("strict", testConf.tls());
-    assertEquals("tofu", testConf.tlsServerTrust());
+    assertEquals("ca", testConf.tlsServerTrust());
     assertEquals("ca-or-tofu", testConf.tlsClientTrust());
     assertEquals(1, testConf.verbosity());
 

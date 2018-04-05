@@ -45,6 +45,7 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -52,6 +53,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.LoggerHandler;
@@ -151,7 +153,12 @@ public class Orion {
     this.vertx = vertx;
   }
 
+  private AtomicBoolean isRunning = new AtomicBoolean(false);
+
   public void stop() {
+    if (!isRunning.compareAndSet(true, false)) {
+      return;
+    }
     CompletableFuture<Boolean> publicServerFuture = new CompletableFuture<>();
     CompletableFuture<Boolean> privateServerFuture = new CompletableFuture<>();
     CompletableFuture<Boolean> discoveryFuture = new CompletableFuture<>();
@@ -265,16 +272,15 @@ public class Orion {
 
     // asynchronously start the vertx http server for public API
     CompletableFuture<Boolean> publicFuture = new CompletableFuture<>();
-    publicHTTPServer = vertx
-        .createHttpServer(new HttpServerOptions().setPort(config.port()))
-        .requestHandler(publicRouter::accept)
-        .listen(completeFutureInHandler(publicFuture));
+    HttpServerOptions options = new HttpServerOptions().setPort(config.port());
+    configureSSLOptions(config, options);
+    publicHTTPServer = vertx.createHttpServer(options).requestHandler(publicRouter::accept).listen(
+        completeFutureInHandler(publicFuture));
 
     CompletableFuture<Boolean> privateFuture = new CompletableFuture<>();
-    privateHTTPServer = vertx
-        .createHttpServer(new HttpServerOptions().setPort(config.privacyPort()))
-        .requestHandler(privateRouter::accept)
-        .listen(completeFutureInHandler(privateFuture));
+    HttpServerOptions privateOptions = new HttpServerOptions().setPort(config.privacyPort());
+    privateHTTPServer = vertx.createHttpServer(privateOptions).requestHandler(privateRouter::accept).listen(
+        completeFutureInHandler(privateFuture));
 
     // start network discovery of other peers
     discovery = new NetworkDiscovery(networkNodes);
@@ -297,6 +303,29 @@ public class Orion {
 
     // set shutdown hook
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+    isRunning.set(true);
+  }
+
+  private void configureSSLOptions(Config config, HttpServerOptions options) {
+    if ("off".equals(config.tls())) {
+      return;
+    }
+    if ("ca".equals(config.tlsServerTrust())) {
+      options.setSsl(true);
+
+      PemKeyCertOptions pemKeyCertOptions =
+          new PemKeyCertOptions().setKeyPath(config.tlsServerKey().toString()).setCertPath(
+              config.tlsServerCert().toString());
+      options.setPemKeyCertOptions(pemKeyCertOptions);
+    } else if ("tofu".equals(config.tlsServerTrust())) {
+      throw new UnsupportedOperationException();
+    } else if ("whitelist".equals(config.tlsServerTrust())) {
+      throw new UnsupportedOperationException();
+    } else if ("ca-or-tofu".equals(config.tlsServerTrust())) {
+      throw new UnsupportedOperationException();
+    } else if ("insecure-no-validation".equals(config.tlsServerTrust())) {
+      throw new UnsupportedOperationException();
+    }
   }
 
   private Handler<AsyncResult<HttpServer>> completeFutureInHandler(CompletableFuture<Boolean> future) {

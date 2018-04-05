@@ -33,6 +33,7 @@ public class NodeUtils {
       String privKeys) throws UnsupportedEncodingException {
 
     final String confString = new StringBuilder()
+        .append("tls=\"off\"\n")
         .append("url = \"")
         .append(baseUrl)
         .append("\"\nport = ")
