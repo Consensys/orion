@@ -23,29 +23,37 @@ public class NodeUtils {
   }
 
   public Config nodeConfig(
-      String baseUrl,
-      int port,
-      String privacyUrl,
-      int privacyPort,
+      String nodeUrl,
+      int nodePort,
+      String nodeNetworkInterface,
+      String clientUrl,
+      int clientPort,
+      String clientNetworkInterface,
       String nodeName,
       String otherNodes,
       String pubKeys,
       String privKeys) throws UnsupportedEncodingException {
 
     final String confString = new StringBuilder()
-        .append("url = \"")
-        .append(baseUrl)
-        .append("\"\nport = ")
-        .append(port)
-        .append("\nprivacyurl = \"")
-        .append(privacyUrl)
-        .append("\"\nprivacyport = ")
-        .append(privacyPort)
-        .append("\nstorage = \"leveldb:database/" + nodeName + "\"")
+        .append("tls=\"off\"\n")
+        .append("nodeurl = \"")
+        .append(nodeUrl)
+        .append("\"\nnodeport = ")
+        .append(nodePort)
+        .append("\nnodenetworkinterface = \"")
+        .append(nodeNetworkInterface)
+        .append("\"\nclienturl = \"")
+        .append(clientUrl)
+        .append("\"\nclientport = ")
+        .append(clientPort)
+        .append("\nclientnetworkinterface = \"")
+        .append(clientNetworkInterface)
+        .append("\"\nstorage = \"leveldb:database/" + nodeName + "\"")
         .append("\nothernodes = [\"")
         .append(otherNodes)
         .append("\"]\n" + "publickeys = [\"" + pubKeys + "\"]\n" + "privatekeys = [\"" + privKeys + "\"]")
         .toString();
+    System.out.println(confString);
 
     return new TomlConfigBuilder().build(new ByteArrayInputStream(confString.getBytes(StandardCharsets.UTF_8.name())));
   }

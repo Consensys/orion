@@ -32,7 +32,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
         RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), Serializer.serialize(CBOR, networkNodes));
 
     // call http endpoint
-    Request request = new Request.Builder().post(partyInfoBody).url(publicBaseUrl + "/partyinfo").build();
+    Request request = new Request.Builder().post(partyInfoBody).url(nodeBaseUrl + "/partyinfo").build();
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
@@ -60,7 +60,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
     RequestBody partyInfoBody =
         RequestBody.create(MediaType.parse(JSON.httpHeaderValue), Serializer.serialize(JSON, networkNodes));
 
-    Request request = new Request.Builder().post(partyInfoBody).url(publicBaseUrl + "/partyinfo").build();
+    Request request = new Request.Builder().post(partyInfoBody).url(nodeBaseUrl + "/partyinfo").build();
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(404, resp.code());
@@ -70,7 +70,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
   public void partyInfoWithInvalidBody() throws Exception {
     RequestBody partyInfoBody = RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), "foo");
 
-    Request request = new Request.Builder().post(partyInfoBody).url(publicBaseUrl + "/partyinfo").build();
+    Request request = new Request.Builder().post(partyInfoBody).url(nodeBaseUrl + "/partyinfo").build();
 
     Response resp = httpClient.newCall(request).execute();
 

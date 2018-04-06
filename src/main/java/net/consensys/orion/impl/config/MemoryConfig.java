@@ -10,12 +10,13 @@ import java.util.Optional;
 
 public class MemoryConfig implements Config {
 
-  private URL url;
-  private int port = Integer.MIN_VALUE;
-  private URL privacyUrl;
-  private int privacyPort = Integer.MIN_VALUE;
+  private URL nodeUrl;
+  private int nodePort = Integer.MIN_VALUE;
+  private String nodeNetworkInterface = "127.0.0.1";
+  private URL clientUrl;
+  private int clientPort = Integer.MIN_VALUE;
+  private String clientNetworkInterface = "127.0.0.1";
   private Path workDir = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
-  private Optional<Path> socket = Optional.empty();
   private URL[] otherNodes = new URL[] {};
   private Path[] publicKeys = new Path[] {};
   private Path[] privateKeys = new Path[] {};
@@ -27,7 +28,7 @@ public class MemoryConfig implements Config {
   private Path tlsServerCert = Paths.get("tls-server-cert.pem");
   private Path[] tlsServerChain = new Path[] {};
   private Path tlsServerKey = Paths.get("tls-server-key.pem");
-  private String tlsServerTrust = "tofu";
+  private String tlsServerTrust = "ca";
   private Path tlsKnownClients = Paths.get("tls-known-clients");
   private Path tlsClientCert = Paths.get("tls-client-cert.pem");
   private Path[] tlsClientChain = new Path[] {};
@@ -39,28 +40,32 @@ public class MemoryConfig implements Config {
   private long verbosity = 1;
   private String libSodiumPath = LibSodiumSettings.defaultLibSodiumPath();
 
-  public void setUrl(URL url) {
-    this.url = url;
+  public void setNodeUrl(URL nodeUrl) {
+    this.nodeUrl = nodeUrl;
   }
 
-  public void setPort(int port) {
-    this.port = port;
+  public void setNodePort(int nodePort) {
+    this.nodePort = nodePort;
   }
 
-  public void setPrivacyUrl(URL url) {
-    this.privacyUrl = url;
+  public void setNodeNetworkInterface(String nodeNetworkInterface) {
+    this.nodeNetworkInterface = nodeNetworkInterface;
+  };
+
+  public void setClientUrl(URL url) {
+    this.clientUrl = url;
   }
 
-  public void setPrivacyPort(int port) {
-    this.privacyPort = port;
+  public void setClientPort(int port) {
+    this.clientPort = port;
+  }
+
+  public void setClientNetworkInterface(String clientNetworkInterface) {
+    this.clientNetworkInterface = clientNetworkInterface;
   }
 
   public void setWorkDir(Path workDir) {
     this.workDir = workDir;
-  }
-
-  public void setSocket(Path socket) {
-    this.socket = Optional.ofNullable(socket);
   }
 
   public void setOtherNodes(URL[] otherNodes) {
@@ -152,33 +157,38 @@ public class MemoryConfig implements Config {
   }
 
   @Override
-  public URL url() {
-    return url;
+  public URL nodeUrl() {
+    return nodeUrl;
   }
 
   @Override
-  public int port() {
-    return port;
+  public int nodePort() {
+    return nodePort;
   }
 
   @Override
-  public URL privacyUrl() {
-    return privacyUrl;
+  public String nodeNetworkInterface() {
+    return nodeNetworkInterface;
   }
 
   @Override
-  public int privacyPort() {
-    return privacyPort;
+  public URL clientUrl() {
+    return clientUrl;
+  }
+
+  @Override
+  public int clientPort() {
+    return clientPort;
+  }
+
+  @Override
+  public String clientNetworkInterface() {
+    return clientNetworkInterface;
   }
 
   @Override
   public Path workDir() {
     return workDir;
-  }
-
-  @Override
-  public Optional<Path> socket() {
-    return socket;
   }
 
   @Override

@@ -54,8 +54,10 @@ public class SingleNodeSendTest {
     config = nodeUtils.nodeConfig(
         baseUrl,
         port,
+        "127.0.0.1",
         ethUrl,
         ethPort,
+        "127.0.0.1",
         "node1",
         baseUrl,
         "src/acceptance-test/resources/key1.pub\", \"src/acceptance-test/resources/key2.pub",

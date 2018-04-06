@@ -49,8 +49,8 @@ public abstract class HandlerTest {
 
   // http client
   OkHttpClient httpClient = new OkHttpClient();
-  String publicBaseUrl;
-  String privateBaseUrl;
+  String nodeBaseUrl;
+  String clientBaseUrl;
 
   // these are re-built between tests
   ConcurrentNetworkNodes networkNodes;
@@ -58,10 +58,10 @@ public abstract class HandlerTest {
   protected Enclave enclave;
 
   private Vertx vertx;
-  private Integer publicHTTPServerPort;
-  private HttpServer publicVertxServer;
-  private Integer privateHTTPServerPort;
-  private HttpServer privateVertxServer;
+  private Integer nodeHTTPServerPort;
+  private HttpServer nodeHttpServer;
+  private Integer clientHTTPServerPort;
+  private HttpServer clientHttpServer;
 
   private StorageEngine<EncryptedPayload> storageEngine;
   protected Storage<EncryptedPayload> storage;
@@ -73,19 +73,16 @@ public abstract class HandlerTest {
     // Setup ports for Public and Private API Servers
     setupPorts();
 
-    // Initialise the base HTTP url in two forms: String and OkHttp's HttpUrl object to allow for simpler composition
+    // Initialize the base HTTP url in two forms: String and OkHttp's HttpUrl object to allow for simpler composition
     // of complex URLs with path parameters, query strings, etc.
-    HttpUrl publicHTTP = new Builder()
-        .scheme("http")
-        .host(InetAddress.getLocalHost().getHostAddress())
-        .port(publicHTTPServerPort)
-        .build();
-    publicBaseUrl = publicHTTP.toString();
+    HttpUrl nodeHTTP =
+        new Builder().scheme("http").host(InetAddress.getLocalHost().getHostAddress()).port(nodeHTTPServerPort).build();
+    nodeBaseUrl = nodeHTTP.toString();
 
     // orion dependencies, reset them all between tests
     config = new MemoryConfig();
     config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
-    networkNodes = new ConcurrentNetworkNodes(publicHTTP.url());
+    networkNodes = new ConcurrentNetworkNodes(nodeHTTP.url());
     enclave = buildEnclave();
 
     Path path = tempDir.resolve("routerdb");
@@ -99,17 +96,16 @@ public abstract class HandlerTest {
     Router privateRouter = Router.router(vertx);
     Orion.configureRoutes(vertx, networkNodes, enclave, storage, publicRouter, privateRouter);
 
-    setupPublicAPIServer(publicRouter);
-    setupPrivateAPIServer(privateRouter);
+    setupNodeServer(publicRouter);
+    setupClientServer(privateRouter);
   }
 
-  private void setupPublicAPIServer(Router router) throws InterruptedException,
-      java.util.concurrent.ExecutionException {
+  private void setupNodeServer(Router router) throws InterruptedException, java.util.concurrent.ExecutionException {
     HttpServerOptions publicServerOptions = new HttpServerOptions();
-    publicServerOptions.setPort(publicHTTPServerPort);
+    publicServerOptions.setPort(nodeHTTPServerPort);
 
     CompletableFuture<Boolean> future = new CompletableFuture<>();
-    publicVertxServer = vertx.createHttpServer(publicServerOptions).requestHandler(router::accept).listen(result -> {
+    nodeHttpServer = vertx.createHttpServer(publicServerOptions).requestHandler(router::accept).listen(result -> {
       if (result.succeeded()) {
         future.complete(true);
       } else {
@@ -119,21 +115,21 @@ public abstract class HandlerTest {
     future.get();
   }
 
-  private void setupPrivateAPIServer(Router router) throws UnknownHostException,
+  private void setupClientServer(Router router) throws UnknownHostException,
       InterruptedException,
       java.util.concurrent.ExecutionException {
-    HttpUrl privateHTTP = new Builder()
+    HttpUrl clientHTTP = new Builder()
         .scheme("http")
         .host(InetAddress.getLocalHost().getHostAddress())
-        .port(privateHTTPServerPort)
+        .port(clientHTTPServerPort)
         .build();
-    privateBaseUrl = privateHTTP.toString();
+    clientBaseUrl = clientHTTP.toString();
 
     HttpServerOptions privateServerOptions = new HttpServerOptions();
-    privateServerOptions.setPort(privateHTTPServerPort);
+    privateServerOptions.setPort(clientHTTPServerPort);
 
     CompletableFuture<Boolean> future = new CompletableFuture<>();
-    privateVertxServer = vertx.createHttpServer(privateServerOptions).requestHandler(router::accept).listen(result -> {
+    clientHttpServer = vertx.createHttpServer(privateServerOptions).requestHandler(router::accept).listen(result -> {
       if (result.succeeded()) {
         future.complete(true);
       } else {
@@ -146,11 +142,11 @@ public abstract class HandlerTest {
   private void setupPorts() throws IOException {
     // get a free httpServerPort for Public API
     ServerSocket socket1 = new ServerSocket(0);
-    publicHTTPServerPort = socket1.getLocalPort();
+    nodeHTTPServerPort = socket1.getLocalPort();
 
     // get a free httpServerPort for Private API
     ServerSocket socket2 = new ServerSocket(0);
-    privateHTTPServerPort = socket2.getLocalPort();
+    clientHTTPServerPort = socket2.getLocalPort();
 
     socket1.close();
     socket2.close();
@@ -158,8 +154,8 @@ public abstract class HandlerTest {
 
   @After
   public void tearDown() throws Exception {
-    publicVertxServer.close();
-    privateVertxServer.close();
+    nodeHttpServer.close();
+    clientHttpServer.close();
     vertx.close();
     storageEngine.close();
   }
@@ -169,11 +165,11 @@ public abstract class HandlerTest {
   }
 
   protected Request buildPrivateAPIRequest(String path, HttpContentType contentType, Object payload) {
-    return buildPostRequest(privateBaseUrl, path, contentType, Serializer.serialize(contentType, payload));
+    return buildPostRequest(clientBaseUrl, path, contentType, Serializer.serialize(contentType, payload));
   }
 
   protected Request buildPublicAPIRequest(String path, HttpContentType contentType, Object payload) {
-    return buildPostRequest(publicBaseUrl, path, contentType, Serializer.serialize(contentType, payload));
+    return buildPostRequest(nodeBaseUrl, path, contentType, Serializer.serialize(contentType, payload));
   }
 
   private Request buildPostRequest(String baseurl, String path, HttpContentType contentType, byte[] payload) {

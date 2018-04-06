@@ -28,8 +28,9 @@ public class TomlConfigBuilderTest {
     Config testConf = configBuilder.build(configAsStream);
 
     URL expectedURL = new URL("http://127.0.0.1:9001/");
-    assertEquals(expectedURL, testConf.url());
-    assertEquals(9001, testConf.port());
+    assertEquals(expectedURL, testConf.nodeUrl());
+    assertEquals(9001, testConf.nodePort());
+    assertEquals("0.0.0.0", testConf.nodeNetworkInterface());
     assertEquals("memory", testConf.storage());
     assertEquals("off", testConf.tls());
     assertEquals("ca-or-tofu", testConf.tlsServerTrust());
@@ -41,8 +42,6 @@ public class TomlConfigBuilderTest {
     assertEquals(expectedWorkdir, testConf.workDir());
 
     expectedFile = expectedWorkdir.resolve("orion.ipc");
-    assertTrue(testConf.socket().isPresent());
-    assertEquals(expectedFile, testConf.socket().get());
 
     expectedFile = expectedWorkdir.resolve("keys/password.txt");
     assertTrue(testConf.passwords().isPresent());
@@ -116,11 +115,10 @@ public class TomlConfigBuilderTest {
 
     assertEquals("leveldb", testConf.storage());
     assertEquals("strict", testConf.tls());
-    assertEquals("tofu", testConf.tlsServerTrust());
+    assertEquals("ca", testConf.tlsServerTrust());
     assertEquals("ca-or-tofu", testConf.tlsClientTrust());
     assertEquals(1, testConf.verbosity());
 
-    assertFalse(testConf.socket().isPresent());
     assertFalse(testConf.passwords().isPresent());
 
     String expectedStringArray[] = new String[0];
@@ -159,9 +157,9 @@ public class TomlConfigBuilderTest {
       fail("Expected Config Exception to be thrown");
     } catch (ConfigException e) {
       String message = "Invalid Configuration Options\n"
-          + "Error: key 'url' in config is malformed.\n\tunknown protocol: htt\n"
-          + "Error: key 'privacyurl' in config is malformed.\n\tunknown protocol: htt\n"
-          + "Error: value for key 'privacyport' in config must be different to 'port'\n"
+          + "Error: key 'nodeurl' in config is malformed.\n\tunknown protocol: htt\n"
+          + "Error: key 'clienturl' in config is malformed.\n\tunknown protocol: htt\n"
+          + "Error: value for key 'nodeport' in config must be different to 'clientport'\n"
           + "Error: key 'othernodes' in config contains malformed URLS.\n"
           + "\tURL [htt://127.0.0.1:9000/] unknown protocol: htt\n"
           + "\tURL [10.1.1.1] no protocol: 10.1.1.1\n"
@@ -187,11 +185,11 @@ public class TomlConfigBuilderTest {
       fail("Expected Config Exception to be thrown");
     } catch (ConfigException e) {
       String message = "Invalid Configuration Options\n"
-          + "Error: value for key 'url' in config must be specified\n"
-          + "Error: value for key 'privacyurl' in config must be specified\n"
-          + "Error: value for key 'port' in config must be specified\n"
-          + "Error: value for key 'privacyport' in config must be specified\n"
-          + "Error: value for key 'privacyport' in config must be different to 'port'\n";
+          + "Error: value for key 'nodeurl' in config must be specified\n"
+          + "Error: value for key 'clienturl' in config must be specified\n"
+          + "Error: value for key 'nodeport' in config must be specified\n"
+          + "Error: value for key 'clientport' in config must be specified\n"
+          + "Error: value for key 'nodeport' in config must be different to 'clientport'\n";
       assertEquals(message, e.getMessage());
     }
   }

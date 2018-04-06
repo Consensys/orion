@@ -8,34 +8,48 @@ import java.util.Optional;
 public interface Config {
 
   /**
-   * Externally accessible URL for this node's public API This is what is advertised to other nodes on the network and
-   * must be reachable by them.
+   * Externally accessible URL for this node's Orion API
+   * <p>
+   * This is what is advertised to other nodes on the network and must be reachable by them.
    *
-   * @return URL for this nodes public API
+   * @return URL for this node's Orion API
    */
-  URL url();
+  URL nodeUrl();
 
   /**
-   * Port to listen on for the public API.
+   * Port to listen on for the Orion API.
    *
-   * @return Port to listen on for the public API
+   * @return Port to listen on for the Orion API
    */
-  int port();
+  int nodePort();
 
   /**
-   * Internally accessible URL for this node's public API This is what is advertised to other nodes on the network and
-   * must be reachable by them.
+   * Network interface to bind the Orion API to.
    *
-   * @return URL for this nodes private API
+   * @return the network interface to bind the Orion API to
    */
-  URL privacyUrl();
+  String nodeNetworkInterface();
 
   /**
-   * Port to listen on for the private API.
+   * URL advertised to the Ethereum client paired with this node.
    *
-   * @return Port to listen on for the private API
+   * @return URL for this node's client API
    */
-  int privacyPort();
+  URL clientUrl();
+
+  /**
+   * Port to listen on for the client API.
+   *
+   * @return Port to listen on for the client API
+   */
+  int clientPort();
+
+  /**
+   * Network interface to bind the client API to.
+   *
+   * @return the network interface to bind the client API to.
+   */
+  String clientNetworkInterface();
 
   /**
    * Path to the lib sodium shared library.
@@ -62,13 +76,6 @@ public interface Config {
    * @return Working directory to use
    */
   Path workDir();
-
-  /**
-   * Path to the socket for use in the private API / IPC. NB. If this isn't set, the private API will not be accessible.
-   *
-   * @return Path to IPC socket for private API access
-   */
-  Optional<Path> socket();
 
   /**
    * Initial list of other nodes in the network. Orion will automatically connect to other nodes not in this list that
@@ -141,14 +148,14 @@ public interface Config {
   String storage();
 
   /**
-   * Optional IP whitelist for the public API. If unspecified/empty, connections from all sources will be allowed (but
-   * the private API remains accessible only via the IPC socket.) To allow connections from localhost when a whitelist
-   * is defined, e.g. when running multiple Orion nodes on the same machine, add "127.0.0.1" and "::1" to this list.
+   * Optional IP whitelist for the Orion API. If unspecified/empty, connections from all sources will be allowed.
+   * <p>
+   * To allow connections from localhost when a whitelist is defined, e.g. when running multiple Orion nodes on the same
+   * machine, add "127.0.0.1" and "::1" to this list.
    *
    * <p>
    * <strong>Default:</strong> []
    *
-   * @see #socket()
    * @return Array of IPv4 and IPv6 addresses that may connect to this node's public API
    */
   String[] ipWhitelist();

@@ -85,7 +85,7 @@ public class ReceiveHandlerTest extends HandlerTest {
         .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
         .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
         .addHeader("c11n-key", key)
-        .url(privateBaseUrl + "receiveraw")
+        .url(clientBaseUrl + "receiveraw")
         .build();
 
     // execute request
@@ -133,7 +133,7 @@ public class ReceiveHandlerTest extends HandlerTest {
         .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
         .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
         .addHeader("c11n-key", key)
-        .url(publicBaseUrl + "receiveraw")
+        .url(nodeBaseUrl + "receiveraw")
         .build();
 
     // execute request
@@ -171,7 +171,7 @@ public class ReceiveHandlerTest extends HandlerTest {
         .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
         .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
         .addHeader("c11n-key", key)
-        .url(privateBaseUrl + "receiveraw")
+        .url(clientBaseUrl + "receiveraw")
         .build();
 
     Response resp = httpClient.newCall(request).execute();

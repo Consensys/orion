@@ -45,6 +45,7 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -52,6 +53,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.LoggerHandler;
@@ -67,8 +69,8 @@ public class Orion {
   private final Vertx vertx;
   private StorageEngine<EncryptedPayload> storageEngine;
   private NetworkDiscovery discovery;
-  private HttpServer publicHTTPServer;
-  private HttpServer privateHTTPServer;
+  private HttpServer nodeHTTPServer;
+  private HttpServer clientHTTPServer;
 
   public static void main(String[] args) {
     log.info("starting orion");
@@ -92,51 +94,48 @@ public class Orion {
       ConcurrentNetworkNodes networkNodes,
       Enclave enclave,
       Storage<EncryptedPayload> storage,
-      Router publicRouter,
-      Router privateRouter) {
+      Router nodeRouter,
+      Router clientRouter) {
 
-
-    // sets response content-type from Accept header
-    // and handle errors
     LoggerHandler loggerHandler = LoggerHandler.create();
 
-    //Setup Public APIs
-    publicRouter
+    //Setup Orion node APIs
+    nodeRouter
         .route()
         .handler(BodyHandler.create())
         .handler(loggerHandler)
         .handler(ResponseContentTypeHandler.create())
         .failureHandler(new HttpErrorHandler());
 
-    publicRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
+    nodeRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
-    publicRouter.post("/partyinfo").produces(CBOR.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
+    nodeRouter.post("/partyinfo").produces(CBOR.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
         new PartyInfoHandler(networkNodes));
 
-    publicRouter.post("/push").produces(TEXT.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
+    nodeRouter.post("/push").produces(TEXT.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
         new PushHandler(storage));
 
-    //Setup Private APIs
-    privateRouter
+    //Setup client APIs
+    clientRouter
         .route()
         .handler(BodyHandler.create())
         .handler(loggerHandler)
         .handler(ResponseContentTypeHandler.create())
         .failureHandler(new HttpErrorHandler());
 
-    privateRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
+    clientRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
-    privateRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
+    clientRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
         new SendHandler(vertx, enclave, storage, networkNodes, JSON));
-    privateRouter
+    clientRouter
         .post("/sendraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .handler(new SendHandler(vertx, enclave, storage, networkNodes, APPLICATION_OCTET_STREAM));
 
-    privateRouter.post("/receive").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
+    clientRouter.post("/receive").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
         new ReceiveHandler(enclave, storage, JSON));
-    privateRouter
+    clientRouter
         .post("/receiveraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
@@ -151,18 +150,23 @@ public class Orion {
     this.vertx = vertx;
   }
 
+  private AtomicBoolean isRunning = new AtomicBoolean(false);
+
   public void stop() {
+    if (!isRunning.compareAndSet(true, false)) {
+      return;
+    }
     CompletableFuture<Boolean> publicServerFuture = new CompletableFuture<>();
     CompletableFuture<Boolean> privateServerFuture = new CompletableFuture<>();
     CompletableFuture<Boolean> discoveryFuture = new CompletableFuture<>();
-    publicHTTPServer.close(result -> {
+    nodeHTTPServer.close(result -> {
       if (result.succeeded()) {
         publicServerFuture.complete(true);
       } else {
         publicServerFuture.completeExceptionally(result.cause());
       }
     });
-    privateHTTPServer.close(result -> {
+    clientHTTPServer.close(result -> {
       if (result.succeeded()) {
         privateServerFuture.complete(true);
       } else {
@@ -255,26 +259,27 @@ public class Orion {
     storageEngine = createStorageEngine(config, workDir);
 
     // Vertx routers
-    Router publicRouter = Router.router(vertx);
-    Router privateRouter = Router.router(vertx);
+    Router nodeRouter = Router.router(vertx);
+    Router clientRouter = Router.router(vertx);
 
     // controller dependencies
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
     EncryptedPayloadStorage storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
-    configureRoutes(vertx, networkNodes, enclave, storage, publicRouter, privateRouter);
+    configureRoutes(vertx, networkNodes, enclave, storage, nodeRouter, clientRouter);
 
     // asynchronously start the vertx http server for public API
-    CompletableFuture<Boolean> publicFuture = new CompletableFuture<>();
-    publicHTTPServer = vertx
-        .createHttpServer(new HttpServerOptions().setPort(config.port()))
-        .requestHandler(publicRouter::accept)
-        .listen(completeFutureInHandler(publicFuture));
+    CompletableFuture<Boolean> nodeFuture = new CompletableFuture<>();
+    HttpServerOptions options =
+        new HttpServerOptions().setPort(config.nodePort()).setHost(config.nodeNetworkInterface());
+    configureSSLOptions(config, options);
+    nodeHTTPServer =
+        vertx.createHttpServer(options).requestHandler(nodeRouter::accept).listen(completeFutureInHandler(nodeFuture));
 
-    CompletableFuture<Boolean> privateFuture = new CompletableFuture<>();
-    privateHTTPServer = vertx
-        .createHttpServer(new HttpServerOptions().setPort(config.privacyPort()))
-        .requestHandler(privateRouter::accept)
-        .listen(completeFutureInHandler(privateFuture));
+    CompletableFuture<Boolean> clientFuture = new CompletableFuture<>();
+    HttpServerOptions clientOptions =
+        new HttpServerOptions().setPort(config.clientPort()).setHost(config.clientNetworkInterface());
+    clientHTTPServer = vertx.createHttpServer(clientOptions).requestHandler(clientRouter::accept).listen(
+        completeFutureInHandler(clientFuture));
 
     // start network discovery of other peers
     discovery = new NetworkDiscovery(networkNodes);
@@ -288,7 +293,7 @@ public class Orion {
     });
 
     try {
-      CompletableFuture.allOf(publicFuture, privateFuture, verticleFuture).get();
+      CompletableFuture.allOf(nodeFuture, clientFuture, verticleFuture).get();
     } catch (ExecutionException e) {
       throw new OrionStartException("Orion failed to start: " + e.getCause().getMessage(), e.getCause());
     } catch (InterruptedException e) {
@@ -297,6 +302,29 @@ public class Orion {
 
     // set shutdown hook
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+    isRunning.set(true);
+  }
+
+  private void configureSSLOptions(Config config, HttpServerOptions options) {
+    if ("off".equals(config.tls())) {
+      return;
+    }
+    if ("ca".equals(config.tlsServerTrust())) {
+      options.setSsl(true);
+
+      PemKeyCertOptions pemKeyCertOptions =
+          new PemKeyCertOptions().setKeyPath(config.tlsServerKey().toString()).setCertPath(
+              config.tlsServerCert().toString());
+      options.setPemKeyCertOptions(pemKeyCertOptions);
+    } else if ("tofu".equals(config.tlsServerTrust())) {
+      throw new UnsupportedOperationException();
+    } else if ("whitelist".equals(config.tlsServerTrust())) {
+      throw new UnsupportedOperationException();
+    } else if ("ca-or-tofu".equals(config.tlsServerTrust())) {
+      throw new UnsupportedOperationException();
+    } else if ("insecure-no-validation".equals(config.tlsServerTrust())) {
+      throw new UnsupportedOperationException();
+    }
   }
 
   private Handler<AsyncResult<HttpServer>> completeFutureInHandler(CompletableFuture<Boolean> future) {

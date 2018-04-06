@@ -59,7 +59,7 @@ public class SendHandlerTest extends HandlerTest {
   @Test
   public void emptyPayload() throws Exception {
     RequestBody body = RequestBody.create(null, new byte[0]);
-    Request request = new Request.Builder().post(body).url(privateBaseUrl + "/send").build();
+    Request request = new Request.Builder().post(body).url(clientBaseUrl + "/send").build();
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -279,7 +279,7 @@ public class SendHandlerTest extends HandlerTest {
 
     Request request = new Request.Builder()
         .post(body)
-        .url(privateBaseUrl + "sendraw")
+        .url(clientBaseUrl + "sendraw")
         .addHeader("c11n-from", from)
         .addHeader("c11n-to", String.join(",", to))
         .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
@@ -339,7 +339,7 @@ public class SendHandlerTest extends HandlerTest {
 
     Request request = new Request.Builder()
         .post(body)
-        .url(publicBaseUrl + "sendraw")
+        .url(nodeBaseUrl + "sendraw")
         .addHeader("c11n-from", from)
         .addHeader("c11n-to", Base64.encode(fakePeer.publicKey.getEncoded()))
         .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)

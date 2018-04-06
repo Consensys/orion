@@ -25,26 +25,26 @@ public final class TomlConfigBuilder {
     // read config
     Toml toml = new Toml().read(config);
 
-    if (toml.getString("url") != null) {
+    if (toml.getString("nodeurl") != null) {
       try {
-        memoryConfig.setUrl(new URL(toml.getString("url")));
+        memoryConfig.setNodeUrl(new URL(toml.getString("nodeurl")));
       } catch (MalformedURLException e) {
-        errorMsg.append("Error: key 'url' in config is malformed.\n\t");
+        errorMsg.append("Error: key 'nodeurl' in config is malformed.\n\t");
         errorMsg.append(e.getMessage()).append("\n");
       }
     } else {
-      errorMsg.append("Error: value for key 'url' in config must be specified\n");
+      errorMsg.append("Error: value for key 'nodeurl' in config must be specified\n");
     }
 
-    if (toml.getString("privacyurl") != null) {
+    if (toml.getString("clienturl") != null) {
       try {
-        memoryConfig.setPrivacyUrl(new URL(toml.getString("privacyurl")));
+        memoryConfig.setClientUrl(new URL(toml.getString("clienturl")));
       } catch (MalformedURLException e) {
-        errorMsg.append("Error: key 'privacyurl' in config is malformed.\n\t");
+        errorMsg.append("Error: key 'clienturl' in config is malformed.\n\t");
         errorMsg.append(e.getMessage()).append("\n");
       }
     } else {
-      errorMsg.append("Error: value for key 'privacyurl' in config must be specified\n");
+      errorMsg.append("Error: value for key 'clienturl' in config must be specified\n");
     }
 
     // reading and setting workDir first;
@@ -57,9 +57,10 @@ public final class TomlConfigBuilder {
       baseDir = memoryConfig.workDir();
     }
 
-    setInt(toml.getLong("port"), memoryConfig::setPort);
-    setInt(toml.getLong("privacyport"), memoryConfig::setPrivacyPort);
-    setPath(baseDir, toml.getString("socket"), memoryConfig::setSocket);
+    setInt(toml.getLong("nodeport"), memoryConfig::setNodePort);
+    setString(toml.getString("nodenetworkinterface"), memoryConfig::setNodeNetworkInterface);
+    setInt(toml.getLong("clientport"), memoryConfig::setClientPort);
+    setString(toml.getString("clientnetworkinterface"), memoryConfig::setClientNetworkInterface);
     setString(toml.getString("libsodiumpath"), memoryConfig::setLibSodiumPath);
 
     StringBuilder othernodesError = setURLArray(toml.getList("othernodes"), memoryConfig::setOtherNodes);
@@ -84,16 +85,16 @@ public final class TomlConfigBuilder {
     setInt(toml.getLong("verbosity"), memoryConfig::setVerbosity);
 
     // Validations
-    if (memoryConfig.port() == Integer.MIN_VALUE) {
-      errorMsg.append("Error: value for key 'port' in config must be specified\n");
+    if (memoryConfig.nodePort() == Integer.MIN_VALUE) {
+      errorMsg.append("Error: value for key 'nodeport' in config must be specified\n");
     }
 
-    if (memoryConfig.privacyPort() == Integer.MIN_VALUE) {
-      errorMsg.append("Error: value for key 'privacyport' in config must be specified\n");
+    if (memoryConfig.clientPort() == Integer.MIN_VALUE) {
+      errorMsg.append("Error: value for key 'clientport' in config must be specified\n");
     }
 
-    if (memoryConfig.privacyPort() == memoryConfig.port()) {
-      errorMsg.append("Error: value for key 'privacyport' in config must be different to 'port'\n");
+    if (memoryConfig.clientPort() == memoryConfig.nodePort()) {
+      errorMsg.append("Error: value for key 'nodeport' in config must be different to 'clientport'\n");
     }
 
     if (othernodesError.length() != 0) {
