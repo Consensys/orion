@@ -11,7 +11,7 @@ public class UpcheckHandlerTest extends HandlerTest {
   @Test
   public void publicUpcheck() throws Exception {
 
-    Request request = new Request.Builder().get().url(publicBaseUrl + "/upcheck").build();
+    Request request = new Request.Builder().get().url(nodeBaseUrl + "/upcheck").build();
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
@@ -21,7 +21,7 @@ public class UpcheckHandlerTest extends HandlerTest {
   @Test
   public void privateUpcheck() throws Exception {
 
-    Request request = new Request.Builder().get().url(privateBaseUrl + "/upcheck").build();
+    Request request = new Request.Builder().get().url(clientBaseUrl + "/upcheck").build();
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());

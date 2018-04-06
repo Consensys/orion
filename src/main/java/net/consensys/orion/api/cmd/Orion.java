@@ -69,8 +69,8 @@ public class Orion {
   private final Vertx vertx;
   private StorageEngine<EncryptedPayload> storageEngine;
   private NetworkDiscovery discovery;
-  private HttpServer publicHTTPServer;
-  private HttpServer privateHTTPServer;
+  private HttpServer nodeHTTPServer;
+  private HttpServer clientHTTPServer;
 
   public static void main(String[] args) {
     log.info("starting orion");
@@ -94,51 +94,48 @@ public class Orion {
       ConcurrentNetworkNodes networkNodes,
       Enclave enclave,
       Storage<EncryptedPayload> storage,
-      Router publicRouter,
-      Router privateRouter) {
+      Router nodeRouter,
+      Router clientRouter) {
 
-
-    // sets response content-type from Accept header
-    // and handle errors
     LoggerHandler loggerHandler = LoggerHandler.create();
 
-    //Setup Public APIs
-    publicRouter
+    //Setup Orion node APIs
+    nodeRouter
         .route()
         .handler(BodyHandler.create())
         .handler(loggerHandler)
         .handler(ResponseContentTypeHandler.create())
         .failureHandler(new HttpErrorHandler());
 
-    publicRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
+    nodeRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
-    publicRouter.post("/partyinfo").produces(CBOR.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
+    nodeRouter.post("/partyinfo").produces(CBOR.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
         new PartyInfoHandler(networkNodes));
 
-    publicRouter.post("/push").produces(TEXT.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
+    nodeRouter.post("/push").produces(TEXT.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
         new PushHandler(storage));
 
-    //Setup Private APIs
-    privateRouter
+    //Setup client APIs
+    clientRouter
         .route()
         .handler(BodyHandler.create())
         .handler(loggerHandler)
         .handler(ResponseContentTypeHandler.create())
         .failureHandler(new HttpErrorHandler());
 
-    privateRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
+    clientRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
-    privateRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
+    clientRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
         new SendHandler(vertx, enclave, storage, networkNodes, JSON));
-    privateRouter
+    clientRouter
         .post("/sendraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .handler(new SendHandler(vertx, enclave, storage, networkNodes, APPLICATION_OCTET_STREAM));
 
-    privateRouter.post("/receive").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
+    clientRouter.post("/receive").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
         new ReceiveHandler(enclave, storage, JSON));
-    privateRouter
+    clientRouter
         .post("/receiveraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
@@ -162,14 +159,14 @@ public class Orion {
     CompletableFuture<Boolean> publicServerFuture = new CompletableFuture<>();
     CompletableFuture<Boolean> privateServerFuture = new CompletableFuture<>();
     CompletableFuture<Boolean> discoveryFuture = new CompletableFuture<>();
-    publicHTTPServer.close(result -> {
+    nodeHTTPServer.close(result -> {
       if (result.succeeded()) {
         publicServerFuture.complete(true);
       } else {
         publicServerFuture.completeExceptionally(result.cause());
       }
     });
-    privateHTTPServer.close(result -> {
+    clientHTTPServer.close(result -> {
       if (result.succeeded()) {
         privateServerFuture.complete(true);
       } else {
@@ -262,25 +259,27 @@ public class Orion {
     storageEngine = createStorageEngine(config, workDir);
 
     // Vertx routers
-    Router publicRouter = Router.router(vertx);
-    Router privateRouter = Router.router(vertx);
+    Router nodeRouter = Router.router(vertx);
+    Router clientRouter = Router.router(vertx);
 
     // controller dependencies
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
     EncryptedPayloadStorage storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
-    configureRoutes(vertx, networkNodes, enclave, storage, publicRouter, privateRouter);
+    configureRoutes(vertx, networkNodes, enclave, storage, nodeRouter, clientRouter);
 
     // asynchronously start the vertx http server for public API
-    CompletableFuture<Boolean> publicFuture = new CompletableFuture<>();
-    HttpServerOptions options = new HttpServerOptions().setPort(config.port());
+    CompletableFuture<Boolean> nodeFuture = new CompletableFuture<>();
+    HttpServerOptions options =
+        new HttpServerOptions().setPort(config.nodePort()).setHost(config.nodeNetworkInterface());
     configureSSLOptions(config, options);
-    publicHTTPServer = vertx.createHttpServer(options).requestHandler(publicRouter::accept).listen(
-        completeFutureInHandler(publicFuture));
+    nodeHTTPServer =
+        vertx.createHttpServer(options).requestHandler(nodeRouter::accept).listen(completeFutureInHandler(nodeFuture));
 
-    CompletableFuture<Boolean> privateFuture = new CompletableFuture<>();
-    HttpServerOptions privateOptions = new HttpServerOptions().setPort(config.privacyPort());
-    privateHTTPServer = vertx.createHttpServer(privateOptions).requestHandler(privateRouter::accept).listen(
-        completeFutureInHandler(privateFuture));
+    CompletableFuture<Boolean> clientFuture = new CompletableFuture<>();
+    HttpServerOptions clientOptions =
+        new HttpServerOptions().setPort(config.clientPort()).setHost(config.clientNetworkInterface());
+    clientHTTPServer = vertx.createHttpServer(clientOptions).requestHandler(clientRouter::accept).listen(
+        completeFutureInHandler(clientFuture));
 
     // start network discovery of other peers
     discovery = new NetworkDiscovery(networkNodes);
@@ -294,7 +293,7 @@ public class Orion {
     });
 
     try {
-      CompletableFuture.allOf(publicFuture, privateFuture, verticleFuture).get();
+      CompletableFuture.allOf(nodeFuture, clientFuture, verticleFuture).get();
     } catch (ExecutionException e) {
       throw new OrionStartException("Orion failed to start: " + e.getCause().getMessage(), e.getCause());
     } catch (InterruptedException e) {

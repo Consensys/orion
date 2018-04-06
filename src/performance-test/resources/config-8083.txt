@@ -1,8 +1,8 @@
 # Default Orion Configuration File.
-url = "http://127.0.0.1:8082/"
-port = 8082
-privacyurl = "http://127.0.0.1:8083/"
-privacyport = 8083
+nodeurl = "http://127.0.0.1:8082/"
+nodeport = 8082
+clienturl = "http://127.0.0.1:8083/"
+clientport = 8083
 publickeys = ["bar.pub"]
 privatekeys = ["bar.key"]
 othernodes = ["http://127.0.0.1:8080/", "http://127.0.0.1:8084/"]

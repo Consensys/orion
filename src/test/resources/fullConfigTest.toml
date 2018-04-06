@@ -1,8 +1,10 @@
 # Test file with complete config settings (not defaults)
-url = "http://127.0.0.1:9001/"
-port = 9001
-privacyurl = "http://127.0.0.1:9002/"
-privacyport = 9002
+nodeurl = "http://127.0.0.1:9001/"
+nodeport = 9001
+nodenetworkinterface = "0.0.0.0"
+clienturl = "http://127.0.0.1:9002/"
+clientport = 9002
+clientnetworkinterface = "127.0.0.1"
 workdir = "data"
 socket = "orion.ipc"
 othernodes = ["http://127.0.0.1:9000/"]

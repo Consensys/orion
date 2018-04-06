@@ -30,15 +30,27 @@ public class SendReceiveBase {
   }
 
   protected static Config nodeConfig(
-      String baseUrl,
-      int port,
-      String privacyUrl,
-      int privacyPort,
+      String nodeUrl,
+      int nodePort,
+      String nodeNetworkInterface,
+      String clientUrl,
+      int clientPort,
+      String clientNetworkInterface,
       String nodeName,
       String otherNodes,
       String pubKeys,
       String privKeys) throws UnsupportedEncodingException {
-    return nodeUtils.nodeConfig(baseUrl, port, privacyUrl, privacyPort, nodeName, otherNodes, pubKeys, privKeys);
+    return nodeUtils.nodeConfig(
+        nodeUrl,
+        nodePort,
+        nodeNetworkInterface,
+        clientUrl,
+        clientPort,
+        clientNetworkInterface,
+        nodeName,
+        otherNodes,
+        pubKeys,
+        privKeys);
   }
 
   protected byte[] viewTransaction(EthNodeStub viewer, String viewerKey, String digest) {

@@ -26,7 +26,7 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
   private final ConcurrentHashMap<PublicKey, URL> nodePKs;
 
   public ConcurrentNetworkNodes(Config config, PublicKey[] publicKeys) {
-    url = config.url();
+    url = config.nodeUrl();
     nodeURLs = new CopyOnWriteArrayList<>(Arrays.asList(config.otherNodes()));
     nodePKs = new ConcurrentHashMap<>();
 

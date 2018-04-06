@@ -1,10 +1,9 @@
 # Test file with complete config settings except the Storage, while a valid type, is missing the path
-url = "http://127.0.0.1:9001/"
-port = 9001
-privacyurl = "http://127.0.0.1:9002/"
-privacyport = 9002
+nodeurl = "http://127.0.0.1:9001/"
+nodeport = 9001
+clienturl = "http://127.0.0.1:9002/"
+clientport = 9002
 workdir = "data"
-socket = "orion.ipc"
 othernodes = ["http://127.0.0.1:9000/"]
 publickeys = ["foo.pub"]
 privatekeys = ["foo.key"]

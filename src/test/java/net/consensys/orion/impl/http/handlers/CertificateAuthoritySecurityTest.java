@@ -58,8 +58,8 @@ public class CertificateAuthoritySecurityTest {
     try (ServerSocket publicSocket = new ServerSocket(0); ServerSocket privateSocket = new ServerSocket(0)) {
       publicPort = publicSocket.getLocalPort();
       privatePort = privateSocket.getLocalPort();
-      config.setPort(publicPort);
-      config.setPrivacyPort(privatePort);
+      config.setNodePort(publicPort);
+      config.setClientPort(privatePort);
     }
     orion.run(System.out, System.err, config);
 

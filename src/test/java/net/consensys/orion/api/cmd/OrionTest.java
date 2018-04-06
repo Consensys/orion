@@ -32,19 +32,14 @@ public class OrionTest {
   @Test
   public void loadSampleConfig() throws Exception {
     Config config = orion.loadConfig(Optional.of(Paths.get("src/main/resources/sample.conf")));
-    assertEquals(8080, config.port());
-
-    Path expectedSocket = Paths.get("data/orion.ipc");
-    assertTrue(config.socket().isPresent());
-    assertEquals(expectedSocket, config.socket().get());
+    assertEquals(8080, config.nodePort());
   }
 
   @Test
   public void defaultConfigIsUsedWhenNoneProvided() throws Exception {
     Config config = orion.loadConfig(Optional.empty());
 
-    assertEquals(8080, config.port());
-    assertFalse(config.socket().isPresent());
+    assertEquals(8080, config.nodePort());
   }
 
   @Test

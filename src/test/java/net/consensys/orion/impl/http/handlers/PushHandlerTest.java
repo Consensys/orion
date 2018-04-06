@@ -46,7 +46,7 @@ public class PushHandlerTest extends HandlerTest {
         MediaType.parse(HttpContentType.CBOR.httpHeaderValue),
         Serializer.serialize(HttpContentType.CBOR, encryptedPayload));
 
-    Request request = new Request.Builder().post(body).url(publicBaseUrl + "/push").build();
+    Request request = new Request.Builder().post(body).url(nodeBaseUrl + "/push").build();
 
     Response resp = httpClient.newCall(request).execute();
 
@@ -77,7 +77,7 @@ public class PushHandlerTest extends HandlerTest {
         MediaType.parse(HttpContentType.JSON.httpHeaderValue),
         Serializer.serialize(HttpContentType.JSON, encryptedPayload));
 
-    Request request = new Request.Builder().post(body).url(publicBaseUrl + "/push").build();
+    Request request = new Request.Builder().post(body).url(nodeBaseUrl + "/push").build();
 
     Response resp = httpClient.newCall(request).execute();
 
@@ -88,7 +88,7 @@ public class PushHandlerTest extends HandlerTest {
   public void pushWithInvalidBody() throws Exception {
     RequestBody body = RequestBody.create(MediaType.parse(HttpContentType.CBOR.httpHeaderValue), "foo");
 
-    Request request = new Request.Builder().post(body).url(publicBaseUrl + "/push").build();
+    Request request = new Request.Builder().post(body).url(nodeBaseUrl + "/push").build();
 
     Response resp = httpClient.newCall(request).execute();
 
