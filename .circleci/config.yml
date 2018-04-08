@@ -7,7 +7,6 @@ jobs:
     working_directory: ~/repo
 
     environment:
-      BUILD_ENVIRONMENT_TAG: -snapshot
       TERM: dumb
       JAVA_TOOL_OPTIONS: -Xmx2048m
       GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2
