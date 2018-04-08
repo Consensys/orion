@@ -2,7 +2,6 @@ plugins {
   id "com.diffplug.gradle.spotless" version "3.10.0"
   id "com.github.hierynomus.license" version "0.14.0"
   id "com.jfrog.bintray" version "1.8.0"
-  id 'com.palantir.git-version' version '0.10.1'
   id 'net.ltgt.errorprone' version '0.0.13'
 }
 
@@ -19,9 +18,16 @@ apply from: "gradle/check-licenses.gradle"
 // Version numbering
 
 def versionNumber = '0.1.0'
-version = versionNumber + '-' +
-  (versionDetails().gitHash[0..4] + String.format("%2d", new Random().nextInt(256), 16)).toUpperCase() +
-  (System.getenv('BUILD_ENVIRONMENT_TAG') ?: '-dev')
+version = versionNumber + buildTag()
+
+String buildTag() {
+  if (!System.getenv('CIRCLECI')) {
+    return '-dev'
+  }
+  return '-' + System.getenv('CIRCLE_SHA1').take(4).toUpperCase() +
+    String.format('%02X', System.getenv('CIRCLE_BUILD_NUM').toInteger() % 256, 16) +
+    (System.getenv('BUILD_ENVIRONMENT_TAG') ?: '-snapshot')
+}
 
 
 //////
