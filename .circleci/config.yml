@@ -34,22 +34,19 @@ jobs:
           name: Compiling
           command: ./gradlew assemble
 
+      - store_artifacts:
+          name: Uploading artifacts
+          path: build/distributions
+          destination: distributions
+          when: always
+
       - run:
-          name: Running tests
+          name: Running unit tests
           command: ./gradlew --stacktrace test
 
       - run:
           name: Running acceptance tests
           command: ./gradlew --stacktrace acceptanceTest
-
-      - run:
-          name: Building JavaDoc
-          command: ./gradlew javadoc
-
-      - store_artifacts:
-          name: Uploading artifacts
-          path: build/distributions
-          destination: distributions
 
       - run:
           name: Collecting test results
@@ -66,7 +63,7 @@ jobs:
           when: always
 
       - run:
-          name: Collecting test results
+          name: Collecting reports
           command: |
             mkdir -p ~/reports/license
             (cd ./build/reports/license && tar c .) | (cd ~/reports/license && tar x)
@@ -86,6 +83,10 @@ jobs:
           name: Uploading reports
           path: ~/reports
           destination: reports
+
+      - run:
+          name: Building JavaDoc
+          command: ./gradlew javadoc
 
       - run:
           name: Collecting JavaDoc
