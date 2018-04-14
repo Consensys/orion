@@ -2,6 +2,7 @@ package net.consensys.orion.api.cmd;
 
 import static io.vertx.core.Vertx.vertx;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static net.consensys.orion.api.network.HostAndFingerprintTrustManagerFactory.*;
 import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
@@ -14,6 +15,9 @@ import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.exception.OrionException;
+import net.consensys.orion.api.network.HostAndFingerprintTrustManagerFactory;
+import net.consensys.orion.api.network.HostFingerprintRepository;
+import net.consensys.orion.api.network.TrustManagerFactoryWrapper;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
@@ -46,11 +50,13 @@ import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.PemKeyCertOptions;
@@ -146,7 +152,7 @@ public class Orion {
     this(vertx());
   }
 
-  Orion(Vertx vertx) {
+  public Orion(Vertx vertx) {
     this.vertx = vertx;
   }
 
@@ -259,8 +265,8 @@ public class Orion {
     storageEngine = createStorageEngine(config, workDir);
 
     // Vertx routers
-    Router nodeRouter = Router.router(vertx);
-    Router clientRouter = Router.router(vertx);
+    Router nodeRouter = Router.router(vertx).exceptionHandler(log::error);
+    Router clientRouter = Router.router(vertx).exceptionHandler(log::error);
 
     // controller dependencies
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
@@ -269,17 +275,56 @@ public class Orion {
 
     // asynchronously start the vertx http server for public API
     CompletableFuture<Boolean> nodeFuture = new CompletableFuture<>();
-    HttpServerOptions options =
-        new HttpServerOptions().setPort(config.nodePort()).setHost(config.nodeNetworkInterface());
-    configureSSLOptions(config, options);
-    nodeHTTPServer =
-        vertx.createHttpServer(options).requestHandler(nodeRouter::accept).listen(completeFutureInHandler(nodeFuture));
+    HttpServerOptions options = new HttpServerOptions()
+        .setPort(config.nodePort())
+        .setHost(config.nodeNetworkInterface())
+        .setCompressionSupported(true);
+    if (!"off".equals(config.tls())) {
+      options.setSsl(true);
+      options.setClientAuth(ClientAuth.REQUIRED);
 
+      PemKeyCertOptions pemKeyCertOptions =
+          new PemKeyCertOptions().setKeyPath(config.tlsServerKey().toString()).setCertPath(
+              config.tlsServerCert().toString());
+      options.setPemKeyCertOptions(pemKeyCertOptions);
+
+
+      Optional<Function<HostFingerprintRepository, HostAndFingerprintTrustManagerFactory>> tmfCreator =
+          Optional.empty();
+      if ("ca".equals(config.tlsServerTrust())) {
+      } else if ("tofu".equals(config.tlsServerTrust())) {
+        tmfCreator = Optional.of(HostAndFingerprintTrustManagerFactory::tofu);
+      } else if ("whitelist".equals(config.tlsServerTrust())) {
+        tmfCreator = Optional.of(HostAndFingerprintTrustManagerFactory::whitelist);
+      } else if ("ca-or-tofu".equals(config.tlsServerTrust())) {
+        tmfCreator = Optional.of(
+            hostFingerprintRepository -> HostAndFingerprintTrustManagerFactory
+                .caOrTofuDefaultJDKTruststore(hostFingerprintRepository, vertx));
+      } else if ("insecure-no-validation".equals(config.tlsServerTrust())) {
+        tmfCreator = Optional.of(HostAndFingerprintTrustManagerFactory::insecure);
+      } else {
+        throw new UnsupportedOperationException(config.tlsServerTrust() + " is not supported");
+      }
+
+      tmfCreator.ifPresent(tmf -> {
+        try {
+          HostFingerprintRepository hostFingerprintRepository = new HostFingerprintRepository(config.tlsKnownClients());
+          options.setTrustOptions(new TrustManagerFactoryWrapper(tmf.apply(hostFingerprintRepository)));
+        } catch (IOException e) {
+          throw new OrionStartException("Could not read the contents of " + config.tlsKnownClients(), e);
+        }
+      });
+    }
+
+    nodeHTTPServer =
+        vertx.createHttpServer(options).requestHandler(nodeRouter::accept).exceptionHandler(log::error).listen(
+            completeFutureInHandler(nodeFuture));
     CompletableFuture<Boolean> clientFuture = new CompletableFuture<>();
     HttpServerOptions clientOptions =
         new HttpServerOptions().setPort(config.clientPort()).setHost(config.clientNetworkInterface());
-    clientHTTPServer = vertx.createHttpServer(clientOptions).requestHandler(clientRouter::accept).listen(
-        completeFutureInHandler(clientFuture));
+    clientHTTPServer =
+        vertx.createHttpServer(clientOptions).requestHandler(clientRouter::accept).exceptionHandler(log::error).listen(
+            completeFutureInHandler(clientFuture));
 
     // start network discovery of other peers
     discovery = new NetworkDiscovery(networkNodes);
@@ -303,28 +348,6 @@ public class Orion {
     // set shutdown hook
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     isRunning.set(true);
-  }
-
-  private void configureSSLOptions(Config config, HttpServerOptions options) {
-    if ("off".equals(config.tls())) {
-      return;
-    }
-    if ("ca".equals(config.tlsServerTrust())) {
-      options.setSsl(true);
-
-      PemKeyCertOptions pemKeyCertOptions =
-          new PemKeyCertOptions().setKeyPath(config.tlsServerKey().toString()).setCertPath(
-              config.tlsServerCert().toString());
-      options.setPemKeyCertOptions(pemKeyCertOptions);
-    } else if ("tofu".equals(config.tlsServerTrust())) {
-      throw new UnsupportedOperationException();
-    } else if ("whitelist".equals(config.tlsServerTrust())) {
-      throw new UnsupportedOperationException();
-    } else if ("ca-or-tofu".equals(config.tlsServerTrust())) {
-      throw new UnsupportedOperationException();
-    } else if ("insecure-no-validation".equals(config.tlsServerTrust())) {
-      throw new UnsupportedOperationException();
-    }
   }
 
   private Handler<AsyncResult<HttpServer>> completeFutureInHandler(CompletableFuture<Boolean> future) {

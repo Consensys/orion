@@ -11,10 +11,10 @@ import java.util.Optional;
 public class MemoryConfig implements Config {
 
   private URL nodeUrl;
-  private int nodePort = Integer.MIN_VALUE;
+  private int nodePort = 8080;
   private String nodeNetworkInterface = "127.0.0.1";
   private URL clientUrl;
-  private int clientPort = Integer.MIN_VALUE;
+  private int clientPort = 8888;
   private String clientNetworkInterface = "127.0.0.1";
   private Path workDir = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
   private URL[] otherNodes = new URL[] {};

@@ -53,7 +53,6 @@ public class NodeUtils {
         .append(otherNodes)
         .append("\"]\n" + "publickeys = [\"" + pubKeys + "\"]\n" + "privatekeys = [\"" + privKeys + "\"]")
         .toString();
-    System.out.println(confString);
 
     return new TomlConfigBuilder().build(new ByteArrayInputStream(confString.getBytes(StandardCharsets.UTF_8.name())));
   }

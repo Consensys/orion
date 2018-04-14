@@ -174,27 +174,6 @@ public class TomlConfigBuilderTest {
   }
 
   @Test
-  public void missingMandatoryConfigsThrowException() {
-
-    InputStream configAsStream =
-        this.getClass().getClassLoader().getResourceAsStream("missingMandatoryConfigTest.toml");
-    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
-
-    try {
-      Config testConf = configBuilder.build(configAsStream);
-      fail("Expected Config Exception to be thrown");
-    } catch (ConfigException e) {
-      String message = "Invalid Configuration Options\n"
-          + "Error: value for key 'nodeurl' in config must be specified\n"
-          + "Error: value for key 'clienturl' in config must be specified\n"
-          + "Error: value for key 'nodeport' in config must be specified\n"
-          + "Error: value for key 'clientport' in config must be specified\n"
-          + "Error: value for key 'nodeport' in config must be different to 'clientport'\n";
-      assertEquals(message, e.getMessage());
-    }
-  }
-
-  @Test
   public void trustModeValidation() {
     TomlConfigBuilder configBuilder = new TomlConfigBuilder();
 

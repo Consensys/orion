@@ -187,7 +187,7 @@ dependencies {
   compile 'com.muquit.libsodiumjna:libsodium-jna:1.0.4'
 
   // http client
-  compile 'com.squareup.okhttp3:okhttp:3.9.1'
+  testCompile 'com.squareup.okhttp3:okhttp:3.9.1'
 
   // storage
   compile 'org.fusesource.leveldbjni:leveldbjni-all:1.8'
