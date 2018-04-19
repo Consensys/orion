@@ -6,11 +6,13 @@ import static org.junit.Assert.*;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.exception.OrionException;
+import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.enclave.sodium.storage.StoredPrivateKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -149,11 +151,12 @@ public class OrionTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void startupFails() {
+  public void startupFails() throws IOException {
     Vertx vertx = Mockito.mock(Vertx.class);
     HttpServer httpServer = Mockito.mock(HttpServer.class);
     Mockito.when(vertx.createHttpServer(Mockito.any())).thenReturn(httpServer);
     Mockito.when(httpServer.requestHandler(Mockito.any())).thenReturn(httpServer);
+    Mockito.when(httpServer.exceptionHandler(Mockito.any())).thenReturn(httpServer);
     Mockito.when(httpServer.listen(Mockito.anyObject())).then(answer -> {
       Handler<AsyncResult<HttpServer>> handler = answer.getArgumentAt(0, Handler.class);
       handler.handle(Future.failedFuture("Didn't work"));
@@ -167,7 +170,10 @@ public class OrionTest {
 
     Orion orion = new Orion(vertx);
     try {
-      orion.run(System.out, System.err);
+      MemoryConfig config = new MemoryConfig();
+      Path knownClientsFile = Files.createTempFile("knownclients", ".txt");
+      config.setTlsKnownClients(knownClientsFile);
+      orion.run(System.out, System.err, config);
       fail();
     } catch (OrionStartException e) {
       assertEquals("Orion failed to start: Didn't work", e.getMessage());
