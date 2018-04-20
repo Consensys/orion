@@ -50,7 +50,6 @@ public class CertificateAuthoritySecurityTest {
   private static int nodePort;
 
   private static int clientPort;
-  private static String oldTrustStorePath;
 
   public static void setCATruststore(SelfSignedCertificate clientCert) throws Exception {
     KeyStore ks = KeyStore.getInstance("JKS");
@@ -68,8 +67,8 @@ public class CertificateAuthoritySecurityTest {
     try (FileOutputStream output = new FileOutputStream(tempKeystore.toFile());) {
       ks.store(output, "changeit".toCharArray());
     }
-    oldTrustStorePath = System.getProperty("javax.net.ssl.trustStore");
     System.setProperty("javax.net.ssl.trustStore", tempKeystore.toString());
+    System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
   }
 
   public static byte[] loadPEM(Path pemFilePath) throws IOException {
@@ -87,6 +86,7 @@ public class CertificateAuthoritySecurityTest {
     config.setWorkDir(workDir);
     config.setTls("strict");
     config.setTlsServerTrust("ca");
+    config.setTlsKnownServers(Files.createTempFile("knownservers", ".txt"));
     Path knownClientsFile = Files.createTempFile("knownclients", ".txt");
     config.setTlsKnownClients(knownClientsFile);
     installServerCert(config);
@@ -122,11 +122,8 @@ public class CertificateAuthoritySecurityTest {
 
   @AfterClass
   public static void tearDown() {
-    if (oldTrustStorePath == null) {
-      System.clearProperty("javax.net.ssl.trustStore");
-    } else {
-      System.setProperty("javax.net.ssl.trustStore", oldTrustStorePath);
-    }
+    System.clearProperty("javax.net.ssl.trustStore");
+    System.clearProperty("javax.net.ssl.trustStorePassword");
     orion.stop();
     vertx.close();
   }

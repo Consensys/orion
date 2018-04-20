@@ -7,19 +7,21 @@ import net.consensys.orion.api.config.Config;
 import net.consensys.orion.impl.config.TomlConfigBuilder;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 
 import junit.framework.AssertionFailedError;
 import okhttp3.HttpUrl;
 
 public class NodeUtils {
-  private static final String HTTP_PROTOCOL = "http";
 
   public String url(String host, int port) {
-    return new HttpUrl.Builder().scheme(HTTP_PROTOCOL).host(host).port(port).build().toString();
+    return new HttpUrl.Builder().scheme("http").host(host).port(port).build().toString();
   }
 
   public Config nodeConfig(
@@ -32,7 +34,10 @@ public class NodeUtils {
       String nodeName,
       String otherNodes,
       String pubKeys,
-      String privKeys) throws UnsupportedEncodingException {
+      String privKeys) throws UnsupportedEncodingException,
+      IOException {
+
+    Path workDir = Files.createTempDirectory("acceptance");
 
     final String confString = new StringBuilder()
         .append("tls=\"off\"\n")
@@ -52,6 +57,7 @@ public class NodeUtils {
         .append("\nothernodes = [\"")
         .append(otherNodes)
         .append("\"]\n" + "publickeys = [\"" + pubKeys + "\"]\n" + "privatekeys = [\"" + privKeys + "\"]")
+        .append("\nworkDir= \"" + workDir.toString() + "\"")
         .toString();
 
     return new TomlConfigBuilder().build(new ByteArrayInputStream(confString.getBytes(StandardCharsets.UTF_8.name())));

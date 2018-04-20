@@ -8,6 +8,7 @@ import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.ExecutionException;
 
@@ -39,7 +40,8 @@ public class SendReceiveBase {
       String nodeName,
       String otherNodes,
       String pubKeys,
-      String privKeys) throws UnsupportedEncodingException {
+      String privKeys) throws UnsupportedEncodingException,
+      IOException {
     return nodeUtils.nodeConfig(
         nodeUrl,
         nodePort,

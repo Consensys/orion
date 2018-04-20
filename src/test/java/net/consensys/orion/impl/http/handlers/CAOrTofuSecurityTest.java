@@ -7,18 +7,9 @@ import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.network.TrustManagerFactoryWrapper;
 import net.consensys.orion.impl.config.MemoryConfig;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.KeyFactory;
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.net.ssl.SSLException;
@@ -50,32 +41,13 @@ public class CAOrTofuSecurityTest {
   private static HttpClient nonCAhttpClient;
   private static Path knownClientsFile;
   private static String exampleComFingerprint;
-  private static String oldTrustStorePath;
-  private static String oldTrustStorePassword;
   private static MemoryConfig config;
 
   @BeforeClass
   public static void setUp() throws Exception {
-    KeyStore ks = KeyStore.getInstance("JKS");
-    ks.load(null, null);
     SelfSignedCertificate clientCert = SelfSignedCertificate.create();
-    KeyFactory kf = KeyFactory.getInstance("RSA");
-    PKCS8EncodedKeySpec keysp = new PKCS8EncodedKeySpec(
-        CertificateAuthoritySecurityTest.loadPEM(new File(clientCert.privateKeyPath()).toPath()));
-    PrivateKey clientPrivateKey = kf.generatePrivate(keysp);
-    CertificateFactory cf = CertificateFactory.getInstance("X.509");
-    Certificate certificate = cf.generateCertificate(
-        new ByteArrayInputStream(Files.readAllBytes(new File(clientCert.certificatePath()).toPath())));
-    ks.setCertificateEntry("clientCert", certificate);
-    ks.setKeyEntry("client", clientPrivateKey, "changeit".toCharArray(), new Certificate[] {certificate});
-    Path tempKeystore = Files.createTempFile("keystore", ".jks");
-    try (FileOutputStream output = new FileOutputStream(tempKeystore.toFile());) {
-      ks.store(output, "changeit".toCharArray());
-    }
-    oldTrustStorePath = System.getProperty("javax.net.ssl.trustStore");
-    System.setProperty("javax.net.ssl.trustStore", tempKeystore.toString());
-    oldTrustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
-    System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
+
+    CertificateAuthoritySecurityTest.setCATruststore(clientCert);
 
     Path workDir = Files.createTempDirectory("data");
     orion = new Orion(vertx);
@@ -85,6 +57,7 @@ public class CAOrTofuSecurityTest {
     config.setTlsServerTrust("ca-or-tofu");
     knownClientsFile = Files.createTempFile("knownclients", ".txt");
     config.setTlsKnownClients(knownClientsFile);
+    config.setTlsKnownServers(Files.createTempFile("knownservers", ".txt"));
 
     CertificateAuthoritySecurityTest.installServerCert(config);
 
@@ -118,16 +91,8 @@ public class CAOrTofuSecurityTest {
 
   @AfterClass
   public static void tearDown() {
-    if (oldTrustStorePath == null) {
-      System.clearProperty("javax.net.ssl.trustStore");
-    } else {
-      System.setProperty("javax.net.ssl.trustStore", oldTrustStorePath);
-    }
-    if (oldTrustStorePassword == null) {
-      System.clearProperty("javax.net.ssl.trustStorePassword");
-    } else {
-      System.setProperty("javax.net.ssl.trustStorePassword", oldTrustStorePassword);
-    }
+    System.clearProperty("javax.net.ssl.trustStore");
+    System.clearProperty("javax.net.ssl.trustStorePassword");
     orion.stop();
     vertx.close();
   }
