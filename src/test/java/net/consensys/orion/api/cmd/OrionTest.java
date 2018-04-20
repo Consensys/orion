@@ -173,6 +173,8 @@ public class OrionTest {
       MemoryConfig config = new MemoryConfig();
       Path knownClientsFile = Files.createTempFile("knownclients", ".txt");
       config.setTlsKnownClients(knownClientsFile);
+      config.setTlsKnownServers(Files.createTempFile("knownservers", ".txt"));
+      config.setWorkDir(Files.createTempDirectory("work"));
       orion.run(System.out, System.err, config);
       fail();
     } catch (OrionStartException e) {

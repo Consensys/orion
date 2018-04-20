@@ -327,7 +327,7 @@ public class Orion {
             completeFutureInHandler(clientFuture));
 
     // start network discovery of other peers
-    discovery = new NetworkDiscovery(networkNodes);
+    discovery = new NetworkDiscovery(networkNodes, config);
     CompletableFuture<Boolean> verticleFuture = new CompletableFuture<>();
     vertx.deployVerticle(discovery, result -> {
       if (result.succeeded()) {

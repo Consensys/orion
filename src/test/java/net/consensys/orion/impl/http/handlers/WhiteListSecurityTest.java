@@ -58,6 +58,7 @@ public class WhiteListSecurityTest {
 
     SelfSignedCertificate clientCertificate = SelfSignedCertificate.create("example.com");
 
+    config.setTlsKnownServers(Files.createTempFile("knownservers", ".txt"));
     Path knownClientsFile = Files.createTempFile("knownclients", ".txt");
     config.setTlsKnownClients(knownClientsFile);
     String fingerprint = StringUtil.toHexStringPadded(

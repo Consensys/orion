@@ -6,6 +6,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import net.consensys.orion.api.config.Config;
+import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.helpers.FakePeer;
 import net.consensys.orion.impl.utils.Serializer;
@@ -27,11 +29,14 @@ import org.junit.Test;
 public class NetworkDiscoveryTest {
   private Vertx vertx;
   private ConcurrentNetworkNodes networkNodes;
+  private Config config;
 
   @Before
   public void setUp() throws Exception {
     vertx = Vertx.vertx();
     networkNodes = new ConcurrentNetworkNodes(new URL("http://localhost1234/"));
+    config = new MemoryConfig();
+    ((MemoryConfig) config).setTls("off");
   }
 
   @After
@@ -54,7 +59,7 @@ public class NetworkDiscoveryTest {
     // add peers
 
     // start network discovery
-    NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes);
+    NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config);
     deployVerticle(networkDiscovery).get();
 
     assertEquals(0, networkDiscovery.discoverers().size());
@@ -69,7 +74,7 @@ public class NetworkDiscoveryTest {
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // start network discovery
-    NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes);
+    NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config, 50, 100);
     deployVerticle(networkDiscovery).get();
 
     // assert the discoverer started
@@ -79,7 +84,7 @@ public class NetworkDiscoveryTest {
     NetworkDiscovery.Discoverer discoverer = networkDiscovery.discoverers().get(fakePeer.getURL().toString());
     assertNotNull(discoverer);
 
-    Thread.sleep(3 * (discoverer.currentRefreshDelay + NetworkDiscovery.HTTP_CLIENT_TIMEOUT_MS));
+    Thread.sleep(3 * (discoverer.currentRefreshDelay + 200));
 
     // ensure we didn't do any update, and we tried at least 2 times
     assertEquals(Instant.MIN, discoverer.lastUpdate);
@@ -110,7 +115,7 @@ public class NetworkDiscoveryTest {
 
     // start network discovery
     final Instant discoveryStart = Instant.now();
-    NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes);
+    NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config, 500, 500);
     deployVerticle(networkDiscovery).get();
 
     // assert the discoverer started, we should only have 1 discoverer for knownPeer
@@ -120,10 +125,12 @@ public class NetworkDiscoveryTest {
     NetworkDiscovery.Discoverer knownPeerDiscoverer = networkDiscovery.discoverers().get(knownPeer.getURL().toString());
     assertNotNull(knownPeerDiscoverer);
 
-    Thread.sleep(3 * (knownPeerDiscoverer.currentRefreshDelay + NetworkDiscovery.HTTP_CLIENT_TIMEOUT_MS));
+    Thread.sleep(3 * (knownPeerDiscoverer.currentRefreshDelay + 1000));
 
     // ensure knownPeer responded and that his party info was called at least twice
-    assertTrue(knownPeerDiscoverer.lastUpdate.isAfter(discoveryStart));
+    assertTrue(
+        "Update last seen: " + knownPeerDiscoverer.lastUpdate,
+        knownPeerDiscoverer.lastUpdate.isAfter(discoveryStart));
     assertTrue(knownPeerDiscoverer.attempts >= 2);
 
     // ensure we now know unknownPeer

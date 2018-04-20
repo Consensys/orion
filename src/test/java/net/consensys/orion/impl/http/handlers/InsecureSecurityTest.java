@@ -53,6 +53,7 @@ public class InsecureSecurityTest {
     config.setTlsServerTrust("insecure-no-validation");
     CertificateAuthoritySecurityTest.installServerCert(config);
 
+    config.setTlsKnownServers(Files.createTempFile("knownservers", ".txt"));
     knownClientsFile = Files.createTempFile("knownclients", ".txt");
     config.setTlsKnownClients(knownClientsFile);
 
