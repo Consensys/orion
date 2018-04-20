@@ -2,7 +2,6 @@ package net.consensys.orion.api.cmd;
 
 import static io.vertx.core.Vertx.vertx;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static net.consensys.orion.api.network.HostAndFingerprintTrustManagerFactory.*;
 import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
@@ -45,6 +44,11 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
@@ -52,6 +56,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -101,15 +106,14 @@ public class Orion {
       Enclave enclave,
       Storage<EncryptedPayload> storage,
       Router nodeRouter,
-      Router clientRouter) {
-
-    LoggerHandler loggerHandler = LoggerHandler.create();
+      Router clientRouter,
+      Config config) {
 
     //Setup Orion node APIs
     nodeRouter
         .route()
         .handler(BodyHandler.create())
-        .handler(loggerHandler)
+        .handler(LoggerHandler.create())
         .handler(ResponseContentTypeHandler.create())
         .failureHandler(new HttpErrorHandler());
 
@@ -125,19 +129,19 @@ public class Orion {
     clientRouter
         .route()
         .handler(BodyHandler.create())
-        .handler(loggerHandler)
+        .handler(LoggerHandler.create())
         .handler(ResponseContentTypeHandler.create())
         .failureHandler(new HttpErrorHandler());
 
     clientRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
     clientRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
-        new SendHandler(vertx, enclave, storage, networkNodes, JSON));
+        new SendHandler(vertx, enclave, storage, networkNodes, JSON, config));
     clientRouter
         .post("/sendraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
-        .handler(new SendHandler(vertx, enclave, storage, networkNodes, APPLICATION_OCTET_STREAM));
+        .handler(new SendHandler(vertx, enclave, storage, networkNodes, APPLICATION_OCTET_STREAM, config));
 
     clientRouter.post("/receive").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
         new ReceiveHandler(enclave, storage, JSON));
@@ -247,6 +251,112 @@ public class Orion {
     run(out, err, config);
   }
 
+  private static void createFile(Path workDir, Path file) {
+    Path parentDir;
+    if (file.isAbsolute()) {
+      parentDir = file.getParent();
+    } else if (file.getParent() != null) {
+      parentDir = workDir.resolve(file.getParent());
+    } else {
+      parentDir = workDir;
+    }
+    try {
+      Files.createDirectories(parentDir);
+    } catch (IOException ex) {
+      throw new OrionStartException(
+          "Couldn't create working directory '" + parentDir.toString() + "': " + ex.getMessage(),
+          ex);
+    }
+    try {
+      workDir.resolve(file).toFile().createNewFile();
+    } catch (IOException ex) {
+      throw new OrionStartException("Couldn't create file '" + file + "': " + ex.getMessage(), ex);
+    }
+  }
+
+  public static void generateCertificatesAndMissingFiles(Config config) {
+    Path workDir = config.workDir();
+    try {
+      Files.createDirectories(workDir);
+    } catch (IOException ex) {
+      throw new OrionStartException("Couldn't create working directory '" + workDir + "': " + ex.getMessage(), ex);
+    }
+    Date now = new Date();
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(now);
+    cal.add(Calendar.YEAR, 1);
+    Date yearFromNow = cal.getTime();
+
+    createFile(workDir, config.tlsKnownClients());
+    createFile(workDir, config.tlsKnownServers());
+
+    if (!(workDir.resolve(config.tlsClientCert())).toFile().exists()
+        || !(workDir.resolve(config.tlsClientKey()).toFile().exists())) {
+      createFile(workDir, config.tlsClientCert());
+      createFile(workDir, config.tlsClientKey());
+
+      SelfSignedCertificate clientKeyPair = null;
+      try {
+        clientKeyPair = new SelfSignedCertificate("example.com", new SecureRandom(), 2048, now, yearFromNow);
+      } catch (CertificateException e) {
+        throw new OrionStartException("Could not generate certificate " + e.getMessage(), e);
+      }
+      try {
+        Files.move(
+            clientKeyPair.privateKey().toPath(),
+            workDir.resolve(config.tlsClientKey()),
+            StandardCopyOption.ATOMIC_MOVE,
+            StandardCopyOption.REPLACE_EXISTING);
+      } catch (IOException e) {
+        throw new OrionStartException(
+            "Error writing private key " + workDir.resolve(config.tlsClientKey()).toString(),
+            e);
+      }
+
+      try {
+        Files.move(
+            clientKeyPair.certificate().toPath(),
+            workDir.resolve(config.tlsClientCert()),
+            StandardCopyOption.ATOMIC_MOVE,
+            StandardCopyOption.REPLACE_EXISTING);
+      } catch (IOException e) {
+        throw new OrionStartException(
+            "Error writing public key " + workDir.resolve(config.tlsClientCert()).toString(),
+            e);
+      }
+    }
+    if (!(workDir.resolve(config.tlsServerCert())).toFile().exists()
+        || !(workDir.resolve(config.tlsServerKey()).toFile().exists())) {
+      createFile(workDir, config.tlsServerCert());
+      createFile(workDir, config.tlsServerKey());
+      SelfSignedCertificate serverKeyPair = null;
+      try {
+        serverKeyPair = new SelfSignedCertificate("example.com", new SecureRandom(), 2048, now, yearFromNow);
+      } catch (CertificateException e) {
+        throw new OrionStartException("Could not generate certificate " + e.getMessage(), e);
+      }
+      try {
+        Files.move(
+            serverKeyPair.privateKey().toPath(),
+            workDir.resolve(config.tlsServerKey()),
+            StandardCopyOption.ATOMIC_MOVE,
+            StandardCopyOption.REPLACE_EXISTING);
+      } catch (IOException e) {
+        throw new OrionStartException("Error writing private key " + workDir.resolve(config.tlsServerKey()).toString());
+      }
+
+      try {
+        Files.move(
+            serverKeyPair.certificate().toPath(),
+            workDir.resolve(config.tlsServerCert()),
+            StandardCopyOption.ATOMIC_MOVE,
+            StandardCopyOption.REPLACE_EXISTING);
+      } catch (IOException e) {
+        throw new OrionStartException("Error writing public key " + workDir.resolve(config.tlsServerCert()).toString());
+      }
+    }
+  }
+
   public void run(PrintStream out, PrintStream err, Config config) {
     SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
     ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(config, keyStore.nodeKeys());
@@ -255,11 +365,7 @@ public class Orion {
     Path workDir = config.workDir();
     log.info("using working directory {}", workDir);
 
-    try {
-      Files.createDirectories(workDir);
-    } catch (IOException ex) {
-      throw new OrionStartException("Couldn't create working directory '" + workDir + "': " + ex.getMessage(), ex);
-    }
+    generateCertificatesAndMissingFiles(config);
 
     // create our storage engine
     storageEngine = createStorageEngine(config, workDir);
@@ -271,7 +377,7 @@ public class Orion {
     // controller dependencies
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
     EncryptedPayloadStorage storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
-    configureRoutes(vertx, networkNodes, enclave, storage, nodeRouter, clientRouter);
+    configureRoutes(vertx, networkNodes, enclave, storage, nodeRouter, clientRouter, config);
 
     // asynchronously start the vertx http server for public API
     CompletableFuture<Boolean> nodeFuture = new CompletableFuture<>();
@@ -284,10 +390,12 @@ public class Orion {
       options.setClientAuth(ClientAuth.REQUIRED);
 
       PemKeyCertOptions pemKeyCertOptions =
-          new PemKeyCertOptions().setKeyPath(config.tlsServerKey().toString()).setCertPath(
-              config.tlsServerCert().toString());
+          new PemKeyCertOptions().setKeyPath(config.workDir().resolve(config.tlsServerKey()).toString()).setCertPath(
+              config.workDir().resolve(config.tlsServerCert()).toString());
       options.setPemKeyCertOptions(pemKeyCertOptions);
-
+      for (Path chainCert : config.tlsServerChain()) {
+        pemKeyCertOptions.addCertPath(chainCert.toString());
+      }
 
       Optional<Function<HostFingerprintRepository, HostAndFingerprintTrustManagerFactory>> tmfCreator =
           Optional.empty();
@@ -308,10 +416,13 @@ public class Orion {
 
       tmfCreator.ifPresent(tmf -> {
         try {
-          HostFingerprintRepository hostFingerprintRepository = new HostFingerprintRepository(config.tlsKnownClients());
+          HostFingerprintRepository hostFingerprintRepository =
+              new HostFingerprintRepository(config.workDir().resolve(config.tlsKnownClients()));
           options.setTrustOptions(new TrustManagerFactoryWrapper(tmf.apply(hostFingerprintRepository)));
         } catch (IOException e) {
-          throw new OrionStartException("Could not read the contents of " + config.tlsKnownClients(), e);
+          throw new OrionStartException(
+              "Could not read the contents of " + config.workDir().resolve(config.tlsKnownClients()),
+              e);
         }
       });
     }
@@ -327,7 +438,7 @@ public class Orion {
             completeFutureInHandler(clientFuture));
 
     // start network discovery of other peers
-    discovery = new NetworkDiscovery(networkNodes);
+    discovery = new NetworkDiscovery(networkNodes, config);
     CompletableFuture<Boolean> verticleFuture = new CompletableFuture<>();
     vertx.deployVerticle(discovery, result -> {
       if (result.succeeded()) {

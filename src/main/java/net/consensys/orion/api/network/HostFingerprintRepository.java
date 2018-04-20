@@ -24,7 +24,10 @@ public class HostFingerprintRepository {
     this.fingerprints = Files.readAllLines(fingerprintFile).stream().filter(line -> !line.startsWith("#")).map(line -> {
       List<String> segments = Splitter.on(" ").splitToList(line);
       return segments;
-    }).collect(Collectors.toMap(segments -> segments.get(0), segments -> StringUtil.decodeHexDump(segments.get(1))));
+    }).collect(
+        Collectors.toMap(segments -> segments.get(0), segments -> StringUtil.decodeHexDump(segments.get(1)), (u, v) -> {
+          throw new IllegalStateException(String.format("Duplicate key %s", u));
+        }));
     this.fingerprintFile = fingerprintFile;
   }
 
