@@ -2,8 +2,7 @@
 <Configuration status="WARN">
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT">
-      <!-- TODO Important, %F and %L  are for dev purposes and very costly -->
-      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%F:%L] %highlight{%level - %msg}%n" />
+      <PatternLayout pattern="[%-5p] [%t] %d{MM-dd-yyyy HH:mm:ss} %c{1.} - %m%n" />
     </Console>
   </Appenders>
   <Loggers>

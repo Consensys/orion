@@ -72,6 +72,10 @@ public class Orion {
   private static final Logger log = LogManager.getLogger();
   public static final String name = "orion";
 
+  static {
+    System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.Log4j2LogDelegateFactory");
+  }
+
   private final Vertx vertx;
   private StorageEngine<EncryptedPayload> storageEngine;
   private NetworkDiscovery discovery;
