@@ -73,7 +73,7 @@ public class TofuSecurityTest {
     CertificateAuthoritySecurityTest.installServerCert(config);
 
     SelfSignedCertificate clientCertificate = SelfSignedCertificate.create("example.com");
-
+    config.setTlsKnownServers(Files.createTempFile("knownservers", ".txt"));
     knownClientsFile = Files.createTempFile("knownclients", ".txt");
     config.setTlsKnownClients(knownClientsFile);
     exampleComFingerprint = StringUtil.toHexStringPadded(
@@ -107,8 +107,18 @@ public class TofuSecurityTest {
   }
 
   @After
-  public void tearDown() {
-    vertx.close();
+  public void tearDown() throws Exception {
+    CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
+    orion.stop();
+    vertx.close(result -> {
+      if (result.succeeded()) {
+        resultFuture.complete(true);
+      } else {
+        resultFuture.completeExceptionally(result.cause());
+      }
+    });
+
+    resultFuture.get();
   }
 
   @Test

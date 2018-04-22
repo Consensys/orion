@@ -3,6 +3,7 @@ package net.consensys.orion.impl.config;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,7 +29,7 @@ public class MemoryConfig implements Config {
   private Path tlsServerCert = Paths.get("tls-server-cert.pem");
   private Path[] tlsServerChain = new Path[] {};
   private Path tlsServerKey = Paths.get("tls-server-key.pem");
-  private String tlsServerTrust = "ca";
+  private String tlsServerTrust = "tofu";
   private Path tlsKnownClients = Paths.get("tls-known-clients");
   private Path tlsClientCert = Paths.get("tls-client-cert.pem");
   private Path[] tlsClientChain = new Path[] {};
@@ -39,6 +40,16 @@ public class MemoryConfig implements Config {
   private Optional<Boolean> showVersion = Optional.empty();
   private long verbosity = 1;
   private String libSodiumPath = LibSodiumSettings.defaultLibSodiumPath();
+
+  public MemoryConfig() {
+    try {
+      nodeUrl = new URL("https://localhost:8080");
+      clientUrl = new URL("https://localhost:8888");
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
 
   public void setNodeUrl(URL nodeUrl) {
     this.nodeUrl = nodeUrl;

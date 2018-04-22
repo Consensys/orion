@@ -245,7 +245,7 @@ public interface Config {
    * <p>
    * <strong>Default:</strong> "tls-known-clients"
    *
-   * @see #tlsServerTrust()
+   * @see #tlsClientTrust()
    * @return TLS server known clients file
    */
   Path tlsKnownClients();

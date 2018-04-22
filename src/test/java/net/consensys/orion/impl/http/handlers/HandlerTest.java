@@ -82,6 +82,9 @@ public abstract class HandlerTest {
     // orion dependencies, reset them all between tests
     config = new MemoryConfig();
     config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
+    config.setWorkDir(tempDir);
+    Orion.generateCertificatesAndMissingFiles(config);
+    config.setTls("off");
     networkNodes = new ConcurrentNetworkNodes(nodeHTTP.url());
     enclave = buildEnclave();
 
@@ -94,7 +97,7 @@ public abstract class HandlerTest {
     storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
     Router publicRouter = Router.router(vertx);
     Router privateRouter = Router.router(vertx);
-    Orion.configureRoutes(vertx, networkNodes, enclave, storage, publicRouter, privateRouter);
+    Orion.configureRoutes(vertx, networkNodes, enclave, storage, publicRouter, privateRouter, config);
 
     setupNodeServer(publicRouter);
     setupClientServer(privateRouter);
