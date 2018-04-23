@@ -1,7 +1,6 @@
 package net.consensys.orion.impl.http.handlers;
 
 import static io.vertx.core.Vertx.vertx;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -9,9 +8,7 @@ import static org.junit.Assert.fail;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.network.TrustManagerFactoryWrapper;
 import net.consensys.orion.impl.config.MemoryConfig;
-import net.consensys.orion.impl.utils.Base64;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,7 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.regex.Pattern;
 import javax.net.ssl.SSLException;
 
 import com.google.common.hash.Hashing;
@@ -52,13 +48,6 @@ public class TofuSecurityTest {
   private MemoryConfig config;
   private String exampleComFingerprint;
 
-  private static byte[] loadPEM(Path pemFilePath) throws IOException {
-    String pem = new String(Files.readAllBytes(pemFilePath), UTF_8);
-    Pattern parse = Pattern.compile("(?m)(?s)^---*BEGIN.*---*$(.*)^---*END.*---*$.*");
-    String encoded = parse.matcher(pem).replaceFirst("$1").replace("\n", "");
-    return Base64.decode(encoded);
-  }
-
   @Before
   public void setUp() throws Exception {
     vertx = vertx();
@@ -70,17 +59,20 @@ public class TofuSecurityTest {
     config.setTls("strict");
     config.setTlsServerTrust("tofu");
 
-    CertificateAuthoritySecurityTest.installServerCert(config);
+    SecurityTestUtils.installServerCert(config);
 
     SelfSignedCertificate clientCertificate = SelfSignedCertificate.create("example.com");
 
     knownClientsFile = Files.createTempFile("knownclients", ".txt");
     config.setTlsKnownClients(knownClientsFile);
     exampleComFingerprint = StringUtil.toHexStringPadded(
-        Hashing.sha1().hashBytes(loadPEM(Paths.get(clientCertificate.keyCertOptions().getCertPath()))).asBytes());
+        Hashing
+            .sha1()
+            .hashBytes(SecurityTestUtils.loadPEM(Paths.get(clientCertificate.keyCertOptions().getCertPath())))
+            .asBytes());
     Files.write(knownClientsFile, Arrays.asList("#First line"));
 
-    CertificateAuthoritySecurityTest.installPorts(config);
+    SecurityTestUtils.installPorts(config);
     orion.run(System.out, System.err, config);
 
     httpClient = vertx.createHttpClient(
