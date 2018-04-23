@@ -4,6 +4,8 @@ package net.consensys.orion.api.network;
 import net.consensys.orion.api.cmd.OrionStartException;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -48,9 +50,22 @@ public class HostAndFingerprintTrustManagerFactory extends SimpleTrustManagerFac
   public static HostAndFingerprintTrustManagerFactory caOrTofuDefaultJDKTruststore(
       HostFingerprintRepository repository,
       Vertx vertx) {
-    JksOptions delegateTrustOptions = new JksOptions().setPath(System.getProperty("javax.net.ssl.trustStore"));
-    if (System.getProperty("javax.net.ssl.trustStorePassword") != null) {
-      delegateTrustOptions.setPassword(System.getProperty("javax.net.ssl.trustStorePassword"));
+    JksOptions delegateTrustOptions = new JksOptions();
+
+    if (System.getProperty("javax.net.ssl.trustStore") != null) {
+      delegateTrustOptions.setPath(System.getProperty("javax.net.ssl.trustStore"));
+      if (System.getProperty("javax.net.ssl.trustStorePassword") != null) {
+        delegateTrustOptions.setPassword(System.getProperty("javax.net.ssl.trustStorePassword"));
+      }
+    } else {
+      Path jsseCaCerts = Paths.get(System.getProperty("java.home"), "lib", "security", "jssecacerts");
+      if (jsseCaCerts.toFile().exists()) {
+        delegateTrustOptions.setPath(jsseCaCerts.toString());
+      } else {
+        Path cacerts = Paths.get(System.getProperty("java.home"), "lib", "security", "cacerts");
+        delegateTrustOptions.setPath(cacerts.toString());
+      }
+      delegateTrustOptions.setPassword("changeit");
     }
     return caOrTofu(repository, delegateTrustOptions, vertx);
   }
