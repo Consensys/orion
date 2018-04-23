@@ -107,8 +107,18 @@ public class TofuSecurityTest {
   }
 
   @After
-  public void tearDown() {
-    vertx.close();
+  public void tearDown() throws Exception {
+    CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
+    orion.stop();
+    vertx.close(result -> {
+      if (result.succeeded()) {
+        resultFuture.complete(true);
+      } else {
+        resultFuture.completeExceptionally(result.cause());
+      }
+    });
+
+    resultFuture.get();
   }
 
   @Test
