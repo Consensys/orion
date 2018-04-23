@@ -284,8 +284,8 @@ public class Orion {
       options.setClientAuth(ClientAuth.REQUIRED);
 
       PemKeyCertOptions pemKeyCertOptions =
-          new PemKeyCertOptions().setKeyPath(config.tlsServerKey().toString()).setCertPath(
-              config.tlsServerCert().toString());
+          new PemKeyCertOptions().setKeyPath(config.workDir().resolve(config.tlsServerKey()).toString()).setCertPath(
+              config.workDir().resolve(config.tlsServerCert()).toString());
       options.setPemKeyCertOptions(pemKeyCertOptions);
 
 
@@ -308,10 +308,13 @@ public class Orion {
 
       tmfCreator.ifPresent(tmf -> {
         try {
-          HostFingerprintRepository hostFingerprintRepository = new HostFingerprintRepository(config.tlsKnownClients());
+          HostFingerprintRepository hostFingerprintRepository =
+              new HostFingerprintRepository(config.workDir().resolve(config.tlsKnownClients()));
           options.setTrustOptions(new TrustManagerFactoryWrapper(tmf.apply(hostFingerprintRepository)));
         } catch (IOException e) {
-          throw new OrionStartException("Could not read the contents of " + config.tlsKnownClients(), e);
+          throw new OrionStartException(
+              "Could not read the contents of " + config.workDir().resolve(config.tlsKnownClients()),
+              e);
         }
       });
     }
