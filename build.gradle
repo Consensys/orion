@@ -183,7 +183,8 @@ dependencies {
   compile 'io.vertx:vertx-web:3.5.0'
 
   // crypto
-  compile 'org.bouncycastle:bcprov-jdk15on:1.58'
+  compile 'org.bouncycastle:bcprov-jdk15on:1.59'
+  compile 'org.bouncycastle:bcpkix-jdk15on:1.59'
   compile 'com.muquit.libsodiumjna:libsodium-jna:1.0.4'
 
   // http client
