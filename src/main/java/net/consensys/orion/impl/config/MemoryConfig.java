@@ -3,6 +3,7 @@ package net.consensys.orion.impl.config;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,6 +40,16 @@ public class MemoryConfig implements Config {
   private Optional<Boolean> showVersion = Optional.empty();
   private long verbosity = 1;
   private String libSodiumPath = LibSodiumSettings.defaultLibSodiumPath();
+
+  public MemoryConfig() {
+    try {
+      nodeUrl = new URL("https://localhost:8080");
+      clientUrl = new URL("https://localhost:8888");
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
 
   public void setNodeUrl(URL nodeUrl) {
     this.nodeUrl = nodeUrl;

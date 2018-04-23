@@ -14,6 +14,7 @@ import net.consensys.orion.impl.utils.Serializer;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,6 +43,9 @@ public class OrionTest {
     Config config = orion.loadConfig(Optional.empty());
 
     assertEquals(8080, config.nodePort());
+    assertEquals(8888, config.clientPort());
+    assertEquals(new URL("http://127.0.0.1:8080/"), config.nodeUrl());
+    assertEquals(new URL("http://127.0.0.1:8888/"), config.clientUrl());
   }
 
   @Test
