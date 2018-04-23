@@ -28,7 +28,7 @@ public class MemoryConfig implements Config {
   private Path tlsServerCert = Paths.get("tls-server-cert.pem");
   private Path[] tlsServerChain = new Path[] {};
   private Path tlsServerKey = Paths.get("tls-server-key.pem");
-  private String tlsServerTrust = "ca";
+  private String tlsServerTrust = "tofu";
   private Path tlsKnownClients = Paths.get("tls-known-clients");
   private Path tlsClientCert = Paths.get("tls-client-cert.pem");
   private Path[] tlsClientChain = new Path[] {};
