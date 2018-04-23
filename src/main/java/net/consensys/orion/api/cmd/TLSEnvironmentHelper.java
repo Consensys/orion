@@ -135,8 +135,8 @@ class TLSEnvironmentHelper {
       Path knownServers,
       Path tlsClientCert,
       Path tlsClientKey,
-      Path tlsServerKey,
-      Path tlsServerCert) {
+      Path tlsServerCert,
+      Path tlsServerKey) {
 
     createFile(workDir, knownClients);
     createFile(workDir, knownServers);

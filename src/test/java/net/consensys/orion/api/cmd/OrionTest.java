@@ -147,11 +147,14 @@ public class OrionTest {
         config.tlsServerCert(),
         config.tlsServerKey());
 
-    PKCS8EncodedKeySpec pkcs8KeySpec =
-        new PKCS8EncodedKeySpec(SecurityTestUtils.loadPEM(workDir.resolve(config.tlsClientKey())));
+    checkKeyPair(workDir.resolve(config.tlsClientKey()), workDir.resolve(config.tlsClientCert()));
+    checkKeyPair(workDir.resolve(config.tlsServerKey()), workDir.resolve(config.tlsServerCert()));
+  }
+
+  private void checkKeyPair(Path key, Path cert) throws Exception {
+    PKCS8EncodedKeySpec pkcs8KeySpec = new PKCS8EncodedKeySpec(SecurityTestUtils.loadPEM(key));
     CertificateFactory cf = CertificateFactory.getInstance("X.509");
-    Certificate certificate =
-        cf.generateCertificate(new ByteArrayInputStream(Files.readAllBytes(workDir.resolve(config.tlsClientCert()))));
+    Certificate certificate = cf.generateCertificate(new ByteArrayInputStream(Files.readAllBytes(cert)));
     KeyFactory kf = KeyFactory.getInstance("RSA");
     KeyPair keyPair = new KeyPair(certificate.getPublicKey(), kf.generatePrivate(pkcs8KeySpec));
 
