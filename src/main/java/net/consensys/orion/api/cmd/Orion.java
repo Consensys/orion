@@ -287,7 +287,9 @@ public class Orion {
           new PemKeyCertOptions().setKeyPath(config.tlsServerKey().toString()).setCertPath(
               config.tlsServerCert().toString());
       options.setPemKeyCertOptions(pemKeyCertOptions);
-
+      for (Path chainCert : config.tlsServerChain()) {
+        pemKeyCertOptions.addCertPath(chainCert.toString());
+      }
 
       Optional<Function<HostFingerprintRepository, HostAndFingerprintTrustManagerFactory>> tmfCreator =
           Optional.empty();
