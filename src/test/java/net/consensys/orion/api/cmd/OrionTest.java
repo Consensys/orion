@@ -8,7 +8,7 @@ import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.exception.OrionException;
 import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.enclave.sodium.storage.StoredPrivateKey;
-import net.consensys.orion.impl.http.handlers.CertificateAuthoritySecurityTest;
+import net.consensys.orion.impl.http.handlers.SecurityTestUtils;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -32,8 +32,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Verticle;
-import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.impl.VertxInternal;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -148,7 +148,7 @@ public class OrionTest {
         config.tlsServerKey());
 
     PKCS8EncodedKeySpec pkcs8KeySpec =
-        new PKCS8EncodedKeySpec(CertificateAuthoritySecurityTest.loadPEM(workDir.resolve(config.tlsClientKey())));
+        new PKCS8EncodedKeySpec(SecurityTestUtils.loadPEM(workDir.resolve(config.tlsClientKey())));
     CertificateFactory cf = CertificateFactory.getInstance("X.509");
     Certificate certificate =
         cf.generateCertificate(new ByteArrayInputStream(Files.readAllBytes(workDir.resolve(config.tlsClientCert()))));
@@ -279,7 +279,7 @@ public class OrionTest {
   @SuppressWarnings("unchecked")
   @Test
   public void startupFails() throws IOException {
-    Vertx vertx = Mockito.mock(Vertx.class);
+    VertxInternal vertx = Mockito.mock(VertxInternal.class);
     HttpServer httpServer = Mockito.mock(HttpServer.class);
     Mockito.when(vertx.createHttpServer(Mockito.any())).thenReturn(httpServer);
     Mockito.when(httpServer.requestHandler(Mockito.any())).thenReturn(httpServer);
@@ -299,6 +299,7 @@ public class OrionTest {
     try {
       MemoryConfig config = new MemoryConfig();
       config.setWorkDir(Files.createTempDirectory("orion"));
+      config.setTls("off");
       orion.run(System.out, System.err, config);
       fail();
     } catch (OrionStartException e) {
