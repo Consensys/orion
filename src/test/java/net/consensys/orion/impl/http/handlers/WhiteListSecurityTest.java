@@ -54,7 +54,7 @@ public class WhiteListSecurityTest {
     config.setTls("strict");
     config.setTlsServerTrust("whitelist");
 
-    CertificateAuthoritySecurityTest.installServerCert(config);
+    SecurityTestUtils.installServerCert(config);
 
     SelfSignedCertificate clientCertificate = SelfSignedCertificate.create("example.com");
 
@@ -63,12 +63,11 @@ public class WhiteListSecurityTest {
     String fingerprint = StringUtil.toHexStringPadded(
         Hashing
             .sha1()
-            .hashBytes(
-                CertificateAuthoritySecurityTest.loadPEM(Paths.get(clientCertificate.keyCertOptions().getCertPath())))
+            .hashBytes(SecurityTestUtils.loadPEM(Paths.get(clientCertificate.keyCertOptions().getCertPath())))
             .asBytes());
     Files.write(knownClientsFile, Arrays.asList("#First line", "example.com " + fingerprint));
 
-    CertificateAuthoritySecurityTest.installPorts(config);
+    SecurityTestUtils.installPorts(config);
     orion.run(System.out, System.err, config);
 
     httpClient = vertx.createHttpClient(

@@ -51,12 +51,12 @@ public class InsecureSecurityTest {
     config.setWorkDir(workDir);
     config.setTls("strict");
     config.setTlsServerTrust("insecure-no-validation");
-    CertificateAuthoritySecurityTest.installServerCert(config);
+    SecurityTestUtils.installServerCert(config);
 
     knownClientsFile = Files.createTempFile("knownclients", ".txt");
     config.setTlsKnownClients(knownClientsFile);
 
-    CertificateAuthoritySecurityTest.installPorts(config);
+    SecurityTestUtils.installPorts(config);
     orion.run(System.out, System.err, config);
 
     SelfSignedCertificate clientCertificate = SelfSignedCertificate.create();
@@ -64,8 +64,7 @@ public class InsecureSecurityTest {
     exampleComFingerprint = StringUtil.toHexStringPadded(
         Hashing
             .sha1()
-            .hashBytes(
-                CertificateAuthoritySecurityTest.loadPEM(Paths.get(clientCertificate.keyCertOptions().getCertPath())))
+            .hashBytes(SecurityTestUtils.loadPEM(Paths.get(clientCertificate.keyCertOptions().getCertPath())))
             .asBytes());
 
     httpClient = vertx.createHttpClient(
