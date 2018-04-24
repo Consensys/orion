@@ -100,6 +100,7 @@ public class TofuSecurityTest {
 
   @After
   public void tearDown() {
+    orion.stop();
     vertx.close();
   }
 

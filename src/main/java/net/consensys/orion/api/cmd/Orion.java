@@ -104,7 +104,8 @@ public class Orion {
       Enclave enclave,
       Storage<EncryptedPayload> storage,
       Router nodeRouter,
-      Router clientRouter) {
+      Router clientRouter,
+      Config config) {
 
     LoggerHandler loggerHandler = LoggerHandler.create();
 
@@ -135,12 +136,12 @@ public class Orion {
     clientRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
     clientRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
-        new SendHandler(vertx, enclave, storage, networkNodes, JSON));
+        new SendHandler(vertx, enclave, storage, networkNodes, JSON, config));
     clientRouter
         .post("/sendraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
-        .handler(new SendHandler(vertx, enclave, storage, networkNodes, APPLICATION_OCTET_STREAM));
+        .handler(new SendHandler(vertx, enclave, storage, networkNodes, APPLICATION_OCTET_STREAM, config));
 
     clientRouter.post("/receive").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
         new ReceiveHandler(enclave, storage, JSON));
@@ -285,7 +286,7 @@ public class Orion {
     // controller dependencies
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
     EncryptedPayloadStorage storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
-    configureRoutes(vertx, networkNodes, enclave, storage, nodeRouter, clientRouter);
+    configureRoutes(vertx, networkNodes, enclave, storage, nodeRouter, clientRouter, config);
 
     // asynchronously start the vertx http server for public API
     CompletableFuture<Boolean> nodeFuture = new CompletableFuture<>();
@@ -344,7 +345,7 @@ public class Orion {
             completeFutureInHandler(clientFuture));
 
     // start network discovery of other peers
-    discovery = new NetworkDiscovery(networkNodes);
+    discovery = new NetworkDiscovery(networkNodes, config);
     CompletableFuture<Boolean> verticleFuture = new CompletableFuture<>();
     vertx.deployVerticle(discovery, result -> {
       if (result.succeeded()) {

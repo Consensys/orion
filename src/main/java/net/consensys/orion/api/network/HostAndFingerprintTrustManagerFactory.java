@@ -94,6 +94,15 @@ public class HostAndFingerprintTrustManagerFactory extends SimpleTrustManagerFac
 
     @Override
     public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+      checkTrusted(x509Certificates, s, true);
+    }
+
+    @Override
+    public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+      checkTrusted(x509Certificates, s, false);
+    }
+
+    public void checkTrusted(X509Certificate[] x509Certificates, String s, boolean client) throws CertificateException {
       X509Certificate cert = x509Certificates[0];
       try {
 
@@ -112,13 +121,17 @@ public class HostAndFingerprintTrustManagerFactory extends SimpleTrustManagerFac
             if (delegate.isPresent()) {
               for (TrustManager trustManager : delegate.get().getTrustManagers()) {
                 if (trustManager instanceof X509TrustManager) {
-                  ((X509TrustManager) trustManager).checkClientTrusted(x509Certificates, s);
+                  if (client) {
+                    ((X509TrustManager) trustManager).checkClientTrusted(x509Certificates, s);
+                  } else {
+                    ((X509TrustManager) trustManager).checkServerTrusted(x509Certificates, s);
+                  }
                   passesDelegate = true;
                 }
               }
             }
             if (!passesDelegate) {
-              throw new CertificateException("Client certificate with unknown fingerprint: " + cert.getSubjectDN());
+              throw new CertificateException("Certificate with unknown fingerprint: " + cert.getSubjectDN());
             }
           }
 
@@ -126,11 +139,6 @@ public class HostAndFingerprintTrustManagerFactory extends SimpleTrustManagerFac
       } catch (IOException e) {
         throw new CertificateException("Invalid certificate " + cert.getSubjectDN());
       }
-    }
-
-    @Override
-    public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
-      throw new UnsupportedOperationException();
     }
 
     @Override

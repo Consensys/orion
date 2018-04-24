@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 import io.vertx.core.net.SelfSignedCertificate;
 
-class SecurityTestUtils {
+public class SecurityTestUtils {
 
   private SecurityTestUtils() {}
 
@@ -66,5 +66,11 @@ class SecurityTestUtils {
     SelfSignedCertificate serverCert = SelfSignedCertificate.create();
     config.setTlsServerCert(new File(serverCert.certificatePath()).toPath());
     config.setTlsServerKey(new File(serverCert.privateKeyPath()).toPath());
+  }
+
+  public static int getFreePort() throws Exception {
+    try (ServerSocket nodeSocket = new ServerSocket(0);) {
+      return nodeSocket.getLocalPort();
+    }
   }
 }

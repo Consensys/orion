@@ -2,6 +2,7 @@ package net.consensys.orion.impl.http.handler.send;
 
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 
+import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.exception.OrionErrorCode;
@@ -9,6 +10,7 @@ import net.consensys.orion.api.exception.OrionException;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
+import net.consensys.orion.impl.network.NodeHttpClientBuilder;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.net.URL;
@@ -44,13 +46,14 @@ public class SendHandler implements Handler<RoutingContext> {
       Enclave enclave,
       Storage<EncryptedPayload> storage,
       ConcurrentNetworkNodes networkNodes,
-      HttpContentType contentType) {
+      HttpContentType contentType,
+      Config config) {
     this.enclave = enclave;
     this.storage = storage;
     this.nodeKeys = Arrays.asList(enclave.nodeKeys());
     this.networkNodes = networkNodes;
     this.contentType = contentType;
-    this.httpClient = vertx.createHttpClient();
+    this.httpClient = NodeHttpClientBuilder.build(vertx, config, 1500);
   }
 
   @Override
