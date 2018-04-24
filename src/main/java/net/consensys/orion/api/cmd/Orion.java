@@ -2,7 +2,6 @@ package net.consensys.orion.api.cmd;
 
 import static io.vertx.core.Vertx.vertx;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static net.consensys.orion.api.network.HostAndFingerprintTrustManagerFactory.*;
 import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
@@ -263,6 +262,17 @@ public class Orion {
       Files.createDirectories(workDir);
     } catch (IOException ex) {
       throw new OrionStartException("Couldn't create working directory '" + workDir + "': " + ex.getMessage(), ex);
+    }
+
+    if (!"off".equals(config.tls())) {
+      TLSEnvironmentHelper.configureTLSRelatedFiles(
+          config.workDir(),
+          config.tlsKnownClients(),
+          config.tlsKnownServers(),
+          config.tlsClientCert(),
+          config.tlsClientKey(),
+          config.tlsServerCert(),
+          config.tlsServerKey());
     }
 
     // create our storage engine
