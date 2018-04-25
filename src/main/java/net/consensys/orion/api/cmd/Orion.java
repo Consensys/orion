@@ -340,8 +340,10 @@ public class Orion {
         vertx.createHttpServer(options).requestHandler(nodeRouter::accept).exceptionHandler(log::error).listen(
             completeFutureInHandler(nodeFuture));
     CompletableFuture<Boolean> clientFuture = new CompletableFuture<>();
-    HttpServerOptions clientOptions =
-        new HttpServerOptions().setPort(config.clientPort()).setHost(config.clientNetworkInterface());
+    HttpServerOptions clientOptions = new HttpServerOptions()
+        .setPort(config.clientPort())
+        .setHost(config.clientNetworkInterface())
+        .setCompressionSupported(true);
     clientHTTPServer =
         vertx.createHttpServer(clientOptions).requestHandler(clientRouter::accept).exceptionHandler(log::error).listen(
             completeFutureInHandler(clientFuture));
