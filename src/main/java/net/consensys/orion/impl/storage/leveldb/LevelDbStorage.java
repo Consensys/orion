@@ -25,6 +25,7 @@ public class LevelDbStorage<T> implements StorageEngine<T> {
     this.typeParameterClass = typeParameterClass;
     final Options options = new Options();
     options.createIfMissing(true);
+    options.cacheSize(100 * 1048576); // 100MB cache
     try {
       db = Optional.of(JniDBFactory.factory.open(path.toFile(), options));
     } catch (final IOException e) {
