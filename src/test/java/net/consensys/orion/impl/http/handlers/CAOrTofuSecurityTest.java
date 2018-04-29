@@ -25,7 +25,6 @@ import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.net.SelfSignedCertificate;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import org.apache.logging.log4j.util.Strings;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -103,7 +102,7 @@ public class CAOrTofuSecurityTest {
       assertEquals(200, resp.statusCode());
     }
     List<String> fingerprints = Files.readAllLines(knownClientsFile);
-    assertEquals(Strings.join(fingerprints, '\n'), 1, fingerprints.size());
+    assertEquals(String.join("\n", fingerprints), 1, fingerprints.size());
     assertEquals("example.com " + exampleComFingerprint, fingerprints.get(0));
 
     HttpClientRequest req = httpClient.get(config.nodePort(), "localhost", "/upcheck");
@@ -113,7 +112,7 @@ public class CAOrTofuSecurityTest {
     assertEquals(200, resp.statusCode());
 
     fingerprints = Files.readAllLines(knownClientsFile);
-    assertEquals(Strings.join(fingerprints, '\n'), 1, fingerprints.size());
+    assertEquals(String.join("\n", fingerprints), 1, fingerprints.size());
   }
 
   @Test(expected = SSLException.class)
