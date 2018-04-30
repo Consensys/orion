@@ -26,7 +26,6 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.SelfSignedCertificate;
 import io.vertx.ext.web.Router;
-import org.apache.logging.log4j.util.Strings;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -108,7 +107,7 @@ public class TofuNodeClientTest {
     assertEquals((Integer) 200, statusCode.join());
 
     List<String> fingerprints = Files.readAllLines(knownServersFile);
-    assertEquals(Strings.join(fingerprints, '\n'), 2, fingerprints.size());
+    assertEquals(String.join("\n", fingerprints), 2, fingerprints.size());
     assertEquals("#First line", fingerprints.get(0));
     assertEquals("foo.com " + fooFingerprint, fingerprints.get(1));
   }

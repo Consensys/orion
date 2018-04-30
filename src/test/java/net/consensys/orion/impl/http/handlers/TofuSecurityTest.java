@@ -29,7 +29,6 @@ import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.net.SelfSignedCertificate;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import org.apache.logging.log4j.util.Strings;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -114,7 +113,7 @@ public class TofuSecurityTest {
       assertEquals(200, resp.statusCode());
     }
     List<String> fingerprints = Files.readAllLines(knownClientsFile);
-    assertEquals(Strings.join(fingerprints, '\n'), 2, fingerprints.size());
+    assertEquals(String.join("\n", fingerprints), 2, fingerprints.size());
     assertEquals("#First line", fingerprints.get(0));
     assertEquals("example.com " + exampleComFingerprint, fingerprints.get(1));
   }
