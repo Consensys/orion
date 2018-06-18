@@ -7,6 +7,8 @@ import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import static net.consensys.orion.impl.http.server.HttpContentType.TEXT;
 
+import net.consensys.cava.net.tls.TLS;
+import net.consensys.cava.net.tls.VertxTrustOptions;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.config.ConfigException;
 import net.consensys.orion.api.enclave.Enclave;
@@ -14,9 +16,6 @@ import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.exception.OrionException;
-import net.consensys.orion.api.network.HostAndFingerprintTrustManagerFactory;
-import net.consensys.orion.api.network.HostFingerprintRepository;
-import net.consensys.orion.api.network.TrustManagerFactoryWrapper;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
@@ -44,12 +43,12 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.Security;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -73,6 +72,10 @@ public class Orion {
 
   static {
     System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.Log4j2LogDelegateFactory");
+  }
+
+  static {
+    Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
   }
 
   private final Vertx vertx;
@@ -266,14 +269,39 @@ public class Orion {
     }
 
     if (!"off".equals(config.tls())) {
-      TLSEnvironmentHelper.configureTLSRelatedFiles(
-          config.workDir(),
-          config.tlsKnownClients(),
-          config.tlsKnownServers(),
-          config.tlsClientCert(),
-          config.tlsClientKey(),
-          config.tlsServerCert(),
-          config.tlsServerKey());
+      // verify server TLS cert and key
+      Path tlsServerCert = workDir.resolve(config.tlsServerCert()).toAbsolutePath();
+      Path tlsServerKey = workDir.resolve(config.tlsServerKey()).toAbsolutePath();
+
+      try {
+        TLS.createSelfSignedCertificateIfMissing(tlsServerKey, tlsServerCert);
+      } catch (IOException e) {
+        throw new OrionStartException(
+            "An error occurred while writing the server TLS certificate files: " + e.getMessage(),
+            e);
+      }
+      if (!Files.exists(tlsServerCert)) {
+        throw new OrionStartException("Missing server TLS certificate file \"" + tlsServerCert + "\"");
+      } else if (!Files.exists(tlsServerKey)) {
+        throw new OrionStartException("Missing server TLS key file \"" + tlsServerKey + "\"");
+      }
+
+      // verify client TLS cert and key
+      Path tlsClientCert = workDir.resolve(config.tlsClientCert()).toAbsolutePath();
+      Path tlsClientKey = workDir.resolve(config.tlsClientKey()).toAbsolutePath();
+
+      try {
+        TLS.createSelfSignedCertificateIfMissing(tlsClientKey, tlsClientCert);
+      } catch (IOException e) {
+        throw new OrionStartException(
+            "An error occurred while writing the client TLS certificate files: " + e.getMessage(),
+            e);
+      }
+      if (!Files.exists(tlsClientCert)) {
+        throw new OrionStartException("Missing client TLS certificate file \"" + tlsClientCert + "\"");
+      } else if (!Files.exists(tlsClientKey)) {
+        throw new OrionStartException("Missing client TLS key file \"" + tlsClientKey + "\"");
+      }
     }
 
     // create our storage engine
@@ -284,7 +312,7 @@ public class Orion {
     Router clientRouter = Router.router(vertx).exceptionHandler(log::error);
 
     // controller dependencies
-    StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
+    StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
     EncryptedPayloadStorage storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
     configureRoutes(vertx, networkNodes, enclave, storage, nodeRouter, clientRouter, config);
 
@@ -294,46 +322,51 @@ public class Orion {
         .setPort(config.nodePort())
         .setHost(config.nodeNetworkInterface())
         .setCompressionSupported(true);
-    if (!"off".equals(config.tls())) {
-      options.setSsl(true);
-      options.setClientAuth(ClientAuth.REQUIRED);
 
+    if (!"off".equals(config.tls())) {
+      Path tlsServerCert = workDir.resolve(config.tlsServerCert());
+      Path tlsServerKey = workDir.resolve(config.tlsServerKey());
       PemKeyCertOptions pemKeyCertOptions =
-          new PemKeyCertOptions().setKeyPath(config.workDir().resolve(config.tlsServerKey()).toString()).setCertPath(
-              config.workDir().resolve(config.tlsServerCert()).toString());
-      options.setPemKeyCertOptions(pemKeyCertOptions);
+          new PemKeyCertOptions().setKeyPath(tlsServerKey.toString()).setCertPath(tlsServerCert.toString());
       for (Path chainCert : config.tlsServerChain()) {
         pemKeyCertOptions.addCertPath(chainCert.toString());
       }
 
-      Optional<Function<HostFingerprintRepository, HostAndFingerprintTrustManagerFactory>> tmfCreator =
-          Optional.empty();
-      if ("ca".equals(config.tlsServerTrust())) {
-      } else if ("tofu".equals(config.tlsServerTrust())) {
-        tmfCreator = Optional.of(HostAndFingerprintTrustManagerFactory::tofu);
-      } else if ("whitelist".equals(config.tlsServerTrust())) {
-        tmfCreator = Optional.of(HostAndFingerprintTrustManagerFactory::whitelist);
-      } else if ("ca-or-tofu".equals(config.tlsServerTrust())) {
-        tmfCreator = Optional.of(
-            hostFingerprintRepository -> HostAndFingerprintTrustManagerFactory
-                .caOrTofuDefaultJDKTruststore(hostFingerprintRepository, vertx));
-      } else if ("insecure-no-validation".equals(config.tlsServerTrust())) {
-        tmfCreator = Optional.of(HostAndFingerprintTrustManagerFactory::insecure);
-      } else {
-        throw new UnsupportedOperationException(config.tlsServerTrust() + " is not supported");
-      }
+      options.setSsl(true);
+      options.setClientAuth(ClientAuth.REQUIRED);
+      options.setPemKeyCertOptions(pemKeyCertOptions);
 
-      tmfCreator.ifPresent(tmf -> {
-        try {
-          HostFingerprintRepository hostFingerprintRepository =
-              new HostFingerprintRepository(config.workDir().resolve(config.tlsKnownClients()));
-          options.setTrustOptions(new TrustManagerFactoryWrapper(tmf.apply(hostFingerprintRepository)));
-        } catch (IOException e) {
-          throw new OrionStartException(
-              "Could not read the contents of " + config.workDir().resolve(config.tlsKnownClients()),
-              e);
-        }
-      });
+      Path knownClientsFile = workDir.resolve(config.tlsKnownClients());
+      String serverTrustMode = config.tlsServerTrust().toLowerCase();
+      switch (serverTrustMode) {
+        case "whitelist":
+          options.setTrustOptions(VertxTrustOptions.whitelistClients(knownClientsFile, false));
+          break;
+        case "ca-or-whitelist":
+          options.setTrustOptions(VertxTrustOptions.whitelistClients(knownClientsFile, true));
+          break;
+        case "tofu":
+        case "insecure-tofa":
+          options.setTrustOptions(VertxTrustOptions.trustClientOnFirstAccess(knownClientsFile, false));
+          break;
+        case "ca-or-tofu":
+        case "insecure-ca-or-tofa":
+          options.setTrustOptions(VertxTrustOptions.trustClientOnFirstAccess(knownClientsFile, true));
+          break;
+        case "insecure-no-validation":
+        case "record":
+          options.setTrustOptions(VertxTrustOptions.recordClientFingerprints(knownClientsFile, false));
+          break;
+        case "ca-or-record":
+          options.setTrustOptions(VertxTrustOptions.recordClientFingerprints(knownClientsFile, true));
+          break;
+        case "ca":
+          // use default trust options
+          break;
+        default:
+          throw new UnsupportedOperationException(
+              "\"" + serverTrustMode + "\" option for tlsservertrust is not supported");
+      }
     }
 
     nodeHTTPServer =

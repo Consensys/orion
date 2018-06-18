@@ -1,10 +1,9 @@
 package net.consensys.orion.impl.http.handlers;
 
 import static io.vertx.core.Vertx.vertx;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import net.consensys.orion.api.cmd.Orion;
-import net.consensys.orion.api.network.TrustManagerFactoryWrapper;
 import net.consensys.orion.impl.config.MemoryConfig;
 
 import java.nio.file.Files;
@@ -12,7 +11,6 @@ import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import javax.net.ssl.SSLException;
 
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
@@ -51,10 +49,7 @@ public class CertificateAuthoritySecurityTest {
     SecurityTestUtils.installPorts(config);
 
     httpClient = vertx.createHttpClient(
-        new HttpClientOptions()
-            .setSsl(true)
-            .setTrustOptions(new TrustManagerFactoryWrapper(InsecureTrustManagerFactory.INSTANCE))
-            .setKeyCertOptions(clientCert.keyCertOptions()));
+        new HttpClientOptions().setSsl(true).setTrustAll(true).setKeyCertOptions(clientCert.keyCertOptions()));
 
     orion.run(System.out, System.err, config);
   }

@@ -218,9 +218,11 @@ public interface Config {
    * <li><strong>whitelist:</strong> Only nodes that have previously connected to this node and been added to the
    * <i>tlsKnownClients</i> file will be allowed to connect. This mode will not add any new clients to the
    * <i>tlsKnownClients</i> file.
+   *
    * <li><strong>tofu:</strong> (Trust-on-first-use) Only the first node that connects identifying as a certain host
    * will be allowed to connect as the same host in the future. Note that nodes identifying as other hosts will still be
    * able to connect - switch to whitelist after populating the <i>tlsKnownClients</i> list to restrict access.
+   *
    * <li><strong>ca:</strong> Only nodes with a valid certificate and chain of trust to one of the system root
    * certificates will be allowed to connect. The folder containing trusted root certificates can be overriden with the
    * SYSTEM_CERTIFICATE_PATH environment variable.

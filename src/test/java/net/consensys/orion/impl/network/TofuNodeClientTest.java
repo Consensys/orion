@@ -1,5 +1,7 @@
 package net.consensys.orion.impl.network;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static net.consensys.cava.crypto.Hash.sha2_256;
 import static org.junit.Assert.assertEquals;
 
 import net.consensys.orion.impl.config.MemoryConfig;
@@ -17,7 +19,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import javax.net.ssl.SSLException;
 
-import com.google.common.hash.Hashing;
 import io.netty.util.internal.StringUtil;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -37,7 +38,6 @@ public class TofuNodeClientTest {
   private Vertx vertx;
 
   private HttpServer tofuServer;
-  private HttpServer otherFooComServer;
   private Path knownServersFile;
   private String fooFingerprint;
   private HttpClient client;
@@ -56,11 +56,8 @@ public class TofuNodeClientTest {
     SelfSignedCertificate serverCert = SelfSignedCertificate.create("foo.com");
     knownServersFile = Files.createTempFile("knownservers", ".txt");
     config.setTlsKnownServers(knownServersFile);
-    fooFingerprint = StringUtil.toHexStringPadded(
-        Hashing
-            .sha1()
-            .hashBytes(SecurityTestUtils.loadPEM(Paths.get(serverCert.keyCertOptions().getCertPath())))
-            .asBytes());
+    fooFingerprint = StringUtil
+        .toHexStringPadded(sha2_256(SecurityTestUtils.loadPEM(Paths.get(serverCert.keyCertOptions().getCertPath()))));
     Files.write(knownServersFile, Arrays.asList("#First line"));
 
     Router dummyRouter = Router.router(vertx);
@@ -73,13 +70,6 @@ public class TofuNodeClientTest {
         .createHttpServer(new HttpServerOptions().setSsl(true).setPemKeyCertOptions(serverCert.keyCertOptions()))
         .requestHandler(dummyRouter::accept);
     startServer(tofuServer);
-    otherFooComServer = vertx
-        .createHttpServer(
-            new HttpServerOptions().setSsl(true).setPemKeyCertOptions(
-                SelfSignedCertificate.create("foo.com").keyCertOptions()))
-        .requestHandler(dummyRouter::accept);
-    startServer(otherFooComServer);
-
   }
 
   private static void startServer(HttpServer server) throws Exception {
@@ -109,16 +99,21 @@ public class TofuNodeClientTest {
     List<String> fingerprints = Files.readAllLines(knownServersFile);
     assertEquals(String.join("\n", fingerprints), 2, fingerprints.size());
     assertEquals("#First line", fingerprints.get(0));
-    assertEquals("foo.com " + fooFingerprint, fingerprints.get(1));
+    assertEquals("localhost:" + tofuServer.actualPort() + " " + fooFingerprint, fingerprints.get(1));
   }
 
   @Test(expected = SSLException.class)
-  public void testUnknownServer() throws Throwable {
-    testTOFU();
+  public void testServerWithIncorrectFingerprint() throws Throwable {
+    Files.write(
+        knownServersFile,
+        ("localhost:" + tofuServer.actualPort() + " " + new StringBuilder(fooFingerprint).reverse().toString())
+            .getBytes(UTF_8));
+    HttpClient newClient = NodeHttpClientBuilder.build(vertx, config, 100);
+
     CompletableFuture<Integer> statusCode = new CompletableFuture<>();
-    client
+    newClient
         .post(
-            otherFooComServer.actualPort(),
+            tofuServer.actualPort(),
             "localhost",
             "/partyinfo",
             response -> statusCode.complete(response.statusCode()))
@@ -126,6 +121,7 @@ public class TofuNodeClientTest {
         .end();
     try {
       statusCode.join();
+      List<String> fingerprints = Files.readAllLines(knownServersFile);
     } catch (CompletionException e) {
       throw e.getCause();
     }

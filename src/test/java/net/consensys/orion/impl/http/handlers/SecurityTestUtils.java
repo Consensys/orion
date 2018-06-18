@@ -62,10 +62,11 @@ public class SecurityTestUtils {
     }
   }
 
-  public static void installServerCert(MemoryConfig config) {
-    SelfSignedCertificate serverCert = SelfSignedCertificate.create();
+  public static void installServerCert(MemoryConfig config) throws Exception {
+    SelfSignedCertificate serverCert = SelfSignedCertificate.create("localhost");
     config.setTlsServerCert(new File(serverCert.certificatePath()).toPath());
     config.setTlsServerKey(new File(serverCert.privateKeyPath()).toPath());
+    SecurityTestUtils.configureJDKTrustStore(serverCert);
   }
 
   public static int getFreePort() throws Exception {

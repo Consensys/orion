@@ -92,7 +92,7 @@ public abstract class HandlerTest {
     storageEngine = new MapDbStorage<>(SodiumEncryptedPayload.class, path);
     // create our vertx object
     vertx = Vertx.vertx();
-    StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
+    StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
     storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
     Router publicRouter = Router.router(vertx);
     Router privateRouter = Router.router(vertx);

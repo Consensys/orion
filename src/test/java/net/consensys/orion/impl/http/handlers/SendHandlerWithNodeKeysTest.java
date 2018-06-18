@@ -2,12 +2,12 @@ package net.consensys.orion.impl.http.handlers;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
+import static net.consensys.cava.crypto.Hash.sha2_512_256;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static org.junit.Assert.assertArrayEquals;
 
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.HashAlgorithm;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
@@ -63,7 +63,7 @@ public class SendHandlerWithNodeKeysTest extends SendHandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest = Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+    String digest = Base64.encode(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));

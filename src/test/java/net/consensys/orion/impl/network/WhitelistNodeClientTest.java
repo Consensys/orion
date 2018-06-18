@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.network;
 
+import static net.consensys.cava.crypto.Hash.sha2_256;
 import static org.junit.Assert.assertEquals;
 
 import net.consensys.orion.impl.config.MemoryConfig;
@@ -16,7 +17,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import javax.net.ssl.SSLException;
 
-import com.google.common.hash.Hashing;
 import io.netty.util.internal.StringUtil;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -50,28 +50,29 @@ public class WhitelistNodeClientTest {
     config.setTlsClientCert(Paths.get(clientCert.certificatePath()));
     config.setTlsClientKey(Paths.get(clientCert.privateKeyPath()));
 
-    SelfSignedCertificate serverCert = SelfSignedCertificate.create("foo.com");
+    SelfSignedCertificate serverCert = SelfSignedCertificate.create("localhost");
     Path knownServersFile = Files.createTempFile("knownservers", ".txt");
     config.setTlsKnownServers(knownServersFile);
-    String fingerprint = StringUtil.toHexStringPadded(
-        Hashing
-            .sha1()
-            .hashBytes(SecurityTestUtils.loadPEM(Paths.get(serverCert.keyCertOptions().getCertPath())))
-            .asBytes());
-    Files.write(knownServersFile, Arrays.asList("#First line", "foo.com " + fingerprint));
+    Router dummyRouter = Router.router(vertx);
+    whitelistedServer = vertx
+        .createHttpServer(new HttpServerOptions().setSsl(true).setPemKeyCertOptions(serverCert.keyCertOptions()))
+        .requestHandler(dummyRouter::accept);
+    startServer(whitelistedServer);
+    String fingerprint = StringUtil
+        .toHexStringPadded(sha2_256(SecurityTestUtils.loadPEM(Paths.get(serverCert.keyCertOptions().getCertPath()))));
+    Files.write(
+        knownServersFile,
+        Arrays.asList("#First line", "localhost:" + whitelistedServer.actualPort() + " " + fingerprint));
 
     client = NodeHttpClientBuilder.build(vertx, config, 100);
 
-    Router dummyRouter = Router.router(vertx);
+
     ConcurrentNetworkNodes payload = new ConcurrentNetworkNodes(new URL("http://www.example.com"));
     dummyRouter.post("/partyinfo").handler(routingContext -> {
       routingContext.response().end(Buffer.buffer(Serializer.serialize(HttpContentType.CBOR, payload)));
     });
 
-    whitelistedServer = vertx
-        .createHttpServer(new HttpServerOptions().setSsl(true).setPemKeyCertOptions(serverCert.keyCertOptions()))
-        .requestHandler(dummyRouter::accept);
-    startServer(whitelistedServer);
+
     unknownServer = vertx
         .createHttpServer(
             new HttpServerOptions().setSsl(true).setPemKeyCertOptions(SelfSignedCertificate.create().keyCertOptions()))

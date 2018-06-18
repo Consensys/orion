@@ -4,8 +4,6 @@ import java.security.PublicKey;
 
 public interface Enclave {
 
-  byte[] digest(HashAlgorithm algorithm, byte[] input);
-
   /**
    * Encrypts the plaintext from the sender to the recipients. Creates the encrypted payload that encapsulates the
    * ciphertext and related keying data.
@@ -18,7 +16,7 @@ public interface Enclave {
   EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients);
 
   /**
-   * Decrypt the cipher text in the encyrpted payload, using the private key associated with the public key identity. It
+   * Decrypt the cipher text in the encrypted payload, using the private key associated with the public key identity. It
    * is the responsibility of the enclave to look up the private key, which may be stored securely.
    *
    * @param ciphertextAndMetadata EncryptedPayload containing the ciphertext and related metadata to decrypt.

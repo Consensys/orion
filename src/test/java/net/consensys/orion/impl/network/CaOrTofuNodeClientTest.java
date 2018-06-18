@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.network;
 
+import static net.consensys.cava.crypto.Hash.sha2_256;
 import static org.junit.Assert.assertEquals;
 
 import net.consensys.orion.impl.config.MemoryConfig;
@@ -15,7 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import com.google.common.hash.Hashing;
 import io.netty.util.internal.StringUtil;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -56,11 +56,8 @@ public class CaOrTofuNodeClientTest {
     SecurityTestUtils.configureJDKTrustStore(serverCert);
     knownServersFile = Files.createTempFile("knownservers", ".txt");
     config.setTlsKnownServers(knownServersFile);
-    fooFingerprint = StringUtil.toHexStringPadded(
-        Hashing
-            .sha1()
-            .hashBytes(SecurityTestUtils.loadPEM(Paths.get(tofuCert.keyCertOptions().getCertPath())))
-            .asBytes());
+    fooFingerprint = StringUtil
+        .toHexStringPadded(sha2_256(SecurityTestUtils.loadPEM(Paths.get(tofuCert.keyCertOptions().getCertPath()))));
     Files.write(knownServersFile, Arrays.asList("#First line"));
 
     Router dummyRouter = Router.router(vertx);
@@ -121,7 +118,7 @@ public class CaOrTofuNodeClientTest {
     List<String> fingerprints = Files.readAllLines(knownServersFile);
     assertEquals(String.join("\n", fingerprints), 2, fingerprints.size());
     assertEquals("#First line", fingerprints.get(0));
-    assertEquals("example.com " + fooFingerprint, fingerprints.get(1));
+    assertEquals("localhost:" + tofuServer.actualPort() + " " + fooFingerprint, fingerprints.get(1));
   }
 
   @AfterClass
