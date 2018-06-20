@@ -27,19 +27,19 @@ class EncryptedPayloadStorageTest {
   private Storage<EncryptedPayload> storage = new EncryptedPayloadStorage(memory, keyBuilder);
 
   @Test
-  void storeAndRetrieve() {
+  void storeAndRetrieve() throws Exception {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
     EncryptedPayload toStore = enclave.encrypt(toEncrypt, null, null);
 
-    String key = storage.put(toStore);
-    assertEquals(toStore, storage.get(key).get());
+    String key = storage.put(toStore).get();
+    assertEquals(toStore, storage.get(key).get().get());
   }
 
   @Test
-  void retrieveWithoutStore() {
-    assertEquals(Optional.empty(), storage.get("missing"));
+  void retrieveWithoutStore() throws Exception {
+    assertEquals(Optional.empty(), storage.get("missing").get());
   }
 }

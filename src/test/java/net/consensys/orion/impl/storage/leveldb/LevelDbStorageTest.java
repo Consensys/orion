@@ -19,7 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class LevelDbStorageTest {
 
   @Test
-  void itemThatIsPutCanBeRetrievedWithGet(@TempDirectory Path tempDir) {
+  void itemThatIsPutCanBeRetrievedWithGet(@TempDirectory Path tempDir) throws InterruptedException {
     LevelDbStorage<SodiumEncryptedPayload> storage = new LevelDbStorage<>(SodiumEncryptedPayload.class, tempDir);
     try {
       SodiumPublicKey sender = new SodiumPublicKey("fake key".getBytes(UTF_8));
@@ -28,8 +28,8 @@ class LevelDbStorageTest {
       SodiumCombinedKey[] keys = new SodiumCombinedKey[] {new SodiumCombinedKey("recipient".getBytes(UTF_8))};
       byte[] cipherText = "encrypted".getBytes(UTF_8);
       SodiumEncryptedPayload payload = new SodiumEncryptedPayload(sender, nonce, ckNonce, keys, cipherText);
-      storage.put("key", payload);
-      Optional<SodiumEncryptedPayload> fromDB = storage.get("key");
+      storage.put("key", payload).join();
+      Optional<SodiumEncryptedPayload> fromDB = storage.get("key").get();
       assertEquals(payload, fromDB.get());
     } finally {
       storage.close();

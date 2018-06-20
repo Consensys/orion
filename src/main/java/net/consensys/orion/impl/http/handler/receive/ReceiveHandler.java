@@ -13,7 +13,6 @@ import net.consensys.orion.impl.utils.Serializer;
 
 import java.security.PublicKey;
 import java.util.Collections;
-import java.util.Optional;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -53,33 +52,35 @@ public class ReceiveHandler implements Handler<RoutingContext> {
     if (to == null) {
       to = enclave.nodeKeys()[0];
     }
+    PublicKey recipient = to;
 
-    Optional<EncryptedPayload> encryptedPayload = storage.get(key);
-    if (!encryptedPayload.isPresent()) {
-      log.info("unable to find payload with key {}", key);
-      routingContext.fail(404);
-      return;
-    }
+    storage.get(key).thenAccept(encryptedPayload -> {
+      if (!encryptedPayload.isPresent()) {
+        log.info("unable to find payload with key {}", key);
+        routingContext.fail(404);
+        return;
+      }
 
-    byte[] decryptedPayload;
-    try {
-      decryptedPayload = enclave.decrypt(encryptedPayload.get(), to);
-    } catch (EnclaveException e) {
+      byte[] decryptedPayload;
+      try {
+        decryptedPayload = enclave.decrypt(encryptedPayload.get(), recipient);
+      } catch (EnclaveException e) {
 
-      log.info("unable to decrypt payload with key {}", key);
-      routingContext.fail(404);
-      return;
-    }
+        log.info("unable to decrypt payload with key {}", key);
+        routingContext.fail(404);
+        return;
+      }
 
-    // configureRoutes a ReceiveResponse
-    Buffer toReturn;
-    if (contentType == JSON) {
-      toReturn = Buffer
-          .buffer(Serializer.serialize(JSON, Collections.singletonMap("payload", Base64.encode(decryptedPayload))));
-    } else {
-      toReturn = Buffer.buffer(decryptedPayload);
-    }
+      // configureRoutes a ReceiveResponse
+      Buffer toReturn;
+      if (contentType == JSON) {
+        toReturn = Buffer
+            .buffer(Serializer.serialize(JSON, Collections.singletonMap("payload", Base64.encode(decryptedPayload))));
+      } else {
+        toReturn = Buffer.buffer(decryptedPayload);
+      }
 
-    routingContext.response().end(toReturn);
+      routingContext.response().end(toReturn);
+    });
   }
 }

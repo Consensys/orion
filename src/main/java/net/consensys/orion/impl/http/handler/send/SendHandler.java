@@ -101,8 +101,8 @@ public class SendHandler implements Handler<RoutingContext> {
     }
 
     // storing payload
-    log.debug("storing payload");
-    final String digest = storage.put(encryptedPayload);
+    log.debug("Generate payload digest");
+    final String digest = storage.generateDigest(encryptedPayload);
 
     // propagate payload
     log.debug("propagating payload");
@@ -136,26 +136,31 @@ public class SendHandler implements Handler<RoutingContext> {
 
     CompletableFuture.allOf(cfs).whenComplete((all, ex) -> {
       if (ex != null) {
-        log.warn("propagating the payload failed, removing stored encrypted payload");
-        storage.remove(digest);
-
-        Throwable cause = ex.getCause();
-        if (cause instanceof OrionException) {
-          routingContext.fail(cause);
-        } else {
-          routingContext.fail(new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS, ex));
-        }
+        handleFailure(routingContext, ex);
         return;
       }
+      storage.put(encryptedPayload).thenAccept((result) -> {
 
-      final Buffer responseData;
-      if (contentType == JSON) {
-        responseData = Buffer.buffer(Serializer.serialize(JSON, Collections.singletonMap("key", digest)));
-      } else {
-        responseData = Buffer.buffer(digest);
-      }
-      routingContext.response().end(responseData);
+        final Buffer responseData;
+        if (contentType == JSON) {
+          responseData = Buffer.buffer(Serializer.serialize(JSON, Collections.singletonMap("key", digest)));
+        } else {
+          responseData = Buffer.buffer(digest);
+        }
+        routingContext.response().end(responseData);
+      }).exceptionally(e -> handleFailure(routingContext, e));
     });
+  }
+
+  private void handleFailure(RoutingContext routingContext, Throwable ex) {
+    log.warn("propagating the payload failed");
+
+    Throwable cause = ex.getCause();
+    if (cause instanceof OrionException) {
+      routingContext.fail(cause);
+    } else {
+      routingContext.fail(new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS, ex));
+    }
   }
 
   private SendRequest binaryRequest(RoutingContext routingContext) {

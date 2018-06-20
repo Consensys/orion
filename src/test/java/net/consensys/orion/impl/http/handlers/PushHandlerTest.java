@@ -53,7 +53,7 @@ class PushHandlerTest extends HandlerTest {
     assertTrue(digest.length() > 0);
 
     // we should be able to read that from storage
-    Optional<EncryptedPayload> data = storage.get(digest);
+    Optional<EncryptedPayload> data = storage.get(digest).get();
     assertTrue(data.isPresent());
     assertEquals(encryptedPayload, data.get());
   }

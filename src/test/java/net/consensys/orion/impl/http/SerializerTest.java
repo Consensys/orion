@@ -11,11 +11,13 @@ import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
-import com.muquit.libsodiumjna.SodiumLibrary;
+
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
+
+import com.muquit.libsodiumjna.SodiumLibrary;
 import org.junit.jupiter.api.Test;
 
 class SerializerTest {

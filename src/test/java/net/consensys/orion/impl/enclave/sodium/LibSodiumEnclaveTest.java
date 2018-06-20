@@ -12,7 +12,6 @@ import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
 import net.consensys.orion.api.exception.OrionErrorCode;
-import net.consensys.orion.impl.config.MemoryConfig;
 
 import java.security.PublicKey;
 import java.util.Optional;
