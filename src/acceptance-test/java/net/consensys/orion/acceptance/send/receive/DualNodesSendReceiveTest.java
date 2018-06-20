@@ -1,11 +1,15 @@
 package net.consensys.orion.acceptance.send.receive;
 
 import static io.vertx.core.Vertx.vertx;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.createTempDirectory;
 import static net.consensys.orion.acceptance.NodeUtils.assertTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.freePort;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
 import static net.consensys.orion.acceptance.NodeUtils.sendTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.viewTransaction;
+import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
+import static org.junit.Assert.assertEquals;
 
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
@@ -13,11 +17,22 @@ import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
+import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
+import net.consensys.orion.impl.http.server.HttpContentType;
+import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
+import net.consensys.orion.impl.utils.Serializer;
 
+import java.net.URL;
 import java.nio.file.Path;
+import java.security.PublicKey;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +49,7 @@ class DualNodesSendReceiveTest {
   private Config secondNodeConfig;
   private int firstNodeClientPort;
   private int secondNodeClientPort;
+  private ConcurrentNetworkNodes networkNodes;
 
   private Orion firstOrionLauncher;
   private Orion secondOrionLauncher;
@@ -43,6 +59,7 @@ class DualNodesSendReceiveTest {
 
   @BeforeEach
   void setUpDualNodes(@TempDirectory Path tempDir) throws Exception {
+    tempDir = createTempDirectory(DualNodesSendReceiveTest.class.getSimpleName() + "-data");
     int firstNodePort = freePort();
     firstNodeClientPort = freePort();
     int secondNodePort = freePort();
@@ -85,10 +102,34 @@ class DualNodesSendReceiveTest {
     firstHttpClient = vertx.createHttpClient();
     secondOrionLauncher = NodeUtils.startOrion(secondNodeConfig);
     secondHttpClient = vertx.createHttpClient();
+    networkNodes = new ConcurrentNetworkNodes(new URL(firstNodeBaseUrl));
+
+    PublicKey pk1 = new SodiumPublicKey(PK_1_B_64.getBytes(UTF_8));
+    PublicKey pk2 = new SodiumPublicKey(PK_2_B_64.getBytes(UTF_8));
+    networkNodes.addNode(pk1, new URL(firstNodeBaseUrl));
+    networkNodes.addNode(pk2, new URL(secondNodeBaseUrl));
+    // prepare /partyinfo payload (our known peers)
+    RequestBody partyInfoBody =
+        RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), Serializer.serialize(CBOR, networkNodes));
+    // call http endpoint
+    OkHttpClient httpClient = new OkHttpClient();
+
+    System.out.println("nodeBaseUrl = " + firstNodeBaseUrl);
+    Request request = new Request.Builder().post(partyInfoBody).url(firstNodeBaseUrl + "/partyinfo").build();
+    System.out.println(partyInfoBody);
+    System.out.println(request);
+
+    Response resp = httpClient.newCall(request).execute();
+    assertEquals(200, resp.code());
+
+    ConcurrentNetworkNodes partyInfoResponse =
+        Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
+
+    assertEquals(networkNodes, partyInfoResponse);
   }
 
   @AfterEach
-  void tearDown() throws Exception {
+  void tearDown() {
     firstOrionLauncher.stop();
     secondOrionLauncher.stop();
     vertx.close();
