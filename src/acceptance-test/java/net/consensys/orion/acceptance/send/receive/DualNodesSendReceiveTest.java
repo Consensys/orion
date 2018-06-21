@@ -1,7 +1,6 @@
 package net.consensys.orion.acceptance.send.receive;
 
 import static io.vertx.core.Vertx.vertx;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.createTempDirectory;
 import static net.consensys.orion.acceptance.NodeUtils.assertTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.freePort;
@@ -18,7 +17,6 @@ import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
-import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -114,17 +112,10 @@ class DualNodesSendReceiveTest {
     // call http endpoint
     OkHttpClient httpClient = new OkHttpClient();
 
-    System.out.println("nodeBaseUrl = " + firstNodeBaseUrl);
     Request request = new Request.Builder().post(partyInfoBody).url(firstNodeBaseUrl + "/partyinfo").build();
-    System.out.println(partyInfoBody);
-    System.out.println(request);
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
-
-    ConcurrentNetworkNodes partyInfoResponse =
-        Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
-
   }
 
   @AfterEach
@@ -135,7 +126,7 @@ class DualNodesSendReceiveTest {
   }
 
   @Test
-  void receiverCanView() throws Exception {
+  void receiverCanView() {
     final EthClientStub firstNode = NodeUtils.client(firstNodeClientPort, firstHttpClient);
     final EthClientStub secondNode = NodeUtils.client(secondNodeClientPort, secondHttpClient);
 
@@ -146,7 +137,7 @@ class DualNodesSendReceiveTest {
   }
 
   @Test
-  void senderCanView() throws Exception {
+  void senderCanView() {
     final EthClientStub firstNode = NodeUtils.client(firstNodeConfig.clientPort(), firstHttpClient);
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
