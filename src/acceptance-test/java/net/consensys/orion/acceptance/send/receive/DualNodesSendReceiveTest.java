@@ -138,7 +138,6 @@ public class DualNodesSendReceiveTest {
   public void receiverCanView() throws Exception {
     final EthClientStub firstNode = NodeUtils.client(firstNodeClientPort, firstHttpClient);
     final EthClientStub secondNode = NodeUtils.client(secondNodeClientPort, secondHttpClient);
-    NodeUtils.ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
     final byte[] receivedPayload = viewTransaction(secondNode, PK_2_B_64, digest);
@@ -149,7 +148,6 @@ public class DualNodesSendReceiveTest {
   @Test
   public void senderCanView() throws Exception {
     final EthClientStub firstNode = NodeUtils.client(firstNodeConfig.clientPort(), firstHttpClient);
-    NodeUtils.ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
     final byte[] receivedPayload = viewTransaction(firstNode, PK_1_B_64, digest);
