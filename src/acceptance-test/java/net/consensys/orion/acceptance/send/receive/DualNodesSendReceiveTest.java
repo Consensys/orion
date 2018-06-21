@@ -113,10 +113,7 @@ public class DualNodesSendReceiveTest {
     // call http endpoint
     OkHttpClient httpClient = new OkHttpClient();
 
-    System.out.println("nodeBaseUrl = " + firstNodeBaseUrl);
     Request request = new Request.Builder().post(partyInfoBody).url(firstNodeBaseUrl + "/partyinfo").build();
-    System.out.println(partyInfoBody);
-    System.out.println(request);
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
