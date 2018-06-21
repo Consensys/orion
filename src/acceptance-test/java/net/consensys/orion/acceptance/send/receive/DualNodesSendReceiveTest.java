@@ -79,7 +79,7 @@ class DualNodesSendReceiveTest {
         secondNodeBaseUrl,
         joinPathsAsTomlListEntry("src/acceptance-test/resources/key1.pub"),
         joinPathsAsTomlListEntry("src/acceptance-test/resources/key1.key"),
-        "strict",
+        "off",
         "tofu",
         "tofu");
     secondNodeConfig = NodeUtils.nodeConfig(
@@ -94,7 +94,7 @@ class DualNodesSendReceiveTest {
         firstNodeBaseUrl,
         joinPathsAsTomlListEntry("src/acceptance-test/resources/key2.pub"),
         joinPathsAsTomlListEntry("src/acceptance-test/resources/key2.key"),
-        "strict",
+        "off",
         "tofu",
         "tofu");
     vertx = vertx();
@@ -104,8 +104,8 @@ class DualNodesSendReceiveTest {
     secondHttpClient = vertx.createHttpClient();
     networkNodes = new ConcurrentNetworkNodes(new URL(firstNodeBaseUrl));
 
-    PublicKey pk1 = new SodiumPublicKey(PK_1_B_64.getBytes(UTF_8));
-    PublicKey pk2 = new SodiumPublicKey(PK_2_B_64.getBytes(UTF_8));
+    PublicKey pk1 = new SodiumPublicKey(PK_1_B_64);
+    PublicKey pk2 = new SodiumPublicKey(PK_2_B_64);
     networkNodes.addNode(pk1, new URL(firstNodeBaseUrl));
     networkNodes.addNode(pk2, new URL(secondNodeBaseUrl));
     // prepare /partyinfo payload (our known peers)
@@ -125,7 +125,6 @@ class DualNodesSendReceiveTest {
     ConcurrentNetworkNodes partyInfoResponse =
         Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
 
-    assertEquals(networkNodes, partyInfoResponse);
   }
 
   @AfterEach
