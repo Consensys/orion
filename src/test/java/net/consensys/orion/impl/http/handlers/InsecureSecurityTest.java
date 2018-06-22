@@ -1,11 +1,11 @@
 package net.consensys.orion.impl.http.handlers;
 
 import static io.vertx.core.Vertx.vertx;
+import static net.consensys.cava.crypto.Hash.sha2_256;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import net.consensys.orion.api.cmd.Orion;
-import net.consensys.orion.api.network.TrustManagerFactoryWrapper;
 import net.consensys.orion.impl.config.MemoryConfig;
 
 import java.nio.file.Files;
@@ -13,10 +13,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
 
-import com.google.common.hash.Hashing;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.util.internal.StringUtil;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
@@ -62,16 +60,10 @@ public class InsecureSecurityTest {
     SelfSignedCertificate clientCertificate = SelfSignedCertificate.create();
 
     exampleComFingerprint = StringUtil.toHexStringPadded(
-        Hashing
-            .sha1()
-            .hashBytes(SecurityTestUtils.loadPEM(Paths.get(clientCertificate.keyCertOptions().getCertPath())))
-            .asBytes());
+        sha2_256(SecurityTestUtils.loadPEM(Paths.get(clientCertificate.keyCertOptions().getCertPath()))));
 
-    httpClient = vertx.createHttpClient(
-        new HttpClientOptions()
-            .setSsl(true)
-            .setTrustOptions(new TrustManagerFactoryWrapper(InsecureTrustManagerFactory.INSTANCE))
-            .setKeyCertOptions(clientCertificate.keyCertOptions()));
+    httpClient = vertx
+        .createHttpClient(new HttpClientOptions().setSsl(true).setKeyCertOptions(clientCertificate.keyCertOptions()));
 
     SelfSignedCertificate certificate = SelfSignedCertificate.create();
   }
@@ -97,7 +89,7 @@ public class InsecureSecurityTest {
     assertEquals("example.com " + exampleComFingerprint, fingerprints.get(0));
   }
 
-  @Test(expected = SSLException.class)
+  @Test(expected = SSLHandshakeException.class)
   public void testWithoutSSLConfiguration() throws Exception {
     OkHttpClient unsecureHttpClient = new OkHttpClient.Builder().build();
 

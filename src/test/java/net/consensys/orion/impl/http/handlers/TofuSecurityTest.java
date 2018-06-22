@@ -1,12 +1,12 @@
 package net.consensys.orion.impl.http.handlers;
 
 import static io.vertx.core.Vertx.vertx;
+import static net.consensys.cava.crypto.Hash.sha2_256;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import net.consensys.orion.api.cmd.Orion;
-import net.consensys.orion.api.network.TrustManagerFactoryWrapper;
 import net.consensys.orion.impl.config.MemoryConfig;
 
 import java.nio.file.Files;
@@ -16,10 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
 
-import com.google.common.hash.Hashing;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.util.internal.StringUtil;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
@@ -41,7 +39,6 @@ public class TofuSecurityTest {
 
   private Orion orion;
 
-  private HttpClient httpClientWithImproperCertificate;
   private HttpClient anotherExampleComClient;
   private Path knownClientsFile;
   private MemoryConfig config;
@@ -65,36 +62,19 @@ public class TofuSecurityTest {
     knownClientsFile = Files.createTempFile("knownclients", ".txt");
     config.setTlsKnownClients(knownClientsFile);
     exampleComFingerprint = StringUtil.toHexStringPadded(
-        Hashing
-            .sha1()
-            .hashBytes(SecurityTestUtils.loadPEM(Paths.get(clientCertificate.keyCertOptions().getCertPath())))
-            .asBytes());
+        sha2_256(SecurityTestUtils.loadPEM(Paths.get(clientCertificate.keyCertOptions().getCertPath()))));
     Files.write(knownClientsFile, Arrays.asList("#First line"));
 
     SecurityTestUtils.installPorts(config);
     orion.run(System.out, System.err, config);
 
-    httpClient = vertx.createHttpClient(
-        new HttpClientOptions()
-            .setSsl(true)
-            .setTrustOptions(new TrustManagerFactoryWrapper(InsecureTrustManagerFactory.INSTANCE))
-            .setKeyCertOptions(clientCertificate.keyCertOptions()));
-
-    SelfSignedCertificate noCNCert = SelfSignedCertificate.create("");
-
-    httpClientWithImproperCertificate = vertx.createHttpClient(
-        new HttpClientOptions()
-            .setSsl(true)
-            .setTrustOptions(new TrustManagerFactoryWrapper(InsecureTrustManagerFactory.INSTANCE))
-            .setKeyCertOptions(noCNCert.keyCertOptions()));
+    httpClient = vertx
+        .createHttpClient(new HttpClientOptions().setSsl(true).setKeyCertOptions(clientCertificate.keyCertOptions()));
 
     SelfSignedCertificate anotherExampleDotComCert = SelfSignedCertificate.create("example.com");
 
     anotherExampleComClient = vertx.createHttpClient(
-        new HttpClientOptions()
-            .setSsl(true)
-            .setTrustOptions(new TrustManagerFactoryWrapper(InsecureTrustManagerFactory.INSTANCE))
-            .setKeyCertOptions(anotherExampleDotComCert.keyCertOptions()));
+        new HttpClientOptions().setSsl(true).setKeyCertOptions(anotherExampleDotComCert.keyCertOptions()));
   }
 
   @After
@@ -135,23 +115,7 @@ public class TofuSecurityTest {
     assertTrue(caught);
   }
 
-  @Test
-  public void testUpCheckOnNodePortWithInvalidClientCert() throws Exception {
-    HttpClientRequest req = httpClientWithImproperCertificate.get(config.nodePort(), "localhost", "/upcheck");
-    CompletableFuture<HttpClientResponse> respFuture = new CompletableFuture<>();
-    req.handler(respFuture::complete).exceptionHandler(respFuture::completeExceptionally).end();
-    boolean caught = false;
-    try {
-      respFuture.join();
-      fail();
-    } catch (CompletionException e) {
-      assertEquals("Received fatal alert: certificate_unknown", e.getCause().getCause().getMessage());
-      caught = true;
-    }
-    assertTrue(caught);
-  }
-
-  @Test(expected = SSLException.class)
+  @Test(expected = SSLHandshakeException.class)
   public void testWithoutSSLConfiguration() throws Exception {
     OkHttpClient unsecureHttpClient = new OkHttpClient.Builder().build();
 

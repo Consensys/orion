@@ -1,10 +1,10 @@
 package net.consensys.orion.impl.http.handlers;
 
 import static io.vertx.core.Vertx.vertx;
+import static net.consensys.cava.crypto.Hash.sha2_256;
 import static org.junit.Assert.assertEquals;
 
 import net.consensys.orion.api.cmd.Orion;
-import net.consensys.orion.api.network.TrustManagerFactoryWrapper;
 import net.consensys.orion.impl.config.MemoryConfig;
 
 import java.nio.file.Files;
@@ -12,10 +12,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
 
-import com.google.common.hash.Hashing;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.util.internal.StringUtil;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
@@ -44,8 +42,7 @@ public class CAOrTofuSecurityTest {
 
   @BeforeClass
   public static void setUp() throws Exception {
-    SelfSignedCertificate clientCert = SelfSignedCertificate.create();
-    SecurityTestUtils.configureJDKTrustStore(clientCert);
+    SelfSignedCertificate clientCert = SelfSignedCertificate.create("localhost");
 
     Path workDir = Files.createTempDirectory("data");
     orion = new Orion(vertx);
@@ -57,29 +54,22 @@ public class CAOrTofuSecurityTest {
     config.setTlsKnownClients(knownClientsFile);
 
     SecurityTestUtils.installServerCert(config);
+    SecurityTestUtils.configureJDKTrustStore(clientCert);
 
 
     SecurityTestUtils.installPorts(config);
 
-    SelfSignedCertificate nonCAClientCertificate = SelfSignedCertificate.create();
+    SelfSignedCertificate nonCAClientCertificate = SelfSignedCertificate.create("localhost");
 
     exampleComFingerprint = StringUtil.toHexStringPadded(
-        Hashing
-            .sha1()
-            .hashBytes(SecurityTestUtils.loadPEM(Paths.get(nonCAClientCertificate.keyCertOptions().getCertPath())))
-            .asBytes());
+        sha2_256(SecurityTestUtils.loadPEM(Paths.get(nonCAClientCertificate.keyCertOptions().getCertPath()))));
 
     nonCAhttpClient = vertx.createHttpClient(
-        new HttpClientOptions()
-            .setTrustOptions(new TrustManagerFactoryWrapper(InsecureTrustManagerFactory.INSTANCE))
-            .setSsl(true)
-            .setKeyCertOptions(nonCAClientCertificate.keyCertOptions()));
+        new HttpClientOptions().setSsl(true).setTrustAll(true).setKeyCertOptions(
+            nonCAClientCertificate.keyCertOptions()));
 
     httpClient = vertx.createHttpClient(
-        new HttpClientOptions()
-            .setTrustOptions(new TrustManagerFactoryWrapper(InsecureTrustManagerFactory.INSTANCE))
-            .setSsl(true)
-            .setKeyCertOptions(clientCert.keyCertOptions()));
+        new HttpClientOptions().setSsl(true).setTrustAll(true).setKeyCertOptions(clientCert.keyCertOptions()));
 
     orion.run(System.out, System.err, config);
   }
@@ -103,7 +93,7 @@ public class CAOrTofuSecurityTest {
     }
     List<String> fingerprints = Files.readAllLines(knownClientsFile);
     assertEquals(String.join("\n", fingerprints), 1, fingerprints.size());
-    assertEquals("example.com " + exampleComFingerprint, fingerprints.get(0));
+    assertEquals("localhost " + exampleComFingerprint, fingerprints.get(0));
 
     HttpClientRequest req = httpClient.get(config.nodePort(), "localhost", "/upcheck");
     CompletableFuture<HttpClientResponse> respFuture = new CompletableFuture<>();
@@ -115,7 +105,7 @@ public class CAOrTofuSecurityTest {
     assertEquals(String.join("\n", fingerprints), 1, fingerprints.size());
   }
 
-  @Test(expected = SSLException.class)
+  @Test(expected = SSLHandshakeException.class)
   public void testWithoutSSLConfiguration() throws Exception {
     OkHttpClient unsecureHttpClient = new OkHttpClient.Builder().build();
 

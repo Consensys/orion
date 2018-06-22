@@ -49,7 +49,7 @@ public class CertificateAuthorityNodeClientTest {
     config.setTlsClientKey(Paths.get(clientCert.privateKeyPath()));
 
 
-    SelfSignedCertificate serverCert = SelfSignedCertificate.create("foo.com");
+    SelfSignedCertificate serverCert = SelfSignedCertificate.create("localhost");
     SecurityTestUtils.configureJDKTrustStore(serverCert);
     Path knownServersFile = Files.createTempFile("knownservers", ".txt");
     config.setTlsKnownServers(knownServersFile);

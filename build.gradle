@@ -181,9 +181,15 @@ task performanceTest(type: JavaExec) {
 //////
 // Dependencies
 
-repositories { jcenter() }
+repositories {
+  jcenter()
+  maven { url "https://consensys.bintray.com/consensys" }
+}
 
 dependencies {
+  // cava
+  compile 'net.consensys.cava:cava:0.2.0-CB2B7C-snapshot'
+
   // vertx
   compile 'io.vertx:vertx-core:3.5.2'
   compile 'io.vertx:vertx-web:3.5.2'

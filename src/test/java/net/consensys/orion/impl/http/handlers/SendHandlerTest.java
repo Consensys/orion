@@ -3,12 +3,12 @@ package net.consensys.orion.impl.http.handlers;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
+import static net.consensys.cava.crypto.Hash.sha2_512_256;
 import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static org.junit.Assert.assertArrayEquals;
 
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.HashAlgorithm;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
@@ -20,7 +20,14 @@ import net.consensys.orion.impl.utils.Serializer;
 import java.io.IOException;
 import java.net.URL;
 import java.security.PublicKey;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
 
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -125,7 +132,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest = Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+    String digest = Base64.encode(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
@@ -168,7 +175,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest = Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+    String digest = Base64.encode(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
@@ -196,7 +203,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest = Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+    String digest = Base64.encode(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peers
     List<FakePeer> fakePeers = new ArrayList<>(5);
@@ -258,7 +265,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest = Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+    String digest = Base64.encode(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peers
     List<FakePeer> fakePeers = new ArrayList<>(5);
@@ -323,7 +330,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest = Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+    String digest = Base64.encode(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peers
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
@@ -376,7 +383,7 @@ public class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest = Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+    String digest = Base64.encode(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
