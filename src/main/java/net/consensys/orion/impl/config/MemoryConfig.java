@@ -24,7 +24,6 @@ public class MemoryConfig implements Config {
   private Path[] alwaysSendTo = new Path[] {};
   private Optional<Path> passwords = Optional.empty();
   private String storage = "leveldb";
-  private String[] ipWhitelist = new String[] {};
   private String tls = "strict";
   private Path tlsServerCert = Paths.get("tls-server-cert.pem");
   private Path[] tlsServerChain = new Path[] {};
@@ -38,7 +37,6 @@ public class MemoryConfig implements Config {
   private Path tlsKnownServers = Paths.get("tls-known-servers");
   private Optional<String[]> generateKeys = Optional.empty();
   private Optional<Boolean> showVersion = Optional.empty();
-  private long verbosity = 1;
   private String libSodiumPath = LibSodiumSettings.defaultLibSodiumPath();
 
   public MemoryConfig() {
@@ -103,10 +101,6 @@ public class MemoryConfig implements Config {
     this.storage = storage;
   }
 
-  public void setIpWhitelist(String[] ipWhitelist) {
-    this.ipWhitelist = ipWhitelist;
-  }
-
   public void setTls(String tls) {
     this.tls = tls;
   }
@@ -157,10 +151,6 @@ public class MemoryConfig implements Config {
 
   public void setShowVersion(boolean showVersion) {
     this.showVersion = Optional.ofNullable(showVersion);
-  }
-
-  public void setVerbosity(long verbosity) {
-    this.verbosity = verbosity;
   }
 
   public void setLibSodiumPath(String libSodiumPath) {
@@ -233,11 +223,6 @@ public class MemoryConfig implements Config {
   }
 
   @Override
-  public String[] ipWhitelist() {
-    return ipWhitelist;
-  }
-
-  @Override
   public String tls() {
     return tls;
   }
@@ -300,11 +285,6 @@ public class MemoryConfig implements Config {
   @Override
   public Optional<Boolean> showVersion() {
     return showVersion;
-  }
-
-  @Override
-  public long verbosity() {
-    return verbosity;
   }
 
   @Override
