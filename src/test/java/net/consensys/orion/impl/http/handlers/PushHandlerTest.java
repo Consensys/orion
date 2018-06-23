@@ -2,8 +2,8 @@
 package net.consensys.orion.impl.http.handlers;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
@@ -17,27 +17,25 @@ import net.consensys.orion.impl.utils.Serializer;
 import java.security.PublicKey;
 import java.util.Optional;
 
-import junit.framework.TestCase;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class PushHandlerTest extends HandlerTest {
+class PushHandlerTest extends HandlerTest {
 
   private final KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
   private SodiumMemoryKeyStore memoryKeyStore;
 
-  @Before
-  public void before() {
+  @BeforeEach
+  void before() {
     memoryKeyStore = new SodiumMemoryKeyStore(config);
   }
 
   @Test
-  public void payloadIsStored() throws Exception {
-
+  void payloadIsStored() throws Exception {
     // configureRoutes & serialize our payload
     EncryptedPayload encryptedPayload = mockPayload();
 
@@ -61,14 +59,14 @@ public class PushHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void roundTripSerialization() {
+  void roundTripSerialization() {
     EncryptedPayload pushRequest = mockPayload();
     assertEquals(pushRequest, Serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, pushRequest));
     assertEquals(pushRequest, Serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, pushRequest));
   }
 
   @Test
-  public void pushWithInvalidContentType() throws Exception {
+  void pushWithInvalidContentType() throws Exception {
     // configureRoutes & serialize our payload
     EncryptedPayload encryptedPayload = mockPayload();
 
@@ -85,7 +83,7 @@ public class PushHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void pushWithInvalidBody() throws Exception {
+  void pushWithInvalidBody() throws Exception {
     RequestBody body = RequestBody.create(MediaType.parse(HttpContentType.CBOR.httpHeaderValue), "foo");
 
     Request request = new Request.Builder().post(body).url(nodeBaseUrl + "/push").build();
@@ -93,7 +91,7 @@ public class PushHandlerTest extends HandlerTest {
     Response resp = httpClient.newCall(request).execute();
 
     // produces 500 because serialisation error
-    TestCase.assertEquals(500, resp.code());
+    assertEquals(500, resp.code());
     // checks if the failure reason was with de-serialisation
     assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
   }

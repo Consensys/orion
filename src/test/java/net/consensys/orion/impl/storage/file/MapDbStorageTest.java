@@ -1,55 +1,55 @@
 package net.consensys.orion.impl.storage.file;
 
-import static java.nio.file.Files.createTempDirectory;
-import static net.consensys.util.Files.deleteRecursively;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import net.consensys.cava.junit.TempDirectory;
+import net.consensys.cava.junit.TempDirectoryExtension;
 
 import java.nio.file.Path;
 import java.util.Optional;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-public class MapDbStorageTest {
+@ExtendWith(TempDirectoryExtension.class)
+class MapDbStorageTest {
 
-  private Path tempDir;
   private MapDbStorage<String> storage;
 
-  @Before
-  public void setup() throws Exception {
-    tempDir = createTempDirectory(this.getClass().getSimpleName() + "-data");
+  @BeforeEach
+  void setup(@TempDirectory Path tempDir) {
     storage = new MapDbStorage<>(String.class, tempDir);
   }
 
-  @After
-  public void teardown() throws Exception {
+  @AfterEach
+  void teardown() {
     if (storage.isOpen()) {
       storage.close();
     }
-    deleteRecursively(tempDir);
   }
 
-  @After
-  public void tearDown() {
+  @AfterEach
+  void tearDown() {
     if (storage.isOpen()) {
       storage.close();
     }
   }
 
   @Test
-  public void storeAndRetrieve() {
+  void storeAndRetrieve() {
     storage.put("key", "data");
     assertEquals("data", storage.get("key").get());
   }
 
   @Test
-  public void retrieveWithoutStore() {
+  void retrieveWithoutStore() {
     assertEquals(Optional.empty(), storage.get("missing"));
   }
 
   @Test
-  public void storeAndRetrieveAcrossSessions() {
+  void storeAndRetrieveAcrossSessions(@TempDirectory Path tempDir) {
     storage.put("key", "data");
     storage.close();
     MapDbStorage<String> secondStorage = new MapDbStorage<>(String.class, tempDir);
@@ -57,7 +57,7 @@ public class MapDbStorageTest {
   }
 
   @Test
-  public void storeAndRemove() {
+  void storeAndRemove() {
     storage.put("key", "data");
     storage.remove("key");
     assertEquals(Optional.empty(), storage.get("key"));

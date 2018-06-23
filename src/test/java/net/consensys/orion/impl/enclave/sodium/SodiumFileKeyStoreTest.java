@@ -1,9 +1,11 @@
 package net.consensys.orion.impl.enclave.sodium;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.EnclaveException;
@@ -20,9 +22,9 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Optional;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SodiumFileKeyStoreTest {
+class SodiumFileKeyStoreTest {
 
   private InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("keyStoreTest.toml");
   private TomlConfigBuilder configBuilder = new TomlConfigBuilder();
@@ -34,47 +36,37 @@ public class SodiumFileKeyStoreTest {
   private PrivateKey privateKey1 = new SodiumPrivateKey(Base64.decode(privateKey1Base64Encoded));
 
   @Test
-  public void configLoadsRawKeys() {
+  void configLoadsRawKeys() {
     Optional<PrivateKey> storedKey = keyStore.privateKey(publicKey1);
     assertEquals(privateKey1, storedKey.get());
   }
 
   @Test
-  public void configLoadsNullKey() {
+  void configLoadsNullKey() {
     Optional<PrivateKey> storedKey = keyStore.privateKey(null);
     assertFalse(storedKey.isPresent());
   }
 
   @Test
-  public void missingKeyBehaviourIsNice() {
+  void missingKeyBehaviourIsNice() {
     MemoryConfig config = new MemoryConfig();
     config.setPrivateKeys(Paths.get("Does not exist"));
     config.setPublicKeys(Paths.get("Does not exist"));
     config.setAlwaysSendTo(Paths.get("Does not exist"));
-    try {
-      keyStore = new SodiumFileKeyStore(config);
-      fail("should have thrown an EnclaveException");
-    } catch (EnclaveException e) {
-      // expected
-    }
+    assertThrows(EnclaveException.class, () -> new SodiumFileKeyStore(config));
   }
 
   @Test
-  public void missingAlgorithimRaisesAppropriateException() {
+  void missingAlgorithimRaisesAppropriateException() {
     MemoryConfig config = new MemoryConfig();
     config.setPrivateKeys(Paths.get("keys/noalgorithm.key"));
     config.setPublicKeys(Paths.get("keys/tm1a.pub"));
     config.setAlwaysSendTo(Paths.get("keys/tm1a.pub"));
-    try {
-      keyStore = new SodiumFileKeyStore(config);
-      fail("should have thrown an EnclaveException");
-    } catch (EnclaveException e) {
-      // expected
-    }
+    assertThrows(EnclaveException.class, () -> new SodiumFileKeyStore(config));
   }
 
   @Test
-  public void configLoadsMultipleKeys() {
+  void configLoadsMultipleKeys() {
     InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("multipleKeyStoreTest.toml");
 
     Config config = configBuilder.build(configAsStream);
@@ -94,7 +86,7 @@ public class SodiumFileKeyStoreTest {
   }
 
   @Test
-  public void alwaysSendTo() {
+  void alwaysSendTo() {
     InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("alwaysSendToKeyStoreTest.toml");
 
     Config config = configBuilder.build(configAsStream);
@@ -110,15 +102,8 @@ public class SodiumFileKeyStoreTest {
     assertArrayEquals(publicKeys, keyStore.alwaysSendTo());
   }
 
-  public void loadOfPasswordProtectedKeys() {
-    MemoryConfig config = new MemoryConfig();
-    config.setPrivateKeys(Paths.get("keys/password.key"));
-    config.setPublicKeys(Paths.get("keys/password.pub"));
-    keyStore = new SodiumFileKeyStore(config);
-  }
-
   @Test
-  public void generateUnlockedProtectedKeyPair() throws Exception {
+  void generateUnlockedProtectedKeyPair() throws Exception {
     String keyPrefix = "keys/generated";
     try {
       keyStore = new SodiumFileKeyStore(config);
@@ -149,7 +134,7 @@ public class SodiumFileKeyStoreTest {
   }
 
   @Test
-  public void generatePasswordProtectedKeyPair() throws Exception {
+  void generatePasswordProtectedKeyPair() throws Exception {
     String keyPrefix = "keys/generated_password";
     try {
       keyStore = new SodiumFileKeyStore(config);

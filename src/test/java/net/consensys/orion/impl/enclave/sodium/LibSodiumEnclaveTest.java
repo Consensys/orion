@@ -1,11 +1,11 @@
 package net.consensys.orion.impl.enclave.sodium;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.EncryptedPayload;
@@ -20,28 +20,28 @@ import java.util.Optional;
 import com.muquit.libsodiumjna.SodiumKeyPair;
 import com.muquit.libsodiumjna.SodiumLibrary;
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class LibSodiumEnclaveTest {
+class LibSodiumEnclaveTest {
 
   private final MemoryConfig config = new MemoryConfig();
   private final KeyStore memoryKeyStore = new SodiumMemoryKeyStore(config);
   private LibSodiumEnclave enclave;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
     enclave = new LibSodiumEnclave(config, memoryKeyStore);
   }
 
   @Test
-  public void version() {
+  void version() {
     assertTrue(!SodiumLibrary.libsodiumVersionString().isEmpty());
   }
 
   @Test
-  public void sodiumLoads() throws SodiumLibraryException {
+  void sodiumLoads() throws SodiumLibraryException {
     final int nonceBytesLength = SodiumLibrary.cryptoBoxNonceBytes().intValue();
     final byte[] nonce = SodiumLibrary.randomBytes(nonceBytesLength);
     final SodiumKeyPair senderPair = SodiumLibrary.cryptoBoxKeyPair();
@@ -55,7 +55,7 @@ public class LibSodiumEnclaveTest {
   }
 
   @Test
-  public void recipientEncryptDecrypt() {
+  void recipientEncryptDecrypt() {
     final PublicKey senderKey = generateKey();
     final PublicKey recipientKey = generateKey();
     final String plaintext = "hello again";
@@ -68,7 +68,7 @@ public class LibSodiumEnclaveTest {
 
   @Test
   /* Sender can decrypt the cipher text for their encrypted plaint text. */
-  public void senderEncryptDecrypt() {
+  void senderEncryptDecrypt() {
     final PublicKey senderKey = generateKey();
     final String plaintext = "the original message";
 
@@ -80,7 +80,7 @@ public class LibSodiumEnclaveTest {
 
   @Test
   /* Sender decryption must not be affected by the presence of other combined keys (recipients) */
-  public void senderEncryptDecryptWithRecipients() {
+  void senderEncryptDecryptWithRecipients() {
     final PublicKey senderKey = generateKey();
     final PublicKey recipientAKey = generateKey();
     final PublicKey recipientBKey = generateKey();
@@ -93,35 +93,29 @@ public class LibSodiumEnclaveTest {
   }
 
   @Test
-  public void encryptThrowsExceptionWhenMissingKey() {
+  void encryptThrowsExceptionWhenMissingKey() {
     final PublicKey fake = new SodiumPublicKey("fake".getBytes(UTF_8));
     final PublicKey recipientKey = generateKey();
 
-    try {
-      encrypt("plaintext", fake, recipientKey);
-      fail("Should have thrown an Enclave Exception");
-    } catch (EnclaveException e) {
-      assertEquals("No StoredPrivateKey found in keystore", e.getMessage());
-    }
+    EnclaveException e = assertThrows(EnclaveException.class, () -> encrypt("plaintext", fake, recipientKey));
+    assertEquals("No StoredPrivateKey found in keystore", e.getMessage());
   }
 
   @Test
-  public void decryptThrowsExceptionWhenMissingKey() {
+  void decryptThrowsExceptionWhenMissingKey() {
     final PublicKey fake = new SodiumPublicKey("fake".getBytes(UTF_8));
     final SodiumPublicKey sender = generateKey();
 
-    try {
+    EnclaveException e = assertThrows(EnclaveException.class, () -> {
       final EncryptedPayload payload =
           new SodiumEncryptedPayload(sender, new byte[] {}, new byte[] {}, new SodiumCombinedKey[] {}, new byte[] {});
       enclave.decrypt(payload, fake);
-      fail("Should have thrown an Enclave Exception");
-    } catch (EnclaveException e) {
-      assertEquals("No StoredPrivateKey found in keystore", e.getMessage());
-    }
+    });
+    assertEquals("No StoredPrivateKey found in keystore", e.getMessage());
   }
 
-  @Test(expected = EnclaveException.class)
-  public void encryptDecryptNoCombinedKeys() {
+  @Test
+  void encryptDecryptNoCombinedKeys() {
     final PublicKey senderKey = generateKey();
     final PublicKey recipientKey = generateKey();
 
@@ -134,23 +128,20 @@ public class LibSodiumEnclaveTest {
         new SodiumCombinedKey[] {},
         encryptedPayload.cipherText());
 
-    decrypt(payload, recipientKey);
+    assertThrows(EnclaveException.class, () -> decrypt(payload, recipientKey));
   }
 
   @Test
-  public void invalidSenderKeyType() {
+  void invalidSenderKeyType() {
     final PublicKey senderKey = generateNonSodiumKey();
 
-    try {
-      encrypt("a message that never gets seen", senderKey);
-      fail("Expecting an exception from key type validation");
-    } catch (final EnclaveException e) {
-      assertEquals("SodiumEnclave needs SodiumPublicKey", e.getMessage());
-    }
+    EnclaveException e =
+        assertThrows(EnclaveException.class, () -> encrypt("a message that never gets seen", senderKey));
+    assertEquals("SodiumEnclave needs SodiumPublicKey", e.getMessage());
   }
 
   @Test
-  public void encryptDecryptBadCombinedKeyNonce() {
+  void encryptDecryptBadCombinedKeyNonce() {
     final PublicKey senderKey = generateKey();
     final PublicKey recipientKey = generateKey();
 
@@ -163,18 +154,14 @@ public class LibSodiumEnclaveTest {
         (SodiumCombinedKey[]) encryptedPayload.combinedKeys(),
         encryptedPayload.cipherText());
 
-    try {
-      decrypt(payload, recipientKey);
-      fail("Expecting an exceptional combined key nonce");
-    } catch (final EnclaveException e) {
-      assertEquals(
-          "com.muquit.libsodiumjna.exceptions.SodiumLibraryException: nonce is 0bytes, it must be24 bytes",
-          e.getMessage());
-    }
+    EnclaveException e = assertThrows(EnclaveException.class, () -> decrypt(payload, recipientKey));
+    assertEquals(
+        "com.muquit.libsodiumjna.exceptions.SodiumLibraryException: nonce is 0bytes, it must be24 bytes",
+        e.getMessage());
   }
 
   @Test
-  public void encryptDecryptBadNonce() {
+  void encryptDecryptBadNonce() {
     final PublicKey senderKey = generateKey();
     final PublicKey recipientKey = generateKey();
 
@@ -187,18 +174,14 @@ public class LibSodiumEnclaveTest {
         (SodiumCombinedKey[]) encryptedPayload.combinedKeys(),
         encryptedPayload.cipherText());
 
-    try {
-      decrypt(payload, recipientKey);
-      fail("Expecting an exceptional nonce");
-    } catch (final EnclaveException e) {
-      assertEquals(
-          "com.muquit.libsodiumjna.exceptions.SodiumLibraryException: invalid nonce length 0 bytes",
-          e.getMessage());
-    }
+    EnclaveException e = assertThrows(EnclaveException.class, () -> decrypt(payload, recipientKey));
+    assertEquals(
+        "com.muquit.libsodiumjna.exceptions.SodiumLibraryException: invalid nonce length 0 bytes",
+        e.getMessage());
   }
 
   @Test
-  public void payloadCanOnlyBeDecryptedByItsKey() {
+  void payloadCanOnlyBeDecryptedByItsKey() {
     final PublicKey senderKey = generateKey();
     final PublicKey recipientKey1 = generateKey();
     final PublicKey recipientKey2 = generateKey();
@@ -207,16 +190,12 @@ public class LibSodiumEnclaveTest {
     final EncryptedPayload encryptedPayload1 = encrypt(plaintext, senderKey, recipientKey1);
 
     // trying to decrypt payload1 with recipient2 key
-    try {
-      decrypt(encryptedPayload1, recipientKey2);
-      fail("Should've failed because it is using the wrong key");
-    } catch (EnclaveException e) {
-      assertEquals(OrionErrorCode.ENCLAVE_DECRYPT_WRONG_PRIVATE_KEY, e.code());
-    }
+    EnclaveException e = assertThrows(EnclaveException.class, () -> decrypt(encryptedPayload1, recipientKey2));
+    assertEquals(OrionErrorCode.ENCLAVE_DECRYPT_WRONG_PRIVATE_KEY, e.code());
   }
 
   @Test
-  public void encryptGeneratesDifferentCipherForSamePayloadAndKey() {
+  void encryptGeneratesDifferentCipherForSamePayloadAndKey() {
     final PublicKey senderKey = generateKey();
     final PublicKey recipientKey = generateKey();
     final String plaintext = "hello";

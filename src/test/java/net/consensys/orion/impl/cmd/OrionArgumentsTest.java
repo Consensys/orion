@@ -1,7 +1,8 @@
 package net.consensys.orion.impl.cmd;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.orion.api.cmd.Orion;
 
@@ -12,9 +13,9 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class OrionArgumentsTest {
+class OrionArgumentsTest {
 
   private final String usageOut = String.format(
       "Usage: "
@@ -34,7 +35,7 @@ public class OrionArgumentsTest {
   private final PrintStream errStream = new PrintStream(errContent);
 
   @Test
-  public void generateKeysArgumentWithNoKeyNamesProvided() {
+  void generateKeysArgumentWithNoKeyNamesProvided() {
     String errorMsg = String.format("Error: Missing key names to generate.%n");
     String[] args = {"-g"};
 
@@ -46,7 +47,7 @@ public class OrionArgumentsTest {
   }
 
   @Test
-  public void helpOutput() {
+  void helpOutput() {
     String[] args = {"--help"};
 
     OrionArguments arguments = new OrionArguments(outStream, errStream, args);
@@ -56,7 +57,7 @@ public class OrionArgumentsTest {
   }
 
   @Test
-  public void versionArgument() {
+  void versionArgument() {
     String[] args = {"-v"};
 
     OrionArguments arguments = new OrionArguments(outStream, errStream, args);
@@ -66,10 +67,11 @@ public class OrionArgumentsTest {
       version = new BufferedReader(new InputStreamReader(versionFile, UTF_8)).lines().collect(Collectors.joining("\n"));
     }
     assertEquals(version + System.lineSeparator(), outContent.toString());
+    assertTrue(arguments.argumentExit());
   }
 
   @Test
-  public void invalidOption() {
+  void invalidOption() {
     String errorMsg = "Invalid option: -x\n";
     String[] args = {"-x"};
 
@@ -81,7 +83,7 @@ public class OrionArgumentsTest {
   }
 
   @Test
-  public void validAndInvalidOptions() {
+  void validAndInvalidOptions() {
     String errorMsg = "Invalid option: -x\n";
     String[] args = {"-x", "-g", "keys"};
 
@@ -93,7 +95,7 @@ public class OrionArgumentsTest {
   }
 
   @Test
-  public void configFileParam() {
+  void configFileParam() {
     String[] args = {"config.conf"};
 
     OrionArguments arguments = new OrionArguments(outStream, errStream, args);

@@ -1,4 +1,4 @@
-package net.consensys.orion.impl.http.handlers;
+package net.consensys.orion.impl.http;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -26,7 +26,7 @@ public class SecurityTestUtils {
 
   private SecurityTestUtils() {}
 
-  public static void configureJDKTrustStore(SelfSignedCertificate clientCert) throws Exception {
+  public static void configureJDKTrustStore(SelfSignedCertificate clientCert, Path tempDir) throws Exception {
     KeyStore ks = KeyStore.getInstance("JKS");
     ks.load(null, null);
 
@@ -38,8 +38,8 @@ public class SecurityTestUtils {
         new ByteArrayInputStream(Files.readAllBytes(new File(clientCert.certificatePath()).toPath())));
     ks.setCertificateEntry("clientCert", certificate);
     ks.setKeyEntry("client", clientPrivateKey, "changeit".toCharArray(), new Certificate[] {certificate});
-    Path tempKeystore = Files.createTempFile("keystore", ".jks");
-    try (FileOutputStream output = new FileOutputStream(tempKeystore.toFile());) {
+    Path tempKeystore = tempDir.resolve("keystore.jks");
+    try (FileOutputStream output = new FileOutputStream(tempKeystore.toFile())) {
       ks.store(output, "changeit".toCharArray());
     }
     System.setProperty("javax.net.ssl.trustStore", tempKeystore.toString());
@@ -62,11 +62,11 @@ public class SecurityTestUtils {
     }
   }
 
-  public static void installServerCert(MemoryConfig config) throws Exception {
+  public static void installServerCert(MemoryConfig config, Path tempDir) throws Exception {
     SelfSignedCertificate serverCert = SelfSignedCertificate.create("localhost");
     config.setTlsServerCert(new File(serverCert.certificatePath()).toPath());
     config.setTlsServerKey(new File(serverCert.privateKeyPath()).toPath());
-    SecurityTestUtils.configureJDKTrustStore(serverCert);
+    SecurityTestUtils.configureJDKTrustStore(serverCert, tempDir);
   }
 
   public static int getFreePort() throws Exception {

@@ -1,10 +1,10 @@
 package net.consensys.orion.impl.http.handlers;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
 import static net.consensys.cava.crypto.Hash.sha2_512_256;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
@@ -26,16 +26,14 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-public class SendHandlerWithNodeKeysTest extends SendHandlerTest {
+class SendHandlerWithNodeKeysTest extends SendHandlerTest {
 
-  @Override
-  @Before
-  public void setUp() throws Exception {
+  @BeforeAll
+  static void setupSodiumLib() {
     SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
-    super.setUp();
   }
 
   @Override
@@ -56,7 +54,7 @@ public class SendHandlerWithNodeKeysTest extends SendHandlerTest {
 
   @Test
   @Override
-  public void sendWithNoFrom() throws Exception {
+  void sendWithNoFrom() throws Exception {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);

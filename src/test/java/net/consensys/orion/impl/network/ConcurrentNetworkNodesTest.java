@@ -1,7 +1,7 @@
 package net.consensys.orion.impl.network;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
@@ -13,11 +13,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ConcurrentNetworkNodesTest {
+class ConcurrentNetworkNodesTest {
+
   @Test
-  public void roundTripSerialization() throws MalformedURLException {
+  void roundTripSerialization() throws MalformedURLException {
     URL u = new URL("http://nowhere:9090/");
     List<URL> urls = Collections.singletonList(u);
     ConcurrentHashMap<SodiumPublicKey, URL> pks = new ConcurrentHashMap<>();

@@ -13,22 +13,18 @@ import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /** Simple Ethereum Client for calling Orion APIs */
 public class EthClientStub {
-  private static final Logger log = LogManager.getLogger();
-
   private final HttpClient httpClient;
   private final int clientPort;
 
-  public EthClientStub(int clientPort, HttpClient httpClient) {
+  EthClientStub(int clientPort, HttpClient httpClient) {
     this.httpClient = httpClient;
     this.clientPort = clientPort;
   }
 
-  public boolean upCheck() {
+  boolean upCheck() {
     CompletableFuture<Integer> statusCodeFuture = new CompletableFuture<>();
     httpClient
         .get(clientPort, "localhost", "/upcheck")
@@ -38,7 +34,7 @@ public class EthClientStub {
     return Integer.valueOf(200).equals(statusCodeFuture.join());
   }
 
-  public Optional<String> send(byte[] payload, String from, String[] to) {
+  Optional<String> send(byte[] payload, String from, String[] to) {
     Map<String, Object> sendRequest = sendRequest(payload, from, to);
     CompletableFuture<String> keyFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/send").handler(resp -> {
@@ -66,7 +62,7 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
-  public Optional<byte[]> receive(String digest, String publicKey) {
+  Optional<byte[]> receive(String digest, String publicKey) {
     ReceiveRequest receiveRequest = new ReceiveRequest(digest, publicKey);
     CompletableFuture<byte[]> payloadFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/receive").handler(resp -> {
