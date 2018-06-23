@@ -1,6 +1,6 @@
 package net.consensys.orion.impl.storage;
 
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
@@ -13,9 +13,9 @@ import java.security.Security;
 import java.util.Optional;
 import java.util.Random;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class EncryptedPayloadStorageTest {
+class EncryptedPayloadStorageTest {
 
   static {
     Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
@@ -27,7 +27,7 @@ public class EncryptedPayloadStorageTest {
   private Storage<EncryptedPayload> storage = new EncryptedPayloadStorage(memory, keyBuilder);
 
   @Test
-  public void storeAndRetrieve() {
+  void storeAndRetrieve() {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
@@ -39,7 +39,7 @@ public class EncryptedPayloadStorageTest {
   }
 
   @Test
-  public void retrieveWithoutStore() {
+  void retrieveWithoutStore() {
     assertEquals(Optional.empty(), storage.get("missing"));
   }
 }

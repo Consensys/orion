@@ -1,12 +1,12 @@
 package net.consensys.orion.impl.http.handlers;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
 import static net.consensys.cava.crypto.Hash.sha2_512_256;
 import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.PublicKey;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -36,23 +35,21 @@ import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class SendHandlerTest extends HandlerTest {
+class SendHandlerTest extends HandlerTest {
 
-  final KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
-  SodiumMemoryKeyStore memoryKeyStore;
+  private final KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
+  private SodiumMemoryKeyStore memoryKeyStore;
 
-  @Override
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
+  @BeforeEach
+  void setUp() throws Exception {
     memoryKeyStore = new SodiumMemoryKeyStore(config);
   }
 
   @Test
-  public void invalidRequest() throws Exception {
+  void invalidRequest() throws Exception {
     Map<String, Object> sendRequest = buildRequest(new String[] {"me"}, new byte[] {'a'}, null);
 
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
@@ -64,7 +61,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void emptyPayload() throws Exception {
+  void emptyPayload() throws Exception {
     RequestBody body = RequestBody.create(null, new byte[0]);
     Request request = new Request.Builder().post(body).url(clientBaseUrl + "/send").build();
 
@@ -77,7 +74,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void sendFailsWhenBadResponseFromPeer() throws Exception {
+  void sendFailsWhenBadResponseFromPeer() throws Exception {
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setResponseCode(500));
 
@@ -103,7 +100,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void sendFailsWhenBadDigestFromPeer() throws Exception {
+  void sendFailsWhenBadDigestFromPeer() throws Exception {
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody("not the best digest"));
 
@@ -111,7 +108,7 @@ public class SendHandlerTest extends HandlerTest {
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // configureRoutes our sendRequest
-    Map<String, Object> sendRequest = buildRequest(Arrays.asList(fakePeer), "foo".getBytes(UTF_8));
+    Map<String, Object> sendRequest = buildRequest(Collections.singletonList(fakePeer), "foo".getBytes(UTF_8));
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
@@ -122,7 +119,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void sendToSinglePeer() throws Exception {
+  void sendToSinglePeer() throws Exception {
     // note: we need to do this as the fakePeers need to know in advance the digest to return.
     // not possible with libSodium due to random nonce
 
@@ -139,7 +136,7 @@ public class SendHandlerTest extends HandlerTest {
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // configureRoutes our sendRequest
-    Map<String, Object> sendRequest = buildRequest(Arrays.asList(fakePeer), toEncrypt);
+    Map<String, Object> sendRequest = buildRequest(Collections.singletonList(fakePeer), toEncrypt);
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
@@ -165,7 +162,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void sendApiOnlyWorksOnPrivatePort() throws Exception {
+  void sendApiOnlyWorksOnPrivatePort() throws Exception {
     // note: we need to do this as the fakePeers need to know in advance the digest to return.
     // not possible with libSodium due to random nonce
 
@@ -182,7 +179,7 @@ public class SendHandlerTest extends HandlerTest {
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // configureRoutes our sendRequest
-    Map<String, Object> sendRequest = buildRequest(Arrays.asList(fakePeer), toEncrypt);
+    Map<String, Object> sendRequest = buildRequest(Collections.singletonList(fakePeer), toEncrypt);
     Request request = buildPublicAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
@@ -193,7 +190,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void propagatedToMultiplePeers() throws Exception {
+  void propagatedToMultiplePeers() throws Exception {
     // note: we need to do this as the fakePeers need to know in advance the digest to return.
     // not possible with libSodium due to random nonce
 
@@ -243,7 +240,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void sendWithInvalidContentType() throws Exception {
+  void sendWithInvalidContentType() throws Exception {
     String b64String = Base64.encode("foo".getBytes(UTF_8));
 
     Map<String, Object> sendRequest = buildRequest(new String[] {b64String}, b64String.getBytes(UTF_8), b64String);
@@ -256,7 +253,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void sendingWithARawBody() throws Exception {
+  void sendingWithARawBody() throws Exception {
     // note: this closely mirrors the test "testPropagatedToMultiplePeers",
     // using the raw version of the API.
 
@@ -321,7 +318,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void sendRawApiOnlyWorksOnPrivatePort() throws Exception {
+  void sendRawApiOnlyWorksOnPrivatePort() throws Exception {
     // note: this closely mirrors the test "testPropagatedToMultiplePeers",
     // using the raw version of the API.
 
@@ -361,7 +358,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void sendWithInvalidBody() throws Exception {
+  void sendWithInvalidBody() throws Exception {
     Request requestWithInvalidBody = buildPrivateAPIRequest("/send", HttpContentType.JSON, "{\"foo\": \"bar\"}");
 
     Response resp = httpClient.newCall(requestWithInvalidBody).execute();
@@ -373,7 +370,7 @@ public class SendHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void sendWithNoFrom() throws Exception {
+  void sendWithNoFrom() throws Exception {
     // note: we need to do this as the fakePeers need to know in advance the digest to return.
     // not possible with libSodium due to random nonce
 
@@ -427,13 +424,6 @@ public class SendHandlerTest extends HandlerTest {
       result.put("from", from);
     }
     return result;
-  }
-
-  private Map<String, Object> buildRequest(List<FakePeer> forPeers) {
-    // generate random byte content
-    byte[] toEncrypt = new byte[342];
-    new Random().nextBytes(toEncrypt);
-    return buildRequest(forPeers, toEncrypt);
   }
 
   class FakePeer {

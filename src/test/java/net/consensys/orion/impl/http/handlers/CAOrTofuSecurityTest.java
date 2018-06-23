@@ -2,16 +2,21 @@ package net.consensys.orion.impl.http.handlers;
 
 import static io.vertx.core.Vertx.vertx;
 import static net.consensys.cava.crypto.Hash.sha2_256;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import net.consensys.cava.concurrent.AsyncResult;
+import net.consensys.cava.concurrent.CompletableAsyncResult;
+import net.consensys.cava.junit.TempDirectory;
+import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.impl.config.MemoryConfig;
+import net.consensys.orion.impl.http.SecurityTestUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import javax.net.ssl.SSLHandshakeException;
 
 import io.netty.util.internal.StringUtil;
@@ -23,11 +28,13 @@ import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.net.SelfSignedCertificate;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-public class CAOrTofuSecurityTest {
+@ExtendWith(TempDirectoryExtension.class)
+class CAOrTofuSecurityTest {
 
   private static Vertx vertx = vertx();
 
@@ -40,21 +47,20 @@ public class CAOrTofuSecurityTest {
   private static String exampleComFingerprint;
   private static MemoryConfig config;
 
-  @BeforeClass
-  public static void setUp() throws Exception {
+  @BeforeAll
+  static void setUp(@TempDirectory Path tempDir) throws Exception {
     SelfSignedCertificate clientCert = SelfSignedCertificate.create("localhost");
 
-    Path workDir = Files.createTempDirectory("data");
     orion = new Orion(vertx);
     config = new MemoryConfig();
-    config.setWorkDir(workDir);
+    config.setWorkDir(tempDir.resolve("data"));
     config.setTls("strict");
     config.setTlsServerTrust("ca-or-tofu");
-    knownClientsFile = Files.createTempFile("knownclients", ".txt");
+    knownClientsFile = tempDir.resolve("knownclients.txt");
     config.setTlsKnownClients(knownClientsFile);
 
-    SecurityTestUtils.installServerCert(config);
-    SecurityTestUtils.configureJDKTrustStore(clientCert);
+    SecurityTestUtils.installServerCert(config, tempDir);
+    SecurityTestUtils.configureJDKTrustStore(clientCert, tempDir);
 
 
     SecurityTestUtils.installPorts(config);
@@ -74,8 +80,8 @@ public class CAOrTofuSecurityTest {
     orion.run(System.out, System.err, config);
   }
 
-  @AfterClass
-  public static void tearDown() {
+  @AfterAll
+  static void tearDown() {
     System.clearProperty("javax.net.ssl.trustStore");
     System.clearProperty("javax.net.ssl.trustStorePassword");
     orion.stop();
@@ -83,33 +89,33 @@ public class CAOrTofuSecurityTest {
   }
 
   @Test
-  public void testTofuThenCA() throws Exception {
+  void testTofuThenCA() throws Exception {
     {
       HttpClientRequest req = nonCAhttpClient.get(config.nodePort(), "localhost", "/upcheck");
-      CompletableFuture<HttpClientResponse> respFuture = new CompletableFuture<>();
-      req.handler(respFuture::complete).exceptionHandler(respFuture::completeExceptionally).end();
-      HttpClientResponse resp = respFuture.join();
+      CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
+      req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
+      HttpClientResponse resp = result.get();
       assertEquals(200, resp.statusCode());
     }
     List<String> fingerprints = Files.readAllLines(knownClientsFile);
-    assertEquals(String.join("\n", fingerprints), 1, fingerprints.size());
+    assertEquals(1, fingerprints.size(), String.join("\n", fingerprints));
     assertEquals("localhost " + exampleComFingerprint, fingerprints.get(0));
 
     HttpClientRequest req = httpClient.get(config.nodePort(), "localhost", "/upcheck");
-    CompletableFuture<HttpClientResponse> respFuture = new CompletableFuture<>();
-    req.handler(respFuture::complete).exceptionHandler(respFuture::completeExceptionally).end();
-    HttpClientResponse resp = respFuture.join();
+    CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
+    req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
+    HttpClientResponse resp = result.get();
     assertEquals(200, resp.statusCode());
 
     fingerprints = Files.readAllLines(knownClientsFile);
-    assertEquals(String.join("\n", fingerprints), 1, fingerprints.size());
+    assertEquals(1, fingerprints.size(), String.join("\n", fingerprints));
   }
 
-  @Test(expected = SSLHandshakeException.class)
-  public void testWithoutSSLConfiguration() throws Exception {
+  @Test
+  void testWithoutSSLConfiguration() {
     OkHttpClient unsecureHttpClient = new OkHttpClient.Builder().build();
 
     Request upcheckRequest = new Request.Builder().url("https://localhost:" + config.nodePort() + "/upcheck").build();
-    unsecureHttpClient.newCall(upcheckRequest).execute();
+    assertThrows(SSLHandshakeException.class, () -> unsecureHttpClient.newCall(upcheckRequest).execute());
   }
 }

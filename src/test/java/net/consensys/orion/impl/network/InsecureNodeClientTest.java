@@ -1,10 +1,16 @@
 package net.consensys.orion.impl.network;
 
 import static net.consensys.cava.crypto.Hash.sha2_256;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import net.consensys.cava.concurrent.AsyncCompletion;
+import net.consensys.cava.concurrent.AsyncResult;
+import net.consensys.cava.concurrent.CompletableAsyncCompletion;
+import net.consensys.cava.concurrent.CompletableAsyncResult;
+import net.consensys.cava.junit.TempDirectory;
+import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.impl.config.MemoryConfig;
-import net.consensys.orion.impl.http.handlers.SecurityTestUtils;
+import net.consensys.orion.impl.http.SecurityTestUtils;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -12,9 +18,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import io.netty.util.internal.StringUtil;
 import io.vertx.core.Vertx;
@@ -24,27 +29,26 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.SelfSignedCertificate;
 import io.vertx.ext.web.Router;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-public class InsecureNodeClientTest {
-
-  private MemoryConfig config;
+@ExtendWith(TempDirectoryExtension.class)
+class InsecureNodeClientTest {
 
   private Vertx vertx;
-
   private HttpServer insecureServer;
   private HttpServer foobarComServer;
   private Path knownServersFile;
   private String fooFingerprint;
   private HttpClient client;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  void setUp(@TempDirectory Path tempDir) throws Exception {
     vertx = Vertx.vertx();
-    config = new MemoryConfig();
-    config.setWorkDir(Files.createTempDirectory("data"));
+    MemoryConfig config = new MemoryConfig();
+    config.setWorkDir(tempDir);
     config.setTls("strict");
     config.setTlsClientTrust("insecure-no-validation");
     SelfSignedCertificate clientCert = SelfSignedCertificate.create();
@@ -52,11 +56,11 @@ public class InsecureNodeClientTest {
     config.setTlsClientKey(Paths.get(clientCert.privateKeyPath()));
 
     SelfSignedCertificate serverCert = SelfSignedCertificate.create("foo.com");
-    knownServersFile = Files.createTempFile("knownservers", ".txt");
+    knownServersFile = tempDir.resolve("knownservers.txt");
     config.setTlsKnownServers(knownServersFile);
     fooFingerprint = StringUtil
         .toHexStringPadded(sha2_256(SecurityTestUtils.loadPEM(Paths.get(serverCert.keyCertOptions().getCertPath()))));
-    Files.write(knownServersFile, Arrays.asList("#First line"));
+    Files.write(knownServersFile, Collections.singletonList("#First line"));
 
     client = NodeHttpClientBuilder.build(vertx, config, 100);
 
@@ -79,20 +83,20 @@ public class InsecureNodeClientTest {
   }
 
   private static void startServer(HttpServer server) throws Exception {
-    CompletableFuture<Boolean> future = new CompletableFuture<>();
+    CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
     server.listen(SecurityTestUtils.getFreePort(), result -> {
       if (result.succeeded()) {
-        future.complete(true);
+        completion.complete();
       } else {
-        future.completeExceptionally(result.cause());
+        completion.completeExceptionally(result.cause());
       }
-      future.join();
     });
+    completion.join();
   }
 
   @Test
-  public void testInsecure() throws Exception {
-    CompletableFuture<Integer> statusCode = new CompletableFuture<>();
+  void testInsecure() throws Exception {
+    CompletableAsyncResult<Integer> statusCode = AsyncResult.incomplete();
     client
         .post(
             insecureServer.actualPort(),
@@ -100,13 +104,14 @@ public class InsecureNodeClientTest {
             "/partyinfo",
             response -> statusCode.complete(response.statusCode()))
         .end();
-    assertEquals((Integer) 200, statusCode.join());
+    assertEquals((Integer) 200, statusCode.get());
 
     List<String> fingerprints = Files.readAllLines(knownServersFile);
-    assertEquals(String.join("\n", fingerprints), 2, fingerprints.size());
+    assertEquals(2, fingerprints.size(), String.join("\n", fingerprints));
     assertEquals("#First line", fingerprints.get(0));
     assertEquals("localhost:" + insecureServer.actualPort() + " " + fooFingerprint, fingerprints.get(1));
-    CompletableFuture<Integer> secondStatusCode = new CompletableFuture<>();
+
+    CompletableAsyncResult<Integer> secondStatusCode = AsyncResult.incomplete();
     client
         .post(
             foobarComServer.actualPort(),
@@ -114,14 +119,14 @@ public class InsecureNodeClientTest {
             "/partyinfo",
             response -> secondStatusCode.complete(response.statusCode()))
         .end();
-    assertEquals((Integer) 200, secondStatusCode.join());
+    assertEquals((Integer) 200, secondStatusCode.get());
 
     fingerprints = Files.readAllLines(knownServersFile);
-    assertEquals(String.join("\n", fingerprints), 3, fingerprints.size());
+    assertEquals(3, fingerprints.size(), String.join("\n", fingerprints));
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @AfterEach
+  void tearDown() {
     vertx.close();
   }
 }

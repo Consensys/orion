@@ -2,8 +2,8 @@ package net.consensys.orion.impl.http.handlers;
 
 import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
@@ -24,14 +24,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
-import junit.framework.TestCase;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ReceiveHandlerTest extends HandlerTest {
+class ReceiveHandlerTest extends HandlerTest {
   private KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
   private SodiumMemoryKeyStore memoryKeyStore;
 
@@ -45,7 +44,7 @@ public class ReceiveHandlerTest extends HandlerTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void payloadIsRetrieved() throws Exception {
+  void payloadIsRetrieved() throws Exception {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
@@ -65,7 +64,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void rawPayloadIsRetrieved() throws Exception {
+  void rawPayloadIsRetrieved() throws Exception {
 
     // generate random byte content
     byte[] toEncrypt = new byte[342];
@@ -97,8 +96,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void receiveApiOnlyWorksOnPrivatePort() throws Exception {
-
+  void receiveApiOnlyWorksOnPrivatePort() throws Exception {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
@@ -113,8 +111,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void receiveRawApiOnlyWorksOnPrivatePort() throws Exception {
-
+  void receiveRawApiOnlyWorksOnPrivatePort() throws Exception {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
@@ -142,7 +139,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void responseWhenKeyNotFound() throws Exception {
+  void responseWhenKeyNotFound() throws Exception {
     // Receive operation, sending a ReceivePayload request
     ReceiveRequest receiveRequest = new ReceiveRequest("notForMe", null);
 
@@ -155,8 +152,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void responseWhenDecryptFails() throws Exception {
-
+  void responseWhenDecryptFails() throws Exception {
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
@@ -179,7 +175,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void roundTripSerialization() {
+  void roundTripSerialization() {
     Map<String, String> receiveResponse = Collections.singletonMap("payload", "some payload");
     assertEquals(receiveResponse, Serializer.roundTrip(HttpContentType.CBOR, Map.class, receiveResponse));
     assertEquals(receiveResponse, Serializer.roundTrip(HttpContentType.JSON, Map.class, receiveResponse));
@@ -191,7 +187,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void receiveWithInvalidContentType() throws Exception {
+  void receiveWithInvalidContentType() throws Exception {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
@@ -207,14 +203,14 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void receiveWithInvalidBody() throws Exception {
+  void receiveWithInvalidBody() throws Exception {
     Request request = buildPrivateAPIRequest("/receive", HttpContentType.JSON, "{\"foo\": \"bar\"}");
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
 
     // produces 500 because serialisation error
-    TestCase.assertEquals(500, resp.code());
+    assertEquals(500, resp.code());
     // checks if the failure reason was with de-serialisation
     assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
   }

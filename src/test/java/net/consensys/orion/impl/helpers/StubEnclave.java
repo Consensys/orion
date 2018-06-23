@@ -22,11 +22,6 @@ public class StubEnclave implements Enclave {
   private final SodiumPublicKey[] alwaysSendTo;
   private final SodiumPublicKey[] nodeKeys;
 
-  public StubEnclave(SodiumPublicKey[] alwaysSendTo, SodiumPublicKey[] nodeKeys) {
-    this.alwaysSendTo = alwaysSendTo;
-    this.nodeKeys = nodeKeys;
-  }
-
   public StubEnclave() {
     this.alwaysSendTo = new SodiumPublicKey[0];
     this.nodeKeys = new SodiumPublicKey[0];

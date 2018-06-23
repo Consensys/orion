@@ -2,18 +2,22 @@ package net.consensys.orion.impl.http.handlers;
 
 import static io.vertx.core.Vertx.vertx;
 import static net.consensys.cava.crypto.Hash.sha2_256;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.consensys.cava.concurrent.AsyncResult;
+import net.consensys.cava.concurrent.CompletableAsyncResult;
+import net.consensys.cava.junit.TempDirectory;
+import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.impl.config.MemoryConfig;
+import net.consensys.orion.impl.http.SecurityTestUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import javax.net.ssl.SSLHandshakeException;
 
@@ -24,39 +28,36 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.net.SelfSignedCertificate;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-public class WhiteListSecurityTest {
+@ExtendWith(TempDirectoryExtension.class)
+class WhiteListSecurityTest {
 
   private static Vertx vertx = vertx();
-
   private static HttpClient httpClient;
-
   private static Orion orion;
-
   private static HttpClient httpClientWithUnregisteredCert;
   private static HttpClient httpClientWithImproperCertificate;
   private static HttpClient anotherExampleComClient;
   private static MemoryConfig config;
 
-  @BeforeClass
-  public static void setUp() throws Exception {
+  @BeforeAll
+  static void setUp(@TempDirectory Path tempDir) throws Exception {
     orion = new Orion(vertx);
 
     config = new MemoryConfig();
-    config.setWorkDir(Files.createTempDirectory("data"));
+    config.setWorkDir(tempDir.resolve("data"));
     config.setTls("strict");
     config.setTlsServerTrust("whitelist");
 
-    SecurityTestUtils.installServerCert(config);
+    SecurityTestUtils.installServerCert(config, tempDir);
 
     SelfSignedCertificate clientCertificate = SelfSignedCertificate.create("example.com");
 
-    Path knownClientsFile = Files.createTempFile("knownclients", ".txt");
+    Path knownClientsFile = tempDir.resolve("knownclients.txt");
     config.setTlsKnownClients(knownClientsFile);
     String fingerprint = StringUtil.toHexStringPadded(
         sha2_256(SecurityTestUtils.loadPEM(Paths.get(clientCertificate.keyCertOptions().getCertPath()))));
@@ -84,76 +85,58 @@ public class WhiteListSecurityTest {
         new HttpClientOptions().setSsl(true).setKeyCertOptions(anotherExampleDotComCert.keyCertOptions()));
   }
 
-  @AfterClass
-  public static void tearDown() {
+  @AfterAll
+  static void tearDown() {
     orion.stop();
     vertx.close();
   }
 
   @Test
-  public void testUpCheckOnNodePort() throws Exception {
+  void testUpCheckOnNodePort() throws Exception {
     for (int i = 0; i < 5; i++) {
       HttpClientRequest req = httpClient.get(config.nodePort(), "localhost", "/upcheck");
-      CompletableFuture<HttpClientResponse> respFuture = new CompletableFuture<>();
-      req.handler(respFuture::complete).exceptionHandler(respFuture::completeExceptionally).end();
-      HttpClientResponse resp = respFuture.join();
+      CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
+      req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
+      HttpClientResponse resp = result.get();
       assertEquals(200, resp.statusCode());
     }
   }
 
   @Test
-  public void testSameHostnameUnknownCertificate() throws Exception {
+  void testSameHostnameUnknownCertificate() {
     HttpClientRequest req = anotherExampleComClient.get(config.nodePort(), "localhost", "/upcheck");
-    CompletableFuture<HttpClientResponse> respFuture = new CompletableFuture<>();
-    req.handler(respFuture::complete).exceptionHandler(respFuture::completeExceptionally).end();
-    boolean caught = false;
-    try {
-      respFuture.join();
-      fail();
-    } catch (CompletionException e) {
-      assertEquals("Received fatal alert: certificate_unknown", e.getCause().getCause().getMessage());
-      caught = true;
-    }
-    assertTrue(caught);
+    CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
+    req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
+    CompletionException e = assertThrows(CompletionException.class, result::get);
+    assertEquals("Received fatal alert: certificate_unknown", e.getCause().getCause().getMessage());
   }
 
   @Test
-  public void testUpCheckOnNodePortWithUnregisteredClientCert() throws Exception {
+  void testUpCheckOnNodePortWithUnregisteredClientCert() {
     HttpClientRequest req = httpClientWithUnregisteredCert.get(config.nodePort(), "localhost", "/upcheck");
-    CompletableFuture<HttpClientResponse> respFuture = new CompletableFuture<>();
-    req.handler(respFuture::complete).exceptionHandler(respFuture::completeExceptionally).end();
-    boolean caught = false;
-    try {
-      respFuture.join();
-      fail();
-    } catch (CompletionException e) {
-      assertEquals("Received fatal alert: certificate_unknown", e.getCause().getCause().getMessage());
-      caught = true;
-    }
-    assertTrue(caught);
+    CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
+    req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
+    CompletionException e = assertThrows(CompletionException.class, result::get);
+    assertEquals("Received fatal alert: certificate_unknown", e.getCause().getCause().getMessage());
   }
 
   @Test
-  public void testUpCheckOnNodePortWithInvalidClientCert() throws Exception {
+  void testUpCheckOnNodePortWithInvalidClientCert() {
     HttpClientRequest req = httpClientWithImproperCertificate.get(config.nodePort(), "localhost", "/upcheck");
-    CompletableFuture<HttpClientResponse> respFuture = new CompletableFuture<>();
-    req.handler(respFuture::complete).exceptionHandler(respFuture::completeExceptionally).end();
-    boolean caught = false;
-    try {
-      respFuture.join();
-      fail();
-    } catch (CompletionException e) {
-      assertEquals("Received fatal alert: certificate_unknown", e.getCause().getCause().getMessage());
-      caught = true;
-    }
-    assertTrue(caught);
+    CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
+    req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
+    CompletionException e = assertThrows(CompletionException.class, result::get);
+    assertEquals("Received fatal alert: certificate_unknown", e.getCause().getCause().getMessage());
   }
 
-  @Test(expected = SSLHandshakeException.class)
-  public void testWithoutSSLConfiguration() throws Exception {
-    OkHttpClient unsecureHttpClient = new OkHttpClient.Builder().build();
+  @Test
+  void testWithoutSSLConfiguration() {
+    CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
+    HttpClient insecureClient = vertx.createHttpClient(new HttpClientOptions().setSsl(true));
+    HttpClientRequest req = insecureClient.get(config.nodePort(), "localhost", "/upcheck");
+    req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
 
-    Request upcheckRequest = new Request.Builder().url("https://localhost:" + config.nodePort() + "/upcheck").build();
-    unsecureHttpClient.newCall(upcheckRequest).execute();
+    CompletionException e = assertThrows(CompletionException.class, result::get);
+    assertTrue(e.getCause() instanceof SSLHandshakeException);
   }
 }

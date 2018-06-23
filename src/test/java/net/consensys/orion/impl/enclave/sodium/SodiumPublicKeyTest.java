@@ -1,9 +1,8 @@
 package net.consensys.orion.impl.enclave.sodium;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
 import net.consensys.orion.impl.config.MemoryConfig;
@@ -14,25 +13,23 @@ import net.consensys.orion.impl.utils.Serializer;
 import java.security.PublicKey;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class SodiumPublicKeyTest {
+class SodiumPublicKeyTest {
   private final MemoryConfig config = new MemoryConfig();
 
   private KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
   private KeyStore memoryKeyStore;
-  private Enclave enclave;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
     memoryKeyStore = new SodiumMemoryKeyStore(config);
-    enclave = new LibSodiumEnclave(config, memoryKeyStore);
   }
 
   @Test
-  public void roundTripSerialization() {
+  void roundTripSerialization() {
     SodiumPublicKey key = new SodiumPublicKey("fake encoded".getBytes(UTF_8));
     byte[] bytes = Serializer.serialize(HttpContentType.JSON, key);
     assertEquals(key, Serializer.deserialize(HttpContentType.JSON, SodiumPublicKey.class, bytes));
@@ -41,7 +38,7 @@ public class SodiumPublicKeyTest {
   }
 
   @Test
-  public void keyFromB64EqualsOriginal() {
+  void keyFromB64EqualsOriginal() {
     // generate key
     PublicKey fakePK = memoryKeyStore.generateKeyPair(keyConfig);
 

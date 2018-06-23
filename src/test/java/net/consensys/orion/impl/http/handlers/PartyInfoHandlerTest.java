@@ -3,7 +3,7 @@ package net.consensys.orion.impl.http.handlers;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
@@ -13,17 +13,16 @@ import net.consensys.orion.impl.utils.Serializer;
 
 import java.net.URL;
 
-import junit.framework.TestCase;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PartyInfoHandlerTest extends HandlerTest {
+class PartyInfoHandlerTest extends HandlerTest {
 
   @Test
-  public void successfulProcessingOfRequest() throws Exception {
+  void successfulProcessingOfRequest() throws Exception {
     networkNodes.addNode(new SodiumPublicKey("pk1".getBytes(UTF_8)), new URL("http://127.0.0.1:9001/"));
     networkNodes.addNode(new SodiumPublicKey("pk2".getBytes(UTF_8)), new URL("http://127.0.0.1:9002/"));
 
@@ -44,7 +43,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void roundTripSerialization() throws Exception {
+  void roundTripSerialization() throws Exception {
     ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(new URL("http://localhost:1234/"));
     networkNodes.addNode(new SodiumPublicKey("fake".getBytes(UTF_8)), new URL("http://localhost/"));
     assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.CBOR, ConcurrentNetworkNodes.class, networkNodes));
@@ -52,7 +51,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void partyInfoWithInvalidContentType() throws Exception {
+  void partyInfoWithInvalidContentType() throws Exception {
     networkNodes.addNode(new SodiumPublicKey("pk1".getBytes(UTF_8)), new URL("http://127.0.0.1:9001/"));
     networkNodes.addNode(new SodiumPublicKey("pk2".getBytes(UTF_8)), new URL("http://127.0.0.1:9002/"));
 
@@ -67,7 +66,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void partyInfoWithInvalidBody() throws Exception {
+  void partyInfoWithInvalidBody() throws Exception {
     RequestBody partyInfoBody = RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), "foo");
 
     Request request = new Request.Builder().post(partyInfoBody).url(nodeBaseUrl + "/partyinfo").build();
@@ -75,7 +74,7 @@ public class PartyInfoHandlerTest extends HandlerTest {
     Response resp = httpClient.newCall(request).execute();
 
     // produces 500 because serialisation error
-    TestCase.assertEquals(500, resp.code());
+    assertEquals(500, resp.code());
     // checks if the failure reason was with de-serialisation
     assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
   }
