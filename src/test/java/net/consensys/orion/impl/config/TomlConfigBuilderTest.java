@@ -35,7 +35,6 @@ public class TomlConfigBuilderTest {
     assertEquals("off", testConf.tls());
     assertEquals("ca-or-tofu", testConf.tlsServerTrust());
     assertEquals("ca", testConf.tlsClientTrust());
-    assertEquals(3, testConf.verbosity());
 
     // Optionals
     final Path expectedWorkdir = Paths.get("data");
@@ -70,10 +69,6 @@ public class TomlConfigBuilderTest {
     URL[] expectedURLArray = new URL[1];
     expectedURLArray[0] = new URL("http://127.0.0.1:9000/");
     assertArrayEquals(expectedURLArray, testConf.otherNodes());
-
-    // String Array
-    String expectedStringArray[] = {"10.0.0.1", "2001:0db8:85a3:0000:0000:8a2e:0370:7334"};
-    assertArrayEquals(expectedStringArray, testConf.ipWhitelist());
 
     // Files
     expectedFile = expectedWorkdir.resolve("server-cert.pem");
@@ -117,12 +112,8 @@ public class TomlConfigBuilderTest {
     assertEquals("strict", testConf.tls());
     assertEquals("tofu", testConf.tlsServerTrust());
     assertEquals("ca-or-tofu", testConf.tlsClientTrust());
-    assertEquals(1, testConf.verbosity());
 
     assertFalse(testConf.passwords().isPresent());
-
-    String expectedStringArray[] = new String[0];
-    assertArrayEquals(expectedStringArray, testConf.ipWhitelist());
 
     Path expectedFile;
     expectedFile = Paths.get("tls-server-cert.pem");
@@ -167,8 +158,7 @@ public class TomlConfigBuilderTest {
           + "Error: value for key 'storage' type must start with: ['leveldb', 'mapdb'] or be 'memory'\n"
           + "Error: value for key 'tls' status must be 'strict' or 'off'\n"
           + "Error: value for key 'tlsservertrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n"
-          + "Error: value for key 'tlsclienttrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n"
-          + "Error: value for key 'verbosity' must be within range 0 to 3\n";
+          + "Error: value for key 'tlsclienttrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n";
       assertEquals(message, e.getMessage());
     }
   }
@@ -186,17 +176,6 @@ public class TomlConfigBuilderTest {
     assertFalse(configBuilder.validateTrustMode("invalid-trust-mode"));
     assertFalse(configBuilder.validateTrustMode("ca-or"));
     assertFalse(configBuilder.validateTrustMode("or-tofu"));
-  }
-
-  @Test
-  public void verbosityValidation() {
-    TomlConfigBuilder configBuilder = new TomlConfigBuilder();
-
-    assertTrue(configBuilder.validateVerbosity(0));
-    assertTrue(configBuilder.validateVerbosity(3));
-
-    assertFalse(configBuilder.validateVerbosity(-1));
-    assertFalse(configBuilder.validateVerbosity(4));
   }
 
   @Test

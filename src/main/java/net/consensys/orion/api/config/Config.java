@@ -148,19 +148,6 @@ public interface Config {
   String storage();
 
   /**
-   * Optional IP whitelist for the Orion API. If unspecified/empty, connections from all sources will be allowed.
-   * <p>
-   * To allow connections from localhost when a whitelist is defined, e.g. when running multiple Orion nodes on the same
-   * machine, add "127.0.0.1" and "::1" to this list.
-   *
-   * <p>
-   * <strong>Default:</strong> []
-   *
-   * @return Array of IPv4 and IPv6 addresses that may connect to this node's public API
-   */
-  String[] ipWhitelist();
-
-  /**
    * TLS status. Options:
    *
    * <ul>
@@ -320,22 +307,6 @@ public interface Config {
    * @return TLS client known servers file
    */
   Path tlsKnownServers();
-
-  /**
-   * Verbosity level (each level includes all prior levels)
-   *
-   * <ul>
-   * <li>0: Only fatal errors
-   * <li>1: Warnings
-   * <li>2: Informational messages
-   * <li>3: Debug messages
-   * </ul>
-   *
-   * <strong>Default:</strong> 1
-   *
-   * @return Level of verbosity, that is print more detailed information
-   */
-  long verbosity();
 
   /** @return Array of key pair names to generate */
   Optional<String[]> generateKeys();

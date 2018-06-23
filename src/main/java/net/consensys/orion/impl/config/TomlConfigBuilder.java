@@ -70,7 +70,6 @@ public final class TomlConfigBuilder {
     setPathArray(baseDir, toml.getList("alwayssendto"), memoryConfig::setAlwaysSendTo);
     setPath(baseDir, toml.getString("passwords"), memoryConfig::setPasswords);
     setString(toml.getString("storage"), memoryConfig::setStorage);
-    setStringArray(toml.getList("ipwhitelist"), memoryConfig::setIpWhitelist);
     setString(toml.getString("tls"), memoryConfig::setTls);
     setPath(baseDir, toml.getString("tlsservercert"), memoryConfig::setTlsServerCert);
     setPathArray(baseDir, toml.getList("tlsserverchain"), memoryConfig::setTlsServerChain);
@@ -82,7 +81,6 @@ public final class TomlConfigBuilder {
     setPath(baseDir, toml.getString("tlsclientkey"), memoryConfig::setTlsClientKey);
     setString(toml.getString("tlsclienttrust"), memoryConfig::setTlsClientTrust);
     setPath(baseDir, toml.getString("tlsknownservers"), memoryConfig::setTlsKnownServers);
-    setInt(toml.getLong("verbosity"), memoryConfig::setVerbosity);
 
     // Validations
     if (memoryConfig.nodePort() == Integer.MIN_VALUE) {
@@ -122,10 +120,6 @@ public final class TomlConfigBuilder {
     if (!validateTrustMode(memoryConfig.tlsClientTrust())) {
       errorMsg.append(
           "Error: value for key 'tlsclienttrust' mode must must be one of ['whitelist', 'tofu', 'ca', 'ca-or-tofu', 'insecure-no-validation']\n");
-    }
-
-    if (!validateVerbosity(memoryConfig.verbosity())) {
-      errorMsg.append("Error: value for key 'verbosity' must be within range 0 to 3\n");
     }
 
     if (errorMsg.length() != 0) {
@@ -190,11 +184,6 @@ public final class TomlConfigBuilder {
   boolean validateTrustMode(String mode) {
     List<String> validModes = Arrays.asList("whitelist", "tofu", "ca", "ca-or-tofu", "insecure-no-validation");
     return validModes.stream().anyMatch(mode::equals);
-  }
-
-  // If options change, error message must also be changed
-  boolean validateVerbosity(long verbosity) {
-    return verbosity >= 0 && verbosity <= 3;
   }
 
   // If options change, error message must also be changed
