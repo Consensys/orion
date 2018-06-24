@@ -44,8 +44,8 @@ class SendHandlerTest extends HandlerTest {
   private SodiumMemoryKeyStore memoryKeyStore;
 
   @BeforeEach
-  void setUp() throws Exception {
-    memoryKeyStore = new SodiumMemoryKeyStore(config);
+  void setUp() {
+    memoryKeyStore = new SodiumMemoryKeyStore();
   }
 
   @Test

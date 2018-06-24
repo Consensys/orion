@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
-import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
@@ -13,19 +12,18 @@ import net.consensys.orion.impl.utils.Serializer;
 import java.security.PublicKey;
 import java.util.Optional;
 
+import com.muquit.libsodiumjna.SodiumLibrary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SodiumPublicKeyTest {
-  private final MemoryConfig config = new MemoryConfig();
-
   private KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
   private KeyStore memoryKeyStore;
 
   @BeforeEach
   void setUp() {
-    config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
-    memoryKeyStore = new SodiumMemoryKeyStore(config);
+    SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
+    memoryKeyStore = new SodiumMemoryKeyStore();
   }
 
   @Test

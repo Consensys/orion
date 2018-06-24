@@ -25,14 +25,13 @@ import org.junit.jupiter.api.Test;
 
 class LibSodiumEnclaveTest {
 
-  private final MemoryConfig config = new MemoryConfig();
-  private final KeyStore memoryKeyStore = new SodiumMemoryKeyStore(config);
+  private final KeyStore memoryKeyStore = new SodiumMemoryKeyStore();
   private LibSodiumEnclave enclave;
 
   @BeforeEach
   void setUp() {
-    config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
-    enclave = new LibSodiumEnclave(config, memoryKeyStore);
+    SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
+    enclave = new LibSodiumEnclave(memoryKeyStore);
   }
 
   @Test

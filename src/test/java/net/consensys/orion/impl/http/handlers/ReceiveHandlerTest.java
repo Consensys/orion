@@ -36,10 +36,10 @@ class ReceiveHandlerTest extends HandlerTest {
 
   @Override
   protected Enclave buildEnclave() {
-    memoryKeyStore = new SodiumMemoryKeyStore(config);
+    memoryKeyStore = new SodiumMemoryKeyStore();
     SodiumPublicKey defaultNodeKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     memoryKeyStore.addNodeKey(defaultNodeKey);
-    return new LibSodiumEnclave(config, memoryKeyStore);
+    return new LibSodiumEnclave(memoryKeyStore);
   }
 
   @SuppressWarnings("unchecked")

@@ -50,6 +50,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.muquit.libsodiumjna.SodiumLibrary;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -257,7 +258,9 @@ public class Orion {
   public void run(PrintStream out, PrintStream err, Config config) {
     SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
     ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(config, keyStore.nodeKeys());
-    Enclave enclave = new LibSodiumEnclave(config, keyStore);
+
+    SodiumLibrary.setLibraryPath(config.libSodiumPath());
+    Enclave enclave = new LibSodiumEnclave(keyStore);
 
     Path workDir = config.workDir();
     log.info("using working directory {}", workDir);
