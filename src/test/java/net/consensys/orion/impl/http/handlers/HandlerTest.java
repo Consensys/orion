@@ -29,6 +29,7 @@ import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import com.muquit.libsodiumjna.SodiumLibrary;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
@@ -41,6 +42,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -66,6 +68,11 @@ abstract class HandlerTest {
   private StorageEngine<EncryptedPayload> storageEngine;
   protected Storage<EncryptedPayload> storage;
 
+  @BeforeAll
+  static void setupSodiumLib() {
+    SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
+  }
+
   @BeforeEach
   void setUp(@TempDirectory Path tempDir) throws Exception {
     // Setup ports for Public and Private API Servers
@@ -78,7 +85,6 @@ abstract class HandlerTest {
 
     // orion dependencies, reset them all between tests
     config = new MemoryConfig();
-    config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
     config.setWorkDir(tempDir);
     config.setTls("off");
     networkNodes = new ConcurrentNetworkNodes(nodeHTTP.url());

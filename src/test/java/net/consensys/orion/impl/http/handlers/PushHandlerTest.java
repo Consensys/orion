@@ -31,7 +31,7 @@ class PushHandlerTest extends HandlerTest {
 
   @BeforeEach
   void before() {
-    memoryKeyStore = new SodiumMemoryKeyStore(config);
+    memoryKeyStore = new SodiumMemoryKeyStore();
   }
 
   @Test
@@ -97,7 +97,7 @@ class PushHandlerTest extends HandlerTest {
   }
 
   private EncryptedPayload mockPayload() {
-    LibSodiumEnclave sEnclave = new LibSodiumEnclave(config, memoryKeyStore);
+    LibSodiumEnclave sEnclave = new LibSodiumEnclave(memoryKeyStore);
     PublicKey k1 = memoryKeyStore.generateKeyPair(keyConfig);
     PublicKey k2 = memoryKeyStore.generateKeyPair(keyConfig);
     return sEnclave.encrypt("something important".getBytes(UTF_8), k1, new PublicKey[] {k2});

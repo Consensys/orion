@@ -2,11 +2,8 @@ package net.consensys.orion.impl.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
-import net.consensys.orion.impl.config.MemoryConfig;
-import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.orion.impl.enclave.sodium.SodiumCombinedKey;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
@@ -14,12 +11,11 @@ import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
-
+import com.muquit.libsodiumjna.SodiumLibrary;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
-
 import org.junit.jupiter.api.Test;
 
 class SerializerTest {
@@ -42,11 +38,9 @@ class SerializerTest {
 
   @Test
   void sodiumEncryptedPayloadSerialization() {
-    MemoryConfig config = new MemoryConfig();
-    config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
-    final KeyStore memoryKeyStore = new SodiumMemoryKeyStore(config);
+    SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
+    final KeyStore memoryKeyStore = new SodiumMemoryKeyStore();
     KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
-    Enclave enclave = new LibSodiumEnclave(config, memoryKeyStore);
 
     SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[0];
     byte[] combinedKeyNonce = {};

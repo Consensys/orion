@@ -44,7 +44,6 @@ public class SodiumFileKeyStore implements KeyStore {
 
   public SodiumFileKeyStore(Config config) {
     this.config = config;
-    SodiumLibrary.setLibraryPath(config.libSodiumPath());
     // load keys
     loadKeysFromConfig(config);
   }
@@ -78,7 +77,7 @@ public class SodiumFileKeyStore implements KeyStore {
               OrionErrorCode.ENCLAVE_MISSING_PRIVATE_KEY_PASSWORD,
               "missing password to read private key");
         }
-        decoded = new SodiumArgon2Sbox(config).decrypt(storedPrivateKey, password.get());
+        decoded = new SodiumArgon2Sbox().decrypt(storedPrivateKey, password.get());
         break;
       default:
         throw new EnclaveException(
@@ -165,7 +164,7 @@ public class SodiumFileKeyStore implements KeyStore {
 
     if (password.isPresent()) {
       final ArgonOptions argonOptions = defaultArgonOptions();
-      final SodiumArgon2Sbox sodiumArgon2Sbox = new SodiumArgon2Sbox(config);
+      final SodiumArgon2Sbox sodiumArgon2Sbox = new SodiumArgon2Sbox();
       final byte[] snonce = sodiumArgon2Sbox.generateSnonce();
       final byte[] asalt = sodiumArgon2Sbox.generateAsalt();
       final byte[] sbox =

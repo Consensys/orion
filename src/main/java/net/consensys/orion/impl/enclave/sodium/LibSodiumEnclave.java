@@ -1,6 +1,5 @@
 package net.consensys.orion.impl.enclave.sodium;
 
-import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.CombinedKey;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EnclaveException;
@@ -26,8 +25,7 @@ public class LibSodiumEnclave implements Enclave {
   private final PublicKey[] alwaysSendTo;
   private final PublicKey[] nodeKeys;
 
-  public LibSodiumEnclave(Config config, KeyStore keyStore) {
-    SodiumLibrary.setLibraryPath(config.libSodiumPath());
+  public LibSodiumEnclave(KeyStore keyStore) {
     this.keyStore = keyStore;
     this.alwaysSendTo = keyStore.alwaysSendTo();
     this.nodeKeys = keyStore.nodeKeys();
