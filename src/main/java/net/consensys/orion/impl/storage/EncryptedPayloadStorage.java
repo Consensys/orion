@@ -1,5 +1,6 @@
 package net.consensys.orion.impl.storage;
 
+import net.consensys.cava.concurrent.AsyncResult;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageEngine;
@@ -19,20 +20,19 @@ public class EncryptedPayloadStorage implements Storage<EncryptedPayload> {
   }
 
   @Override
-  public String put(EncryptedPayload data) {
-    // configureRoutes key
-    String key = Base64.encode(keyBuilder.build(data.cipherText()));
-    storageEngine.put(key, data);
-    return key;
+  public AsyncResult<String> put(EncryptedPayload data) {
+    String key = generateDigest(data);
+    return storageEngine.put(key, data).thenSupply(() -> key);
   }
 
   @Override
-  public Optional<EncryptedPayload> get(String key) {
+  public String generateDigest(EncryptedPayload data) {
+    return Base64.encode(keyBuilder.build(data.cipherText()));
+  }
+
+
+  @Override
+  public AsyncResult<Optional<EncryptedPayload>> get(String key) {
     return storageEngine.get(key);
-  }
-
-  @Override
-  public void remove(String key) {
-    storageEngine.remove(key);
   }
 }

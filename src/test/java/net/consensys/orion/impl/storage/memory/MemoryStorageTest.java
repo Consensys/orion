@@ -10,13 +10,13 @@ class MemoryStorageTest {
   private MemoryStorage<String> storage = new MemoryStorage<>();
 
   @Test
-  void storeAndRetrieve() {
+  void storeAndRetrieve() throws InterruptedException {
     storage.put("key", "data");
-    assertEquals("data", storage.get("key").get());
+    assertEquals("data", storage.get("key").get().get());
   }
 
   @Test
-  void retrieveWithoutStore() {
-    assertEquals(Optional.empty(), storage.get("missing"));
+  void retrieveWithoutStore() throws InterruptedException {
+    assertEquals(Optional.empty(), storage.get("missing").get());
   }
 }

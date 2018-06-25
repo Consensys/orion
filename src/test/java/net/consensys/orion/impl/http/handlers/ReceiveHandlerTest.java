@@ -75,7 +75,7 @@ class ReceiveHandlerTest extends HandlerTest {
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys());
 
     // store it
-    String key = storage.put(originalPayload);
+    String key = storage.put(originalPayload).get();
     // Receive operation, sending a ReceivePayload request
     RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
@@ -121,7 +121,7 @@ class ReceiveHandlerTest extends HandlerTest {
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys());
 
     // store it
-    String key = storage.put(originalPayload);
+    String key = storage.put(originalPayload).get();
     // Receive operation, sending a ReceivePayload request
     RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
@@ -159,7 +159,7 @@ class ReceiveHandlerTest extends HandlerTest {
     SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {senderKey});
 
-    String key = storage.put(originalPayload);
+    String key = storage.put(originalPayload).get();
     RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
     Request request = new Request.Builder()
@@ -215,14 +215,14 @@ class ReceiveHandlerTest extends HandlerTest {
     assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
   }
 
-  private ReceiveRequest buildReceiveRequest(Storage<EncryptedPayload> storage, byte[] toEncrypt) {
+  private ReceiveRequest buildReceiveRequest(Storage<EncryptedPayload> storage, byte[] toEncrypt) throws Exception {
     // encrypt a payload
     SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     SodiumPublicKey recipientKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {recipientKey});
 
     // store it
-    String key = storage.put(originalPayload);
+    String key = storage.put(originalPayload).get();
 
     // Receive operation, sending a ReceivePayload request
     return new ReceiveRequest(key, recipientKey.toString());
