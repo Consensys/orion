@@ -6,27 +6,25 @@ import net.consensys.cava.concurrent.AsyncCompletion;
 import net.consensys.cava.concurrent.CompletableAsyncCompletion;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
+import net.consensys.cava.kv.KeyValueStore;
+import net.consensys.cava.kv.MapDBKeyValueStore;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.storage.Storage;
-import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
 import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
-import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.helpers.StubEnclave;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 import net.consensys.orion.impl.storage.EncryptedPayloadStorage;
 import net.consensys.orion.impl.storage.Sha512_256StorageKeyBuilder;
-import net.consensys.orion.impl.storage.file.MapDbStorage;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import com.muquit.libsodiumjna.SodiumLibrary;
@@ -65,8 +63,8 @@ abstract class HandlerTest {
   private Integer clientHTTPServerPort;
   private HttpServer clientHttpServer;
 
-  private StorageEngine<EncryptedPayload> storageEngine;
-  protected Storage<EncryptedPayload> storage;
+  private KeyValueStore storage;
+  protected Storage<EncryptedPayload> payloadStorage;
 
   @BeforeAll
   static void setupSodiumLib() {
@@ -91,15 +89,14 @@ abstract class HandlerTest {
     enclave = buildEnclave();
 
     Path path = tempDir.resolve("routerdb");
-    Files.createDirectories(path);
-    storageEngine = new MapDbStorage<>(SodiumEncryptedPayload.class, path);
+    storage = new MapDBKeyValueStore(path);
     // create our vertx object
     vertx = Vertx.vertx();
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
-    storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
+    payloadStorage = new EncryptedPayloadStorage(storage, keyBuilder);
     Router publicRouter = Router.router(vertx);
     Router privateRouter = Router.router(vertx);
-    Orion.configureRoutes(vertx, networkNodes, enclave, storage, publicRouter, privateRouter, config);
+    Orion.configureRoutes(vertx, networkNodes, enclave, payloadStorage, publicRouter, privateRouter, config);
 
     setupNodeServer(publicRouter);
     setupClientServer(privateRouter);
@@ -152,10 +149,10 @@ abstract class HandlerTest {
   }
 
   @AfterEach
-  void tearDown() {
+  void tearDown() throws Exception {
     nodeHttpServer.close();
     clientHttpServer.close();
-    storageEngine.close();
+    storage.close();
     vertx.close();
   }
 
