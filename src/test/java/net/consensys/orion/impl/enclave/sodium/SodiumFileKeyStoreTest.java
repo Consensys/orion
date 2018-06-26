@@ -22,6 +22,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Optional;
 
+import com.muquit.libsodiumjna.SodiumLibrary;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class SodiumFileKeyStoreTest {
@@ -34,6 +36,11 @@ class SodiumFileKeyStoreTest {
   private String privateKey1Base64Encoded = "Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA=";
   private PublicKey publicKey1 = new SodiumPublicKey(Base64.decode(publicKey1Base64Encoded));
   private PrivateKey privateKey1 = new SodiumPrivateKey(Base64.decode(privateKey1Base64Encoded));
+
+  @BeforeAll
+  static void setupSodiumLib() {
+    SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
+  }
 
   @Test
   void configLoadsRawKeys() {
