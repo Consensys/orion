@@ -7,6 +7,9 @@ import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import static net.consensys.orion.impl.http.server.HttpContentType.TEXT;
 
+import net.consensys.cava.kv.KeyValueStore;
+import net.consensys.cava.kv.LevelDBKeyValueStore;
+import net.consensys.cava.kv.MapDBKeyValueStore;
 import net.consensys.cava.net.tls.TLS;
 import net.consensys.cava.net.tls.VertxTrustOptions;
 import net.consensys.orion.api.config.Config;
@@ -17,12 +20,10 @@ import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.exception.OrionException;
 import net.consensys.orion.api.storage.Storage;
-import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
 import net.consensys.orion.impl.cmd.OrionArguments;
 import net.consensys.orion.impl.config.TomlConfigBuilder;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
-import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumFileKeyStore;
 import net.consensys.orion.impl.http.handler.partyinfo.PartyInfoHandler;
 import net.consensys.orion.impl.http.handler.push.PushHandler;
@@ -34,8 +35,6 @@ import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 import net.consensys.orion.impl.network.NetworkDiscovery;
 import net.consensys.orion.impl.storage.EncryptedPayloadStorage;
 import net.consensys.orion.impl.storage.Sha512_256StorageKeyBuilder;
-import net.consensys.orion.impl.storage.file.MapDbStorage;
-import net.consensys.orion.impl.storage.leveldb.LevelDbStorage;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,7 +79,7 @@ public class Orion {
   }
 
   private final Vertx vertx;
-  private StorageEngine<EncryptedPayload> storageEngine;
+  private KeyValueStore storage;
   private NetworkDiscovery discovery;
   private HttpServer nodeHTTPServer;
   private HttpServer clientHTTPServer;
@@ -223,8 +222,12 @@ public class Orion {
       log.error("Error stopping vert.x", io);
     }
 
-    if (storageEngine != null) {
-      storageEngine.close();
+    if (storage != null) {
+      try {
+        storage.close();
+      } catch (IOException e) {
+        log.error("Error closing storage", e);
+      }
     }
   }
 
@@ -308,7 +311,7 @@ public class Orion {
     }
 
     // create our storage engine
-    storageEngine = createStorageEngine(config, workDir);
+    storage = createStorage(config, workDir);
 
     // Vertx routers
     Router nodeRouter = Router.router(vertx).exceptionHandler(log::error);
@@ -316,8 +319,8 @@ public class Orion {
 
     // controller dependencies
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
-    EncryptedPayloadStorage storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
-    configureRoutes(vertx, networkNodes, enclave, storage, nodeRouter, clientRouter, config);
+    EncryptedPayloadStorage encryptedStorage = new EncryptedPayloadStorage(storage, keyBuilder);
+    configureRoutes(vertx, networkNodes, enclave, encryptedStorage, nodeRouter, clientRouter, config);
 
     // asynchronously start the vertx http server for public API
     CompletableFuture<Boolean> nodeFuture = new CompletableFuture<>();
@@ -416,25 +419,27 @@ public class Orion {
     };
   }
 
-  private StorageEngine<EncryptedPayload> createStorageEngine(Config config, Path storagePath) {
+  private KeyValueStore createStorage(Config config, Path storagePath) {
     String storage = config.storage();
-    String dbDir = "routerdb";
+    String db = "routerdb";
     String[] storageOptions = storage.split(":", 2);
     if (storageOptions.length > 1) {
-      dbDir = storageOptions[1];
+      db = storageOptions[1];
     }
 
-    Path dbPath = storagePath.resolve(dbDir);
-    try {
-      Files.createDirectories(dbPath);
-    } catch (IOException ex) {
-      throw new OrionStartException("Couldn't create storage path '" + dbPath + "': " + ex.getMessage(), ex);
-    }
-
+    Path dbPath = storagePath.resolve(db);
     if (storage.startsWith("mapdb")) {
-      return new MapDbStorage<>(SodiumEncryptedPayload.class, dbPath);
+      try {
+        return new MapDBKeyValueStore(dbPath);
+      } catch (IOException e) {
+        throw new OrionStartException("Couldn't create MapDB store: " + dbPath, e);
+      }
     } else if (storage.startsWith("leveldb")) {
-      return new LevelDbStorage<>(SodiumEncryptedPayload.class, dbPath);
+      try {
+        return new LevelDBKeyValueStore(dbPath);
+      } catch (IOException e) {
+        throw new OrionStartException("Couldn't create LevelDB store: " + dbPath, e);
+      }
     } else {
       throw new OrionStartException("unsupported storage mechanism: " + storage);
     }
