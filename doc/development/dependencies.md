@@ -4,9 +4,13 @@
 
 In order to be compatible with the original Haskell Constellation, we used 
 [Sodium crypto library](https://download.libsodium.org/doc/) (libsodium) to provide the encryption 
-primitives. To use this, you will first need to install libsodium on your machine.
+primitives.
+ 
+### Install libsodium
 
-### Linux
+To use this, you will first need to install libsodium on your machine.
+
+#### Linux
 Download the [latest stable version](https://download.libsodium.org/libsodium/releases/LATEST.tar.gz) 
 of libsodium tarball and then execute:
 ```
@@ -15,13 +19,13 @@ make && make check
 sudo make install
 ```
 
-### MacOS
+#### MacOS
 You can install using [homebrew](https://brew.sh/):
 ```
 brew install libsodium
 ```
 
-### Other systems
+#### Other systems
 For more information on how to install libsodium on your system check the 
 [libsodium installation docs](https://download.libsodium.org/doc/installation/). 
 
