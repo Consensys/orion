@@ -10,8 +10,8 @@ import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.api.exception.OrionErrorCode;
-import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
+import net.consensys.orion.impl.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -99,7 +99,7 @@ class PushHandlerTest extends HandlerTest {
   }
 
   private EncryptedPayload mockPayload() {
-    LibSodiumEnclave sEnclave = new LibSodiumEnclave(memoryKeyStore);
+    SodiumEnclave sEnclave = new SodiumEnclave(memoryKeyStore);
     PublicKey k1 = memoryKeyStore.generateKeyPair(keyConfig);
     PublicKey k2 = memoryKeyStore.generateKeyPair(keyConfig);
     return sEnclave.encrypt("something important".getBytes(UTF_8), k1, new PublicKey[] {k2});

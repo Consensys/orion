@@ -1,11 +1,9 @@
 package net.consensys.orion.impl.enclave.sodium;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
@@ -20,42 +18,19 @@ import net.consensys.orion.api.exception.OrionErrorCode;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import com.muquit.libsodiumjna.SodiumKeyPair;
-import com.muquit.libsodiumjna.SodiumLibrary;
-import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(TempDirectoryExtension.class)
-class LibSodiumEnclaveTest {
+class SodiumEnclaveTest {
 
   private final KeyStore memoryKeyStore = new MemoryKeyStore();
-  private LibSodiumEnclave enclave;
+  private SodiumEnclave enclave;
 
   @BeforeEach
   void setUp() {
-    SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
-    enclave = new LibSodiumEnclave(memoryKeyStore);
-  }
-
-  @Test
-  void version() {
-    assertTrue(!SodiumLibrary.libsodiumVersionString().isEmpty());
-  }
-
-  @Test
-  void sodiumLoads() throws SodiumLibraryException {
-    final int nonceBytesLength = SodiumLibrary.cryptoBoxNonceBytes().intValue();
-    final byte[] nonce = SodiumLibrary.randomBytes(nonceBytesLength);
-    final SodiumKeyPair senderPair = SodiumLibrary.cryptoBoxKeyPair();
-    final SodiumKeyPair recipientPair = SodiumLibrary.cryptoBoxKeyPair();
-
-    final byte[] message = "hello".getBytes(UTF_8);
-    assertEncryptDecrypt(nonce, senderPair, recipientPair, message);
-
-    final byte[] secretKey = SodiumLibrary.randomBytes(SodiumLibrary.cryptoSecretBoxKeyBytes().intValue());
-    assertEncryptDecrypt(nonce, senderPair, recipientPair, secretKey);
+    enclave = new SodiumEnclave(memoryKeyStore);
   }
 
   @Test
@@ -149,10 +124,8 @@ class LibSodiumEnclaveTest {
         encryptedPayload.combinedKeys(),
         encryptedPayload.cipherText());
 
-    EnclaveException e = assertThrows(EnclaveException.class, () -> decrypt(payload, recipientKey));
-    assertEquals(
-        "com.muquit.libsodiumjna.exceptions.SodiumLibraryException: nonce is 0bytes, it must be24 bytes",
-        e.getMessage());
+    IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> decrypt(payload, recipientKey));
+    assertEquals("nonce must be 24 bytes, got 0", e.getMessage());
   }
 
   @Test
@@ -169,10 +142,8 @@ class LibSodiumEnclaveTest {
         encryptedPayload.combinedKeys(),
         encryptedPayload.cipherText());
 
-    EnclaveException e = assertThrows(EnclaveException.class, () -> decrypt(payload, recipientKey));
-    assertEquals(
-        "com.muquit.libsodiumjna.exceptions.SodiumLibraryException: invalid nonce length 0 bytes",
-        e.getMessage());
+    IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> decrypt(payload, recipientKey));
+    assertEquals("nonce must be 24 bytes, got 0", e.getMessage());
   }
 
   @Test
@@ -207,16 +178,6 @@ class LibSodiumEnclaveTest {
 
   private EncryptedPayload encrypt(String plaintext, PublicKey senderKey, PublicKey... recipientKey) {
     return enclave.encrypt(plaintext.getBytes(UTF_8), senderKey, recipientKey);
-  }
-
-  private void assertEncryptDecrypt(byte[] nonce, SodiumKeyPair senderPair, SodiumKeyPair recipientPair, byte[] message)
-      throws SodiumLibraryException {
-    final byte[] ciphertext =
-        SodiumLibrary.cryptoBoxEasy(message, nonce, recipientPair.getPublicKey(), senderPair.getPrivateKey());
-    final byte[] decrypted =
-        SodiumLibrary.cryptoBoxOpenEasy(ciphertext, nonce, senderPair.getPublicKey(), recipientPair.getPrivateKey());
-
-    assertArrayEquals(message, decrypted);
   }
 
   private PublicKey generateKey(Path tempDir) {

@@ -7,6 +7,7 @@ import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import static net.consensys.orion.impl.http.server.HttpContentType.TEXT;
 
+import net.consensys.cava.crypto.sodium.Sodium;
 import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.cava.kv.LevelDBKeyValueStore;
 import net.consensys.cava.kv.MapDBKeyValueStore;
@@ -23,7 +24,7 @@ import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
 import net.consensys.orion.impl.cmd.OrionArguments;
 import net.consensys.orion.impl.enclave.sodium.FileKeyStore;
-import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
+import net.consensys.orion.impl.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.impl.http.handler.partyinfo.PartyInfoHandler;
 import net.consensys.orion.impl.http.handler.push.PushHandler;
 import net.consensys.orion.impl.http.handler.receive.ReceiveHandler;
@@ -47,7 +48,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.muquit.libsodiumjna.SodiumLibrary;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -259,8 +259,11 @@ public class Orion {
     FileKeyStore keyStore = new FileKeyStore(config);
     ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(config, keyStore.nodeKeys());
 
-    SodiumLibrary.setLibraryPath(config.libSodiumPath());
-    Enclave enclave = new LibSodiumEnclave(keyStore);
+    Path libSodiumPath = config.libSodiumPath();
+    if (libSodiumPath != null) {
+      Sodium.loadLibrary(libSodiumPath);
+    }
+    Enclave enclave = new SodiumEnclave(keyStore);
 
     Path workDir = config.workDir();
     log.info("using working directory {}", workDir);

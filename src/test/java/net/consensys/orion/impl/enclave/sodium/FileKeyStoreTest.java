@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import com.muquit.libsodiumjna.SodiumLibrary;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,11 +36,6 @@ class FileKeyStoreTest {
       new PrivateKey(Base64.decode("Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA="));
   private static Config config;
   private FileKeyStore keyStore;
-
-  @BeforeAll
-  static void setupSodiumLib() {
-    SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
-  }
 
   @BeforeAll
   static void setupConfig() throws Exception {

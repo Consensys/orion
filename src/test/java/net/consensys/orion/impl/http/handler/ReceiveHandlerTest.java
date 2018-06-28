@@ -11,8 +11,8 @@ import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.storage.Storage;
-import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
+import net.consensys.orion.impl.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.impl.http.handler.receive.ReceiveRequest;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
@@ -40,7 +40,7 @@ class ReceiveHandlerTest extends HandlerTest {
     memoryKeyStore = new MemoryKeyStore();
     PublicKey defaultNodeKey = memoryKeyStore.generateKeyPair(keyConfig);
     memoryKeyStore.addNodeKey(defaultNodeKey);
-    return new LibSodiumEnclave(memoryKeyStore);
+    return new SodiumEnclave(memoryKeyStore);
   }
 
   @SuppressWarnings("unchecked")

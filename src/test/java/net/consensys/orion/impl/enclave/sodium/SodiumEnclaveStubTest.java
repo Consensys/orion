@@ -9,12 +9,12 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.junit.jupiter.api.Test;
 
-class LibSodiumEnclaveStubTest {
+class SodiumEnclaveStubTest {
 
   @Test
   void roundTripEncryption() {
     byte[] message = "hello".getBytes(UTF_8);
-    LibSodiumEnclaveStub enclave = new LibSodiumEnclaveStub();
+    SodiumEnclaveStub enclave = new SodiumEnclaveStub();
     EncryptedPayload encryptedPayload = enclave.encrypt(message, null, null);
     byte[] bytes = enclave.decrypt(encryptedPayload, null);
     assertArrayEquals(message, bytes);
@@ -23,7 +23,7 @@ class LibSodiumEnclaveStubTest {
   @Test
   void roundTripEncryptionWithFunkyBytes() {
     byte[] message = DatatypeConverter.parseHexBinary("0079FF00FF89");
-    LibSodiumEnclaveStub enclave = new LibSodiumEnclaveStub();
+    SodiumEnclaveStub enclave = new SodiumEnclaveStub();
     EncryptedPayload encryptedPayload = enclave.encrypt(message, null, null);
     byte[] bytes = enclave.decrypt(encryptedPayload, null);
     assertArrayEquals(message, bytes);

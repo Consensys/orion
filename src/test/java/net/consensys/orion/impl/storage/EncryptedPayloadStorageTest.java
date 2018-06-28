@@ -7,7 +7,7 @@ import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
-import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclaveStub;
+import net.consensys.orion.impl.enclave.sodium.SodiumEnclaveStub;
 
 import java.security.Security;
 import java.util.Optional;
@@ -21,7 +21,7 @@ class EncryptedPayloadStorageTest {
     Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
   }
 
-  private Enclave enclave = new LibSodiumEnclaveStub();
+  private Enclave enclave = new SodiumEnclaveStub();
   private StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
   private Storage<EncryptedPayload> payloadStorage = new EncryptedPayloadStorage(new MapKeyValueStore(), keyBuilder);
 

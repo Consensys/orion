@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /*
  * A very simple test class that implements the enclave interface and does minimal encryption operations that do not do
@@ -74,12 +73,6 @@ public class StubEnclave implements Enclave {
     } else {
       combinedKeys = new CombinedKey[0];
     }
-    return new EncryptedPayload(
-        senderKey,
-        nonce,
-        combinedKeyNonce,
-        combinedKeys,
-        ciphterText,
-        Optional.of(combinedKeysOwners));
+    return new EncryptedPayload(senderKey, nonce, combinedKeyNonce, combinedKeys, ciphterText, combinedKeysOwners);
   }
 }

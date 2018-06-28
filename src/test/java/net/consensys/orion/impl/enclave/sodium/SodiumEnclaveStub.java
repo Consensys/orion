@@ -8,7 +8,7 @@ import net.consensys.orion.api.enclave.PublicKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-public class LibSodiumEnclaveStub implements Enclave {
+public class SodiumEnclaveStub implements Enclave {
 
   @Override
   public PublicKey[] alwaysSendTo() {

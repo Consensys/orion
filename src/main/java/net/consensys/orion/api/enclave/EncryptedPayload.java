@@ -4,9 +4,9 @@ import net.consensys.orion.api.exception.OrionErrorCode;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,8 +18,7 @@ public class EncryptedPayload implements Serializable {
   private final byte[] cipherText;
   private final byte[] nonce;
   private final CombinedKey[] combinedKeys;
-
-  private Optional<Map<PublicKey, Integer>> combinedKeysOwners;
+  private final Map<PublicKey, Integer> combinedKeysOwners;
 
   public EncryptedPayload(
       PublicKey sender,
@@ -27,7 +26,7 @@ public class EncryptedPayload implements Serializable {
       byte[] combinedKeyNonce,
       CombinedKey[] combinedKeys,
       byte[] cipherText) {
-    this(sender, nonce, combinedKeyNonce, combinedKeys, cipherText, Optional.empty());
+    this(sender, nonce, combinedKeyNonce, combinedKeys, cipherText, Collections.emptyMap());
   }
 
   @JsonCreator
@@ -37,7 +36,7 @@ public class EncryptedPayload implements Serializable {
       @JsonProperty("combinedKeyNonce") byte[] combinedKeyNonce,
       @JsonProperty("combinedKeys") CombinedKey[] combinedKeys,
       @JsonProperty("cipherText") byte[] cipherText,
-      @JsonProperty("combinedKeysOwners") Optional<Map<PublicKey, Integer>> combinedKeysOwners) {
+      @JsonProperty("combinedKeysOwners") Map<PublicKey, Integer> combinedKeysOwners) {
     this.combinedKeyNonce = combinedKeyNonce;
     this.sender = sender;
     this.cipherText = cipherText;
@@ -72,7 +71,7 @@ public class EncryptedPayload implements Serializable {
   }
 
   public EncryptedPayload stripFor(PublicKey key) {
-    final Integer toKeepIdx = combinedKeysOwners.get().get(key);
+    final Integer toKeepIdx = combinedKeysOwners.get(key);
 
     if (toKeepIdx == null || toKeepIdx < 0 || toKeepIdx >= combinedKeys.length) {
       throw new EnclaveException(
