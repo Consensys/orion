@@ -1,12 +1,11 @@
 package net.consensys.orion.impl.network;
 
 import net.consensys.orion.api.config.Config;
+import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.api.network.NetworkNodes;
-import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
-import net.consensys.orion.impl.enclave.sodium.SodiumPublicKeyDeserializer;
+import net.consensys.orion.impl.enclave.sodium.PublicKeyDeserializer;
 
 import java.net.URL;
-import java.security.PublicKey;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +38,7 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
   public ConcurrentNetworkNodes(
       @JsonProperty("url") URL url,
       @JsonProperty("nodeURLs") List<URL> nodeURLs,
-      @JsonProperty("nodePKs") @JsonDeserialize(
-          keyUsing = SodiumPublicKeyDeserializer.class) Map<SodiumPublicKey, URL> nodePKs) {
+      @JsonProperty("nodePKs") @JsonDeserialize(keyUsing = PublicKeyDeserializer.class) Map<PublicKey, URL> nodePKs) {
     this.url = url;
     this.nodeURLs = new CopyOnWriteArrayList<>(nodeURLs);
     this.nodePKs = new ConcurrentHashMap<>(nodePKs);

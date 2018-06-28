@@ -4,13 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
+import net.consensys.orion.api.enclave.CombinedKey;
+import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
+import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
-import net.consensys.orion.impl.enclave.sodium.SodiumCombinedKey;
-import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
-import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
-import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
+import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.impl.http.server.HttpContentType;
 
 import java.io.Serializable;
@@ -45,24 +45,23 @@ class SerializerTest {
   @Test
   void sodiumEncryptedPayloadSerialization(@TempDirectory Path tempDir) {
     SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
-    final KeyStore memoryKeyStore = new SodiumMemoryKeyStore();
+    final KeyStore memoryKeyStore = new MemoryKeyStore();
     KeyConfig keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
 
-    SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[0];
+    CombinedKey[] combinedKeys = new CombinedKey[0];
     byte[] combinedKeyNonce = {};
     byte[] nonce = {};
-    SodiumPublicKey sender = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
+    PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
 
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    SodiumEncryptedPayload original =
-        new SodiumEncryptedPayload(sender, nonce, combinedKeyNonce, combinedKeys, toEncrypt);
+    EncryptedPayload original = new EncryptedPayload(sender, nonce, combinedKeyNonce, combinedKeys, toEncrypt);
 
-    SodiumEncryptedPayload processed = Serializer.deserialize(
+    EncryptedPayload processed = Serializer.deserialize(
         HttpContentType.CBOR,
-        SodiumEncryptedPayload.class,
+        EncryptedPayload.class,
         Serializer.serialize(HttpContentType.CBOR, original));
 
     assertEquals(original, processed);

@@ -22,8 +22,8 @@ import net.consensys.orion.api.exception.OrionException;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
 import net.consensys.orion.impl.cmd.OrionArguments;
+import net.consensys.orion.impl.enclave.sodium.FileKeyStore;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
-import net.consensys.orion.impl.enclave.sodium.SodiumFileKeyStore;
 import net.consensys.orion.impl.http.handler.partyinfo.PartyInfoHandler;
 import net.consensys.orion.impl.http.handler.push.PushHandler;
 import net.consensys.orion.impl.http.handler.receive.ReceiveHandler;
@@ -256,7 +256,7 @@ public class Orion {
   }
 
   public void run(PrintStream out, PrintStream err, Config config) {
-    SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
+    FileKeyStore keyStore = new FileKeyStore(config);
     ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(config, keyStore.nodeKeys());
 
     SodiumLibrary.setLibraryPath(config.libSodiumPath());
@@ -444,7 +444,7 @@ public class Orion {
   private void generateKeyPairs(PrintStream out, PrintStream err, Config config, String[] keysToGenerate) {
     log.info("generating Key Pairs");
 
-    SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
+    FileKeyStore keyStore = new FileKeyStore(config);
 
     Scanner scanner = new Scanner(System.in, UTF_8.name());
 

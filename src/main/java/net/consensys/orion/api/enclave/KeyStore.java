@@ -1,7 +1,5 @@
 package net.consensys.orion.api.enclave;
 
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.util.Optional;
 
 /**
