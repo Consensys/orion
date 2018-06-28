@@ -1,7 +1,10 @@
-package net.consensys.orion.impl.http.handlers;
+package net.consensys.orion.impl.http;
 
 import static io.vertx.core.Vertx.vertx;
-import static net.consensys.cava.crypto.Hash.sha2_256;
+import static net.consensys.cava.net.tls.TLS.certificateHexFingerprint;
+import static net.consensys.orion.impl.TestUtils.configureJDKTrustStore;
+import static net.consensys.orion.impl.TestUtils.generateAndLoadConfiguration;
+import static net.consensys.orion.impl.TestUtils.writeServerCertToConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -10,8 +13,7 @@ import net.consensys.cava.concurrent.CompletableAsyncResult;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.cmd.Orion;
-import net.consensys.orion.impl.config.MemoryConfig;
-import net.consensys.orion.impl.http.SecurityTestUtils;
+import net.consensys.orion.api.config.Config;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,7 +21,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import javax.net.ssl.SSLHandshakeException;
 
-import io.netty.util.internal.StringUtil;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
@@ -37,46 +38,35 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class CAOrTofuSecurityTest {
 
   private static Vertx vertx = vertx();
-
-  private static HttpClient httpClient;
-
-  private static Orion orion;
-
-  private static HttpClient nonCAhttpClient;
   private static Path knownClientsFile;
   private static String exampleComFingerprint;
-  private static MemoryConfig config;
+  private static HttpClient nonCAhttpClient;
+  private static HttpClient httpClient;
+  private static int nodePort;
+  private static Orion orion;
 
   @BeforeAll
   static void setUp(@TempDirectory Path tempDir) throws Exception {
-    SelfSignedCertificate clientCert = SelfSignedCertificate.create("localhost");
+    Config config = generateAndLoadConfiguration(tempDir, writer -> {
+      writer.write("tlsservertrust='ca-or-tofu'\n");
+      writeServerCertToConfig(writer, SelfSignedCertificate.create("localhost"));
+    });
 
-    orion = new Orion(vertx);
-    config = new MemoryConfig();
-    config.setWorkDir(tempDir.resolve("data"));
-    config.setTls("strict");
-    config.setTlsServerTrust("ca-or-tofu");
-    knownClientsFile = tempDir.resolve("knownclients.txt");
-    config.setTlsKnownClients(knownClientsFile);
+    knownClientsFile = config.tlsKnownClients();
 
-    SecurityTestUtils.installServerCert(config, tempDir);
-    SecurityTestUtils.configureJDKTrustStore(clientCert, tempDir);
-
-
-    SecurityTestUtils.installPorts(config);
-
-    SelfSignedCertificate nonCAClientCertificate = SelfSignedCertificate.create("localhost");
-
-    exampleComFingerprint = StringUtil.toHexStringPadded(
-        sha2_256(SecurityTestUtils.loadPEM(Paths.get(nonCAClientCertificate.keyCertOptions().getCertPath()))));
-
+    SelfSignedCertificate nonCAClientCertificate = SelfSignedCertificate.create("example.com");
+    exampleComFingerprint = certificateHexFingerprint(Paths.get(nonCAClientCertificate.keyCertOptions().getCertPath()));
     nonCAhttpClient = vertx.createHttpClient(
         new HttpClientOptions().setSsl(true).setTrustAll(true).setKeyCertOptions(
             nonCAClientCertificate.keyCertOptions()));
 
+    SelfSignedCertificate clientCert = SelfSignedCertificate.create("other.com");
+    configureJDKTrustStore(clientCert, tempDir);
     httpClient = vertx.createHttpClient(
         new HttpClientOptions().setSsl(true).setTrustAll(true).setKeyCertOptions(clientCert.keyCertOptions()));
 
+    nodePort = config.nodePort();
+    orion = new Orion(vertx);
     orion.run(System.out, System.err, config);
   }
 
@@ -91,7 +81,7 @@ class CAOrTofuSecurityTest {
   @Test
   void testTofuThenCA() throws Exception {
     {
-      HttpClientRequest req = nonCAhttpClient.get(config.nodePort(), "localhost", "/upcheck");
+      HttpClientRequest req = nonCAhttpClient.get(nodePort, "localhost", "/upcheck");
       CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
       req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
       HttpClientResponse resp = result.get();
@@ -99,9 +89,9 @@ class CAOrTofuSecurityTest {
     }
     List<String> fingerprints = Files.readAllLines(knownClientsFile);
     assertEquals(1, fingerprints.size(), String.join("\n", fingerprints));
-    assertEquals("localhost " + exampleComFingerprint, fingerprints.get(0));
+    assertEquals("example.com " + exampleComFingerprint, fingerprints.get(0));
 
-    HttpClientRequest req = httpClient.get(config.nodePort(), "localhost", "/upcheck");
+    HttpClientRequest req = httpClient.get(nodePort, "localhost", "/upcheck");
     CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
     HttpClientResponse resp = result.get();
@@ -115,7 +105,7 @@ class CAOrTofuSecurityTest {
   void testWithoutSSLConfiguration() {
     OkHttpClient unsecureHttpClient = new OkHttpClient.Builder().build();
 
-    Request upcheckRequest = new Request.Builder().url("https://localhost:" + config.nodePort() + "/upcheck").build();
+    Request upcheckRequest = new Request.Builder().url("https://localhost:" + nodePort + "/upcheck").build();
     assertThrows(SSLHandshakeException.class, () -> unsecureHttpClient.newCall(upcheckRequest).execute());
   }
 }

@@ -22,10 +22,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,9 +49,11 @@ public class SodiumFileKeyStore implements KeyStore {
   private void loadKeysFromConfig(Config config) {
     final Optional<String[]> passwordList = lookupPasswords();
 
-    for (int i = 0; i < config.publicKeys().length; i++) {
-      final Path publicKeyFile = config.publicKeys()[i];
-      final Path privateKeyFile = config.privateKeys()[i];
+    List<Path> publicKeys = config.publicKeys();
+    List<Path> privateKeys = config.privateKeys();
+    for (int i = 0; i < publicKeys.size(); i++) {
+      final Path publicKeyFile = publicKeys.get(i);
+      final Path privateKeyFile = privateKeys.get(i);
       final Optional<String> password = passwordList.isPresent() ? Optional.of(passwordList.get()[i]) : empty();
       final PublicKey publicKey = readPublicKey(publicKeyFile);
       final PrivateKey privateKey = readPrivateKey(privateKeyFile, password);
@@ -105,7 +105,7 @@ public class SodiumFileKeyStore implements KeyStore {
 
   @Override
   public PublicKey generateKeyPair(KeyConfig config) {
-    final String basePath = config.basePath();
+    final Path basePath = config.basePath();
     final Optional<String> password = config.password();
     return generateStoreAndCache(basePath, password);
   }
@@ -116,7 +116,7 @@ public class SodiumFileKeyStore implements KeyStore {
     if (passwords.isPresent()) {
       try {
         final List<String> strings = Files.readAllLines(passwords.get());
-        return Optional.of(strings.toArray(new String[strings.size()]));
+        return Optional.of(strings.toArray(new String[0]));
       } catch (final IOException e) {
         throw new EnclaveException(OrionErrorCode.ENCLAVE_READ_PASSWORDS, e);
       }
@@ -125,10 +125,10 @@ public class SodiumFileKeyStore implements KeyStore {
     return empty();
   }
 
-  private PublicKey generateStoreAndCache(String baseName, Optional<String> password) {
+  private PublicKey generateStoreAndCache(Path baseName, Optional<String> password) {
     final SodiumKeyPair keyPair = keyPair();
-    final Path publicFile = Paths.get(baseName + ".pub");
-    final Path privateFile = Paths.get(baseName + ".key");
+    final Path publicFile = baseName.resolveSibling(baseName.getFileName() + ".pub");
+    final Path privateFile = baseName.resolveSibling(baseName.getFileName() + ".key");
     storePublicKey(keyPair.getPublicKey(), publicFile);
     final StoredPrivateKey privKey = createStoredPrivateKey(keyPair, password);
     storePrivateKey(privKey, privateFile);
@@ -196,13 +196,11 @@ public class SodiumFileKeyStore implements KeyStore {
 
   @Override
   public PublicKey[] alwaysSendTo() {
-    final Path[] alwaysSendTo = config.alwaysSendTo();
-    return Arrays.stream(alwaysSendTo).map(this::readPublicKey).toArray(PublicKey[]::new);
+    return config.alwaysSendTo().stream().map(this::readPublicKey).toArray(PublicKey[]::new);
   }
 
   @Override
   public PublicKey[] nodeKeys() {
-    final Path[] publicKeys = config.publicKeys();
-    return Arrays.stream(publicKeys).map(this::readPublicKey).toArray(PublicKey[]::new);
+    return config.publicKeys().stream().map(this::readPublicKey).toArray(PublicKey[]::new);
   }
 }

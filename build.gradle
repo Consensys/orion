@@ -191,7 +191,7 @@ repositories {
 
 dependencies {
   // cava
-  compile 'net.consensys.cava:cava:0.2.0-1BB291-snapshot'
+  compile 'net.consensys.cava:cava:0.2.0-F1039E-snapshot'
 
   // vertx
   compile 'io.vertx:vertx-core:3.5.2'

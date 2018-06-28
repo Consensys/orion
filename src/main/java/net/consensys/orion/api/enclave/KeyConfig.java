@@ -1,5 +1,6 @@
 package net.consensys.orion.api.enclave;
 
+import java.nio.file.Path;
 import java.util.Optional;
 
 /**
@@ -9,7 +10,7 @@ import java.util.Optional;
  * key, and the .pub with the public key.
  */
 public class KeyConfig {
-  private final String basePath;
+  private final Path basePath;
   private final Optional<String> password;
 
   /**
@@ -18,12 +19,12 @@ public class KeyConfig {
    * @param basePath Basepath to use for this config
    * @param password Optional password to use.
    */
-  public KeyConfig(String basePath, Optional<String> password) {
+  public KeyConfig(Path basePath, Optional<String> password) {
     this.basePath = basePath;
     this.password = password;
   }
 
-  public String basePath() {
+  public Path basePath() {
     return basePath;
   }
 

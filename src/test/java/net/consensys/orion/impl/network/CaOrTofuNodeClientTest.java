@@ -1,6 +1,9 @@
 package net.consensys.orion.impl.network;
 
-import static net.consensys.cava.crypto.Hash.sha2_256;
+import static net.consensys.cava.net.tls.TLS.certificateHexFingerprint;
+import static net.consensys.orion.impl.TestUtils.generateAndLoadConfiguration;
+import static net.consensys.orion.impl.TestUtils.getFreePort;
+import static net.consensys.orion.impl.TestUtils.writeClientCertToConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import net.consensys.cava.concurrent.AsyncCompletion;
@@ -9,8 +12,8 @@ import net.consensys.cava.concurrent.CompletableAsyncCompletion;
 import net.consensys.cava.concurrent.CompletableAsyncResult;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
-import net.consensys.orion.impl.config.MemoryConfig;
-import net.consensys.orion.impl.http.SecurityTestUtils;
+import net.consensys.orion.api.config.Config;
+import net.consensys.orion.impl.TestUtils;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -21,7 +24,6 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
-import io.netty.util.internal.StringUtil;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -46,22 +48,18 @@ class CaOrTofuNodeClientTest {
 
   @BeforeAll
   static void setUp(@TempDirectory Path tempDir) throws Exception {
-    MemoryConfig config = new MemoryConfig();
-    config.setWorkDir(tempDir);
-    config.setTls("strict");
-    config.setTlsClientTrust("ca-or-tofu");
-    SelfSignedCertificate clientCert = SelfSignedCertificate.create();
-    config.setTlsClientCert(Paths.get(clientCert.certificatePath()));
-    config.setTlsClientKey(Paths.get(clientCert.privateKeyPath()));
+    SelfSignedCertificate clientCert = SelfSignedCertificate.create("localhost");
+    Config config = generateAndLoadConfiguration(tempDir, writer -> {
+      writer.write("tlsclienttrust='ca-or-tofu'\n");
+      writeClientCertToConfig(writer, clientCert);
+    });
 
+    knownServersFile = config.tlsKnownServers();
 
     SelfSignedCertificate serverCert = SelfSignedCertificate.create("foo.com");
     SelfSignedCertificate tofuCert = SelfSignedCertificate.create();
-    SecurityTestUtils.configureJDKTrustStore(serverCert, tempDir);
-    knownServersFile = tempDir.resolve("knownservers.txt");
-    config.setTlsKnownServers(knownServersFile);
-    fooFingerprint = StringUtil
-        .toHexStringPadded(sha2_256(SecurityTestUtils.loadPEM(Paths.get(tofuCert.keyCertOptions().getCertPath()))));
+    TestUtils.configureJDKTrustStore(serverCert, tempDir);
+    fooFingerprint = certificateHexFingerprint(Paths.get(tofuCert.keyCertOptions().getCertPath()));
     Files.write(knownServersFile, Collections.singletonList("#First line"));
 
     Router dummyRouter = Router.router(vertx);
@@ -84,7 +82,7 @@ class CaOrTofuNodeClientTest {
 
   private static void startServer(HttpServer server) throws Exception {
     CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
-    server.listen(SecurityTestUtils.getFreePort(), result -> {
+    server.listen(getFreePort(), result -> {
       if (result.succeeded()) {
         completion.complete();
       } else {

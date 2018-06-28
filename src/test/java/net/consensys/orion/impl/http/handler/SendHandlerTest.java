@@ -1,4 +1,4 @@
-package net.consensys.orion.impl.http.handlers;
+package net.consensys.orion.impl.http.handler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.consensys.cava.crypto.Hash.sha2_512_256;
@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.consensys.cava.junit.TempDirectory;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
@@ -19,6 +20,7 @@ import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,11 +42,12 @@ import org.junit.jupiter.api.Test;
 
 class SendHandlerTest extends HandlerTest {
 
-  private final KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
+  private KeyConfig keyConfig;
   private SodiumMemoryKeyStore memoryKeyStore;
 
   @BeforeEach
-  void setUp() {
+  void setUpKeyStore(@TempDirectory Path tempDir) {
+    keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
     memoryKeyStore = new SodiumMemoryKeyStore();
   }
 

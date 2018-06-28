@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import net.consensys.cava.concurrent.AsyncCompletion;
 import net.consensys.cava.concurrent.CompletableAsyncCompletion;
 import net.consensys.orion.api.config.Config;
-import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.helpers.FakePeer;
 import net.consensys.orion.impl.utils.Serializer;
@@ -35,8 +34,7 @@ class NetworkDiscoveryTest {
   void setUp() throws Exception {
     vertx = Vertx.vertx();
     networkNodes = new ConcurrentNetworkNodes(new URL("http://localhost1234/"));
-    config = new MemoryConfig();
-    ((MemoryConfig) config).setTls("off");
+    config = Config.load("tls='off'");
   }
 
   @AfterEach

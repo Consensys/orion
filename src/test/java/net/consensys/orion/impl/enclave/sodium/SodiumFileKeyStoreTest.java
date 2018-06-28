@@ -5,16 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.consensys.cava.junit.TempDirectory;
+import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.KeyConfig;
-import net.consensys.orion.impl.config.MemoryConfig;
-import net.consensys.orion.impl.config.TomlConfigBuilder;
 import net.consensys.orion.impl.utils.Base64;
 
-import java.io.InputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,28 +24,39 @@ import java.util.Optional;
 
 import com.muquit.libsodiumjna.SodiumLibrary;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(TempDirectoryExtension.class)
 class SodiumFileKeyStoreTest {
 
-  private InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("keyStoreTest.toml");
-  private TomlConfigBuilder configBuilder = new TomlConfigBuilder();
-  private Config config = configBuilder.build(configAsStream);
-  private SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
-  private String publicKey1Base64Encoded = "BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=";
-  private String privateKey1Base64Encoded = "Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA=";
-  private PublicKey publicKey1 = new SodiumPublicKey(Base64.decode(publicKey1Base64Encoded));
-  private PrivateKey privateKey1 = new SodiumPrivateKey(Base64.decode(privateKey1Base64Encoded));
+  private static final PublicKey PUBLIC_KEY_1 =
+      new SodiumPublicKey(Base64.decode("BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo="));
+  private static final PrivateKey PRIVATE_KEY_1 =
+      new SodiumPrivateKey(Base64.decode("Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA="));
+  private static Config config;
+  private SodiumFileKeyStore keyStore;
 
   @BeforeAll
   static void setupSodiumLib() {
     SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
   }
 
+  @BeforeAll
+  static void setupConfig() throws Exception {
+    config = Config.load(SodiumFileKeyStoreTest.class.getClassLoader().getResourceAsStream("keyStoreTest.toml"));
+  }
+
+  @BeforeEach
+  void setupKeyStore() {
+    keyStore = new SodiumFileKeyStore(config);
+  }
+
   @Test
   void configLoadsRawKeys() {
-    Optional<PrivateKey> storedKey = keyStore.privateKey(publicKey1);
-    assertEquals(privateKey1, storedKey.get());
+    Optional<PrivateKey> storedKey = keyStore.privateKey(PUBLIC_KEY_1);
+    assertEquals(PRIVATE_KEY_1, storedKey.get());
   }
 
   @Test
@@ -56,27 +67,29 @@ class SodiumFileKeyStoreTest {
 
   @Test
   void missingKeyBehaviourIsNice() {
-    MemoryConfig config = new MemoryConfig();
-    config.setPrivateKeys(Paths.get("Does not exist"));
-    config.setPublicKeys(Paths.get("Does not exist"));
-    config.setAlwaysSendTo(Paths.get("Does not exist"));
+    // @formatter:off
+    Config config = Config.load(
+        "privatekeys=[\"Does not exist\"]\n"
+      + "publickeys=[\"Does not exist\"]\n"
+      + "alwayssendto=[\"Does not exist\"]");
+    // @formatter:on
     assertThrows(EnclaveException.class, () -> new SodiumFileKeyStore(config));
   }
 
   @Test
   void missingAlgorithimRaisesAppropriateException() {
-    MemoryConfig config = new MemoryConfig();
-    config.setPrivateKeys(Paths.get("keys/noalgorithm.key"));
-    config.setPublicKeys(Paths.get("keys/tm1a.pub"));
-    config.setAlwaysSendTo(Paths.get("keys/tm1a.pub"));
+    // @formatter:off
+    Config config = Config.load(
+        "privatekeys=[\"keys/noalgorithm.key\"]\n"
+      + "publickeys=[\"keys/tm1a.pub\"]\n"
+      + "alwayssendto=[\"keys/tm1a.pub\"]");
+    // @formatter:on
     assertThrows(EnclaveException.class, () -> new SodiumFileKeyStore(config));
   }
 
   @Test
-  void configLoadsMultipleKeys() {
-    InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("multipleKeyStoreTest.toml");
-
-    Config config = configBuilder.build(configAsStream);
+  void configLoadsMultipleKeys() throws IOException {
+    Config config = Config.load(this.getClass().getClassLoader().getResourceAsStream("multipleKeyStoreTest.toml"));
     keyStore = new SodiumFileKeyStore(config);
     String[] encodedPublicKeys =
         new String[] {"BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=", "8SjRHlUBe4hAmTk3KDeJ96RhN+s10xRrHDrxEi1O5W0="};
@@ -93,10 +106,9 @@ class SodiumFileKeyStoreTest {
   }
 
   @Test
-  void alwaysSendTo() {
-    InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("alwaysSendToKeyStoreTest.toml");
-
-    Config config = configBuilder.build(configAsStream);
+  void alwaysSendTo() throws IOException {
+    Config config = Config.load(this.getClass().getClassLoader().getResourceAsStream("alwaysSendToKeyStoreTest.toml"));
+    assertEquals(Paths.get("keys"), config.workDir());
     keyStore = new SodiumFileKeyStore(config);
     String[] encodedPublicKeys =
         new String[] {"BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=", "8SjRHlUBe4hAmTk3KDeJ96RhN+s10xRrHDrxEi1O5W0="};
@@ -110,65 +122,54 @@ class SodiumFileKeyStoreTest {
   }
 
   @Test
-  void generateUnlockedProtectedKeyPair() throws Exception {
-    String keyPrefix = "keys/generated";
-    try {
-      keyStore = new SodiumFileKeyStore(config);
-      keyStore.generateKeyPair(new KeyConfig(keyPrefix, Optional.empty()));
+  void generateUnlockedProtectedKeyPair(@TempDirectory Path tempDir) throws Exception {
+    Files.createDirectories(tempDir.resolve("keys"));
+    Path keyPrefix = tempDir.resolve("keys").resolve("generated");
+    keyStore = new SodiumFileKeyStore(config);
+    keyStore.generateKeyPair(new KeyConfig(keyPrefix, Optional.empty()));
 
-      // Load the a config using the generated key, and confirm that it is valid.
-      // this shows that the key was stored and that we could load it.
-      MemoryConfig config = new MemoryConfig();
-      config.setPrivateKeys(Paths.get("keys/generated.key"));
-      config.setPublicKeys(Paths.get("keys/generated.pub"));
-      keyStore = new SodiumFileKeyStore(config);
-      PublicKey fromStore = keyStore.nodeKeys()[0];
-      assertNotNull(keyStore.privateKey(fromStore));
-    } finally {
-      Path privateKey = Paths.get(keyPrefix + ".key");
-      Path publicKey = Paths.get(keyPrefix + ".pub");
-      if (Files.exists(privateKey)) {
-        Files.delete(privateKey);
-      } else {
-        fail("private key did not get created");
-      }
-      if (Files.exists(publicKey)) {
-        Files.delete(publicKey);
-      } else {
-        fail("public key did not get created");
-      }
-    }
+    // Load the a config using the generated key, and confirm that it is valid.
+    // this shows that the key was stored and that we could load it.
+
+    // @formatter:off
+    Config config = Config.load(
+          "privatekeys=['keys/generated.key']\n"
+        + "publickeys=['keys/generated.pub']\n"
+        + "workdir='" + tempDir + "'\n");
+    // @formatter:on
+    keyStore = new SodiumFileKeyStore(config);
+    PublicKey fromStore = keyStore.nodeKeys()[0];
+    assertNotNull(keyStore.privateKey(fromStore));
+
+    Path privateKey = tempDir.resolve("keys").resolve("generated.key");
+    Path publicKey = tempDir.resolve("keys").resolve("generated.pub");
+    assertTrue(Files.exists(privateKey));
+    assertTrue(Files.exists(publicKey));
   }
 
   @Test
-  void generatePasswordProtectedKeyPair() throws Exception {
-    String keyPrefix = "keys/generated_password";
-    try {
-      keyStore = new SodiumFileKeyStore(config);
-      keyStore.generateKeyPair(new KeyConfig(keyPrefix, Optional.of("yolo")));
+  void generatePasswordProtectedKeyPair(@TempDirectory Path tempDir) throws Exception {
+    Files.createDirectories(tempDir.resolve("keys"));
+    Path keyPrefix = tempDir.resolve("keys").resolve("generated_password");
+    keyStore = new SodiumFileKeyStore(config);
+    keyStore.generateKeyPair(new KeyConfig(keyPrefix, Optional.of("yolo")));
 
-      // Load the a config using the generated key, and confirm that it is valid.
-      // this shows that the key was stored and that we could load it.
-      MemoryConfig config = new MemoryConfig();
-      config.setPasswords(Paths.get("keys/password.txt"));
-      config.setPrivateKeys(Paths.get("keys/generated_password.key"));
-      config.setPublicKeys(Paths.get("keys/generated_password.pub"));
-      keyStore = new SodiumFileKeyStore(config);
-      PublicKey fromStore = keyStore.nodeKeys()[0];
-      assertNotNull(keyStore.privateKey(fromStore));
-    } finally {
-      Path privateKey = Paths.get(keyPrefix + ".key");
-      Path publicKey = Paths.get(keyPrefix + ".pub");
-      if (Files.exists(privateKey)) {
-        Files.delete(privateKey);
-      } else {
-        fail("private key did not get created");
-      }
-      if (Files.exists(publicKey)) {
-        Files.delete(publicKey);
-      } else {
-        fail("public key did not get created");
-      }
-    }
+    Path privateKey = tempDir.resolve("keys").resolve("generated_password.key");
+    Path publicKey = tempDir.resolve("keys").resolve("generated_password.pub");
+
+    // Load the a config using the generated key, and confirm that it is valid.
+    // this shows that the key was stored and that we could load it.
+    // @formatter:off
+    Config config = Config.load(
+        "passwords='keys/password.txt'\n"
+      + "privatekeys=['" + privateKey.toAbsolutePath() + "']\n"
+      + "publickeys=['" + publicKey.toAbsolutePath() + "']\n");
+    // @formatter:on
+    keyStore = new SodiumFileKeyStore(config);
+    PublicKey fromStore = keyStore.nodeKeys()[0];
+    assertNotNull(keyStore.privateKey(fromStore));
+
+    assertTrue(Files.exists(privateKey));
+    assertTrue(Files.exists(publicKey));
   }
 }

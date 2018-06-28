@@ -7,12 +7,15 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.consensys.cava.junit.TempDirectory;
+import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
 import net.consensys.orion.api.exception.OrionErrorCode;
 
+import java.nio.file.Path;
 import java.security.PublicKey;
 import java.util.Optional;
 
@@ -21,7 +24,9 @@ import com.muquit.libsodiumjna.SodiumLibrary;
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(TempDirectoryExtension.class)
 class LibSodiumEnclaveTest {
 
   private final KeyStore memoryKeyStore = new SodiumMemoryKeyStore();
@@ -53,9 +58,9 @@ class LibSodiumEnclaveTest {
   }
 
   @Test
-  void recipientEncryptDecrypt() {
-    final PublicKey senderKey = generateKey();
-    final PublicKey recipientKey = generateKey();
+  void recipientEncryptDecrypt(@TempDirectory Path tempDir) {
+    final PublicKey senderKey = generateKey(tempDir);
+    final PublicKey recipientKey = generateKey(tempDir);
     final String plaintext = "hello again";
 
     final EncryptedPayload encryptedPayload = encrypt(plaintext, senderKey, recipientKey);
@@ -66,8 +71,8 @@ class LibSodiumEnclaveTest {
 
   @Test
   /* Sender can decrypt the cipher text for their encrypted plaint text. */
-  void senderEncryptDecrypt() {
-    final PublicKey senderKey = generateKey();
+  void senderEncryptDecrypt(@TempDirectory Path tempDir) {
+    final PublicKey senderKey = generateKey(tempDir);
     final String plaintext = "the original message";
 
     final EncryptedPayload encryptedPayload = encrypt(plaintext, senderKey);
@@ -78,10 +83,10 @@ class LibSodiumEnclaveTest {
 
   @Test
   /* Sender decryption must not be affected by the presence of other combined keys (recipients) */
-  void senderEncryptDecryptWithRecipients() {
-    final PublicKey senderKey = generateKey();
-    final PublicKey recipientAKey = generateKey();
-    final PublicKey recipientBKey = generateKey();
+  void senderEncryptDecryptWithRecipients(@TempDirectory Path tempDir) {
+    final PublicKey senderKey = generateKey(tempDir);
+    final PublicKey recipientAKey = generateKey(tempDir);
+    final PublicKey recipientBKey = generateKey(tempDir);
     final String plaintext = "the other original message";
 
     final EncryptedPayload encryptedPayload = encrypt(plaintext, senderKey, recipientAKey, recipientBKey);
@@ -91,18 +96,18 @@ class LibSodiumEnclaveTest {
   }
 
   @Test
-  void encryptThrowsExceptionWhenMissingKey() {
+  void encryptThrowsExceptionWhenMissingKey(@TempDirectory Path tempDir) {
     final PublicKey fake = new SodiumPublicKey("fake".getBytes(UTF_8));
-    final PublicKey recipientKey = generateKey();
+    final PublicKey recipientKey = generateKey(tempDir);
 
     EnclaveException e = assertThrows(EnclaveException.class, () -> encrypt("plaintext", fake, recipientKey));
     assertEquals("No StoredPrivateKey found in keystore", e.getMessage());
   }
 
   @Test
-  void decryptThrowsExceptionWhenMissingKey() {
+  void decryptThrowsExceptionWhenMissingKey(@TempDirectory Path tempDir) {
     final PublicKey fake = new SodiumPublicKey("fake".getBytes(UTF_8));
-    final SodiumPublicKey sender = generateKey();
+    final SodiumPublicKey sender = generateKey(tempDir);
 
     EnclaveException e = assertThrows(EnclaveException.class, () -> {
       final EncryptedPayload payload =
@@ -113,9 +118,9 @@ class LibSodiumEnclaveTest {
   }
 
   @Test
-  void encryptDecryptNoCombinedKeys() {
-    final PublicKey senderKey = generateKey();
-    final PublicKey recipientKey = generateKey();
+  void encryptDecryptNoCombinedKeys(@TempDirectory Path tempDir) {
+    final PublicKey senderKey = generateKey(tempDir);
+    final PublicKey recipientKey = generateKey(tempDir);
 
     final EncryptedPayload encryptedPayload = encrypt("hello", senderKey, recipientKey);
 
@@ -139,9 +144,9 @@ class LibSodiumEnclaveTest {
   }
 
   @Test
-  void encryptDecryptBadCombinedKeyNonce() {
-    final PublicKey senderKey = generateKey();
-    final PublicKey recipientKey = generateKey();
+  void encryptDecryptBadCombinedKeyNonce(@TempDirectory Path tempDir) {
+    final PublicKey senderKey = generateKey(tempDir);
+    final PublicKey recipientKey = generateKey(tempDir);
 
     final EncryptedPayload encryptedPayload = encrypt("hello", senderKey, recipientKey);
 
@@ -159,9 +164,9 @@ class LibSodiumEnclaveTest {
   }
 
   @Test
-  void encryptDecryptBadNonce() {
-    final PublicKey senderKey = generateKey();
-    final PublicKey recipientKey = generateKey();
+  void encryptDecryptBadNonce(@TempDirectory Path tempDir) {
+    final PublicKey senderKey = generateKey(tempDir);
+    final PublicKey recipientKey = generateKey(tempDir);
 
     final EncryptedPayload encryptedPayload = encrypt("hello", senderKey, recipientKey);
 
@@ -179,10 +184,10 @@ class LibSodiumEnclaveTest {
   }
 
   @Test
-  void payloadCanOnlyBeDecryptedByItsKey() {
-    final PublicKey senderKey = generateKey();
-    final PublicKey recipientKey1 = generateKey();
-    final PublicKey recipientKey2 = generateKey();
+  void payloadCanOnlyBeDecryptedByItsKey(@TempDirectory Path tempDir) {
+    final PublicKey senderKey = generateKey(tempDir);
+    final PublicKey recipientKey1 = generateKey(tempDir);
+    final PublicKey recipientKey2 = generateKey(tempDir);
     final String plaintext = "hello";
 
     final EncryptedPayload encryptedPayload1 = encrypt(plaintext, senderKey, recipientKey1);
@@ -193,9 +198,9 @@ class LibSodiumEnclaveTest {
   }
 
   @Test
-  void encryptGeneratesDifferentCipherForSamePayloadAndKey() {
-    final PublicKey senderKey = generateKey();
-    final PublicKey recipientKey = generateKey();
+  void encryptGeneratesDifferentCipherForSamePayloadAndKey(@TempDirectory Path tempDir) {
+    final PublicKey senderKey = generateKey(tempDir);
+    final PublicKey recipientKey = generateKey(tempDir);
     final String plaintext = "hello";
 
     final EncryptedPayload encryptedPayload1 = encrypt(plaintext, senderKey, recipientKey);
@@ -222,8 +227,8 @@ class LibSodiumEnclaveTest {
     assertArrayEquals(message, decrypted);
   }
 
-  private SodiumPublicKey generateKey() {
-    return (SodiumPublicKey) memoryKeyStore.generateKeyPair(new KeyConfig("ignore", Optional.empty()));
+  private SodiumPublicKey generateKey(Path tempDir) {
+    return (SodiumPublicKey) memoryKeyStore.generateKeyPair(new KeyConfig(tempDir.resolve("ignore"), Optional.empty()));
   }
 
   private PublicKey generateNonSodiumKey() {

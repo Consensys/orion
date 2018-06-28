@@ -1,5 +1,8 @@
 package net.consensys.orion.impl.network;
 
+import static net.consensys.orion.impl.TestUtils.generateAndLoadConfiguration;
+import static net.consensys.orion.impl.TestUtils.getFreePort;
+import static net.consensys.orion.impl.TestUtils.writeClientCertToConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,15 +13,14 @@ import net.consensys.cava.concurrent.CompletableAsyncCompletion;
 import net.consensys.cava.concurrent.CompletableAsyncResult;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
-import net.consensys.orion.impl.config.MemoryConfig;
-import net.consensys.orion.impl.http.SecurityTestUtils;
+import net.consensys.orion.api.config.Config;
+import net.consensys.orion.impl.TestUtils;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.concurrent.CompletionException;
 import javax.net.ssl.SSLException;
@@ -45,18 +47,16 @@ class CertificateAuthorityNodeClientTest {
 
   @BeforeAll
   static void setUp(@TempDirectory Path tempDir) throws Exception {
-    MemoryConfig config = new MemoryConfig();
-    config.setWorkDir(tempDir.resolve("data"));
-    config.setTls("strict");
-    config.setTlsClientTrust("ca");
-    SelfSignedCertificate clientCert = SelfSignedCertificate.create();
-    config.setTlsClientCert(Paths.get(clientCert.certificatePath()));
-    config.setTlsClientKey(Paths.get(clientCert.privateKeyPath()));
+    SelfSignedCertificate clientCert = SelfSignedCertificate.create("localhost");
+    Config config = generateAndLoadConfiguration(tempDir, writer -> {
+      writer.write("tlsclienttrust='ca'\n");
+      writeClientCertToConfig(writer, clientCert);
+    });
+
+    Path knownServersFile = config.tlsKnownServers();
 
     SelfSignedCertificate serverCert = SelfSignedCertificate.create("localhost");
-    SecurityTestUtils.configureJDKTrustStore(serverCert, tempDir);
-    Path knownServersFile = tempDir.resolve("knownservers.txt");
-    config.setTlsKnownServers(knownServersFile);
+    TestUtils.configureJDKTrustStore(serverCert, tempDir);
     Files.write(knownServersFile, Collections.singletonList("#First line"));
 
     Router dummyRouter = Router.router(vertx);
@@ -79,7 +79,7 @@ class CertificateAuthorityNodeClientTest {
 
   private static void startServer(HttpServer server) throws Exception {
     CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
-    server.listen(SecurityTestUtils.getFreePort(), result -> {
+    server.listen(getFreePort(), result -> {
       if (result.succeeded()) {
         completion.complete();
       } else {
