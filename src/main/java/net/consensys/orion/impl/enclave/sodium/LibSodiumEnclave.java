@@ -1,19 +1,15 @@
 package net.consensys.orion.impl.enclave.sodium;
 
-import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.CombinedKey;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.HashAlgorithm;
 import net.consensys.orion.api.enclave.KeyStore;
 import net.consensys.orion.api.exception.OrionErrorCode;
-import net.consensys.orion.impl.enclave.Hasher;
 
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Security;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
@@ -24,18 +20,12 @@ import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 
 public class LibSodiumEnclave implements Enclave {
 
-  static {
-    Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-  }
-
-  private final Hasher hasher = new Hasher();
   private KeyStore keyStore;
 
   private final PublicKey[] alwaysSendTo;
   private final PublicKey[] nodeKeys;
 
-  public LibSodiumEnclave(Config config, KeyStore keyStore) {
-    SodiumLibrary.setLibraryPath(config.libSodiumPath());
+  public LibSodiumEnclave(KeyStore keyStore) {
     this.keyStore = keyStore;
     this.alwaysSendTo = keyStore.alwaysSendTo();
     this.nodeKeys = keyStore.nodeKeys();
@@ -49,11 +39,6 @@ public class LibSodiumEnclave implements Enclave {
   @Override
   public PublicKey[] nodeKeys() {
     return nodeKeys;
-  }
-
-  @Override
-  public byte[] digest(HashAlgorithm algorithm, byte[] input) {
-    return hasher.digest(algorithm, input);
   }
 
   @Override

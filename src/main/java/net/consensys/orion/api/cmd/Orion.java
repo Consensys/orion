@@ -7,6 +7,11 @@ import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import static net.consensys.orion.impl.http.server.HttpContentType.TEXT;
 
+import net.consensys.cava.kv.KeyValueStore;
+import net.consensys.cava.kv.LevelDBKeyValueStore;
+import net.consensys.cava.kv.MapDBKeyValueStore;
+import net.consensys.cava.net.tls.TLS;
+import net.consensys.cava.net.tls.VertxTrustOptions;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.config.ConfigException;
 import net.consensys.orion.api.enclave.Enclave;
@@ -14,16 +19,10 @@ import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.exception.OrionException;
-import net.consensys.orion.api.network.HostAndFingerprintTrustManagerFactory;
-import net.consensys.orion.api.network.HostFingerprintRepository;
-import net.consensys.orion.api.network.TrustManagerFactoryWrapper;
 import net.consensys.orion.api.storage.Storage;
-import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
 import net.consensys.orion.impl.cmd.OrionArguments;
-import net.consensys.orion.impl.config.TomlConfigBuilder;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
-import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumFileKeyStore;
 import net.consensys.orion.impl.http.handler.partyinfo.PartyInfoHandler;
 import net.consensys.orion.impl.http.handler.push.PushHandler;
@@ -35,22 +34,20 @@ import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 import net.consensys.orion.impl.network.NetworkDiscovery;
 import net.consensys.orion.impl.storage.EncryptedPayloadStorage;
 import net.consensys.orion.impl.storage.Sha512_256StorageKeyBuilder;
-import net.consensys.orion.impl.storage.file.MapDbStorage;
-import net.consensys.orion.impl.storage.leveldb.LevelDbStorage;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.Security;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
+import com.muquit.libsodiumjna.SodiumLibrary;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -75,8 +72,12 @@ public class Orion {
     System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.Log4j2LogDelegateFactory");
   }
 
+  static {
+    Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+  }
+
   private final Vertx vertx;
-  private StorageEngine<EncryptedPayload> storageEngine;
+  private KeyValueStore storage;
   private NetworkDiscovery discovery;
   private HttpServer nodeHTTPServer;
   private HttpServer clientHTTPServer;
@@ -219,8 +220,12 @@ public class Orion {
       log.error("Error stopping vert.x", io);
     }
 
-    if (storageEngine != null) {
-      storageEngine.close();
+    if (storage != null) {
+      try {
+        storage.close();
+      } catch (IOException e) {
+        log.error("Error closing storage", e);
+      }
     }
   }
 
@@ -233,8 +238,7 @@ public class Orion {
     }
 
     // load config file
-    Config config;
-    config = loadConfig(arguments.configFileName().map(fileName -> {
+    Config config = loadConfig(arguments.configFileName().map(fileName -> {
       Path configFile = Paths.get(fileName);
       if (!Files.exists(configFile)) {
         throw new OrionException(OrionErrorCode.CONFIG_FILE_MISSING);
@@ -254,7 +258,9 @@ public class Orion {
   public void run(PrintStream out, PrintStream err, Config config) {
     SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
     ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(config, keyStore.nodeKeys());
-    Enclave enclave = new LibSodiumEnclave(config, keyStore);
+
+    SodiumLibrary.setLibraryPath(config.libSodiumPath());
+    Enclave enclave = new LibSodiumEnclave(keyStore);
 
     Path workDir = config.workDir();
     log.info("using working directory {}", workDir);
@@ -266,27 +272,52 @@ public class Orion {
     }
 
     if (!"off".equals(config.tls())) {
-      TLSEnvironmentHelper.configureTLSRelatedFiles(
-          config.workDir(),
-          config.tlsKnownClients(),
-          config.tlsKnownServers(),
-          config.tlsClientCert(),
-          config.tlsClientKey(),
-          config.tlsServerCert(),
-          config.tlsServerKey());
+      // verify server TLS cert and key
+      Path tlsServerCert = config.tlsServerCert();
+      Path tlsServerKey = config.tlsServerKey();
+
+      try {
+        TLS.createSelfSignedCertificateIfMissing(tlsServerKey, tlsServerCert);
+      } catch (IOException e) {
+        throw new OrionStartException(
+            "An error occurred while writing the server TLS certificate files: " + e.getMessage(),
+            e);
+      }
+      if (!Files.exists(tlsServerCert)) {
+        throw new OrionStartException("Missing server TLS certificate file \"" + tlsServerCert + "\"");
+      } else if (!Files.exists(tlsServerKey)) {
+        throw new OrionStartException("Missing server TLS key file \"" + tlsServerKey + "\"");
+      }
+
+      // verify client TLS cert and key
+      Path tlsClientCert = config.tlsClientCert();
+      Path tlsClientKey = config.tlsClientKey();
+
+      try {
+        TLS.createSelfSignedCertificateIfMissing(tlsClientKey, tlsClientCert);
+      } catch (IOException e) {
+        throw new OrionStartException(
+            "An error occurred while writing the client TLS certificate files: " + e.getMessage(),
+            e);
+      }
+      if (!Files.exists(tlsClientCert)) {
+        throw new OrionStartException("Missing client TLS certificate file \"" + tlsClientCert + "\"");
+      } else if (!Files.exists(tlsClientKey)) {
+        throw new OrionStartException("Missing client TLS key file \"" + tlsClientKey + "\"");
+      }
     }
 
     // create our storage engine
-    storageEngine = createStorageEngine(config, workDir);
+    storage = createStorage(config.storage(), workDir);
 
     // Vertx routers
     Router nodeRouter = Router.router(vertx).exceptionHandler(log::error);
     Router clientRouter = Router.router(vertx).exceptionHandler(log::error);
 
     // controller dependencies
-    StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
-    EncryptedPayloadStorage storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
-    configureRoutes(vertx, networkNodes, enclave, storage, nodeRouter, clientRouter, config);
+    StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
+    EncryptedPayloadStorage encryptedStorage = new EncryptedPayloadStorage(storage, keyBuilder);
+    configureRoutes(vertx, networkNodes, enclave, encryptedStorage, nodeRouter, clientRouter, config);
 
     // asynchronously start the vertx http server for public API
     CompletableFuture<Boolean> nodeFuture = new CompletableFuture<>();
@@ -294,46 +325,51 @@ public class Orion {
         .setPort(config.nodePort())
         .setHost(config.nodeNetworkInterface())
         .setCompressionSupported(true);
+
     if (!"off".equals(config.tls())) {
+      Path tlsServerCert = workDir.resolve(config.tlsServerCert());
+      Path tlsServerKey = workDir.resolve(config.tlsServerKey());
+      PemKeyCertOptions pemKeyCertOptions =
+          new PemKeyCertOptions().setKeyPath(tlsServerKey.toString()).setCertPath(tlsServerCert.toString());
+      for (Path chainCert : config.tlsServerChain()) {
+        pemKeyCertOptions.addCertPath(chainCert.toAbsolutePath().toString());
+      }
+
       options.setSsl(true);
       options.setClientAuth(ClientAuth.REQUIRED);
-
-      PemKeyCertOptions pemKeyCertOptions =
-          new PemKeyCertOptions().setKeyPath(config.workDir().resolve(config.tlsServerKey()).toString()).setCertPath(
-              config.workDir().resolve(config.tlsServerCert()).toString());
       options.setPemKeyCertOptions(pemKeyCertOptions);
-      for (Path chainCert : config.tlsServerChain()) {
-        pemKeyCertOptions.addCertPath(chainCert.toString());
-      }
 
-      Optional<Function<HostFingerprintRepository, HostAndFingerprintTrustManagerFactory>> tmfCreator =
-          Optional.empty();
-      if ("ca".equals(config.tlsServerTrust())) {
-      } else if ("tofu".equals(config.tlsServerTrust())) {
-        tmfCreator = Optional.of(HostAndFingerprintTrustManagerFactory::tofu);
-      } else if ("whitelist".equals(config.tlsServerTrust())) {
-        tmfCreator = Optional.of(HostAndFingerprintTrustManagerFactory::whitelist);
-      } else if ("ca-or-tofu".equals(config.tlsServerTrust())) {
-        tmfCreator = Optional.of(
-            hostFingerprintRepository -> HostAndFingerprintTrustManagerFactory
-                .caOrTofuDefaultJDKTruststore(hostFingerprintRepository, vertx));
-      } else if ("insecure-no-validation".equals(config.tlsServerTrust())) {
-        tmfCreator = Optional.of(HostAndFingerprintTrustManagerFactory::insecure);
-      } else {
-        throw new UnsupportedOperationException(config.tlsServerTrust() + " is not supported");
+      Path knownClientsFile = config.tlsKnownClients();
+      String serverTrustMode = config.tlsServerTrust().toLowerCase();
+      switch (serverTrustMode) {
+        case "whitelist":
+          options.setTrustOptions(VertxTrustOptions.whitelistClients(knownClientsFile, false));
+          break;
+        case "ca":
+          // use default trust options
+          break;
+        case "ca-or-whitelist":
+          options.setTrustOptions(VertxTrustOptions.whitelistClients(knownClientsFile, true));
+          break;
+        case "tofu":
+        case "insecure-tofa":
+          options.setTrustOptions(VertxTrustOptions.trustClientOnFirstAccess(knownClientsFile, false));
+          break;
+        case "ca-or-tofu":
+        case "insecure-ca-or-tofa":
+          options.setTrustOptions(VertxTrustOptions.trustClientOnFirstAccess(knownClientsFile, true));
+          break;
+        case "insecure-no-validation":
+        case "insecure-record":
+          options.setTrustOptions(VertxTrustOptions.recordClientFingerprints(knownClientsFile, false));
+          break;
+        case "insecure-ca-or-record":
+          options.setTrustOptions(VertxTrustOptions.recordClientFingerprints(knownClientsFile, true));
+          break;
+        default:
+          throw new UnsupportedOperationException(
+              "\"" + serverTrustMode + "\" option for tlsservertrust is not supported");
       }
-
-      tmfCreator.ifPresent(tmf -> {
-        try {
-          HostFingerprintRepository hostFingerprintRepository =
-              new HostFingerprintRepository(config.workDir().resolve(config.tlsKnownClients()));
-          options.setTrustOptions(new TrustManagerFactoryWrapper(tmf.apply(hostFingerprintRepository)));
-        } catch (IOException e) {
-          throw new OrionStartException(
-              "Could not read the contents of " + config.workDir().resolve(config.tlsKnownClients()),
-              e);
-        }
-      });
     }
 
     nodeHTTPServer =
@@ -380,25 +416,26 @@ public class Orion {
     };
   }
 
-  private StorageEngine<EncryptedPayload> createStorageEngine(Config config, Path storagePath) {
-    String storage = config.storage();
-    String dbDir = "routerdb";
+  private KeyValueStore createStorage(String storage, Path storagePath) {
+    String db = "routerdb";
     String[] storageOptions = storage.split(":", 2);
     if (storageOptions.length > 1) {
-      dbDir = storageOptions[1];
+      db = storageOptions[1];
     }
 
-    Path dbPath = storagePath.resolve(dbDir);
-    try {
-      Files.createDirectories(dbPath);
-    } catch (IOException ex) {
-      throw new OrionStartException("Couldn't create storage path '" + dbPath + "': " + ex.getMessage(), ex);
-    }
-
-    if (storage.startsWith("mapdb")) {
-      return new MapDbStorage<>(SodiumEncryptedPayload.class, dbPath);
-    } else if (storage.startsWith("leveldb")) {
-      return new LevelDbStorage<>(SodiumEncryptedPayload.class, dbPath);
+    Path dbPath = storagePath.resolve(db);
+    if (storage.toLowerCase().startsWith("mapdb")) {
+      try {
+        return new MapDBKeyValueStore(dbPath);
+      } catch (IOException e) {
+        throw new OrionStartException("Couldn't create MapDB store: " + dbPath, e);
+      }
+    } else if (storage.toLowerCase().startsWith("leveldb")) {
+      try {
+        return new LevelDBKeyValueStore(dbPath);
+      } catch (IOException e) {
+        throw new OrionStartException("Couldn't create LevelDB store: " + dbPath, e);
+      }
     } else {
       throw new OrionStartException("unsupported storage mechanism: " + storage);
     }
@@ -412,6 +449,7 @@ public class Orion {
     Scanner scanner = new Scanner(System.in, UTF_8.name());
 
     for (String keyName : keysToGenerate) {
+      Path basePath = Paths.get(keyName);
 
       //Prompt for Password from user
       out.format("Enter password for key pair [%s] : ", keyName);
@@ -420,24 +458,20 @@ public class Orion {
 
       out.println("Password for key [" + keyName + "] - [" + password + "]");
 
-      keyStore.generateKeyPair(new KeyConfig(keyName, password));
+      keyStore.generateKeyPair(new KeyConfig(basePath, password));
     }
   }
 
-  Config loadConfig(Optional<Path> configFile) {
-    InputStream configAsStream;
-    if (configFile.isPresent()) {
-      log.info("using {} provided config file", configFile.get().toAbsolutePath());
-      try {
-        configAsStream = Files.newInputStream(configFile.get());
-      } catch (IOException ex) {
-        throw new OrionStartException("Could not open " + configFile.get() + ": " + ex.getMessage(), ex);
-      }
-    } else {
+  private static Config loadConfig(Optional<Path> configFile) {
+    if (!configFile.isPresent()) {
       log.warn("no config file provided, using default");
-      configAsStream = this.getClass().getResourceAsStream("/default.conf");
+      return Config.defaultConfig();
     }
-
-    return new TomlConfigBuilder().build(configAsStream);
+    log.info("using {} provided config file", configFile.get().toAbsolutePath());
+    try {
+      return Config.load(configFile.get());
+    } catch (IOException e) {
+      throw new OrionStartException("Could not open " + configFile.get() + ": " + e.getMessage(), e);
+    }
   }
 }

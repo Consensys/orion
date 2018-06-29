@@ -1,7 +1,7 @@
 package net.consensys.orion.impl.enclave.sodium;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
@@ -12,12 +12,12 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SodiumEncryptedPayloadTest {
+class SodiumEncryptedPayloadTest {
 
   @Test
-  public void roundTripSerialization() {
+  void roundTripSerialization() {
     SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes(UTF_8));
     Map<SodiumPublicKey, Integer> combinedKeysOwners = new HashMap<>();
     SodiumPublicKey key = new SodiumPublicKey("fake remote publickey".getBytes(UTF_8));
@@ -34,7 +34,7 @@ public class SodiumEncryptedPayloadTest {
   }
 
   @Test
-  public void serializationToJsonWithoutCombinedKeyOwners() throws Exception {
+  void serializationToJsonWithoutCombinedKeyOwners() throws Exception {
     SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes(UTF_8));
     SodiumEncryptedPayload payload = new SodiumEncryptedPayload(
         new SodiumPublicKey("fakekey".getBytes(UTF_8)),

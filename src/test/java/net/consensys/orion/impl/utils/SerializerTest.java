@@ -1,31 +1,33 @@
-package net.consensys.orion.impl.http;
+package net.consensys.orion.impl.utils;
 
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import net.consensys.orion.api.enclave.Enclave;
+import net.consensys.cava.junit.TempDirectory;
+import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
-import net.consensys.orion.impl.config.MemoryConfig;
-import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.orion.impl.enclave.sodium.SodiumCombinedKey;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
-import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 
-import org.junit.Test;
+import com.muquit.libsodiumjna.SodiumLibrary;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-public class SerializerTest {
+@ExtendWith(TempDirectoryExtension.class)
+class SerializerTest {
 
   @Test
-  public void jsonSerialization() {
+  void jsonSerialization() {
     DummyObject dummyObjectOriginal = new DummyObject();
     byte[] bytes = Serializer.serialize(HttpContentType.JSON, dummyObjectOriginal);
     DummyObject dummyObject = Serializer.deserialize(HttpContentType.JSON, DummyObject.class, bytes);
@@ -33,7 +35,7 @@ public class SerializerTest {
   }
 
   @Test
-  public void cborSerialization() {
+  void cborSerialization() {
     DummyObject dummyObjectOriginal = new DummyObject();
     byte[] bytes = Serializer.serialize(HttpContentType.CBOR, dummyObjectOriginal);
     DummyObject dummyObject = Serializer.deserialize(HttpContentType.CBOR, DummyObject.class, bytes);
@@ -41,12 +43,10 @@ public class SerializerTest {
   }
 
   @Test
-  public void sodiumEncryptedPayloadSerialization() {
-    MemoryConfig config = new MemoryConfig();
-    config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
-    final KeyStore memoryKeyStore = new SodiumMemoryKeyStore(config);
-    KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
-    Enclave enclave = new LibSodiumEnclave(config, memoryKeyStore);
+  void sodiumEncryptedPayloadSerialization(@TempDirectory Path tempDir) {
+    SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
+    final KeyStore memoryKeyStore = new SodiumMemoryKeyStore();
+    KeyConfig keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
 
     SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[0];
     byte[] combinedKeyNonce = {};
@@ -67,34 +67,33 @@ public class SerializerTest {
 
     assertEquals(original, processed);
   }
-}
 
+  static class DummyObject implements Serializable {
+    public String name;
+    public int age;
 
-class DummyObject implements Serializable {
-  public String name;
-  public int age;
-
-  DummyObject() {
-    this.name = "john";
-    this.age = 42;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    DummyObject() {
+      this.name = "john";
+      this.age = 42;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    DummyObject that = (DummyObject) o;
-    return age == that.age && Objects.equals(name, that.name);
-  }
 
-  @Override
-  public int hashCode() {
-    int result = name.hashCode();
-    result = 31 * result + age;
-    return result;
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      DummyObject that = (DummyObject) o;
+      return age == that.age && Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+      int result = name.hashCode();
+      result = 31 * result + age;
+      return result;
+    }
   }
 }

@@ -1,15 +1,9 @@
 package net.consensys.orion.impl.network;
 
-import net.consensys.orion.api.cmd.OrionStartException;
+import net.consensys.cava.net.tls.VertxTrustOptions;
 import net.consensys.orion.api.config.Config;
-import net.consensys.orion.api.network.HostAndFingerprintTrustManagerFactory;
-import net.consensys.orion.api.network.HostFingerprintRepository;
-import net.consensys.orion.api.network.TrustManagerFactoryWrapper;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Optional;
-import java.util.function.Function;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
@@ -23,47 +17,52 @@ public class NodeHttpClientBuilder {
   public static HttpClient build(Vertx vertx, Config config, int clientTimeoutMs) {
     HttpClientOptions options =
         new HttpClientOptions().setConnectTimeout(clientTimeoutMs).setIdleTimeout(clientTimeoutMs);
+
     if ("strict".equals(config.tls())) {
-      options.setSsl(true);
+      Path workDir = config.workDir();
+      Path tlsClientCert = workDir.resolve(config.tlsClientCert());
+      Path tlsClientKey = workDir.resolve(config.tlsClientKey());
+
       PemKeyCertOptions pemKeyCertOptions =
-          new PemKeyCertOptions().setKeyPath(config.workDir().resolve(config.tlsClientKey()).toString()).setCertPath(
-              config.workDir().resolve(config.tlsClientCert()).toString());
+          new PemKeyCertOptions().setKeyPath(tlsClientKey.toString()).setCertPath(tlsClientCert.toString());
       for (Path chainCert : config.tlsClientChain()) {
-        pemKeyCertOptions.addCertPath(config.workDir().resolve(chainCert).toString());
-      }
-      options.setPemKeyCertOptions(pemKeyCertOptions);
-      Optional<Function<HostFingerprintRepository, HostAndFingerprintTrustManagerFactory>> tmfCreator =
-          Optional.empty();
-      if ("ca".equals(config.tlsClientTrust())) {
-        options.setVerifyHost(false);
-      } else if ("tofu".equals(config.tlsClientTrust())) {
-        tmfCreator = Optional.of(HostAndFingerprintTrustManagerFactory::tofu);
-      } else if ("whitelist".equals(config.tlsClientTrust())) {
-        tmfCreator = Optional.of(HostAndFingerprintTrustManagerFactory::whitelist);
-      } else if ("ca-or-tofu".equals(config.tlsClientTrust())) {
-        options.setVerifyHost(false);
-        tmfCreator = Optional.of(
-            hostFingerprintRepository -> HostAndFingerprintTrustManagerFactory
-                .caOrTofuDefaultJDKTruststore(hostFingerprintRepository, vertx));
-      } else if ("insecure-no-validation".equals(config.tlsClientTrust())) {
-        tmfCreator = Optional.of(HostAndFingerprintTrustManagerFactory::insecure);
-      } else {
-        throw new UnsupportedOperationException(config.tlsClientTrust() + " is not supported");
+        pemKeyCertOptions.addCertPath(chainCert.toAbsolutePath().toString());
       }
 
-      tmfCreator.ifPresent(tmf -> {
-        try {
-          HostFingerprintRepository hostFingerprintRepository =
-              new HostFingerprintRepository(config.workDir().resolve(config.tlsKnownServers()));
-          options.setTrustOptions(new TrustManagerFactoryWrapper(tmf.apply(hostFingerprintRepository)));
-        } catch (IOException e) {
-          throw new OrionStartException(
-              "Could not read the contents of " + config.workDir().resolve(config.tlsKnownServers()),
-              e);
-        }
-      });
+      options.setSsl(true);
+      options.setPemKeyCertOptions(pemKeyCertOptions);
+
+      Path knownServersFile = config.tlsKnownServers();
+      String clientTrustMode = config.tlsClientTrust();
+      switch (clientTrustMode) {
+        case "whitelist":
+          options.setTrustOptions(VertxTrustOptions.whitelistServers(knownServersFile, false));
+          break;
+        case "ca":
+          // use default trust options
+          break;
+        case "ca-or-whitelist":
+          options.setTrustOptions(VertxTrustOptions.whitelistServers(knownServersFile, true));
+          break;
+        case "tofu":
+          options.setTrustOptions(VertxTrustOptions.trustServerOnFirstUse(knownServersFile, false));
+          break;
+        case "ca-or-tofu":
+          options.setTrustOptions(VertxTrustOptions.trustServerOnFirstUse(knownServersFile, true));
+          break;
+        case "insecure-no-validation":
+        case "insecure-record":
+          options.setTrustOptions(VertxTrustOptions.recordServerFingerprints(knownServersFile, false));
+          break;
+        case "insecure-ca-or-record":
+          options.setTrustOptions(VertxTrustOptions.recordServerFingerprints(knownServersFile, true));
+          break;
+
+        default:
+          throw new UnsupportedOperationException(
+              "\"" + clientTrustMode + "\" option for tlsclienttrust is not supported");
+      }
     }
     return vertx.createHttpClient(options);
   }
-
 }

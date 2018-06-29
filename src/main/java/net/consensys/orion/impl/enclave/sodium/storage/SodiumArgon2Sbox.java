@@ -2,7 +2,6 @@ package net.consensys.orion.impl.enclave.sodium.storage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.utils.Base64;
@@ -12,10 +11,6 @@ import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 import com.sun.jna.NativeLong;
 
 public class SodiumArgon2Sbox {
-
-  public SodiumArgon2Sbox(Config config) {
-    SodiumLibrary.setLibraryPath(config.libSodiumPath());
-  }
 
   public byte[] decrypt(StoredPrivateKey storedPrivateKey, String password) {
     final ArgonOptions argonOptions = storedPrivateKey.data().aopts().get();

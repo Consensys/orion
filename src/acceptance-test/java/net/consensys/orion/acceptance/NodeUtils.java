@@ -1,22 +1,17 @@
 package net.consensys.orion.acceptance;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
-import net.consensys.orion.impl.config.TomlConfigBuilder;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.ExecutionException;
 
 import io.vertx.core.http.HttpClient;
 import junit.framework.AssertionFailedError;
@@ -42,6 +37,7 @@ public class NodeUtils {
   }
 
   public static Config nodeConfig(
+      Path tempDir,
       String nodeUrl,
       int nodePort,
       String nodeNetworkInterface,
@@ -54,39 +50,30 @@ public class NodeUtils {
       String privKeys,
       String tls,
       String tlsServerTrust,
-      String tlsClientTrust) throws UnsupportedEncodingException,
-      IOException {
+      String tlsClientTrust) throws IOException {
 
-    Path workDir = Files.createTempDirectory("acceptance");
+    Path workDir = tempDir.resolve("acceptance").toAbsolutePath();
+    Files.createDirectories(workDir);
 
-    final String confString = new StringBuilder()
-        .append("tls=\"")
-        .append(tls)
-        .append("\"\ntlsservertrust=\"")
-        .append(tlsServerTrust)
-        .append("\"\ntlsclienttrust=\"")
-        .append(tlsClientTrust)
-        .append("\"\nnodeurl = \"")
-        .append(nodeUrl)
-        .append("\"\nnodeport = ")
-        .append(nodePort)
-        .append("\nnodenetworkinterface = \"")
-        .append(nodeNetworkInterface)
-        .append("\"\nclienturl = \"")
-        .append(clientUrl)
-        .append("\"\nclientport = ")
-        .append(clientPort)
-        .append("\nclientnetworkinterface = \"")
-        .append(clientNetworkInterface)
-        .append("\"\nstorage = \"leveldb:database/" + nodeName + "\"")
-        .append("\nothernodes = [\"")
-        .append(otherNodes)
-        .append("\"]\n" + "publickeys = [" + pubKeys + "]\n")
-        .append("privatekeys = [" + privKeys + "]")
-        .append("\nworkdir= \"" + workDir.toString() + "\"")
-        .toString();
+    // @formatter:off
+    final String confString =
+          "tls=\"" + tls + "\"\n"
+        + "tlsservertrust=\"" + tlsServerTrust + "\"\n"
+        + "tlsclienttrust=\"" + tlsClientTrust + "\"\n"
+        + "nodeurl = \"" + nodeUrl + "\"\n"
+        + "nodeport = " + nodePort + "\n"
+        + "nodenetworkinterface = \"" + nodeNetworkInterface + "\"\n"
+        + "clienturl = \"" + clientUrl + "\"\n"
+        + "clientport = " + clientPort + "\n"
+        + "clientnetworkinterface = \"" + clientNetworkInterface + "\"\n"
+        + "storage = \"leveldb:database/" + nodeName + "\"\n"
+        + "othernodes = [\"" + otherNodes + "\"]\n"
+        + "publickeys = [" + pubKeys + "]\n"
+        + "privatekeys = [" + privKeys + "]\n"
+        + "workdir= \"" + workDir.toString() + "\"\n";
+    // @formatter:on
 
-    return new TomlConfigBuilder().build(new ByteArrayInputStream(confString.getBytes(StandardCharsets.UTF_8.name())));
+    return Config.load(confString);
   }
 
   public static int freePort() throws Exception {
@@ -101,7 +88,7 @@ public class NodeUtils {
   }
 
   /** It's the callers responsibility to stop the started Orion. */
-  public static Orion startOrion(Config config) throws ExecutionException, InterruptedException {
+  public static Orion startOrion(Config config) {
     final Orion orion = new Orion();
     orion.run(System.out, System.err, config);
     return orion;

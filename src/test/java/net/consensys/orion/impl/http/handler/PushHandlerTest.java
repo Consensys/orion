@@ -1,10 +1,11 @@
 
-package net.consensys.orion.impl.http.handlers;
+package net.consensys.orion.impl.http.handler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.consensys.cava.junit.TempDirectory;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
@@ -14,30 +15,30 @@ import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
+import java.nio.file.Path;
 import java.security.PublicKey;
 import java.util.Optional;
 
-import junit.framework.TestCase;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class PushHandlerTest extends HandlerTest {
+class PushHandlerTest extends HandlerTest {
 
-  private final KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
+  private KeyConfig keyConfig;
   private SodiumMemoryKeyStore memoryKeyStore;
 
-  @Before
-  public void before() {
-    memoryKeyStore = new SodiumMemoryKeyStore(config);
+  @BeforeEach
+  void setUpKeyStore(@TempDirectory Path tempDir) {
+    keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
+    memoryKeyStore = new SodiumMemoryKeyStore();
   }
 
   @Test
-  public void payloadIsStored() throws Exception {
-
+  void payloadIsStored() throws Exception {
     // configureRoutes & serialize our payload
     EncryptedPayload encryptedPayload = mockPayload();
 
@@ -55,20 +56,20 @@ public class PushHandlerTest extends HandlerTest {
     assertTrue(digest.length() > 0);
 
     // we should be able to read that from storage
-    Optional<EncryptedPayload> data = storage.get(digest);
+    Optional<EncryptedPayload> data = payloadStorage.get(digest).get();
     assertTrue(data.isPresent());
     assertEquals(encryptedPayload, data.get());
   }
 
   @Test
-  public void roundTripSerialization() {
+  void roundTripSerialization() {
     EncryptedPayload pushRequest = mockPayload();
     assertEquals(pushRequest, Serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, pushRequest));
     assertEquals(pushRequest, Serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, pushRequest));
   }
 
   @Test
-  public void pushWithInvalidContentType() throws Exception {
+  void pushWithInvalidContentType() throws Exception {
     // configureRoutes & serialize our payload
     EncryptedPayload encryptedPayload = mockPayload();
 
@@ -85,7 +86,7 @@ public class PushHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void pushWithInvalidBody() throws Exception {
+  void pushWithInvalidBody() throws Exception {
     RequestBody body = RequestBody.create(MediaType.parse(HttpContentType.CBOR.httpHeaderValue), "foo");
 
     Request request = new Request.Builder().post(body).url(nodeBaseUrl + "/push").build();
@@ -93,13 +94,13 @@ public class PushHandlerTest extends HandlerTest {
     Response resp = httpClient.newCall(request).execute();
 
     // produces 500 because serialisation error
-    TestCase.assertEquals(500, resp.code());
+    assertEquals(500, resp.code());
     // checks if the failure reason was with de-serialisation
     assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
   }
 
   private EncryptedPayload mockPayload() {
-    LibSodiumEnclave sEnclave = new LibSodiumEnclave(config, memoryKeyStore);
+    LibSodiumEnclave sEnclave = new LibSodiumEnclave(memoryKeyStore);
     PublicKey k1 = memoryKeyStore.generateKeyPair(keyConfig);
     PublicKey k2 = memoryKeyStore.generateKeyPair(keyConfig);
     return sEnclave.encrypt("something important".getBytes(UTF_8), k1, new PublicKey[] {k2});

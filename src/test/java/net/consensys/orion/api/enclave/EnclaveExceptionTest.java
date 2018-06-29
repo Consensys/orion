@@ -1,20 +1,21 @@
 package net.consensys.orion.api.enclave;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.orion.api.exception.OrionErrorCode;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class EnclaveExceptionTest {
+class EnclaveExceptionTest {
 
   @Test
-  public void implementationOfRuntimeInterface() {
+  void implementationOfRuntimeInterface() {
     assertTrue(RuntimeException.class.isAssignableFrom(EnclaveException.class));
   }
 
   @Test
-  public void construction() {
+  void construction() {
     final String message = "This is the cause";
     final EnclaveException exception = new EnclaveException(OrionErrorCode.ENCLAVE_CREATE_KEY_PAIR, message);
     assertEquals(message, exception.getMessage());

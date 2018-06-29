@@ -1,34 +1,33 @@
-package net.consensys.orion.impl.http.handlers;
+package net.consensys.orion.impl.http.handler;
 
-import static java.nio.file.Files.createTempDirectory;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import net.consensys.cava.concurrent.AsyncCompletion;
+import net.consensys.cava.concurrent.CompletableAsyncCompletion;
+import net.consensys.cava.junit.TempDirectory;
+import net.consensys.cava.junit.TempDirectoryExtension;
+import net.consensys.cava.kv.KeyValueStore;
+import net.consensys.cava.kv.MapDBKeyValueStore;
 import net.consensys.orion.api.cmd.Orion;
+import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.storage.Storage;
-import net.consensys.orion.api.storage.StorageEngine;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
-import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
-import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.helpers.StubEnclave;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 import net.consensys.orion.impl.storage.EncryptedPayloadStorage;
 import net.consensys.orion.impl.storage.Sha512_256StorageKeyBuilder;
-import net.consensys.orion.impl.storage.file.MapDbStorage;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.net.UnknownHostException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.CompletableFuture;
 
+import com.muquit.libsodiumjna.SodiumLibrary;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
@@ -40,12 +39,13 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-public abstract class HandlerTest {
-
-  private Path tempDir;
+@ExtendWith(TempDirectoryExtension.class)
+abstract class HandlerTest {
 
   // http client
   OkHttpClient httpClient = new OkHttpClient();
@@ -54,7 +54,7 @@ public abstract class HandlerTest {
 
   // these are re-built between tests
   ConcurrentNetworkNodes networkNodes;
-  protected MemoryConfig config;
+  protected Config config;
   protected Enclave enclave;
 
   private Vertx vertx;
@@ -63,82 +63,74 @@ public abstract class HandlerTest {
   private Integer clientHTTPServerPort;
   private HttpServer clientHttpServer;
 
-  private StorageEngine<EncryptedPayload> storageEngine;
-  protected Storage<EncryptedPayload> storage;
+  private KeyValueStore storage;
+  protected Storage<EncryptedPayload> payloadStorage;
 
-  @Before
-  public void setUp() throws Exception {
-    tempDir = createTempDirectory(this.getClass().getSimpleName() + "-data");
+  @BeforeAll
+  static void setupSodiumLib() {
+    SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
+  }
 
+  @BeforeEach
+  void setUp(@TempDirectory Path tempDir) throws Exception {
     // Setup ports for Public and Private API Servers
     setupPorts();
 
     // Initialize the base HTTP url in two forms: String and OkHttp's HttpUrl object to allow for simpler composition
     // of complex URLs with path parameters, query strings, etc.
-    HttpUrl nodeHTTP =
-        new Builder().scheme("http").host(InetAddress.getLocalHost().getHostAddress()).port(nodeHTTPServerPort).build();
+    HttpUrl nodeHTTP = new Builder().scheme("http").host("localhost").port(nodeHTTPServerPort).build();
     nodeBaseUrl = nodeHTTP.toString();
 
     // orion dependencies, reset them all between tests
-    config = new MemoryConfig();
-    config.setLibSodiumPath(LibSodiumSettings.defaultLibSodiumPath());
-    config.setWorkDir(tempDir);
-    config.setTls("off");
+    config = Config.load("tls='off'\nworkdir=\"" + tempDir + "\"");
     networkNodes = new ConcurrentNetworkNodes(nodeHTTP.url());
-    enclave = buildEnclave();
+    enclave = buildEnclave(tempDir);
 
     Path path = tempDir.resolve("routerdb");
-    Files.createDirectories(path);
-    storageEngine = new MapDbStorage<>(SodiumEncryptedPayload.class, path);
+    storage = new MapDBKeyValueStore(path);
     // create our vertx object
     vertx = Vertx.vertx();
-    StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder(enclave);
-    storage = new EncryptedPayloadStorage(storageEngine, keyBuilder);
+    StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
+    payloadStorage = new EncryptedPayloadStorage(storage, keyBuilder);
     Router publicRouter = Router.router(vertx);
     Router privateRouter = Router.router(vertx);
-    Orion.configureRoutes(vertx, networkNodes, enclave, storage, publicRouter, privateRouter, config);
+    Orion.configureRoutes(vertx, networkNodes, enclave, payloadStorage, publicRouter, privateRouter, config);
 
     setupNodeServer(publicRouter);
     setupClientServer(privateRouter);
   }
 
-  private void setupNodeServer(Router router) throws InterruptedException, java.util.concurrent.ExecutionException {
+  private void setupNodeServer(Router router) throws Exception {
     HttpServerOptions publicServerOptions = new HttpServerOptions();
     publicServerOptions.setPort(nodeHTTPServerPort);
 
-    CompletableFuture<Boolean> future = new CompletableFuture<>();
+    CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
     nodeHttpServer = vertx.createHttpServer(publicServerOptions).requestHandler(router::accept).listen(result -> {
       if (result.succeeded()) {
-        future.complete(true);
+        completion.complete();
       } else {
-        future.completeExceptionally(result.cause());
+        completion.completeExceptionally(result.cause());
       }
     });
-    future.get();
+    completion.join();
   }
 
-  private void setupClientServer(Router router) throws UnknownHostException,
-      InterruptedException,
-      java.util.concurrent.ExecutionException {
-    HttpUrl clientHTTP = new Builder()
-        .scheme("http")
-        .host(InetAddress.getLocalHost().getHostAddress())
-        .port(clientHTTPServerPort)
-        .build();
+  private void setupClientServer(Router router) throws Exception {
+    HttpUrl clientHTTP = new Builder().scheme("http").host("localhost").port(clientHTTPServerPort).build();
     clientBaseUrl = clientHTTP.toString();
 
     HttpServerOptions privateServerOptions = new HttpServerOptions();
     privateServerOptions.setPort(clientHTTPServerPort);
 
-    CompletableFuture<Boolean> future = new CompletableFuture<>();
+    CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
     clientHttpServer = vertx.createHttpServer(privateServerOptions).requestHandler(router::accept).listen(result -> {
       if (result.succeeded()) {
-        future.complete(true);
+        completion.complete();
       } else {
-        future.completeExceptionally(result.cause());
+        completion.completeExceptionally(result.cause());
       }
     });
-    future.get();
+    completion.join();
   }
 
   private void setupPorts() throws IOException {
@@ -154,23 +146,23 @@ public abstract class HandlerTest {
     socket2.close();
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @AfterEach
+  void tearDown() throws Exception {
     nodeHttpServer.close();
     clientHttpServer.close();
-    storageEngine.close();
+    storage.close();
     vertx.close();
   }
 
-  protected Enclave buildEnclave() {
+  protected Enclave buildEnclave(Path tempDir) {
     return new StubEnclave();
   }
 
-  protected Request buildPrivateAPIRequest(String path, HttpContentType contentType, Object payload) {
+  Request buildPrivateAPIRequest(String path, HttpContentType contentType, Object payload) {
     return buildPostRequest(clientBaseUrl, path, contentType, Serializer.serialize(contentType, payload));
   }
 
-  protected Request buildPublicAPIRequest(String path, HttpContentType contentType, Object payload) {
+  Request buildPublicAPIRequest(String path, HttpContentType contentType, Object payload) {
     return buildPostRequest(nodeBaseUrl, path, contentType, Serializer.serialize(contentType, payload));
   }
 
@@ -184,7 +176,7 @@ public abstract class HandlerTest {
     return new Request.Builder().post(body).url(baseurl + path).build();
   }
 
-  protected void assertError(final OrionErrorCode expected, final Response actual) throws IOException {
+  void assertError(final OrionErrorCode expected, final Response actual) throws IOException {
     assertEquals(String.format("{\"error\":\"%s\"}", expected.code()), actual.body().string());
   }
 }

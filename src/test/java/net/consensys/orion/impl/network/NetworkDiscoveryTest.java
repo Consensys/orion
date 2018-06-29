@@ -2,71 +2,67 @@ package net.consensys.orion.impl.network;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.consensys.cava.concurrent.AsyncCompletion;
+import net.consensys.cava.concurrent.CompletableAsyncCompletion;
 import net.consensys.orion.api.config.Config;
-import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.helpers.FakePeer;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.net.URL;
 import java.time.Instant;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 import io.vertx.core.Verticle;
 import io.vertx.core.Vertx;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.SocketPolicy;
 import okio.Buffer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class NetworkDiscoveryTest {
+class NetworkDiscoveryTest {
   private Vertx vertx;
   private ConcurrentNetworkNodes networkNodes;
   private Config config;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  void setUp() throws Exception {
     vertx = Vertx.vertx();
     networkNodes = new ConcurrentNetworkNodes(new URL("http://localhost1234/"));
-    config = new MemoryConfig();
-    ((MemoryConfig) config).setTls("off");
+    config = Config.load("tls='off'");
   }
 
-  @After
-  public void tearDown() throws Exception {
-    CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
-
+  @AfterEach
+  void tearDown() throws Exception {
+    CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
     vertx.close(result -> {
       if (result.succeeded()) {
-        resultFuture.complete(true);
+        completion.complete();
       } else {
-        resultFuture.completeExceptionally(result.cause());
+        completion.completeExceptionally(result.cause());
       }
     });
-
-    resultFuture.get();
+    completion.join();
   }
 
   @Test
-  public void networkDiscoveryWithNoPeers() throws Exception {
+  void networkDiscoveryWithNoPeers() throws Exception {
     // add peers
 
     // start network discovery
     NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config);
-    deployVerticle(networkDiscovery).get();
+    deployVerticle(networkDiscovery).join();
 
     assertEquals(0, networkDiscovery.discoverers().size());
   }
 
   @Test
-  public void networkDiscoveryWithUnresponsivePeer() throws Exception {
+  void networkDiscoveryWithUnresponsivePeer() throws Exception {
     // add peers
     FakePeer fakePeer = new FakePeer(
         new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE),
@@ -75,7 +71,7 @@ public class NetworkDiscoveryTest {
 
     // start network discovery
     NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config, 50, 100);
-    deployVerticle(networkDiscovery).get();
+    deployVerticle(networkDiscovery).join();
 
     // assert the discoverer started
     assertEquals(1, networkDiscovery.discoverers().size());
@@ -92,7 +88,7 @@ public class NetworkDiscoveryTest {
   }
 
   @Test
-  public void networkDiscoveryWithMerge() throws Exception {
+  void networkDiscoveryWithMerge() throws Exception {
     // empty memory nodes, lets' say one peer is alone in his network
     byte[] unknownPeerNetworkNodes =
         Serializer.serialize(CBOR, new ConcurrentNetworkNodes(new URL("http://localhost/")));
@@ -116,7 +112,7 @@ public class NetworkDiscoveryTest {
     // start network discovery
     final Instant discoveryStart = Instant.now();
     NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config, 500, 500);
-    deployVerticle(networkDiscovery).get();
+    deployVerticle(networkDiscovery).join();
 
     // assert the discoverer started, we should only have 1 discoverer for knownPeer
     assertEquals(1, networkDiscovery.discoverers().size());
@@ -129,8 +125,8 @@ public class NetworkDiscoveryTest {
 
     // ensure knownPeer responded and that his party info was called at least twice
     assertTrue(
-        "Update last seen: " + knownPeerDiscoverer.lastUpdate,
-        knownPeerDiscoverer.lastUpdate.isAfter(discoveryStart));
+        knownPeerDiscoverer.lastUpdate.isAfter(discoveryStart),
+        "Update last seen: " + knownPeerDiscoverer.lastUpdate);
     assertTrue(knownPeerDiscoverer.attempts >= 2);
 
     // ensure we now know unknownPeer
@@ -146,17 +142,15 @@ public class NetworkDiscoveryTest {
     assertTrue(unknownPeerDiscoverer.attempts >= 1);
   }
 
-  private Future<Boolean> deployVerticle(Verticle verticle) {
-    CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
-
+  private AsyncCompletion deployVerticle(Verticle verticle) {
+    CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
     vertx.deployVerticle(verticle, result -> {
       if (result.succeeded()) {
-        resultFuture.complete(true);
+        completion.complete();
       } else {
-        resultFuture.completeExceptionally(result.cause());
+        completion.completeExceptionally(result.cause());
       }
     });
-
-    return resultFuture;
+    return completion;
   }
 }

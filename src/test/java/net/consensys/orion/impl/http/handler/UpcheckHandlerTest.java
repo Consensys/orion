@@ -1,16 +1,15 @@
-package net.consensys.orion.impl.http.handlers;
+package net.consensys.orion.impl.http.handler;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import okhttp3.Request;
 import okhttp3.Response;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class UpcheckHandlerTest extends HandlerTest {
+class UpcheckHandlerTest extends HandlerTest {
 
   @Test
-  public void publicUpcheck() throws Exception {
-
+  void publicUpcheck() throws Exception {
     Request request = new Request.Builder().get().url(nodeBaseUrl + "/upcheck").build();
 
     Response resp = httpClient.newCall(request).execute();
@@ -19,8 +18,7 @@ public class UpcheckHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void privateUpcheck() throws Exception {
-
+  void privateUpcheck() throws Exception {
     Request request = new Request.Builder().get().url(clientBaseUrl + "/upcheck").build();
 
     Response resp = httpClient.newCall(request).execute();

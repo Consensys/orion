@@ -2,7 +2,6 @@ package net.consensys.orion.impl.helpers;
 
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.HashAlgorithm;
 import net.consensys.orion.impl.enclave.sodium.SodiumCombinedKey;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
@@ -23,11 +22,6 @@ public class StubEnclave implements Enclave {
   private final SodiumPublicKey[] alwaysSendTo;
   private final SodiumPublicKey[] nodeKeys;
 
-  public StubEnclave(SodiumPublicKey[] alwaysSendTo, SodiumPublicKey[] nodeKeys) {
-    this.alwaysSendTo = alwaysSendTo;
-    this.nodeKeys = nodeKeys;
-  }
-
   public StubEnclave() {
     this.alwaysSendTo = new SodiumPublicKey[0];
     this.nodeKeys = new SodiumPublicKey[0];
@@ -41,15 +35,6 @@ public class StubEnclave implements Enclave {
   @Override
   public PublicKey[] nodeKeys() {
     return nodeKeys;
-  }
-
-  @Override
-  public byte[] digest(HashAlgorithm algorithm, byte[] input) {
-    byte[] hash = new byte[256];
-    for (int i = 0; i < input.length && i < 256; i++) {
-      hash[i] = input[i];
-    }
-    return hash;
   }
 
   @Override

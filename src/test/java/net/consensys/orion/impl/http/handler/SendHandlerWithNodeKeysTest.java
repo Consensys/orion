@@ -1,13 +1,13 @@
-package net.consensys.orion.impl.http.handlers;
+package net.consensys.orion.impl.http.handler;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
+import static net.consensys.cava.crypto.Hash.sha2_512_256;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.HashAlgorithm;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
@@ -16,6 +16,7 @@ import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
+import java.nio.file.Path;
 import java.security.PublicKey;
 import java.util.Map;
 import java.util.Random;
@@ -26,20 +27,18 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-public class SendHandlerWithNodeKeysTest extends SendHandlerTest {
+class SendHandlerWithNodeKeysTest extends SendHandlerTest {
 
-  @Override
-  @Before
-  public void setUp() throws Exception {
+  @BeforeAll
+  static void setupSodiumLib() {
     SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
-    super.setUp();
   }
 
   @Override
-  protected Enclave buildEnclave() {
+  protected Enclave buildEnclave(Path tempDir) {
     return new StubEnclave() {
       @Override
       public PublicKey[] nodeKeys() {
@@ -56,14 +55,14 @@ public class SendHandlerWithNodeKeysTest extends SendHandlerTest {
 
   @Test
   @Override
-  public void sendWithNoFrom() throws Exception {
+  void sendWithNoFrom() throws Exception {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest = Base64.encode(enclave.digest(HashAlgorithm.SHA_512_256, encryptedPayload.cipherText()));
+    String digest = Base64.encode(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));

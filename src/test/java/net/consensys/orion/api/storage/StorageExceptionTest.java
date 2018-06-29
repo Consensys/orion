@@ -1,21 +1,21 @@
 package net.consensys.orion.api.storage;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.orion.api.exception.OrionErrorCode;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class StorageExceptionTest {
+class StorageExceptionTest {
 
   @Test
-  public void implementationOfRuntimeInterface() {
+  void implementationOfRuntimeInterface() {
     assertTrue(RuntimeException.class.isAssignableFrom(StorageException.class));
   }
 
   @Test
-  public void construction() {
+  void construction() {
     final String message = "This is the cause";
     final StorageException exception = new StorageException(OrionErrorCode.STORAGE_OPEN, message);
     assertEquals(message, exception.getMessage());

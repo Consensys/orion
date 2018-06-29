@@ -25,11 +25,10 @@ public class PushHandler implements Handler<RoutingContext> {
     EncryptedPayload pushRequest =
         Serializer.deserialize(HttpContentType.CBOR, SodiumEncryptedPayload.class, routingContext.getBody().getBytes());
 
-    // we receive a EncryptedPayload and
-    String digest = storage.put(pushRequest);
-    log.debug("stored payload. resulting digest: {}", digest);
+    storage.put(pushRequest).thenAccept((digest) -> {
+      log.debug("stored payload. resulting digest: {}", digest);
+      routingContext.response().end(digest);
+    }).exceptionally(e -> routingContext.fail(e));
 
-    // return the digest (key)
-    routingContext.response().end(digest);
   }
 }

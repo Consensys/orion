@@ -91,6 +91,8 @@ tasks.withType(JavaCompile) {
 //////
 // Additional source sets (acceptance and performance tests)
 
+test { useJUnitPlatform() }
+
 sourceSets {
   acceptance {
     java.srcDir file('src/acceptance-test/java')
@@ -109,6 +111,7 @@ sourceSets {
 task acceptanceTest(type: Test) {
   description = 'Runs the acceptance tests'
   group = 'verification'
+  useJUnitPlatform()
   setTestClassesDirs(sourceSets.acceptance.output.getClassesDirs())
   classpath = sourceSets.acceptance.runtimeClasspath
   reports.junitXml.setDestination(file("$buildDir/acceptance-results"))
@@ -181,12 +184,18 @@ task performanceTest(type: JavaExec) {
 //////
 // Dependencies
 
-repositories { jcenter() }
+repositories {
+  jcenter()
+  maven { url "https://consensys.bintray.com/consensys" }
+}
 
 dependencies {
+  // cava
+  compile 'net.consensys.cava:cava:0.2.0-F1039E-snapshot'
+
   // vertx
-  compile 'io.vertx:vertx-core:3.5.0'
-  compile 'io.vertx:vertx-web:3.5.0'
+  compile 'io.vertx:vertx-core:3.5.2'
+  compile 'io.vertx:vertx-web:3.5.2'
 
   // crypto
   compile 'org.bouncycastle:bcprov-jdk15on:1.59'
@@ -194,33 +203,35 @@ dependencies {
   compile 'com.muquit.libsodiumjna:libsodium-jna:1.0.4'
 
   // http client
-  testCompile 'com.squareup.okhttp3:okhttp:3.9.1'
+  testCompile 'com.squareup.okhttp3:okhttp:3.10.0'
 
   // storage
   compile 'org.fusesource.leveldbjni:leveldbjni-all:1.8'
-  compile 'org.mapdb:mapdb:3.0.5'
+  compile 'org.mapdb:mapdb:3.0.7'
 
   // serialization
   compile 'com.moandjiezana.toml:toml4j:0.7.2'
-  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
-  compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.0'
-  compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.0'
+  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.6'
+  compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.6'
+  compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.6'
 
   // logging
-  compile 'org.apache.logging.log4j:log4j-api:2.10.0'
-  compile 'org.apache.logging.log4j:log4j-core:2.10.0'
-  compile 'org.apache.logging.log4j:log4j-1.2-api:2.10.0'
+  compile 'org.apache.logging.log4j:log4j-api:2.11.0'
+  compile 'org.apache.logging.log4j:log4j-core:2.11.0'
+  compile 'org.apache.logging.log4j:log4j-1.2-api:2.11.0'
 
   // testing
-  testCompile 'junit:junit:4.12'
+  testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0'
+  testCompile 'org.junit.jupiter:junit-jupiter-params:5.2.0'
+  testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
   testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
   testCompile 'org.awaitility:awaitility:3.1.0'
   // mock http server (unit test purposes)
-  testCompile 'com.squareup.okhttp3:mockwebserver:3.9.1'
+  testCompile 'com.squareup.okhttp3:mockwebserver:3.10.0'
 
   // performance testing
-  performanceCompile 'org.scala-lang:scala-library:2.12.4'
-  performanceCompile 'org.scalatest:scalatest_2.12:3.0.4'
+  performanceCompile 'org.scala-lang:scala-library:2.12.6'
+  performanceCompile 'org.scalatest:scalatest_2.12:3.0.5'
   performanceCompile 'io.gatling:gatling-core:2.3.1'
   performanceCompile 'io.gatling:gatling-http:2.3.1'
   performanceCompile 'io.gatling:gatling-app:2.3.1'

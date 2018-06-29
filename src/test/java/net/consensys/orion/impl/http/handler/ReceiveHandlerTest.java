@@ -1,9 +1,9 @@
-package net.consensys.orion.impl.http.handlers;
+package net.consensys.orion.impl.http.handler;
 
 import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
@@ -18,39 +18,40 @@ import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
+import java.nio.file.Path;
 import java.security.PublicKey;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
-import junit.framework.TestCase;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ReceiveHandlerTest extends HandlerTest {
-  private KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
+class ReceiveHandlerTest extends HandlerTest {
+  private KeyConfig keyConfig;
   private SodiumMemoryKeyStore memoryKeyStore;
 
   @Override
-  protected Enclave buildEnclave() {
-    memoryKeyStore = new SodiumMemoryKeyStore(config);
+  protected Enclave buildEnclave(Path tempDir) {
+    keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
+    memoryKeyStore = new SodiumMemoryKeyStore();
     SodiumPublicKey defaultNodeKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     memoryKeyStore.addNodeKey(defaultNodeKey);
-    return new LibSodiumEnclave(config, memoryKeyStore);
+    return new LibSodiumEnclave(memoryKeyStore);
   }
 
   @SuppressWarnings("unchecked")
   @Test
-  public void payloadIsRetrieved() throws Exception {
+  void payloadIsRetrieved() throws Exception {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    ReceiveRequest receiveRequest = buildReceiveRequest(storage, toEncrypt);
+    ReceiveRequest receiveRequest = buildReceiveRequest(payloadStorage, toEncrypt);
     Request request = buildPrivateAPIRequest("/receive", HttpContentType.JSON, receiveRequest);
 
     // execute request
@@ -65,7 +66,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void rawPayloadIsRetrieved() throws Exception {
+  void rawPayloadIsRetrieved() throws Exception {
 
     // generate random byte content
     byte[] toEncrypt = new byte[342];
@@ -76,7 +77,7 @@ public class ReceiveHandlerTest extends HandlerTest {
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys());
 
     // store it
-    String key = storage.put(originalPayload);
+    String key = payloadStorage.put(originalPayload).get();
     // Receive operation, sending a ReceivePayload request
     RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
@@ -97,13 +98,12 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void receiveApiOnlyWorksOnPrivatePort() throws Exception {
-
+  void receiveApiOnlyWorksOnPrivatePort() throws Exception {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    ReceiveRequest receiveRequest = buildReceiveRequest(storage, toEncrypt);
+    ReceiveRequest receiveRequest = buildReceiveRequest(payloadStorage, toEncrypt);
     Request request = buildPublicAPIRequest("/receive", HttpContentType.JSON, receiveRequest);
 
     // execute request
@@ -113,8 +113,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void receiveRawApiOnlyWorksOnPrivatePort() throws Exception {
-
+  void receiveRawApiOnlyWorksOnPrivatePort() throws Exception {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
@@ -124,7 +123,7 @@ public class ReceiveHandlerTest extends HandlerTest {
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys());
 
     // store it
-    String key = storage.put(originalPayload);
+    String key = payloadStorage.put(originalPayload).get();
     // Receive operation, sending a ReceivePayload request
     RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
@@ -142,7 +141,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void responseWhenKeyNotFound() throws Exception {
+  void responseWhenKeyNotFound() throws Exception {
     // Receive operation, sending a ReceivePayload request
     ReceiveRequest receiveRequest = new ReceiveRequest("notForMe", null);
 
@@ -155,15 +154,14 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void responseWhenDecryptFails() throws Exception {
-
+  void responseWhenDecryptFails() throws Exception {
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
     SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {senderKey});
 
-    String key = storage.put(originalPayload);
+    String key = payloadStorage.put(originalPayload).get();
     RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
     Request request = new Request.Builder()
@@ -179,7 +177,7 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void roundTripSerialization() {
+  void roundTripSerialization() {
     Map<String, String> receiveResponse = Collections.singletonMap("payload", "some payload");
     assertEquals(receiveResponse, Serializer.roundTrip(HttpContentType.CBOR, Map.class, receiveResponse));
     assertEquals(receiveResponse, Serializer.roundTrip(HttpContentType.JSON, Map.class, receiveResponse));
@@ -191,13 +189,13 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void receiveWithInvalidContentType() throws Exception {
+  void receiveWithInvalidContentType() throws Exception {
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
     // configureRoutes receive request with payload
-    ReceiveRequest receiveRequest = buildReceiveRequest(storage, toEncrypt);
+    ReceiveRequest receiveRequest = buildReceiveRequest(payloadStorage, toEncrypt);
     Request request = buildPrivateAPIRequest("/receive", HttpContentType.CBOR, receiveRequest);
 
     // execute request
@@ -207,26 +205,26 @@ public class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
-  public void receiveWithInvalidBody() throws Exception {
+  void receiveWithInvalidBody() throws Exception {
     Request request = buildPrivateAPIRequest("/receive", HttpContentType.JSON, "{\"foo\": \"bar\"}");
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
 
     // produces 500 because serialisation error
-    TestCase.assertEquals(500, resp.code());
+    assertEquals(500, resp.code());
     // checks if the failure reason was with de-serialisation
     assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
   }
 
-  private ReceiveRequest buildReceiveRequest(Storage<EncryptedPayload> storage, byte[] toEncrypt) {
+  private ReceiveRequest buildReceiveRequest(Storage<EncryptedPayload> storage, byte[] toEncrypt) throws Exception {
     // encrypt a payload
     SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     SodiumPublicKey recipientKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {recipientKey});
 
     // store it
-    String key = storage.put(originalPayload);
+    String key = storage.put(originalPayload).get();
 
     // Receive operation, sending a ReceivePayload request
     return new ReceiveRequest(key, recipientKey.toString());

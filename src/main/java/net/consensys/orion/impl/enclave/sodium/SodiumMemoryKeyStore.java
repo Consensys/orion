@@ -1,6 +1,5 @@
 package net.consensys.orion.impl.enclave.sodium;
 
-import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
@@ -22,10 +21,6 @@ public class SodiumMemoryKeyStore implements KeyStore {
 
   private final Map<PublicKey, PrivateKey> store = new HashMap<>();
   private final List<PublicKey> nodeKeys = new ArrayList<>();
-
-  public SodiumMemoryKeyStore(Config config) {
-    SodiumLibrary.setLibraryPath(config.libSodiumPath());
-  }
 
   @Override
   public Optional<PrivateKey> privateKey(PublicKey publicKey) {

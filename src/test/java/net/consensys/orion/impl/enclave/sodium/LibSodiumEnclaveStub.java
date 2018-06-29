@@ -2,7 +2,6 @@ package net.consensys.orion.impl.enclave.sodium;
 
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.HashAlgorithm;
 
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
@@ -18,15 +17,6 @@ public class LibSodiumEnclaveStub implements Enclave {
   @Override
   public PublicKey[] nodeKeys() {
     return new PublicKey[0];
-  }
-
-  @Override
-  public byte[] digest(HashAlgorithm algorithm, byte[] input) {
-    byte[] hash = new byte[256];
-    for (int i = 0; i < input.length && i < 256; i++) {
-      hash[i] = input[i];
-    }
-    return hash;
   }
 
   @Override
