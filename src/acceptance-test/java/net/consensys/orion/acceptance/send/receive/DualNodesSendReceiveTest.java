@@ -1,6 +1,7 @@
 package net.consensys.orion.acceptance.send.receive;
 
 import static io.vertx.core.Vertx.vertx;
+import static java.nio.file.Files.createTempDirectory;
 import static net.consensys.orion.acceptance.NodeUtils.assertTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.freePort;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
@@ -59,6 +60,7 @@ class DualNodesSendReceiveTest {
 
   @BeforeEach
   void setUpDualNodes(@TempDirectory Path tempDir) throws Exception {
+    tempDir = createTempDirectory(DualNodesSendReceiveTest.class.getSimpleName() + "-data");
     int firstNodePort = freePort();
     firstNodeClientPort = freePort();
     int secondNodePort = freePort();
@@ -130,14 +132,14 @@ class DualNodesSendReceiveTest {
   }
 
   @AfterEach
-  void tearDown() throws Exception {
+  void tearDown() {
     firstOrionLauncher.stop();
     secondOrionLauncher.stop();
     vertx.close();
   }
 
   @Test
-  void receiverCanView() throws Exception {
+  void receiverCanView() {
     final EthClientStub firstNode = NodeUtils.client(firstNodeClientPort, firstHttpClient);
     final EthClientStub secondNode = NodeUtils.client(secondNodeClientPort, secondHttpClient);
 
@@ -148,7 +150,7 @@ class DualNodesSendReceiveTest {
   }
 
   @Test
-  void senderCanView() throws Exception {
+  void senderCanView() {
     final EthClientStub firstNode = NodeUtils.client(firstNodeConfig.clientPort(), firstHttpClient);
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
