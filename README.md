@@ -19,9 +19,3 @@ Orion is a PegaSys component for doing private transactions.
 * [Docker](doc/install/docker.md)
 
 
-## Feature comparison with Constellation
-On [this page](doc/comparison.md) 
-you can find a breakdown of the features implemented by Orion and the comparison with Constellation's 
-features.
-
-
