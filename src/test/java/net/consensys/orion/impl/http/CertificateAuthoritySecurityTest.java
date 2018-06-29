@@ -1,6 +1,8 @@
-package net.consensys.orion.impl.http.handlers;
+package net.consensys.orion.impl.http;
 
 import static io.vertx.core.Vertx.vertx;
+import static net.consensys.orion.impl.TestUtils.generateAndLoadConfiguration;
+import static net.consensys.orion.impl.TestUtils.writeServerCertToConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -9,8 +11,8 @@ import net.consensys.cava.concurrent.CompletableAsyncResult;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.cmd.Orion;
-import net.consensys.orion.impl.config.MemoryConfig;
-import net.consensys.orion.impl.http.SecurityTestUtils;
+import net.consensys.orion.api.config.Config;
+import net.consensys.orion.impl.TestUtils;
 
 import java.nio.file.Path;
 import javax.net.ssl.SSLException;
@@ -33,27 +35,23 @@ class CertificateAuthoritySecurityTest {
 
   private static Vertx vertx = vertx();
   private static HttpClient httpClient;
+  private static int nodePort;
   private static Orion orion;
-  private static MemoryConfig config;
 
   @BeforeAll
   static void setUp(@TempDirectory Path tempDir) throws Exception {
-    orion = new Orion(vertx);
-    config = new MemoryConfig();
-    config.setWorkDir(tempDir.resolve("data"));
-    config.setTls("strict");
-    config.setTlsServerTrust("ca");
-    Path knownClientsFile = tempDir.resolve("knownclients.txt");
-    config.setTlsKnownClients(knownClientsFile);
-    SecurityTestUtils.installServerCert(config, tempDir);
+    Config config = generateAndLoadConfiguration(tempDir, writer -> {
+      writer.write("tlsservertrust='ca'\n");
+      writeServerCertToConfig(writer, SelfSignedCertificate.create("localhost"));
+    });
 
-    SelfSignedCertificate clientCert = SelfSignedCertificate.create();
-    SecurityTestUtils.configureJDKTrustStore(clientCert, tempDir);
-    SecurityTestUtils.installPorts(config);
-
+    SelfSignedCertificate clientCert = SelfSignedCertificate.create("example.com");
+    TestUtils.configureJDKTrustStore(clientCert, tempDir);
     httpClient = vertx.createHttpClient(
         new HttpClientOptions().setSsl(true).setTrustAll(true).setKeyCertOptions(clientCert.keyCertOptions()));
 
+    nodePort = config.nodePort();
+    orion = new Orion(vertx);
     orion.run(System.out, System.err, config);
   }
 
@@ -67,7 +65,7 @@ class CertificateAuthoritySecurityTest {
 
   @Test
   void testUpCheckOnNodePort() throws Exception {
-    HttpClientRequest req = httpClient.get(config.nodePort(), "localhost", "/upcheck");
+    HttpClientRequest req = httpClient.get(nodePort, "localhost", "/upcheck");
     CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
     HttpClientResponse resp = result.get();
@@ -78,7 +76,7 @@ class CertificateAuthoritySecurityTest {
   void testWithoutSSLConfiguration() {
     OkHttpClient unsecureHttpClient = new OkHttpClient.Builder().build();
 
-    Request upcheckRequest = new Request.Builder().url("https://localhost:" + config.nodePort() + "/upcheck").build();
+    Request upcheckRequest = new Request.Builder().url("https://localhost:" + nodePort + "/upcheck").build();
     assertThrows(SSLException.class, () -> unsecureHttpClient.newCall(upcheckRequest).execute());
   }
 }

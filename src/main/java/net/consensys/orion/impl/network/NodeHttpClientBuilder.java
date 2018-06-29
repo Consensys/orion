@@ -26,17 +26,20 @@ public class NodeHttpClientBuilder {
       PemKeyCertOptions pemKeyCertOptions =
           new PemKeyCertOptions().setKeyPath(tlsClientKey.toString()).setCertPath(tlsClientCert.toString());
       for (Path chainCert : config.tlsClientChain()) {
-        pemKeyCertOptions.addCertPath(config.workDir().resolve(chainCert).toString());
+        pemKeyCertOptions.addCertPath(chainCert.toAbsolutePath().toString());
       }
 
       options.setSsl(true);
       options.setPemKeyCertOptions(pemKeyCertOptions);
 
-      Path knownServersFile = workDir.resolve(config.tlsKnownServers());
-      String clientTrustMode = config.tlsClientTrust().toLowerCase();
+      Path knownServersFile = config.tlsKnownServers();
+      String clientTrustMode = config.tlsClientTrust();
       switch (clientTrustMode) {
         case "whitelist":
           options.setTrustOptions(VertxTrustOptions.whitelistServers(knownServersFile, false));
+          break;
+        case "ca":
+          // use default trust options
           break;
         case "ca-or-whitelist":
           options.setTrustOptions(VertxTrustOptions.whitelistServers(knownServersFile, true));
@@ -48,15 +51,13 @@ public class NodeHttpClientBuilder {
           options.setTrustOptions(VertxTrustOptions.trustServerOnFirstUse(knownServersFile, true));
           break;
         case "insecure-no-validation":
-        case "record":
+        case "insecure-record":
           options.setTrustOptions(VertxTrustOptions.recordServerFingerprints(knownServersFile, false));
           break;
-        case "ca-or-record":
+        case "insecure-ca-or-record":
           options.setTrustOptions(VertxTrustOptions.recordServerFingerprints(knownServersFile, true));
           break;
-        case "ca":
-          // use default trust options
-          break;
+
         default:
           throw new UnsupportedOperationException(
               "\"" + clientTrustMode + "\" option for tlsclienttrust is not supported");

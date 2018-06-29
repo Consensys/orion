@@ -1,4 +1,4 @@
-package net.consensys.orion.impl.http.handlers;
+package net.consensys.orion.impl.http.handler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -9,12 +9,12 @@ import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.cava.kv.MapDBKeyValueStore;
 import net.consensys.orion.api.cmd.Orion;
+import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
-import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.orion.impl.helpers.StubEnclave;
 import net.consensys.orion.impl.http.server.HttpContentType;
@@ -54,7 +54,7 @@ abstract class HandlerTest {
 
   // these are re-built between tests
   ConcurrentNetworkNodes networkNodes;
-  protected MemoryConfig config;
+  protected Config config;
   protected Enclave enclave;
 
   private Vertx vertx;
@@ -82,11 +82,9 @@ abstract class HandlerTest {
     nodeBaseUrl = nodeHTTP.toString();
 
     // orion dependencies, reset them all between tests
-    config = new MemoryConfig();
-    config.setWorkDir(tempDir);
-    config.setTls("off");
+    config = Config.load("tls='off'\nworkdir=\"" + tempDir + "\"");
     networkNodes = new ConcurrentNetworkNodes(nodeHTTP.url());
-    enclave = buildEnclave();
+    enclave = buildEnclave(tempDir);
 
     Path path = tempDir.resolve("routerdb");
     storage = new MapDBKeyValueStore(path);
@@ -156,7 +154,7 @@ abstract class HandlerTest {
     vertx.close();
   }
 
-  protected Enclave buildEnclave() {
+  protected Enclave buildEnclave(Path tempDir) {
     return new StubEnclave();
   }
 

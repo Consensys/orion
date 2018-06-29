@@ -1,4 +1,4 @@
-package net.consensys.orion.impl.http.handlers;
+package net.consensys.orion.impl.http.handler;
 
 import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
@@ -18,6 +18,7 @@ import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
+import java.nio.file.Path;
 import java.security.PublicKey;
 import java.util.Collections;
 import java.util.Map;
@@ -31,11 +32,12 @@ import okhttp3.Response;
 import org.junit.jupiter.api.Test;
 
 class ReceiveHandlerTest extends HandlerTest {
-  private KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
+  private KeyConfig keyConfig;
   private SodiumMemoryKeyStore memoryKeyStore;
 
   @Override
-  protected Enclave buildEnclave() {
+  protected Enclave buildEnclave(Path tempDir) {
+    keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
     memoryKeyStore = new SodiumMemoryKeyStore();
     SodiumPublicKey defaultNodeKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
     memoryKeyStore.addNodeKey(defaultNodeKey);

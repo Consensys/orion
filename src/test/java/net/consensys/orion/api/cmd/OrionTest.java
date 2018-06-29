@@ -10,18 +10,14 @@ import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.exception.OrionException;
-import net.consensys.orion.impl.config.MemoryConfig;
 import net.consensys.orion.impl.enclave.sodium.storage.StoredPrivateKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -36,22 +32,6 @@ import org.mockito.Mockito;
 @ExtendWith(TempDirectoryExtension.class)
 class OrionTest {
   private Orion orion = new Orion();
-
-  @Test
-  void loadSampleConfig() {
-    Config config = orion.loadConfig(Optional.of(Paths.get("src/main/resources/sample.conf")));
-    assertEquals(8080, config.nodePort());
-  }
-
-  @Test
-  void defaultConfigIsUsedWhenNoneProvided() throws Exception {
-    Config config = orion.loadConfig(Optional.empty());
-
-    assertEquals(8080, config.nodePort());
-    assertEquals(8888, config.clientPort());
-    assertEquals(new URL("http://127.0.0.1:8080/"), config.nodeUrl());
-    assertEquals(new URL("http://127.0.0.1:8888/"), config.clientUrl());
-  }
 
   @Test
   void generateUnlockedKeysWithArgumentProvided(@TempDirectory Path tempDir) throws Exception {
@@ -157,10 +137,7 @@ class OrionTest {
     }).when(vertx).deployVerticle(Mockito.any(Verticle.class), Mockito.any(Handler.class));
 
     Orion orion = new Orion(vertx);
-    MemoryConfig config = new MemoryConfig();
-    config.setWorkDir(tempDir.resolve("orion"));
-    config.setTls("off");
-    OrionStartException e = assertThrows(OrionStartException.class, () -> orion.run(System.out, System.err, config));
-    assertEquals("Orion failed to start: Didn't work", e.getMessage());
+    Config config = Config.load("workdir=\"" + tempDir.resolve("data") + "\"\ntls=\"off\"\n");
+    assertThrows(OrionStartException.class, () -> orion.run(System.out, System.err, config));
   }
 }

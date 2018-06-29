@@ -1,4 +1,4 @@
-package net.consensys.orion.impl.http.handlers;
+package net.consensys.orion.impl.http.handler;
 
 import static net.consensys.cava.crypto.Hash.sha2_512_256;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
@@ -16,6 +16,7 @@ import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
+import java.nio.file.Path;
 import java.security.PublicKey;
 import java.util.Map;
 import java.util.Random;
@@ -37,7 +38,7 @@ class SendHandlerWithNodeKeysTest extends SendHandlerTest {
   }
 
   @Override
-  protected Enclave buildEnclave() {
+  protected Enclave buildEnclave(Path tempDir) {
     return new StubEnclave() {
       @Override
       public PublicKey[] nodeKeys() {
