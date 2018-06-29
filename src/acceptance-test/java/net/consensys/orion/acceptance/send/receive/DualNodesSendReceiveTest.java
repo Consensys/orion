@@ -1,7 +1,6 @@
 package net.consensys.orion.acceptance.send.receive;
 
 import static io.vertx.core.Vertx.vertx;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.createTempDirectory;
 import static net.consensys.orion.acceptance.NodeUtils.assertTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.freePort;
@@ -10,9 +9,9 @@ import static net.consensys.orion.acceptance.NodeUtils.sendTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.viewTransaction;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static net.consensys.util.Files.deleteRecursively;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 
-import java.net.InetAddress;
 import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.api.cmd.Orion;
@@ -25,11 +24,10 @@ import net.consensys.orion.impl.utils.Serializer;
 import java.net.URL;
 import java.nio.file.Path;
 import java.security.PublicKey;
+import java.util.concurrent.TimeUnit;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
-import okhttp3.HttpUrl;
-import okhttp3.HttpUrl.Builder;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -115,12 +113,18 @@ public class DualNodesSendReceiveTest {
 
     Request request = new Request.Builder().post(partyInfoBody).url(firstNodeBaseUrl + "/partyinfo").build();
 
+    // first /partyinfo call may just get the one node, so wait until we get at least 2 nodes
+    await().atMost(5, TimeUnit.SECONDS).until(() -> getPartyInfoResponse(httpClient, request).nodeURLs().size() == 2);
+
+  }
+
+  private ConcurrentNetworkNodes getPartyInfoResponse(OkHttpClient httpClient, Request request) throws Exception {
     Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
 
     ConcurrentNetworkNodes partyInfoResponse =
         Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
-
+    return partyInfoResponse;
   }
 
   @After

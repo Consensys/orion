@@ -214,7 +214,7 @@ dependencies {
   // testing
   testCompile 'junit:junit:4.12'
   testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
-
+  testCompile 'org.awaitility:awaitility:3.1.0'
   // mock http server (unit test purposes)
   testCompile 'com.squareup.okhttp3:mockwebserver:3.9.1'
 
