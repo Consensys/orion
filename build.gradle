@@ -346,3 +346,5 @@ bintray {
     version { name = project.version }
   }
 }
+
+license { ignoreFailures true }
