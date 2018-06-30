@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import net.consensys.cava.concurrent.AsyncCompletion;
 import net.consensys.cava.concurrent.CompletableAsyncCompletion;
 import net.consensys.orion.api.config.Config;
-import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
+import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.impl.helpers.FakePeer;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -66,7 +66,7 @@ class NetworkDiscoveryTest {
     // add peers
     FakePeer fakePeer = new FakePeer(
         new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE),
-        new SodiumPublicKey("pk1".getBytes(UTF_8)));
+        new PublicKey("pk1".getBytes(UTF_8)));
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // start network discovery
@@ -96,7 +96,7 @@ class NetworkDiscoveryTest {
     unknownPeerBody.write(unknownPeerNetworkNodes);
     // create a peer that's not in our current network nodes
     FakePeer unknownPeer =
-        new FakePeer(new MockResponse().setBody(unknownPeerBody), new SodiumPublicKey("unknown.pk1".getBytes(UTF_8)));
+        new FakePeer(new MockResponse().setBody(unknownPeerBody), new PublicKey("unknown.pk1".getBytes(UTF_8)));
 
     // create a peer that we know, and that knows the lonely unknown peer.
     ConcurrentNetworkNodes knownPeerNetworkNodes = new ConcurrentNetworkNodes(new URL("http://localhost/"));
@@ -104,7 +104,7 @@ class NetworkDiscoveryTest {
     Buffer knownPeerBody = new Buffer();
     knownPeerBody.write(Serializer.serialize(CBOR, knownPeerNetworkNodes));
     FakePeer knownPeer =
-        new FakePeer(new MockResponse().setBody(knownPeerBody), new SodiumPublicKey("known.pk1".getBytes(UTF_8)));
+        new FakePeer(new MockResponse().setBody(knownPeerBody), new PublicKey("known.pk1".getBytes(UTF_8)));
 
     // we know this peer, add it to our network nodes
     networkNodes.addNode(knownPeer.publicKey, knownPeer.getURL());

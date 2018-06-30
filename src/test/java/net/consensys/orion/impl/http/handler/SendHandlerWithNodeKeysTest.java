@@ -6,36 +6,26 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
-import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
-import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
+import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.impl.helpers.StubEnclave;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.nio.file.Path;
-import java.security.PublicKey;
 import java.util.Map;
 import java.util.Random;
 
-import com.muquit.libsodiumjna.SodiumKeyPair;
-import com.muquit.libsodiumjna.SodiumLibrary;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class SendHandlerWithNodeKeysTest extends SendHandlerTest {
-
-  @BeforeAll
-  static void setupSodiumLib() {
-    SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
-  }
 
   @Override
   protected Enclave buildEnclave(Path tempDir) {
@@ -43,8 +33,8 @@ class SendHandlerWithNodeKeysTest extends SendHandlerTest {
       @Override
       public PublicKey[] nodeKeys() {
         try {
-          SodiumKeyPair keyPair = SodiumLibrary.cryptoBoxKeyPair();
-          SodiumPublicKey publicKey = new SodiumPublicKey(keyPair.getPublicKey());
+          Box.KeyPair keyPair = Box.KeyPair.random();
+          PublicKey publicKey = new PublicKey(keyPair.publicKey().bytesArray());
           return new PublicKey[] {publicKey};
         } catch (Throwable t) {
           throw new RuntimeException(t);
@@ -68,7 +58,7 @@ class SendHandlerWithNodeKeysTest extends SendHandlerTest {
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    String[] to = new String[] {Base64.encode(fakePeer.publicKey.getEncoded())};
+    String[] to = new String[] {Base64.encode(fakePeer.publicKey.toBytes())};
 
     Map<String, Object> sendRequest = buildRequest(to, toEncrypt, null);
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
@@ -90,8 +80,8 @@ class SendHandlerWithNodeKeysTest extends SendHandlerTest {
     assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
 
     // ensure cipher text is same.
-    SodiumEncryptedPayload receivedPayload =
-        Serializer.deserialize(CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
+    EncryptedPayload receivedPayload =
+        Serializer.deserialize(CBOR, EncryptedPayload.class, recordedRequest.getBody().readByteArray());
     assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
   }
 }

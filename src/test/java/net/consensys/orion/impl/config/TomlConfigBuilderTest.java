@@ -2,12 +2,12 @@ package net.consensys.orion.impl.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.config.ConfigException;
-import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -44,7 +44,7 @@ class TomlConfigBuilderTest {
     assertEquals(expectedWorkdir.resolve("client-cert.pem"), testConf.tlsClientCert());
     assertEquals(expectedWorkdir.resolve("client-key.pem"), testConf.tlsClientKey());
     assertEquals(expectedWorkdir.resolve("known-servers"), testConf.tlsKnownServers());
-    assertEquals("/somepath", testConf.libSodiumPath());
+    assertEquals(Paths.get("/somepath"), testConf.libSodiumPath());
 
     // File Arrays
     assertEquals(Collections.singletonList(expectedWorkdir.resolve("keys/tm1.pub")), testConf.publicKeys());
@@ -74,8 +74,7 @@ class TomlConfigBuilderTest {
     assertEquals(workDir.resolve("tls-client-cert.pem"), testConf.tlsClientCert());
     assertEquals(workDir.resolve("tls-client-key.pem"), testConf.tlsClientKey());
     assertEquals(workDir.resolve("tls-known-servers"), testConf.tlsKnownServers());
-
-    assertEquals(LibSodiumSettings.defaultLibSodiumPath(), testConf.libSodiumPath());
+    assertNull(testConf.libSodiumPath());
   }
 
   @Test

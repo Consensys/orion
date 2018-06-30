@@ -1,17 +1,14 @@
 package net.consensys.orion.impl.helpers;
 
+import net.consensys.orion.api.enclave.CombinedKey;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.impl.enclave.sodium.SodiumCombinedKey;
-import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
-import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
+import net.consensys.orion.api.enclave.PublicKey;
 
 import java.nio.charset.StandardCharsets;
-import java.security.PublicKey;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /*
  * A very simple test class that implements the enclave interface and does minimal encryption operations that do not do
@@ -19,12 +16,12 @@ import java.util.Optional;
  */
 public class StubEnclave implements Enclave {
 
-  private final SodiumPublicKey[] alwaysSendTo;
-  private final SodiumPublicKey[] nodeKeys;
+  private final PublicKey[] alwaysSendTo;
+  private final PublicKey[] nodeKeys;
 
   public StubEnclave() {
-    this.alwaysSendTo = new SodiumPublicKey[0];
-    this.nodeKeys = new SodiumPublicKey[0];
+    this.alwaysSendTo = new PublicKey[0];
+    this.nodeKeys = new PublicKey[0];
   }
 
   @Override
@@ -50,12 +47,11 @@ public class StubEnclave implements Enclave {
 
   @Override
   public PublicKey readKey(String b64) {
-    return new SodiumPublicKey(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
+    return new PublicKey(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
   }
 
   @Override
   public EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients) {
-
     byte[] ciphterText = new byte[plaintext.length];
     for (int i = 0; i < plaintext.length; i++) {
       byte b = plaintext[i];
@@ -65,25 +61,18 @@ public class StubEnclave implements Enclave {
     byte[] combinedKeyNonce = {};
     byte[] nonce = {};
 
-    SodiumCombinedKey[] combinedKeys;
-    Map<SodiumPublicKey, Integer> combinedKeysOwners = new HashMap<>();
+    CombinedKey[] combinedKeys;
+    Map<PublicKey, Integer> combinedKeysOwners = new HashMap<>();
 
     if (recipients != null && recipients.length > 0) {
-      combinedKeys = new SodiumCombinedKey[recipients.length];
+      combinedKeys = new CombinedKey[recipients.length];
       for (int i = 0; i < recipients.length; i++) {
-        combinedKeysOwners.put((SodiumPublicKey) recipients[i], i);
-        combinedKeys[i] = new SodiumCombinedKey(recipients[i].getEncoded());
+        combinedKeysOwners.put(recipients[i], i);
+        combinedKeys[i] = new CombinedKey(recipients[i].toBytes());
       }
-
     } else {
-      combinedKeys = new SodiumCombinedKey[0];
+      combinedKeys = new CombinedKey[0];
     }
-    return new SodiumEncryptedPayload(
-        (SodiumPublicKey) senderKey,
-        nonce,
-        combinedKeyNonce,
-        combinedKeys,
-        ciphterText,
-        Optional.of(combinedKeysOwners));
+    return new EncryptedPayload(senderKey, nonce, combinedKeyNonce, combinedKeys, ciphterText, combinedKeysOwners);
   }
 }

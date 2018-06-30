@@ -1,13 +1,14 @@
 package net.consensys.orion.impl.enclave.sodium;
 
+import net.consensys.orion.api.enclave.CombinedKey;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
+import net.consensys.orion.api.enclave.PublicKey;
 
 import java.nio.charset.StandardCharsets;
-import java.security.PublicKey;
 import java.util.Base64;
 
-public class LibSodiumEnclaveStub implements Enclave {
+public class SodiumEnclaveStub implements Enclave {
 
   @Override
   public PublicKey[] alwaysSendTo() {
@@ -32,7 +33,7 @@ public class LibSodiumEnclaveStub implements Enclave {
 
   @Override
   public PublicKey readKey(String b64) {
-    return new SodiumPublicKey(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
+    return new PublicKey(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
   }
 
   @Override
@@ -42,9 +43,9 @@ public class LibSodiumEnclaveStub implements Enclave {
       byte b = plaintext[i];
       cipherText[i] = (byte) (b + 10);
     }
-    SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[0];
+    CombinedKey[] combinedKeys = new CombinedKey[0];
     byte[] combinedKeyNonce = {};
     byte[] nonce = {};
-    return new SodiumEncryptedPayload((SodiumPublicKey) senderKey, nonce, combinedKeyNonce, combinedKeys, cipherText);
+    return new EncryptedPayload(senderKey, nonce, combinedKeyNonce, combinedKeys, cipherText);
   }
 }

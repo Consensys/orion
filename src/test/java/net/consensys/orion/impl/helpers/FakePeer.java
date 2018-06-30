@@ -1,8 +1,9 @@
 package net.consensys.orion.impl.helpers;
 
+import net.consensys.orion.api.enclave.PublicKey;
+
 import java.io.IOException;
 import java.net.URL;
-import java.security.PublicKey;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
