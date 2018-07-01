@@ -82,11 +82,6 @@ public class NodeUtils {
     }
   }
 
-  public static void ensureNetworkDiscoveryOccurs() throws InterruptedException {
-    // TODO there must be a better way then sleeping & hoping network discovery occurs
-    Thread.sleep(2000);
-  }
-
   /** It's the callers responsibility to stop the started Orion. */
   public static Orion startOrion(Config config) {
     final Orion orion = new Orion();
