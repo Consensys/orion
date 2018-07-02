@@ -1,7 +1,9 @@
-package net.consensys.orion.impl.http;
+package net.consensys.orion.impl.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import net.consensys.cava.junit.TempDirectory;
+import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
 import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
@@ -10,16 +12,18 @@ import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
 import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
-import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 
 import com.muquit.libsodiumjna.SodiumLibrary;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(TempDirectoryExtension.class)
 class SerializerTest {
 
   @Test
@@ -39,10 +43,10 @@ class SerializerTest {
   }
 
   @Test
-  void sodiumEncryptedPayloadSerialization() {
+  void sodiumEncryptedPayloadSerialization(@TempDirectory Path tempDir) {
     SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
     final KeyStore memoryKeyStore = new SodiumMemoryKeyStore();
-    KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
+    KeyConfig keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
 
     SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[0];
     byte[] combinedKeyNonce = {};

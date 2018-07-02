@@ -1,7 +1,10 @@
 package net.consensys.orion.impl.network;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static net.consensys.cava.crypto.Hash.sha2_256;
+import static net.consensys.cava.net.tls.TLS.certificateHexFingerprint;
+import static net.consensys.orion.impl.TestUtils.generateAndLoadConfiguration;
+import static net.consensys.orion.impl.TestUtils.getFreePort;
+import static net.consensys.orion.impl.TestUtils.writeClientCertToConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,8 +15,7 @@ import net.consensys.cava.concurrent.CompletableAsyncCompletion;
 import net.consensys.cava.concurrent.CompletableAsyncResult;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
-import net.consensys.orion.impl.config.MemoryConfig;
-import net.consensys.orion.impl.http.SecurityTestUtils;
+import net.consensys.orion.api.config.Config;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -26,7 +28,6 @@ import java.util.List;
 import java.util.concurrent.CompletionException;
 import javax.net.ssl.SSLException;
 
-import io.netty.util.internal.StringUtil;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -34,7 +35,8 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.SelfSignedCertificate;
 import io.vertx.ext.web.Router;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,29 +44,28 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(TempDirectoryExtension.class)
 class TofuNodeClientTest {
 
-  private MemoryConfig config;
-  private Vertx vertx;
+  private static Vertx vertx = Vertx.vertx();
+  private static Config config;
+  private static Path knownServersFile;
+
   private HttpServer tofuServer;
-  private Path knownServersFile;
   private String fooFingerprint;
   private HttpClient client;
 
-  @BeforeEach
-  void setUp(@TempDirectory Path tempDir) throws Exception {
-    vertx = Vertx.vertx();
-    config = new MemoryConfig();
-    config.setWorkDir(tempDir);
-    config.setTls("strict");
-    config.setTlsClientTrust("tofu");
-    SelfSignedCertificate clientCert = SelfSignedCertificate.create();
-    config.setTlsClientCert(Paths.get(clientCert.certificatePath()));
-    config.setTlsClientKey(Paths.get(clientCert.privateKeyPath()));
+  @BeforeAll
+  static void setUpConfig(@TempDirectory Path tempDir) throws Exception {
+    SelfSignedCertificate clientCert = SelfSignedCertificate.create("localhost");
+    config = generateAndLoadConfiguration(tempDir, writer -> {
+      writer.write("tlsclienttrust='tofu'\n");
+      writeClientCertToConfig(writer, clientCert);
+    });
+    knownServersFile = config.tlsKnownServers();
+  }
 
+  @BeforeEach
+  void setUp() throws Exception {
     SelfSignedCertificate serverCert = SelfSignedCertificate.create("foo.com");
-    knownServersFile = tempDir.resolve("knownservers.txt");
-    config.setTlsKnownServers(knownServersFile);
-    fooFingerprint = StringUtil
-        .toHexStringPadded(sha2_256(SecurityTestUtils.loadPEM(Paths.get(serverCert.keyCertOptions().getCertPath()))));
+    fooFingerprint = certificateHexFingerprint(Paths.get(serverCert.keyCertOptions().getCertPath()));
     Files.write(knownServersFile, Collections.singletonList("#First line"));
 
     Router dummyRouter = Router.router(vertx);
@@ -81,7 +82,7 @@ class TofuNodeClientTest {
 
   private static void startServer(HttpServer server) throws Exception {
     CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
-    server.listen(SecurityTestUtils.getFreePort(), result -> {
+    server.listen(getFreePort(), result -> {
       if (result.succeeded()) {
         completion.complete();
       } else {
@@ -130,8 +131,8 @@ class TofuNodeClientTest {
     assertTrue(e.getCause() instanceof SSLException);
   }
 
-  @AfterEach
-  void tearDown() {
+  @AfterAll
+  static void tearDown() {
     vertx.close();
   }
 }

@@ -3,25 +3,32 @@ package net.consensys.orion.impl.enclave.sodium;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import net.consensys.cava.junit.TempDirectory;
+import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
+import java.nio.file.Path;
 import java.security.PublicKey;
 import java.util.Optional;
 
 import com.muquit.libsodiumjna.SodiumLibrary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(TempDirectoryExtension.class)
 class SodiumPublicKeyTest {
-  private KeyConfig keyConfig = new KeyConfig("ignore", Optional.empty());
+
+  private KeyConfig keyConfig;
   private KeyStore memoryKeyStore;
 
   @BeforeEach
-  void setUp() {
+  void setUp(@TempDirectory Path tempDir) {
+    keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
     SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
     memoryKeyStore = new SodiumMemoryKeyStore();
   }

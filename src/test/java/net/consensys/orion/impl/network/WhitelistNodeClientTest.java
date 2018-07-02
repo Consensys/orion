@@ -1,6 +1,9 @@
 package net.consensys.orion.impl.network;
 
-import static net.consensys.cava.crypto.Hash.sha2_256;
+import static net.consensys.cava.net.tls.TLS.certificateHexFingerprint;
+import static net.consensys.orion.impl.TestUtils.generateAndLoadConfiguration;
+import static net.consensys.orion.impl.TestUtils.getFreePort;
+import static net.consensys.orion.impl.TestUtils.writeClientCertToConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,8 +14,7 @@ import net.consensys.cava.concurrent.CompletableAsyncCompletion;
 import net.consensys.cava.concurrent.CompletableAsyncResult;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
-import net.consensys.orion.impl.config.MemoryConfig;
-import net.consensys.orion.impl.http.SecurityTestUtils;
+import net.consensys.orion.api.config.Config;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -24,7 +26,6 @@ import java.util.Arrays;
 import java.util.concurrent.CompletionException;
 import javax.net.ssl.SSLException;
 
-import io.netty.util.internal.StringUtil;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -47,24 +48,21 @@ class WhitelistNodeClientTest {
 
   @BeforeAll
   static void setUp(@TempDirectory Path tempDir) throws Exception {
-    MemoryConfig config = new MemoryConfig();
-    config.setWorkDir(tempDir);
-    config.setTls("strict");
-    config.setTlsClientTrust("whitelist");
-    SelfSignedCertificate clientCert = SelfSignedCertificate.create();
-    config.setTlsClientCert(Paths.get(clientCert.certificatePath()));
-    config.setTlsClientKey(Paths.get(clientCert.privateKeyPath()));
+    SelfSignedCertificate clientCert = SelfSignedCertificate.create("localhost");
+    Config config = generateAndLoadConfiguration(tempDir, writer -> {
+      writer.write("tlsclienttrust='whitelist'\n");
+      writeClientCertToConfig(writer, clientCert);
+    });
+
+    Path knownServersFile = config.tlsKnownServers();
 
     SelfSignedCertificate serverCert = SelfSignedCertificate.create("localhost");
-    Path knownServersFile = tempDir.resolve("knownservers.txt");
-    config.setTlsKnownServers(knownServersFile);
     Router dummyRouter = Router.router(vertx);
     whitelistedServer = vertx
         .createHttpServer(new HttpServerOptions().setSsl(true).setPemKeyCertOptions(serverCert.keyCertOptions()))
         .requestHandler(dummyRouter::accept);
     startServer(whitelistedServer);
-    String fingerprint = StringUtil
-        .toHexStringPadded(sha2_256(SecurityTestUtils.loadPEM(Paths.get(serverCert.keyCertOptions().getCertPath()))));
+    String fingerprint = certificateHexFingerprint(Paths.get(serverCert.keyCertOptions().getCertPath()));
     Files.write(
         knownServersFile,
         Arrays.asList("#First line", "localhost:" + whitelistedServer.actualPort() + " " + fingerprint));
@@ -85,7 +83,7 @@ class WhitelistNodeClientTest {
 
   private static void startServer(HttpServer server) throws Exception {
     CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
-    server.listen(SecurityTestUtils.getFreePort(), result -> {
+    server.listen(getFreePort(), result -> {
       if (result.succeeded()) {
         completion.complete();
       } else {
