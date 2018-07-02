@@ -58,10 +58,11 @@ There are a number of automated checks:
 * code formatting 
 
 If these checks pass, pull requests will be reviewed by the project team against criteria including:
-* [style](#java-styleguide)
-* code consistency
 * purpose - is this change useful
+* [style](#java-styleguide)
+* code consistency - naming, comments, design
 * changes that are solely formatting are likely to be rejected
+
 Always write a clear log message for your commits. One-line messages are fine for small changes, but 
 bigger changes should contain more detail.
 ## Styleguides
