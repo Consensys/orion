@@ -23,7 +23,7 @@ you are agreeing to uphold this code. Please report unacceptable behavior.
 #### Before Submitting A Bug 
 * Ensure the bug is not already reported by searching on GitHub under 
 [Issues](https://github.com/consensys/orion/issues).
-#### How Do I Submit a (Good) Bug
+#### How Do I Submit a (Good) Bug?
 * If you are unable to find an open issue addressing the problem, open a new one. Be sure to include a 
 **title and clear description**, as much relevant information as possible, and a **code sample** or 
 an **executable test case** demonstrating the unexpected behavior.
