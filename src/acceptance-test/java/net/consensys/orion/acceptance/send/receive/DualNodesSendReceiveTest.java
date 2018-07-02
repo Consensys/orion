@@ -1,7 +1,6 @@
 package net.consensys.orion.acceptance.send.receive;
 
 import static io.vertx.core.Vertx.vertx;
-import static java.nio.file.Files.createTempDirectory;
 import static net.consensys.orion.acceptance.NodeUtils.assertTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.freePort;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
@@ -60,7 +59,6 @@ class DualNodesSendReceiveTest {
 
   @BeforeEach
   void setUpDualNodes(@TempDirectory Path tempDir) throws Exception {
-    tempDir = createTempDirectory(DualNodesSendReceiveTest.class.getSimpleName() + "-data");
     int firstNodePort = freePort();
     firstNodeClientPort = freePort();
     int secondNodePort = freePort();
