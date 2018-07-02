@@ -38,7 +38,7 @@ happens and under which conditions it normally happens.
 * [Search](https://github.com/consensys/orion/issues) to see if the enhancement has already been suggested. If it has, add a 
 comment to the existing issue instead of opening a new one.
 
-####How Do I Submit A (Good) Enhancement Suggestion?
+#### How Do I Submit A (Good) Enhancement Suggestion?
 Enhancement suggestions are tracked as GitHub issues. Create an issue on that repository and provide 
 the following information:
 
