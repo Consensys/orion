@@ -68,6 +68,8 @@ spotless {
   }
 }
 
+license { exclude "**/*" }
+
 
 //////
 // Compiler arguments
@@ -346,5 +348,3 @@ bintray {
     version { name = project.version }
   }
 }
-
-license { ignoreFailures true }
