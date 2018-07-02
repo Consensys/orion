@@ -8,6 +8,7 @@
 
 [Styleguides](#styleguides)
 
+* [Java Styleguide](#java-styleguide)
 * [Documentation Styleguide](#documentation-styleguide)
 
 ## Code of Conduct
