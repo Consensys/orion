@@ -1,186 +1,21 @@
 # Orion
-Orion is the PegaSys component for doing private transactions.
+Orion is a PegaSys component for doing private transactions.
 
 [![CircleCI](https://circleci.com/gh/ConsenSys/orion.svg?style=shield&circle-token=5f92fd966a971e60e57f53f2257fe5dda0fcf52c)](https://circleci.com/gh/ConsenSys/orion)
 
-## Building from source
-```
-git clone git@github.com:ConsenSys/orion.git
-cd orion
-./gradlew build  
-```
+## Development
 
-## Dependencies
+* [Building from source](documentation/development/building.md)
+* [Dependencies](documentation/development/dependencies.md)
+* [Machine Setup](documentation/development/machine_setup.md)
+* [Code Coverage](documentation/development/code-coverage.md)
 
-### libsodium
-
-In order to be compatible with the original Haskell Constellation, we used 
-[Sodium crypto library](https://download.libsodium.org/doc/) (libsodium) to provide the encryption 
-primitives. To use this, you will first need to install libsodium on your machine.
-
-#### Linux
-Download the [latest stable version](https://download.libsodium.org/libsodium/releases/LATEST.tar.gz) 
-of libsodium tarball and then execute:
-```
-./configure
-make && make check
-sudo make install
-```
-
-#### MacOS
-You can install using [homebrew](https://brew.sh/):
-```
-brew install libsodium
-```
-
-#### Other systems
-For more information on how to install libsodium on your system check the 
-[libsodium installation docs](https://download.libsodium.org/doc/installation/). 
 
 ## Running Orion
 
-Running orion with Gradle:
-```
-./gradlew run
-```
-If you want to add runtime options, use `-Pargs`, for example: `gradle run -Pargs="-g my-key"`
+* [Running Orion](documentation/install/running.md)
+* [Configuring Orion](documentation/install/configure.md)
+* [Disaster Recovery Strategies](documentation/install/disaster_recovery.md)
+* [Docker](documentation/install/docker.md)
 
-Running from distribution binaries (after building from the source):
-```
-cd build/distributions
-tar -xvzf orion*.tar.gz
-mv orion*/ orion/
-./orion/bin/orion
-```
 
-If you want, you can link the binary to your `/usr/local/bin/`
-```
-ln -s <full_path_to_project_folder>/build/distributions/bin/orion /usr/local/bin/orion
-```
-
-e.g. `ln -s /Users/john/git/orion/build/distributions/orion/bin/orion /usr/local/bin/orion`
-
-### Generating keys
-If you want to generate a pair of public/private keys:
-```
-orion -g foo
-```
-This will generate a `foo.key` (private key) and `foo.pub` (public key) in the current folder.
-
-## Configuring Orion
-
-You can start orion providing a config file:
-```
-orion foo.conf
-```
-Where `foo.conf` is a file in the current directory.
-
-### Configuration file
-
-The only required properties are `nodeurl` and `nodeport`. Although, it is recommended to set at least the
-following properties:
-
-| property name | description |
-|---|---|
-| nodeurl | The URL to advertise to other nodes (reachable by them) |
-| nodeport | The local port to listen on for Orion nodes|
-| nodenetworkinterface | The network interface to bind to for Orion nodes |
-| clienturl | The URL to advertise to the Ethereum client (reachable by it) |
-| clientport | The local port to listen on for a client |
-| clientnetworkinterface | The network interface to bind to for a client node |
-| workdir | The folder to put stuff in (default: .) |
-| othernodes | "Boot nodes" to connect to to discover the network |
-| publickeys | Public keys hosted by this node |
-| privatekeys | Private keys hosted by this node (in corresponding order) |
-
-Example config file:
-
-```
-nodeurl = "http://127.0.0.1:9001/"
-nodeport = 9001
-nodenetworkinterface = "127.0.0.1"
-clienturl = "http://127.0.0.1:9002/"
-clientport = 9002
-clientnetworkinterface = "127.0.0.1"
-workdir = "data"
-othernodes = ["http://127.0.0.1:9000/"]
-publickeys = ["foo.pub"]
-privatekeys = ["foo.key"]
-```
-
-You can check all the available properties in the  
-[`sample.conf`](https://github.com/ConsenSys/orion/blob/master/src/main/resources/sample.conf) file.
-
-## Code coverage
-
-We use the jacoco test coverage plugin, which will generate coverage data whenever tests are run.
-
-To run the report:
-```
-gradle test jacocoTestReport
-```
-
-The report will be available at `build/reports/jacoco/test/html/index.html`
-
-## Feature comparison with Constellation
-
-On [this wiki page](https://github.com/ConsenSys/orion/wiki/Feature-comparison-with-Constellation) 
-you can find a breakdown of the features implemented by Orion and the comparison with Constellation's 
-features.
-
-## Database disaster recovery
-
-Orion stores all payload information on its internal database. This database is stored on the path 
-defined by the `workdir` configuration combined with the path information provided in the `storage` option.
-
-If the database is deleted or corrupted, the node will lose all the payloads stored in its local 
-database. It is not possible to recover a lost database without a backup.
-
-[This page](https://github.com/ConsenSys/orion/wiki/Disaster-Recovery-Strategies) contains more 
-information about disaster recovery strategies for Orion.
-
-## Docker
-
-There is a provided `Dockerfile` that can be used to build an image of Orion.
-
-To start the container, one needs to provide a volume with a set of keys and a configuration file.
-
-**Example:**
-
-**`orion.conf` configuration file:**
-```
-nodeurl = "http://127.0.0.1:8080/"
-nodeport = 8080
-clienturl = "http://127.0.0.1:8888/"
-clientport = 8888
-workdir = "/data"
-publickeys = ["orion.pub"]
-privatekeys = ["orion.key"]
-tls = "off"
-```
-
-**`data` folder:**
-```
-data
-  |--- orion.conf
-  |--- orion.pub
-  |--- orion.key
-```
-(you need to use orion to generate the keys)
-
-**Building the image:**
-``` 
-$ docker build --force-rm -t orion .
-``` 
-(make sure that you have built the project with `./gradlew build` before building the image)
-
-**Starting the container:**
-``` 
-$ docker run -d -p 8080:8080 -v data:/data orion
-``` 
-
-**To check that orion is up and running:**
-```
-$ curl -X GET http://localhost:8080/upcheck
-> I'm up!
-```
