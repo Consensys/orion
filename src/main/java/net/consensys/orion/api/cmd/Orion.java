@@ -444,6 +444,7 @@ public class Orion {
   private void generateKeyPairs(PrintStream out, PrintStream err, Config config, String[] keysToGenerate) {
     log.info("generating Key Pairs");
 
+    SodiumLibrary.setLibraryPath(config.libSodiumPath());
     SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
 
     Scanner scanner = new Scanner(System.in, UTF_8.name());
