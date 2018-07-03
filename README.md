@@ -5,17 +5,17 @@ Orion is a PegaSys component for doing private transactions.
 
 ## Development
 
-* [Building from source](doc/dev/building.md)
-* [Dependencies](doc/dev/dependencies.md)
-* [Machine Setup](doc/dev/machine_setup.md)
-* [Code Coverage](doc/dev/code-coverage.md)
+* [Building from source](documentation/development/building.md)
+* [Dependencies](documentation/development/dependencies.md)
+* [Machine Setup](documentation/development/machine_setup.md)
+* [Code Coverage](documentation/development/code-coverage.md)
 
 
 ## Running Orion
 
-* [Running Orion](doc/install/running.md)
-* [Configuring Orion](doc/install/configure.md)
-* [Disaster Recovery Strategies](doc/install/disaster_recovery.md)
-* [Docker](doc/install/docker.md)
+* [Running Orion](documentation/install/running.md)
+* [Configuring Orion](documentation/install/configure.md)
+* [Disaster Recovery Strategies](documentation/install/disaster_recovery.md)
+* [Docker](documentation/install/docker.md)
 
 
