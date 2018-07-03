@@ -1,7 +1,10 @@
-package net.consensys.orion.impl.http.handlers;
+package net.consensys.orion.impl.http;
 
 import static io.vertx.core.Vertx.vertx;
-import static net.consensys.cava.crypto.Hash.sha2_256;
+import static net.consensys.cava.net.tls.TLS.certificateHexFingerprint;
+import static net.consensys.orion.impl.TestUtils.configureJDKTrustStore;
+import static net.consensys.orion.impl.TestUtils.generateAndLoadConfiguration;
+import static net.consensys.orion.impl.TestUtils.writeServerCertToConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,8 +14,7 @@ import net.consensys.cava.concurrent.CompletableAsyncResult;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.cmd.Orion;
-import net.consensys.orion.impl.config.MemoryConfig;
-import net.consensys.orion.impl.http.SecurityTestUtils;
+import net.consensys.orion.api.config.Config;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,7 +24,6 @@ import java.util.List;
 import java.util.concurrent.CompletionException;
 import javax.net.ssl.SSLHandshakeException;
 
-import io.netty.util.internal.StringUtil;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
@@ -37,44 +38,38 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(TempDirectoryExtension.class)
 class TofuSecurityTest {
 
-  private Vertx vertx;
-  private HttpClient httpClient;
-  private Orion orion;
-  private HttpClient anotherExampleComClient;
+  private Vertx vertx = vertx();
   private Path knownClientsFile;
-  private MemoryConfig config;
   private String exampleComFingerprint;
+  private HttpClient httpClient;
+  private HttpClient anotherExampleComClient;
+  private int nodePort;
+  private Orion orion;
 
   @BeforeEach
   void setUp(@TempDirectory Path tempDir) throws Exception {
-    vertx = vertx();
-    orion = new Orion(vertx);
+    SelfSignedCertificate serverCertificate = SelfSignedCertificate.create("localhost");
+    Config config = generateAndLoadConfiguration(tempDir, writer -> {
+      writer.write("tlsservertrust='tofu'\n");
+      writeServerCertToConfig(writer, serverCertificate);
+    });
 
-    config = new MemoryConfig();
-    config.setWorkDir(tempDir.resolve("data"));
-    config.setTls("strict");
-    config.setTlsServerTrust("tofu");
-
-    SecurityTestUtils.installServerCert(config, tempDir);
+    configureJDKTrustStore(serverCertificate, tempDir);
+    knownClientsFile = config.tlsKnownClients();
 
     SelfSignedCertificate clientCertificate = SelfSignedCertificate.create("example.com");
-
-    knownClientsFile = tempDir.resolve("knownclients.txt");
-    config.setTlsKnownClients(knownClientsFile);
-    exampleComFingerprint = StringUtil.toHexStringPadded(
-        sha2_256(SecurityTestUtils.loadPEM(Paths.get(clientCertificate.keyCertOptions().getCertPath()))));
+    exampleComFingerprint = certificateHexFingerprint(Paths.get(clientCertificate.keyCertOptions().getCertPath()));
     Files.write(knownClientsFile, Collections.singletonList("#First line"));
-
-    SecurityTestUtils.installPorts(config);
-    orion.run(System.out, System.err, config);
-
     httpClient = vertx
         .createHttpClient(new HttpClientOptions().setSsl(true).setKeyCertOptions(clientCertificate.keyCertOptions()));
 
     SelfSignedCertificate anotherExampleDotComCert = SelfSignedCertificate.create("example.com");
-
     anotherExampleComClient = vertx.createHttpClient(
         new HttpClientOptions().setSsl(true).setKeyCertOptions(anotherExampleDotComCert.keyCertOptions()));
+
+    nodePort = config.nodePort();
+    orion = new Orion(vertx);
+    orion.run(System.out, System.err, config);
   }
 
   @AfterEach
@@ -86,7 +81,7 @@ class TofuSecurityTest {
   @Test
   void testUpCheckOnNodePort() throws Exception {
     for (int i = 0; i < 5; i++) {
-      HttpClientRequest req = httpClient.get(config.nodePort(), "localhost", "/upcheck");
+      HttpClientRequest req = httpClient.get(nodePort, "localhost", "/upcheck");
       CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
       req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
       HttpClientResponse resp = result.get();
@@ -101,7 +96,7 @@ class TofuSecurityTest {
   @Test
   void testSameHostnameUnknownCertificate() throws Exception {
     testUpCheckOnNodePort();
-    HttpClientRequest req = anotherExampleComClient.get(config.nodePort(), "localhost", "/upcheck");
+    HttpClientRequest req = anotherExampleComClient.get(nodePort, "localhost", "/upcheck");
     CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
 
@@ -113,7 +108,7 @@ class TofuSecurityTest {
   void testWithoutSSLConfiguration() {
     CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     HttpClient insecureClient = vertx.createHttpClient(new HttpClientOptions().setSsl(true));
-    HttpClientRequest req = insecureClient.get(config.nodePort(), "localhost", "/upcheck");
+    HttpClientRequest req = insecureClient.get(nodePort, "localhost", "/upcheck");
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
 
     CompletionException e = assertThrows(CompletionException.class, result::get);

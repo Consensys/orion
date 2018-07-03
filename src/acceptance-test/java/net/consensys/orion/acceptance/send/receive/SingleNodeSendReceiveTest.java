@@ -82,7 +82,6 @@ class SingleNodeSendReceiveTest {
   @Test
   void keyIdentity() throws Exception {
     final EthClientStub ethClientStub = NodeUtils.client(clientPort, httpClient);
-    NodeUtils.ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(ethClientStub, PK_2_B_64, PK_2_B_64);
     final byte[] receivedPayload = viewTransaction(ethClientStub, PK_2_B_64, digest);
@@ -94,7 +93,6 @@ class SingleNodeSendReceiveTest {
   @Test
   void receiverCanView() throws Exception {
     final EthClientStub ethClientStub = NodeUtils.client(clientPort, httpClient);
-    NodeUtils.ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(ethClientStub, PK_1_B_64, PK_2_B_64);
     final byte[] receivedPayload = viewTransaction(ethClientStub, PK_2_B_64, digest);
@@ -106,7 +104,6 @@ class SingleNodeSendReceiveTest {
   @Test
   void senderCanView() throws Exception {
     final EthClientStub ethClientStub = NodeUtils.client(clientPort, httpClient);
-    NodeUtils.ensureNetworkDiscoveryOccurs();
 
     final String digest = sendTransaction(ethClientStub, PK_1_B_64, PK_2_B_64);
     final byte[] receivedPayload = viewTransaction(ethClientStub, PK_1_B_64, digest);

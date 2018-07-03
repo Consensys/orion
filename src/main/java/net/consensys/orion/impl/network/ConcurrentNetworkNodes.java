@@ -7,7 +7,6 @@ import net.consensys.orion.impl.enclave.sodium.SodiumPublicKeyDeserializer;
 
 import java.net.URL;
 import java.security.PublicKey;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,7 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
 
   public ConcurrentNetworkNodes(Config config, PublicKey[] publicKeys) {
     url = config.nodeUrl();
-    nodeURLs = new CopyOnWriteArrayList<>(Arrays.asList(config.otherNodes()));
+    nodeURLs = new CopyOnWriteArrayList<>(config.otherNodes());
     nodePKs = new ConcurrentHashMap<>();
 
     // adding my publickey(s) so /partyinfo returns my info when called.

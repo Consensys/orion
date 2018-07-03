@@ -6,16 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
-import net.consensys.orion.impl.config.TomlConfigBuilder;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.ExecutionException;
 
 import io.vertx.core.http.HttpClient;
 import junit.framework.AssertionFailedError;
@@ -77,7 +73,7 @@ public class NodeUtils {
         + "workdir= \"" + workDir.toString() + "\"\n";
     // @formatter:on
 
-    return new TomlConfigBuilder().build(new ByteArrayInputStream(confString.getBytes(StandardCharsets.UTF_8.name())));
+    return Config.load(confString);
   }
 
   public static int freePort() throws Exception {
@@ -86,13 +82,8 @@ public class NodeUtils {
     }
   }
 
-  public static void ensureNetworkDiscoveryOccurs() throws InterruptedException {
-    // TODO there must be a better way then sleeping & hoping network discovery occurs
-    Thread.sleep(2000);
-  }
-
   /** It's the callers responsibility to stop the started Orion. */
-  public static Orion startOrion(Config config) throws ExecutionException, InterruptedException {
+  public static Orion startOrion(Config config) {
     final Orion orion = new Orion();
     orion.run(System.out, System.err, config);
     return orion;
