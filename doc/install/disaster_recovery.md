@@ -20,7 +20,7 @@ and a [data redundancy setup](#data-redundancy:-raid-1-(disk-mirroring)) for the
 
 ## Backup Strategy: Scheduled Backup
 
-This is an example of backup strategy that will create copies of Orion's database during time. This strategy was based 
+This is an example of backup strategy that will create copies of Orion's database over time. This strategy was based 
 on [this Medium post](https://medium.com/@fotios.floros/linux-backup-script-1722cc9c2bf6).
 
 This backup strategy is made of two pieces:
