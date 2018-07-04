@@ -8,6 +8,7 @@
 
 * [Reporting Bugs](#reporting-bugs)
 * [Suggesting Enhancements](#suggesting-enhancements)
+* [Pull Requests](#pull-requests)
 
 [Styleguides](#styleguides)
 
@@ -53,7 +54,7 @@ the following information:
 * Describe the **current behavior** and explain the **behavior you expect** instead and why.
 * Explain why this enhancement would be useful to other users.
 * Specify the **name and version of the OS** you're using.
-* Specify the **name and version of any relevant packages** - Geth.
+* Specify the **name and version of any relevant packages** - eg Geth.
 
 ### Pull Requests
 There are a number of automated checks:
@@ -64,6 +65,7 @@ There are a number of automated checks:
 
 If these checks pass, pull requests will be reviewed by the project team against criteria including:
 * purpose - is this change useful
+* test coverage - are there unit/integration/acceptance tests demonstrating the change is effective
 * [style](#java-styleguide)
 * code consistency - naming, comments, design
 * changes that are solely formatting are likely to be rejected
