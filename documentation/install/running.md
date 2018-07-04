@@ -12,7 +12,7 @@ If you want to add runtime options, use `-Pargs`, for example: `./gradlew run -P
 * see [usage](#usage) for details
 
 ## Running from distribution binaries
-Running from distribution binaries (after [building from source](../development/building.md)):
+First [build from source](../development/building.md). Then:
 ```
 cd build/distributions
 tar -xvzf orion*.tar.gz

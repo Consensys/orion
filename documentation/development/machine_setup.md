@@ -4,7 +4,7 @@
 We use Java 8, Gradle for builds, and IntelliJ as an IDE. Feel free to use something else as your IDE if you are so 
 inclined, but IntelliJ rocks.
 
-## Install java 8 on your mac
+## Install Java 8 on your mac
 
 ```
 brew tap caskroom/versions
@@ -18,13 +18,13 @@ But you might want to fall back to:
 brew install caskroom/versions/java8
 `
 
-## Install gradle
+## Install Gradle
 
 `
 brew install gradle
 `
 
-You'll also want to setup a JAVA_HOME so gradle will play nicely and compile using java 8.
+You'll also want to setup a JAVA_HOME so Gradle will play nicely and compile using Java 8.
 ```
 export JAVA_HOME="$(/usr/libexec/java_home -v 1.8)"
 ```
