@@ -1,3 +1,16 @@
+/*
+ * Copyright 2018 ConsenSys AG.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
 plugins {
   id "com.diffplug.gradle.spotless" version "3.10.0"
   id "com.github.hierynomus.license" version "0.14.0"
@@ -56,6 +69,7 @@ gradle.startParameter.taskNames = expandedTaskList.flatten()
 
 spotless {
   java {
+    licenseHeaderFile 'gradle/spotless.license.java'
     removeUnusedImports()
     eclipse().configFile(rootProject.file('gradle/eclipse-java-consensys-style.xml'))
     importOrder 'net.consensys', 'java', ''
@@ -65,6 +79,16 @@ spotless {
     target '**/*.gradle'
     greclipse().configFile(rootProject.file('gradle/greclipse-gradle-consensys-style.properties'))
     endWithNewline()
+  }
+  format 'scala', {
+    target '**/*.scala'
+    licenseHeaderFile 'gradle/spotless.license.java', 'package'
+    paddedCell()
+  }
+  format 'build-gradle', {
+    target '/build.gradle'
+    licenseHeaderFile 'gradle/spotless.license.java', 'plugins'
+    paddedCell()
   }
 }
 
