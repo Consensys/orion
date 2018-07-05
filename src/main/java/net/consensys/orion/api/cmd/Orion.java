@@ -256,10 +256,11 @@ public class Orion {
   }
 
   public void run(PrintStream out, PrintStream err, Config config) {
+    SodiumLibrary.setLibraryPath(config.libSodiumPath());
+
     SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
     ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(config, keyStore.nodeKeys());
 
-    SodiumLibrary.setLibraryPath(config.libSodiumPath());
     Enclave enclave = new LibSodiumEnclave(keyStore);
 
     Path workDir = config.workDir();
