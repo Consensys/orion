@@ -18,13 +18,12 @@ import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.EncryptedPayload;
+import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.api.storage.Storage;
-import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
-import java.security.PublicKey;
 import java.util.Collections;
 
 import io.vertx.core.Handler;
@@ -57,7 +56,7 @@ public class ReceiveHandler implements Handler<RoutingContext> {
       log.debug("got receive request {}", receiveRequest);
       key = receiveRequest.key;
       if (receiveRequest.to != null) {
-        to = new SodiumPublicKey(Base64.decode(receiveRequest.to));
+        to = new PublicKey(Base64.decode(receiveRequest.to));
       }
     } else {
       key = routingContext.request().getHeader("c11n-key");

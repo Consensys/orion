@@ -24,9 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
+import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.api.exception.OrionErrorCode;
-import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
-import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
+import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
@@ -34,7 +34,6 @@ import net.consensys.orion.impl.utils.Serializer;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,12 +55,12 @@ import org.junit.jupiter.api.Test;
 class SendHandlerTest extends HandlerTest {
 
   private KeyConfig keyConfig;
-  private SodiumMemoryKeyStore memoryKeyStore;
+  private MemoryKeyStore memoryKeyStore;
 
   @BeforeEach
   void setUpKeyStore(@TempDirectory Path tempDir) {
     keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
-    memoryKeyStore = new SodiumMemoryKeyStore();
+    memoryKeyStore = new MemoryKeyStore();
   }
 
   @Test
@@ -172,8 +171,8 @@ class SendHandlerTest extends HandlerTest {
     assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
 
     // ensure cipher text is same.
-    SodiumEncryptedPayload receivedPayload =
-        Serializer.deserialize(CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
+    EncryptedPayload receivedPayload =
+        Serializer.deserialize(CBOR, EncryptedPayload.class, recordedRequest.getBody().readByteArray());
     assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
   }
 
@@ -249,8 +248,8 @@ class SendHandlerTest extends HandlerTest {
       assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
 
       // ensure cipher text is same.
-      SodiumEncryptedPayload receivedPayload =
-          Serializer.deserialize(CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
+      EncryptedPayload receivedPayload =
+          Serializer.deserialize(CBOR, EncryptedPayload.class, recordedRequest.getBody().readByteArray());
       assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
     }
   }
@@ -293,9 +292,9 @@ class SendHandlerTest extends HandlerTest {
     RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
     PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
 
-    String from = Base64.encode(sender.getEncoded());
+    String from = Base64.encode(sender.toBytes());
 
-    String[] to = fakePeers.stream().map(fp -> Base64.encode(fp.publicKey.getEncoded())).toArray(String[]::new);
+    String[] to = fakePeers.stream().map(fp -> Base64.encode(fp.publicKey.toBytes())).toArray(String[]::new);
 
     Request request = new Request.Builder()
         .post(body)
@@ -327,8 +326,8 @@ class SendHandlerTest extends HandlerTest {
       assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
 
       // ensure cipher text is same.
-      SodiumEncryptedPayload receivedPayload =
-          Serializer.deserialize(CBOR, SodiumEncryptedPayload.class, recordedRequest.getBody().readByteArray());
+      EncryptedPayload receivedPayload =
+          Serializer.deserialize(CBOR, EncryptedPayload.class, recordedRequest.getBody().readByteArray());
       assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
     }
   }
@@ -355,13 +354,13 @@ class SendHandlerTest extends HandlerTest {
         RequestBody.create(MediaType.parse(HttpContentType.APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
     PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
 
-    String from = Base64.encode(sender.getEncoded());
+    String from = Base64.encode(sender.toBytes());
 
     Request request = new Request.Builder()
         .post(body)
         .url(nodeBaseUrl + "sendraw")
         .addHeader("c11n-from", from)
-        .addHeader("c11n-to", Base64.encode(fakePeer.publicKey.getEncoded()))
+        .addHeader("c11n-to", Base64.encode(fakePeer.publicKey.toBytes()))
         .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
         .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
         .build();
@@ -405,7 +404,7 @@ class SendHandlerTest extends HandlerTest {
     // configureRoutes our sendRequest
     String payload = Base64.encode(toEncrypt);
 
-    String[] to = new String[] {Base64.encode(fakePeer.publicKey.getEncoded())};
+    String[] to = new String[] {Base64.encode(fakePeer.publicKey.toBytes())};
 
     Map<String, Object> sendRequest = buildRequest(to, payload.getBytes(UTF_8), null);
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
@@ -421,12 +420,12 @@ class SendHandlerTest extends HandlerTest {
 
   private Map<String, Object> buildRequest(List<FakePeer> forPeers, byte[] toEncrypt) {
     PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
-    String from = Base64.encode(sender.getEncoded());
+    String from = Base64.encode(sender.toBytes());
     return buildRequest(forPeers, toEncrypt, from);
   }
 
   private Map<String, Object> buildRequest(List<FakePeer> forPeers, byte[] toEncrypt, String from) {
-    String[] to = forPeers.stream().map(fp -> Base64.encode(fp.publicKey.getEncoded())).toArray(String[]::new);
+    String[] to = forPeers.stream().map(fp -> Base64.encode(fp.publicKey.toBytes())).toArray(String[]::new);
     return buildRequest(to, toEncrypt, from);
   }
 

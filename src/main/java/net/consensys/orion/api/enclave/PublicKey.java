@@ -11,42 +11,31 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package net.consensys.orion.impl.enclave.sodium;
+package net.consensys.orion.api.enclave;
 
 import net.consensys.orion.impl.utils.Base64;
 
-import java.security.PublicKey;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class SodiumPublicKey implements PublicKey {
+public class PublicKey {
 
-  private final byte[] encoded;
+  private final byte[] keyBytes;
 
-  public SodiumPublicKey(String base64) {
-    this.encoded = Base64.decode(base64);
+  public PublicKey(String base64) {
+    this.keyBytes = Base64.decode(base64);
   }
 
   @JsonCreator
-  public SodiumPublicKey(@JsonProperty("encoded") byte[] encoded) {
-    this.encoded = encoded;
+  public PublicKey(@JsonProperty("encoded") byte[] keyBytes) {
+    this.keyBytes = keyBytes;
   }
 
-  @Override
-  public String getAlgorithm() {
-    return null;
-  }
-
-  @Override
-  public String getFormat() {
-    return null;
-  }
-
-  @Override
-  public byte[] getEncoded() {
-    return encoded;
+  @JsonProperty("encoded")
+  public byte[] toBytes() {
+    return keyBytes;
   }
 
   @Override
@@ -58,18 +47,18 @@ public class SodiumPublicKey implements PublicKey {
       return false;
     }
 
-    SodiumPublicKey publicKey1 = (SodiumPublicKey) o;
+    PublicKey publicKey1 = (PublicKey) o;
 
-    return Arrays.equals(encoded, publicKey1.encoded);
-  }
-
-  @Override
-  public String toString() {
-    return Base64.encode(encoded);
+    return Arrays.equals(keyBytes, publicKey1.keyBytes);
   }
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(encoded);
+    return Arrays.hashCode(keyBytes);
+  }
+
+  @Override
+  public String toString() {
+    return Base64.encode(keyBytes);
   }
 }

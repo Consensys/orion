@@ -21,7 +21,6 @@ import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
-import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
@@ -56,8 +55,7 @@ public class EncryptedPayloadStorage implements Storage<EncryptedPayload> {
   public AsyncResult<Optional<EncryptedPayload>> get(String key) {
     Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
     return store.getAsync(keyBytes).thenApply(
-        maybeBytes -> maybeBytes.map(
-            bytes -> Serializer
-                .deserialize(HttpContentType.CBOR, SodiumEncryptedPayload.class, bytes.toArrayUnsafe())));
+        maybeBytes -> maybeBytes
+            .map(bytes -> Serializer.deserialize(HttpContentType.CBOR, EncryptedPayload.class, bytes.toArrayUnsafe())));
   }
 }

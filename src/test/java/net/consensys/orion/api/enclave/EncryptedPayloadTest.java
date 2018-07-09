@@ -11,7 +11,7 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package net.consensys.orion.impl.enclave.sodium;
+package net.consensys.orion.api.enclave;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,33 +27,33 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
-class SodiumEncryptedPayloadTest {
+class EncryptedPayloadTest {
 
   @Test
   void roundTripSerialization() {
-    SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes(UTF_8));
-    Map<SodiumPublicKey, Integer> combinedKeysOwners = new HashMap<>();
-    SodiumPublicKey key = new SodiumPublicKey("fake remote publickey".getBytes(UTF_8));
+    CombinedKey combinedKey = new CombinedKey("Combined key fakery".getBytes(UTF_8));
+    Map<PublicKey, Integer> combinedKeysOwners = new HashMap<>();
+    PublicKey key = new PublicKey("fake remote publickey".getBytes(UTF_8));
     combinedKeysOwners.put(key, 1);
-    SodiumEncryptedPayload payload = new SodiumEncryptedPayload(
-        new SodiumPublicKey("fakekey".getBytes(UTF_8)),
+    EncryptedPayload payload = new EncryptedPayload(
+        new PublicKey("fakekey".getBytes(UTF_8)),
         "fake nonce".getBytes(UTF_8),
         "fake combinedNonce".getBytes(UTF_8),
-        new SodiumCombinedKey[] {sodiumCombinedKey},
+        new CombinedKey[] {combinedKey},
         "fake ciphertext".getBytes(UTF_8),
         Optional.of(combinedKeysOwners));
-    assertEquals(payload, Serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, payload));
-    assertEquals(payload, Serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, payload));
+    assertEquals(payload, Serializer.roundTrip(HttpContentType.JSON, EncryptedPayload.class, payload));
+    assertEquals(payload, Serializer.roundTrip(HttpContentType.CBOR, EncryptedPayload.class, payload));
   }
 
   @Test
   void serializationToJsonWithoutCombinedKeyOwners() throws Exception {
-    SodiumCombinedKey sodiumCombinedKey = new SodiumCombinedKey("Combined key fakery".getBytes(UTF_8));
-    SodiumEncryptedPayload payload = new SodiumEncryptedPayload(
-        new SodiumPublicKey("fakekey".getBytes(UTF_8)),
+    CombinedKey combinedKey = new CombinedKey("Combined key fakery".getBytes(UTF_8));
+    EncryptedPayload payload = new EncryptedPayload(
+        new PublicKey("fakekey".getBytes(UTF_8)),
         "fake nonce".getBytes(UTF_8),
         "fake combinedNonce".getBytes(UTF_8),
-        new SodiumCombinedKey[] {sodiumCombinedKey},
+        new CombinedKey[] {combinedKey},
         "fake ciphertext".getBytes(UTF_8),
         Optional.empty());
     byte[] serialized = Serializer.serialize(HttpContentType.JSON, payload);

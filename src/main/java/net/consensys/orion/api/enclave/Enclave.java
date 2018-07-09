@@ -13,8 +13,6 @@
 
 package net.consensys.orion.api.enclave;
 
-import java.security.PublicKey;
-
 public interface Enclave {
 
   /**

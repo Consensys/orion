@@ -29,14 +29,13 @@ import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
-import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
+import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.net.URL;
 import java.nio.file.Path;
-import java.security.PublicKey;
 import java.util.concurrent.TimeUnit;
 
 import io.vertx.core.Vertx;
@@ -116,8 +115,8 @@ class DualNodesSendReceiveTest {
     secondHttpClient = vertx.createHttpClient();
     networkNodes = new ConcurrentNetworkNodes(new URL(firstNodeBaseUrl));
 
-    PublicKey pk1 = new SodiumPublicKey(PK_1_B_64);
-    PublicKey pk2 = new SodiumPublicKey(PK_2_B_64);
+    PublicKey pk1 = new PublicKey(PK_1_B_64);
+    PublicKey pk2 = new PublicKey(PK_2_B_64);
     networkNodes.addNode(pk1, new URL(firstNodeBaseUrl));
     networkNodes.addNode(pk2, new URL(secondNodeBaseUrl));
     // prepare /partyinfo payload (our known peers)

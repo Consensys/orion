@@ -18,6 +18,7 @@ import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
+import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.exception.OrionException;
 import net.consensys.orion.api.storage.Storage;
@@ -27,7 +28,6 @@ import net.consensys.orion.impl.network.NodeHttpClientBuilder;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.net.URL;
-import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -96,8 +96,7 @@ public class SendHandler implements Handler<RoutingContext> {
 
     // toKeys = toKeys + [nodeAlwaysSendTo] --> default pub key to always send to
     toKeys.addAll(Arrays.asList(enclave.alwaysSendTo()));
-    PublicKey[] arrToKeys = new PublicKey[toKeys.size()];
-    arrToKeys = toKeys.toArray(arrToKeys);
+    PublicKey[] arrToKeys = toKeys.toArray(new PublicKey[0]);
 
     // convert payload from b64 to bytes
     final byte[] rawPayload = sendRequest.rawPayload();

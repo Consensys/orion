@@ -13,10 +13,10 @@
 
 package net.consensys.orion.api.network;
 
+import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 
 import java.net.URL;
-import java.security.PublicKey;
 import java.util.Collection;
 import java.util.Map;
 

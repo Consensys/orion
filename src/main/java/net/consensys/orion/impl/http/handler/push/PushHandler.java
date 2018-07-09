@@ -15,7 +15,6 @@ package net.consensys.orion.impl.http.handler.push;
 
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.storage.Storage;
-import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -36,7 +35,7 @@ public class PushHandler implements Handler<RoutingContext> {
   @Override
   public void handle(RoutingContext routingContext) {
     EncryptedPayload pushRequest =
-        Serializer.deserialize(HttpContentType.CBOR, SodiumEncryptedPayload.class, routingContext.getBody().getBytes());
+        Serializer.deserialize(HttpContentType.CBOR, EncryptedPayload.class, routingContext.getBody().getBytes());
 
     storage.put(pushRequest).thenAccept((digest) -> {
       log.debug("stored payload. resulting digest: {}", digest);

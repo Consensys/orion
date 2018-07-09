@@ -21,6 +21,8 @@ import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
+import net.consensys.orion.api.enclave.PrivateKey;
+import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.sodium.storage.ArgonOptions;
 import net.consensys.orion.impl.enclave.sodium.storage.PrivateKeyData;
@@ -35,8 +37,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,13 +47,13 @@ import com.muquit.libsodiumjna.SodiumLibrary;
 import com.muquit.libsodiumjna.exceptions.SodiumLibraryException;
 import org.jetbrains.annotations.NotNull;
 
-public class SodiumFileKeyStore implements KeyStore {
+public class FileKeyStore implements KeyStore {
 
   private final Config config;
 
   private final Map<PublicKey, PrivateKey> cache = new HashMap<>();
 
-  public SodiumFileKeyStore(Config config) {
+  public FileKeyStore(Config config) {
     this.config = config;
     // load keys
     loadKeysFromConfig(config);
@@ -98,14 +98,14 @@ public class SodiumFileKeyStore implements KeyStore {
             "Unable to support private key storage of type: " + storedPrivateKey.type());
     }
 
-    return new SodiumPrivateKey(decoded);
+    return new PrivateKey(decoded);
   }
 
   private PublicKey readPublicKey(Path publicKeyFile) {
     try (BufferedReader br = Files.newBufferedReader(publicKeyFile, UTF_8)) {
       final String base64Encoded = br.readLine();
       final byte[] decoded = Base64.decode(base64Encoded);
-      return new SodiumPublicKey(decoded);
+      return new PublicKey(decoded);
     } catch (final IOException e) {
       throw new EnclaveException(OrionErrorCode.ENCLAVE_READ_PUBLIC_KEY, e);
     }
@@ -145,8 +145,8 @@ public class SodiumFileKeyStore implements KeyStore {
     storePublicKey(keyPair.getPublicKey(), publicFile);
     final StoredPrivateKey privKey = createStoredPrivateKey(keyPair, password);
     storePrivateKey(privKey, privateFile);
-    final SodiumPublicKey publicKey = new SodiumPublicKey(keyPair.getPublicKey());
-    final SodiumPrivateKey privateKey = new SodiumPrivateKey(keyPair.getPrivateKey());
+    final PublicKey publicKey = new PublicKey(keyPair.getPublicKey());
+    final PrivateKey privateKey = new PrivateKey(keyPair.getPrivateKey());
     cache.put(publicKey, privateKey);
     return publicKey;
   }

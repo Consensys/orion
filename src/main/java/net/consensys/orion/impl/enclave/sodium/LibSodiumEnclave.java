@@ -18,11 +18,11 @@ import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyStore;
+import net.consensys.orion.api.enclave.PrivateKey;
+import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.api.exception.OrionErrorCode;
 
 import java.nio.charset.StandardCharsets;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
@@ -57,16 +57,15 @@ public class LibSodiumEnclave implements Enclave {
   @Override
   public EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients) {
     final PublicKey[] recipientsAndSender = addSenderToRecipients(recipients, senderKey);
-    final SodiumPublicKey senderPublicKey = sodiumPublicKey(senderKey);
     final PrivateKey senderPrivateKey = privateKey(senderKey);
     final byte[] secretKey = secretKey();
     final byte[] secretNonce = secretNonce();
     final byte[] cipherText = encrypt(plaintext, secretNonce, secretKey);
     final byte[] nonce = nonce();
-    final SodiumCombinedKey[] combinedKeys = combinedKeys(recipientsAndSender, senderPrivateKey, secretKey, nonce);
+    final CombinedKey[] combinedKeys = combinedKeys(recipientsAndSender, senderPrivateKey, secretKey, nonce);
 
-    return new SodiumEncryptedPayload(
-        senderPublicKey,
+    return new EncryptedPayload(
+        senderKey,
         secretNonce,
         nonce,
         combinedKeys,
@@ -84,21 +83,11 @@ public class LibSodiumEnclave implements Enclave {
   @Override
   public PublicKey readKey(String b64) {
     try {
-      return new SodiumPublicKey(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
+      return new PublicKey(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
 
     } catch (final IllegalArgumentException e) {
       throw new EnclaveException(OrionErrorCode.ENCLAVE_DECODE_PUBLIC_KEY, e);
     }
-  }
-
-  private SodiumPublicKey sodiumPublicKey(PublicKey senderKey) {
-    if (senderKey instanceof SodiumPublicKey) {
-      return (SodiumPublicKey) senderKey;
-    }
-
-    throw new EnclaveException(
-        OrionErrorCode.ENCLAVE_UNSUPPORTED_PUBLIC_KEY_TYPE,
-        "SodiumEnclave needs SodiumPublicKey");
   }
 
   private PublicKey[] addSenderToRecipients(final PublicKey[] recipients, final PublicKey sender) {
@@ -127,8 +116,8 @@ public class LibSodiumEnclave implements Enclave {
         return SodiumLibrary.cryptoBoxOpenEasy(
             key.getEncoded(),
             ciphertextAndMetadata.combinedKeyNonce(),
-            ciphertextAndMetadata.sender().getEncoded(),
-            privateKey.getEncoded());
+            ciphertextAndMetadata.sender().toBytes(),
+            privateKey.toBytes());
 
       } catch (final SodiumLibraryException e) {
         // The next next key might be the lucky one, so don't propagate just yet
@@ -175,28 +164,28 @@ public class LibSodiumEnclave implements Enclave {
   }
 
   /** Create mapping between combined keys and recipients */
-  private HashMap<SodiumPublicKey, Integer> combinedKeysMapping(PublicKey[] recipients) {
-    final HashMap<SodiumPublicKey, Integer> combinedKeysMapping = new HashMap<>();
+  private HashMap<PublicKey, Integer> combinedKeysMapping(PublicKey[] recipients) {
+    final HashMap<PublicKey, Integer> combinedKeysMapping = new HashMap<>();
     for (int i = 0; i < recipients.length; i++) {
-      combinedKeysMapping.put((SodiumPublicKey) recipients[i], i);
+      combinedKeysMapping.put(recipients[i], i);
     }
 
     return combinedKeysMapping;
   }
 
-  private SodiumCombinedKey[] combinedKeys(
+  private CombinedKey[] combinedKeys(
       PublicKey[] recipients,
       PrivateKey senderPrivateKey,
       byte[] secretKey,
       byte[] nonce) {
 
     try {
-      final SodiumCombinedKey[] combinedKeys = new SodiumCombinedKey[recipients.length];
+      final CombinedKey[] combinedKeys = new CombinedKey[recipients.length];
       for (int i = 0; i < recipients.length; i++) {
         final PublicKey recipient = recipients[i];
         final byte[] encryptedKey =
-            SodiumLibrary.cryptoBoxEasy(secretKey, nonce, recipient.getEncoded(), senderPrivateKey.getEncoded());
-        final SodiumCombinedKey combinedKey = new SodiumCombinedKey(encryptedKey);
+            SodiumLibrary.cryptoBoxEasy(secretKey, nonce, recipient.toBytes(), senderPrivateKey.toBytes());
+        final CombinedKey combinedKey = new CombinedKey(encryptedKey);
         combinedKeys[i] = combinedKey;
       }
 

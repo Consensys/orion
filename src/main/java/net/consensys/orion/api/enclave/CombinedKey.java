@@ -13,19 +13,40 @@
 
 package net.consensys.orion.api.enclave;
 
-/**
- * A combined key for encryption. This interface contains no methods or constants. It merely serves to group (and
- * provide type safety for) the combined key interface.
- *
- * <p>
- * This takes inspiration from the java.security.PrivateKey/java.security.Key interface family.
- *
- * <p>
- * Note: specialized combined key interfaces will extend this interface.
- *
- * @see java.security.Key
- * @see java.security.PrivateKey
- */
-public interface CombinedKey {
-  byte[] getEncoded();
+import java.util.Arrays;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class CombinedKey {
+
+  private final byte[] encoded;
+
+  @JsonCreator
+  public CombinedKey(@JsonProperty("encoded") byte[] encoded) {
+    this.encoded = encoded;
+  }
+
+  public byte[] getEncoded() {
+    return encoded;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    CombinedKey that = (CombinedKey) o;
+
+    return Arrays.equals(encoded, that.encoded);
+  }
+
+  @Override
+  public int hashCode() {
+    return Arrays.hashCode(encoded);
+  }
 }

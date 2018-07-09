@@ -11,28 +11,22 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package net.consensys.orion.impl.enclave.sodium;
+package net.consensys.orion.api.enclave;
 
-import net.consensys.orion.api.enclave.CombinedKey;
+import net.consensys.orion.impl.utils.Base64;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+public class PrivateKey {
 
-public class SodiumCombinedKey implements CombinedKey, Serializable {
+  private final byte[] keyBytes;
 
-  private final byte[] encoded;
-
-  @JsonCreator
-  public SodiumCombinedKey(@JsonProperty("encoded") byte[] encoded) {
-    this.encoded = encoded;
+  public PrivateKey(byte[] keyBytes) {
+    this.keyBytes = keyBytes;
   }
 
-  @Override
-  public byte[] getEncoded() {
-    return encoded;
+  public byte[] toBytes() {
+    return keyBytes;
   }
 
   @Override
@@ -44,13 +38,18 @@ public class SodiumCombinedKey implements CombinedKey, Serializable {
       return false;
     }
 
-    SodiumCombinedKey that = (SodiumCombinedKey) o;
+    PrivateKey that = (PrivateKey) o;
 
-    return Arrays.equals(encoded, that.encoded);
+    return Arrays.equals(keyBytes, that.keyBytes);
   }
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(encoded);
+    return Arrays.hashCode(keyBytes);
+  }
+
+  @Override
+  public String toString() {
+    return "PrivateKey{" + Base64.encode(keyBytes) + '}';
   }
 }
