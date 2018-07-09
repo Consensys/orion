@@ -23,7 +23,7 @@ import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.exception.OrionException;
-import net.consensys.orion.impl.enclave.sodium.storage.StoredPrivateKey;
+import net.consensys.orion.impl.enclave.sodium.StoredPrivateKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -86,7 +86,7 @@ class OrionTest {
     assertTrue(Files.exists(publicKey1));
 
     StoredPrivateKey storedPrivateKey = Serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
-    assertEquals(StoredPrivateKey.ARGON2_SBOX, storedPrivateKey.type());
+    assertEquals(StoredPrivateKey.ENCRYPTED, storedPrivateKey.type());
 
     Files.delete(privateKey1);
     Files.delete(publicKey1);

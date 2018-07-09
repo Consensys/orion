@@ -84,10 +84,10 @@ class FileKeyStoreTest {
   }
 
   @Test
-  void missingAlgorithimRaisesAppropriateException() {
+  void unknownKeyTypeRaisesAppropriateException() {
     // @formatter:off
     Config config = Config.load(
-        "privatekeys=[\"keys/noalgorithm.key\"]\n"
+        "privatekeys=[\"keys/unknown_type.key\"]\n"
       + "publickeys=[\"keys/tm1a.pub\"]\n"
       + "alwayssendto=[\"keys/tm1a.pub\"]");
     // @formatter:on

@@ -15,11 +15,8 @@ package net.consensys.orion.impl.enclave.sodium;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.empty;
-import static java.util.Optional.of;
 
 import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.crypto.sodium.PasswordHash;
-import net.consensys.cava.crypto.sodium.SecretBox;
 import net.consensys.cava.crypto.sodium.SodiumException;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.EnclaveException;
@@ -28,10 +25,6 @@ import net.consensys.orion.api.enclave.KeyStore;
 import net.consensys.orion.api.enclave.PrivateKey;
 import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.api.exception.OrionErrorCode;
-import net.consensys.orion.impl.enclave.sodium.storage.ArgonOptions;
-import net.consensys.orion.impl.enclave.sodium.storage.PrivateKeyData;
-import net.consensys.orion.impl.enclave.sodium.storage.SodiumArgon2Sbox;
-import net.consensys.orion.impl.enclave.sodium.storage.StoredPrivateKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
@@ -45,8 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import org.jetbrains.annotations.NotNull;
 
 public class FileKeyStore implements KeyStore {
 
@@ -80,28 +71,7 @@ public class FileKeyStore implements KeyStore {
     final StoredPrivateKey storedPrivateKey =
         Serializer.readFile(HttpContentType.JSON, privateKeyFile, StoredPrivateKey.class);
 
-    Box.SecretKey key;
-    switch (storedPrivateKey.type()) {
-      case StoredPrivateKey.UNLOCKED:
-        key = Box.SecretKey.fromBytes(Base64.decode(storedPrivateKey.data().bytes().get()));
-        break;
-      case StoredPrivateKey.ARGON2_SBOX:
-        if (!password.isPresent()) {
-          throw new EnclaveException(
-              OrionErrorCode.ENCLAVE_MISSING_PRIVATE_KEY_PASSWORD,
-              "missing password to read private key");
-        }
-        byte[] cipherText = Base64.decode(storedPrivateKey.data().sbox().get());
-        PasswordHash.Salt salt = PasswordHash.Salt.fromBytes(Base64.decode(storedPrivateKey.data().asalt().get()));
-        SecretBox.Nonce nonce = SecretBox.Nonce.fromBytes(Base64.decode(storedPrivateKey.data().snonce().get()));
-        final ArgonOptions argonOptions = storedPrivateKey.data().aopts().get();
-        key = SodiumArgon2Sbox.decrypt(cipherText, password.get(), salt, nonce, argonOptions);
-        break;
-      default:
-        throw new EnclaveException(
-            OrionErrorCode.ENCLAVE_UNSUPPORTED_PRIVATE_KEY_TYPE,
-            "Unable to support private key storage of type: " + storedPrivateKey.type());
-    }
+    Box.SecretKey key = storedPrivateKey.toSecretKey(password.orElse(null));
     return new PrivateKey(key.bytesArray());
   }
 
@@ -147,7 +117,7 @@ public class FileKeyStore implements KeyStore {
     final Path publicFile = baseName.resolveSibling(baseName.getFileName() + ".pub");
     final Path privateFile = baseName.resolveSibling(baseName.getFileName() + ".key");
     storePublicKey(keyPair.publicKey(), publicFile);
-    final StoredPrivateKey privKey = createStoredPrivateKey(keyPair, password);
+    final StoredPrivateKey privKey = StoredPrivateKey.fromSecretKey(keyPair.secretKey(), password.orElse(null));
     storePrivateKey(privKey, privateFile);
     final PublicKey publicKey = new PublicKey(keyPair.publicKey().bytesArray());
     final PrivateKey privateKey = new PrivateKey(keyPair.secretKey().bytesArray());
@@ -173,41 +143,6 @@ public class FileKeyStore implements KeyStore {
     } catch (final IOException e) {
       throw new EnclaveException(OrionErrorCode.ENCLAVE_WRITE_PUBLIC_KEY, e);
     }
-  }
-
-  @NotNull
-  private StoredPrivateKey createStoredPrivateKey(Box.KeyPair keyPair, Optional<String> password) {
-    final PrivateKeyData data;
-
-    if (password.isPresent()) {
-      final ArgonOptions argonOptions = defaultArgonOptions();
-      final SecretBox.Nonce nonce = SecretBox.Nonce.random();
-      final PasswordHash.Salt salt = PasswordHash.Salt.random();
-      final byte[] cipherText =
-          SodiumArgon2Sbox.encrypt(keyPair.secretKey(), password.get(), salt, nonce, argonOptions);
-      data = new PrivateKeyData(
-          Optional.empty(),
-          of(Base64.encode(salt.bytesArray())),
-          of(argonOptions),
-          of(Base64.encode(nonce.bytesArray())),
-          of(Base64.encode(cipherText)));
-      return new StoredPrivateKey(data, StoredPrivateKey.ARGON2_SBOX);
-    } else {
-      data = new PrivateKeyData(Base64.encode(keyPair.secretKey().bytesArray()));
-      return new StoredPrivateKey(data, StoredPrivateKey.UNLOCKED);
-    }
-  }
-
-  @NotNull
-  private ArgonOptions defaultArgonOptions() {
-    return new ArgonOptions(
-        "i",
-        ArgonOptions.VERSION,
-        empty(),
-        empty(),
-        empty(),
-        of(ArgonOptions.OPS_LIMIT_MODERATE),
-        of(ArgonOptions.MEM_LIMIT_MODERATE));
   }
 
   @Override
