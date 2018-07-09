@@ -13,10 +13,10 @@
 
 package net.consensys.orion.impl.helpers;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.api.enclave.CombinedKey;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.PublicKey;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -29,26 +29,26 @@ import java.util.Map;
  */
 public class StubEnclave implements Enclave {
 
-  private final PublicKey[] alwaysSendTo;
-  private final PublicKey[] nodeKeys;
+  private final Box.PublicKey[] alwaysSendTo;
+  private final Box.PublicKey[] nodeKeys;
 
   public StubEnclave() {
-    this.alwaysSendTo = new PublicKey[0];
-    this.nodeKeys = new PublicKey[0];
+    this.alwaysSendTo = new Box.PublicKey[0];
+    this.nodeKeys = new Box.PublicKey[0];
   }
 
   @Override
-  public PublicKey[] alwaysSendTo() {
+  public Box.PublicKey[] alwaysSendTo() {
     return alwaysSendTo;
   }
 
   @Override
-  public PublicKey[] nodeKeys() {
+  public Box.PublicKey[] nodeKeys() {
     return nodeKeys;
   }
 
   @Override
-  public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, PublicKey publicKey) {
+  public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, Box.PublicKey publicKey) {
     byte[] cipherText = ciphertextAndMetadata.cipherText();
     byte[] plainText = new byte[cipherText.length];
     for (int i = 0; i < cipherText.length; i++) {
@@ -59,12 +59,12 @@ public class StubEnclave implements Enclave {
   }
 
   @Override
-  public PublicKey readKey(String b64) {
-    return new PublicKey(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
+  public Box.PublicKey readKey(String b64) {
+    return Box.PublicKey.fromBytes(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
   }
 
   @Override
-  public EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients) {
+  public EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients) {
     byte[] ciphterText = new byte[plaintext.length];
     for (int i = 0; i < plaintext.length; i++) {
       byte b = plaintext[i];
@@ -75,13 +75,13 @@ public class StubEnclave implements Enclave {
     byte[] nonce = {};
 
     CombinedKey[] combinedKeys;
-    Map<PublicKey, Integer> combinedKeysOwners = new HashMap<>();
+    Map<Box.PublicKey, Integer> combinedKeysOwners = new HashMap<>();
 
     if (recipients != null && recipients.length > 0) {
       combinedKeys = new CombinedKey[recipients.length];
       for (int i = 0; i < recipients.length; i++) {
         combinedKeysOwners.put(recipients[i], i);
-        combinedKeys[i] = new CombinedKey(recipients[i].toBytes());
+        combinedKeys[i] = new CombinedKey(recipients[i].bytesArray());
       }
     } else {
       combinedKeys = new CombinedKey[0];

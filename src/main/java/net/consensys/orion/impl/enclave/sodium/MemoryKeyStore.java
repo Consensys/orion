@@ -18,34 +18,31 @@ import net.consensys.cava.crypto.sodium.SodiumException;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
-import net.consensys.orion.api.enclave.PrivateKey;
-import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.api.exception.OrionErrorCode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
+import javax.annotation.Nullable;
 
 public class MemoryKeyStore implements KeyStore {
 
-  private final Map<PublicKey, PrivateKey> store = new HashMap<>();
-  private final List<PublicKey> nodeKeys = new ArrayList<>();
+  private final Map<Box.PublicKey, Box.SecretKey> store = new HashMap<>();
+  private final List<Box.PublicKey> nodeKeys = new ArrayList<>();
 
   @Override
-  public Optional<PrivateKey> privateKey(PublicKey publicKey) {
-    return Optional.ofNullable(store.get(publicKey));
+  @Nullable
+  public Box.SecretKey privateKey(Box.PublicKey publicKey) {
+    return store.get(publicKey);
   }
 
   @Override
-  public PublicKey generateKeyPair(KeyConfig keyConfig) {
+  public Box.PublicKey generateKeyPair(KeyConfig keyConfig) {
     try {
       Box.KeyPair keyPair = Box.KeyPair.random();
-      final PrivateKey privateKey = new PrivateKey(keyPair.secretKey().bytesArray());
-      final PublicKey publicKey = new PublicKey(keyPair.publicKey().bytesArray());
-      store.put(publicKey, privateKey);
+      Box.PublicKey publicKey = keyPair.publicKey();
+      store.put(publicKey, keyPair.secretKey());
       return publicKey;
     } catch (final SodiumException e) {
       throw new EnclaveException(OrionErrorCode.ENCLAVE_CREATE_KEY_PAIR, e);
@@ -53,16 +50,16 @@ public class MemoryKeyStore implements KeyStore {
   }
 
   @Override
-  public PublicKey[] alwaysSendTo() {
-    return new PublicKey[0];
+  public Box.PublicKey[] alwaysSendTo() {
+    return new Box.PublicKey[0];
   }
 
-  public void addNodeKey(PublicKey key) {
+  public void addNodeKey(Box.PublicKey key) {
     nodeKeys.add(key);
   }
 
   @Override
-  public PublicKey[] nodeKeys() {
-    return nodeKeys.toArray(new PublicKey[0]);
+  public Box.PublicKey[] nodeKeys() {
+    return nodeKeys.toArray(new Box.PublicKey[0]);
   }
 }

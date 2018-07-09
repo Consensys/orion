@@ -13,7 +13,7 @@
 
 package net.consensys.orion.api.network;
 
-import net.consensys.orion.api.enclave.PublicKey;
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
 
 import java.net.URL;
@@ -33,12 +33,12 @@ public interface NetworkNodes {
    */
   Collection<URL> nodeURLs();
 
-  URL urlForRecipient(PublicKey recipient);
+  URL urlForRecipient(Box.PublicKey recipient);
 
   /**
    * @return Map from public key to node for all discovered nodes.
    */
-  Map<PublicKey, URL> nodePKs();
+  Map<Box.PublicKey, URL> nodePKs();
 
   boolean merge(ConcurrentNetworkNodes other);
 }

@@ -13,10 +13,10 @@
 
 package net.consensys.orion.impl.enclave.sodium;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.api.enclave.CombinedKey;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.PublicKey;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -24,17 +24,17 @@ import java.util.Base64;
 public class SodiumEnclaveStub implements Enclave {
 
   @Override
-  public PublicKey[] alwaysSendTo() {
-    return new PublicKey[0];
+  public Box.PublicKey[] alwaysSendTo() {
+    return new Box.PublicKey[0];
   }
 
   @Override
-  public PublicKey[] nodeKeys() {
-    return new PublicKey[0];
+  public Box.PublicKey[] nodeKeys() {
+    return new Box.PublicKey[0];
   }
 
   @Override
-  public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, PublicKey publicKey) {
+  public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, Box.PublicKey publicKey) {
     byte[] cipherText = ciphertextAndMetadata.cipherText();
     byte[] plainText = new byte[cipherText.length];
     for (int i = 0; i < cipherText.length; i++) {
@@ -45,12 +45,12 @@ public class SodiumEnclaveStub implements Enclave {
   }
 
   @Override
-  public PublicKey readKey(String b64) {
-    return new PublicKey(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
+  public Box.PublicKey readKey(String b64) {
+    return Box.PublicKey.fromBytes(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
   }
 
   @Override
-  public EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients) {
+  public EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients) {
     byte[] cipherText = new byte[plaintext.length];
     for (int i = 0; i < plaintext.length; i++) {
       byte b = plaintext[i];

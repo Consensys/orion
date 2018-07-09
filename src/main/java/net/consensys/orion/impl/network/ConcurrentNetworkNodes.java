@@ -13,10 +13,11 @@
 
 package net.consensys.orion.impl.network;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.api.config.Config;
-import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.api.network.NetworkNodes;
-import net.consensys.orion.impl.enclave.sodium.PublicKeyDeserializer;
+import net.consensys.orion.impl.enclave.sodium.serialization.PublicKeyMapKeyDeserializer;
+import net.consensys.orion.impl.enclave.sodium.serialization.PublicKeyMapKeySerializer;
 
 import java.net.URL;
 import java.util.Collection;
@@ -29,20 +30,22 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 public class ConcurrentNetworkNodes implements NetworkNodes {
 
   private final URL url;
   private final CopyOnWriteArrayList<URL> nodeURLs;
-  private final ConcurrentHashMap<PublicKey, URL> nodePKs;
+  @JsonSerialize(keyUsing = PublicKeyMapKeySerializer.class)
+  private final ConcurrentHashMap<Box.PublicKey, URL> nodePKs;
 
-  public ConcurrentNetworkNodes(Config config, PublicKey[] publicKeys) {
+  public ConcurrentNetworkNodes(Config config, Box.PublicKey[] publicKeys) {
     url = config.nodeUrl();
     nodeURLs = new CopyOnWriteArrayList<>(config.otherNodes());
     nodePKs = new ConcurrentHashMap<>();
 
     // adding my publickey(s) so /partyinfo returns my info when called.
-    for (PublicKey publicKey : publicKeys) {
+    for (Box.PublicKey publicKey : publicKeys) {
       nodePKs.put(publicKey, url);
     }
   }
@@ -51,7 +54,8 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
   public ConcurrentNetworkNodes(
       @JsonProperty("url") URL url,
       @JsonProperty("nodeURLs") List<URL> nodeURLs,
-      @JsonProperty("nodePKs") @JsonDeserialize(keyUsing = PublicKeyDeserializer.class) Map<PublicKey, URL> nodePKs) {
+      @JsonProperty("nodePKs") @JsonDeserialize(
+          keyUsing = PublicKeyMapKeyDeserializer.class) Map<Box.PublicKey, URL> nodePKs) {
     this.url = url;
     this.nodeURLs = new CopyOnWriteArrayList<>(nodeURLs);
     this.nodePKs = new ConcurrentHashMap<>(nodePKs);
@@ -67,7 +71,7 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
    * @param nodePk PublicKey of new node
    * @param node URL of new node
    */
-  public void addNode(PublicKey nodePk, URL node) {
+  public void addNode(Box.PublicKey nodePk, URL node) {
     this.nodeURLs.add(node);
     this.nodePKs.put(nodePk, node);
   }
@@ -85,13 +89,13 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
   }
 
   @Override
-  public URL urlForRecipient(PublicKey recipient) {
+  public URL urlForRecipient(Box.PublicKey recipient) {
     return nodePKs.get(recipient);
   }
 
   @Override
   @JsonProperty("nodePKs")
-  public Map<PublicKey, URL> nodePKs() {
+  public Map<Box.PublicKey, URL> nodePKs() {
     return nodePKs;
   }
 
@@ -100,7 +104,7 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
     // note; not using map.putAll() as we don't want a malicious peer to overwrite ours nodes.
     boolean thisChanged = false;
 
-    for (Map.Entry<PublicKey, URL> entry : other.nodePKs().entrySet()) {
+    for (Map.Entry<Box.PublicKey, URL> entry : other.nodePKs().entrySet()) {
       if (nodePKs.putIfAbsent(entry.getKey(), entry.getValue()) == null) {
         // putIfAbsent returns null if there was no mapping associated with the provided key
         thisChanged = true;

@@ -13,7 +13,11 @@
 
 package net.consensys.orion.api.enclave;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.api.exception.OrionErrorCode;
+import net.consensys.orion.impl.enclave.sodium.serialization.PublicKeyDeserializer;
+import net.consensys.orion.impl.enclave.sodium.serialization.PublicKeyMapKeyDeserializer;
+import net.consensys.orion.impl.enclave.sodium.serialization.PublicKeySerializer;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -23,18 +27,20 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 public class EncryptedPayload implements Serializable {
 
   private final byte[] combinedKeyNonce;
-  private final PublicKey sender;
+  private final Box.PublicKey sender;
   private final byte[] cipherText;
   private final byte[] nonce;
   private final CombinedKey[] combinedKeys;
-  private final Map<PublicKey, Integer> combinedKeysOwners;
+  private final Map<Box.PublicKey, Integer> combinedKeysOwners;
 
   public EncryptedPayload(
-      PublicKey sender,
+      Box.PublicKey sender,
       byte[] nonce,
       byte[] combinedKeyNonce,
       CombinedKey[] combinedKeys,
@@ -44,12 +50,13 @@ public class EncryptedPayload implements Serializable {
 
   @JsonCreator
   public EncryptedPayload(
-      @JsonProperty("sender") PublicKey sender,
+      @JsonProperty("sender") @JsonDeserialize(using = PublicKeyDeserializer.class) Box.PublicKey sender,
       @JsonProperty("nonce") byte[] nonce,
       @JsonProperty("combinedKeyNonce") byte[] combinedKeyNonce,
       @JsonProperty("combinedKeys") CombinedKey[] combinedKeys,
       @JsonProperty("cipherText") byte[] cipherText,
-      @JsonProperty("combinedKeysOwners") Map<PublicKey, Integer> combinedKeysOwners) {
+      @JsonProperty("combinedKeysOwners") @JsonDeserialize(
+          keyUsing = PublicKeyMapKeyDeserializer.class) Map<Box.PublicKey, Integer> combinedKeysOwners) {
     this.combinedKeyNonce = combinedKeyNonce;
     this.sender = sender;
     this.cipherText = cipherText;
@@ -59,7 +66,8 @@ public class EncryptedPayload implements Serializable {
   }
 
   @JsonProperty("sender")
-  public PublicKey sender() {
+  @JsonSerialize(using = PublicKeySerializer.class)
+  public Box.PublicKey sender() {
     return sender;
   }
 
@@ -83,7 +91,7 @@ public class EncryptedPayload implements Serializable {
     return combinedKeyNonce;
   }
 
-  public EncryptedPayload stripFor(PublicKey key) {
+  public EncryptedPayload stripFor(Box.PublicKey key) {
     final Integer toKeepIdx = combinedKeysOwners.get(key);
 
     if (toKeepIdx == null || toKeepIdx < 0 || toKeepIdx >= combinedKeys.length) {

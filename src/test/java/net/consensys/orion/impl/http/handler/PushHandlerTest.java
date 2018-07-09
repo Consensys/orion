@@ -17,10 +17,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
-import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.impl.enclave.sodium.SodiumEnclave;
@@ -112,8 +112,8 @@ class PushHandlerTest extends HandlerTest {
 
   private EncryptedPayload mockPayload() {
     SodiumEnclave sEnclave = new SodiumEnclave(memoryKeyStore);
-    PublicKey k1 = memoryKeyStore.generateKeyPair(keyConfig);
-    PublicKey k2 = memoryKeyStore.generateKeyPair(keyConfig);
-    return sEnclave.encrypt("something important".getBytes(UTF_8), k1, new PublicKey[] {k2});
+    Box.PublicKey k1 = memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey k2 = memoryKeyStore.generateKeyPair(keyConfig);
+    return sEnclave.encrypt("something important".getBytes(UTF_8), k1, new Box.PublicKey[] {k2});
   }
 }

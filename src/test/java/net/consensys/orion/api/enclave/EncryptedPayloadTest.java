@@ -16,6 +16,7 @@ package net.consensys.orion.api.enclave;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -31,11 +32,11 @@ class EncryptedPayloadTest {
   @Test
   void roundTripSerialization() {
     CombinedKey combinedKey = new CombinedKey("Combined key fakery".getBytes(UTF_8));
-    Map<PublicKey, Integer> combinedKeysOwners = new HashMap<>();
-    PublicKey key = new PublicKey("fake remote publickey".getBytes(UTF_8));
+    Map<Box.PublicKey, Integer> combinedKeysOwners = new HashMap<>();
+    Box.PublicKey key = Box.KeyPair.random().publicKey();
     combinedKeysOwners.put(key, 1);
     EncryptedPayload payload = new EncryptedPayload(
-        new PublicKey("fakekey".getBytes(UTF_8)),
+        Box.KeyPair.random().publicKey(),
         "fake nonce".getBytes(UTF_8),
         "fake combinedNonce".getBytes(UTF_8),
         new CombinedKey[] {combinedKey},
@@ -49,7 +50,7 @@ class EncryptedPayloadTest {
   void serializationToJsonWithoutCombinedKeyOwners() throws Exception {
     CombinedKey combinedKey = new CombinedKey("Combined key fakery".getBytes(UTF_8));
     EncryptedPayload payload = new EncryptedPayload(
-        new PublicKey("fakekey".getBytes(UTF_8)),
+        Box.KeyPair.random().publicKey(),
         "fake nonce".getBytes(UTF_8),
         "fake combinedNonce".getBytes(UTF_8),
         new CombinedKey[] {combinedKey},

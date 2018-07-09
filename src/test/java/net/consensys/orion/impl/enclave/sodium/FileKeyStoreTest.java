@@ -15,18 +15,17 @@ package net.consensys.orion.impl.enclave.sodium;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.KeyConfig;
-import net.consensys.orion.api.enclave.PrivateKey;
-import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.impl.utils.Base64;
 
 import java.io.IOException;
@@ -43,10 +42,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(TempDirectoryExtension.class)
 class FileKeyStoreTest {
 
-  private static final PublicKey PUBLIC_KEY_1 =
-      new PublicKey(Base64.decode("BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo="));
-  private static final PrivateKey PRIVATE_KEY_1 =
-      new PrivateKey(Base64.decode("Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA="));
+  private static final Box.PublicKey PUBLIC_KEY_1 =
+      Box.PublicKey.fromBytes(Base64.decode("BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo="));
+  private static final Box.SecretKey PRIVATE_KEY_1 =
+      Box.SecretKey.fromBytes(Base64.decode("Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA="));
   private static Config config;
   private FileKeyStore keyStore;
 
@@ -62,14 +61,12 @@ class FileKeyStoreTest {
 
   @Test
   void configLoadsRawKeys() {
-    Optional<PrivateKey> storedKey = keyStore.privateKey(PUBLIC_KEY_1);
-    assertEquals(PRIVATE_KEY_1, storedKey.get());
+    assertEquals(PRIVATE_KEY_1, keyStore.privateKey(PUBLIC_KEY_1));
   }
 
   @Test
   void configLoadsNullKey() {
-    Optional<PrivateKey> storedKey = keyStore.privateKey(null);
-    assertFalse(storedKey.isPresent());
+    assertNull(keyStore.privateKey(null));
   }
 
   @Test
@@ -105,10 +102,9 @@ class FileKeyStoreTest {
         new String[] {"Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA=", "wGEar7J9G0JAgdisp61ZChyrJWeW2QPyKvecjjeVHOY="};
 
     for (int i = 0; i < encodedPrivateKeys.length; i++) {
-      PrivateKey privateKey = new PrivateKey(Base64.decode(encodedPrivateKeys[i]));
-      PublicKey publicKey = new PublicKey(Base64.decode(encodedPublicKeys[i]));
-      Optional<PrivateKey> storedKey = keyStore.privateKey(publicKey);
-      assertEquals(privateKey, storedKey.get());
+      Box.SecretKey privateKey = Box.SecretKey.fromBytes(Base64.decode(encodedPrivateKeys[i]));
+      Box.PublicKey publicKey = Box.PublicKey.fromBytes(Base64.decode(encodedPublicKeys[i]));
+      assertEquals(privateKey, keyStore.privateKey(publicKey));
     }
   }
 
@@ -120,10 +116,9 @@ class FileKeyStoreTest {
     String[] encodedPublicKeys =
         new String[] {"BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=", "8SjRHlUBe4hAmTk3KDeJ96RhN+s10xRrHDrxEi1O5W0="};
 
-    PublicKey[] publicKeys = new PublicKey[encodedPublicKeys.length];
+    Box.PublicKey[] publicKeys = new Box.PublicKey[encodedPublicKeys.length];
     for (int i = 0; i < encodedPublicKeys.length; i++) {
-      PublicKey publicKey = new PublicKey(Base64.decode(encodedPublicKeys[i]));
-      publicKeys[i] = publicKey;
+      publicKeys[i] = Box.PublicKey.fromBytes(Base64.decode(encodedPublicKeys[i]));
     }
     assertArrayEquals(publicKeys, keyStore.alwaysSendTo());
   }
@@ -145,7 +140,7 @@ class FileKeyStoreTest {
         + "workdir='" + tempDir + "'\n");
     // @formatter:on
     keyStore = new FileKeyStore(config);
-    PublicKey fromStore = keyStore.nodeKeys()[0];
+    Box.PublicKey fromStore = keyStore.nodeKeys()[0];
     assertNotNull(keyStore.privateKey(fromStore));
 
     Path privateKey = tempDir.resolve("keys").resolve("generated.key");
@@ -173,7 +168,7 @@ class FileKeyStoreTest {
       + "publickeys=['" + publicKey.toAbsolutePath() + "']\n");
     // @formatter:on
     keyStore = new FileKeyStore(config);
-    PublicKey fromStore = keyStore.nodeKeys()[0];
+    Box.PublicKey fromStore = keyStore.nodeKeys()[0];
     assertNotNull(keyStore.privateKey(fromStore));
 
     assertTrue(Files.exists(privateKey));

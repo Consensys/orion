@@ -13,12 +13,11 @@
 
 package net.consensys.orion.impl.http.handler;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import net.consensys.orion.api.enclave.PublicKey;
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
@@ -36,8 +35,8 @@ class PartyInfoHandlerTest extends HandlerTest {
 
   @Test
   void successfulProcessingOfRequest() throws Exception {
-    networkNodes.addNode(new PublicKey("pk1".getBytes(UTF_8)), new URL("http://127.0.0.1:9001/"));
-    networkNodes.addNode(new PublicKey("pk2".getBytes(UTF_8)), new URL("http://127.0.0.1:9002/"));
+    networkNodes.addNode(Box.KeyPair.random().publicKey(), new URL("http://127.0.0.1:9001/"));
+    networkNodes.addNode(Box.KeyPair.random().publicKey(), new URL("http://127.0.0.1:9002/"));
 
     // prepare /partyinfo payload (our known peers)
     RequestBody partyInfoBody =
@@ -58,15 +57,15 @@ class PartyInfoHandlerTest extends HandlerTest {
   @Test
   void roundTripSerialization() throws Exception {
     ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(new URL("http://localhost:1234/"));
-    networkNodes.addNode(new PublicKey("fake".getBytes(UTF_8)), new URL("http://localhost/"));
+    networkNodes.addNode(Box.KeyPair.random().publicKey(), new URL("http://localhost/"));
     assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.CBOR, ConcurrentNetworkNodes.class, networkNodes));
     assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.JSON, ConcurrentNetworkNodes.class, networkNodes));
   }
 
   @Test
   void partyInfoWithInvalidContentType() throws Exception {
-    networkNodes.addNode(new PublicKey("pk1".getBytes(UTF_8)), new URL("http://127.0.0.1:9001/"));
-    networkNodes.addNode(new PublicKey("pk2".getBytes(UTF_8)), new URL("http://127.0.0.1:9002/"));
+    networkNodes.addNode(Box.KeyPair.random().publicKey(), new URL("http://127.0.0.1:9001/"));
+    networkNodes.addNode(Box.KeyPair.random().publicKey(), new URL("http://127.0.0.1:9002/"));
 
     // prepare /partyinfo payload (our known peers) with invalid content type (json)
     RequestBody partyInfoBody =

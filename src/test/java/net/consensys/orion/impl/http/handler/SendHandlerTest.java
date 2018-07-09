@@ -21,10 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
-import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.impl.http.server.HttpContentType;
@@ -290,11 +290,11 @@ class SendHandlerTest extends HandlerTest {
 
     // configureRoutes the binary sendRequest
     RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
-    PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
 
-    String from = Base64.encode(sender.toBytes());
+    String from = Base64.encode(sender.bytesArray());
 
-    String[] to = fakePeers.stream().map(fp -> Base64.encode(fp.publicKey.toBytes())).toArray(String[]::new);
+    String[] to = fakePeers.stream().map(fp -> Base64.encode(fp.publicKey.bytesArray())).toArray(String[]::new);
 
     Request request = new Request.Builder()
         .post(body)
@@ -352,15 +352,15 @@ class SendHandlerTest extends HandlerTest {
     // configureRoutes the binary sendRequest
     RequestBody body =
         RequestBody.create(MediaType.parse(HttpContentType.APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
-    PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
 
-    String from = Base64.encode(sender.toBytes());
+    String from = Base64.encode(sender.bytesArray());
 
     Request request = new Request.Builder()
         .post(body)
         .url(nodeBaseUrl + "sendraw")
         .addHeader("c11n-from", from)
-        .addHeader("c11n-to", Base64.encode(fakePeer.publicKey.toBytes()))
+        .addHeader("c11n-to", Base64.encode(fakePeer.publicKey.bytesArray()))
         .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
         .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
         .build();
@@ -404,7 +404,7 @@ class SendHandlerTest extends HandlerTest {
     // configureRoutes our sendRequest
     String payload = Base64.encode(toEncrypt);
 
-    String[] to = new String[] {Base64.encode(fakePeer.publicKey.toBytes())};
+    String[] to = new String[] {Base64.encode(fakePeer.publicKey.bytesArray())};
 
     Map<String, Object> sendRequest = buildRequest(to, payload.getBytes(UTF_8), null);
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
@@ -419,13 +419,13 @@ class SendHandlerTest extends HandlerTest {
   }
 
   private Map<String, Object> buildRequest(List<FakePeer> forPeers, byte[] toEncrypt) {
-    PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
-    String from = Base64.encode(sender.toBytes());
+    Box.PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
+    String from = Base64.encode(sender.bytesArray());
     return buildRequest(forPeers, toEncrypt, from);
   }
 
   private Map<String, Object> buildRequest(List<FakePeer> forPeers, byte[] toEncrypt, String from) {
-    String[] to = forPeers.stream().map(fp -> Base64.encode(fp.publicKey.toBytes())).toArray(String[]::new);
+    String[] to = forPeers.stream().map(fp -> Base64.encode(fp.publicKey.bytesArray())).toArray(String[]::new);
     return buildRequest(to, toEncrypt, from);
   }
 
@@ -443,7 +443,7 @@ class SendHandlerTest extends HandlerTest {
 
   class FakePeer {
     final MockWebServer server;
-    final PublicKey publicKey;
+    final Box.PublicKey publicKey;
 
     FakePeer(MockResponse response) throws IOException {
       server = new MockWebServer();

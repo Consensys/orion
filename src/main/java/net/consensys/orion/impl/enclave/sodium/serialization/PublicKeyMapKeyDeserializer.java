@@ -11,28 +11,18 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package net.consensys.orion.impl.helpers;
+package net.consensys.orion.impl.enclave.sodium.serialization;
 
 import net.consensys.cava.crypto.sodium.Box;
+import net.consensys.orion.impl.utils.Base64;
 
-import java.io.IOException;
-import java.net.URL;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.KeyDeserializer;
 
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
+public final class PublicKeyMapKeyDeserializer extends KeyDeserializer {
 
-public class FakePeer {
-  public final MockWebServer server;
-  public final Box.PublicKey publicKey;
-
-  public FakePeer(MockResponse response, Box.PublicKey publicKey) throws IOException {
-    server = new MockWebServer();
-    this.publicKey = publicKey;
-    server.enqueue(response);
-    server.start();
-  }
-
-  public URL getURL() {
-    return server.url("").url();
+  @Override
+  public Box.PublicKey deserializeKey(String key, DeserializationContext ctxt) {
+    return Box.PublicKey.fromBytes(Base64.decode(key));
   }
 }

@@ -16,6 +16,7 @@ package net.consensys.orion.impl.enclave.sodium;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import net.consensys.cava.crypto.sodium.Box;
+import net.consensys.cava.crypto.sodium.Box.SecretKey;
 import net.consensys.cava.crypto.sodium.SecretBox;
 import net.consensys.cava.crypto.sodium.SodiumException;
 import net.consensys.orion.api.enclave.CombinedKey;
@@ -23,8 +24,6 @@ import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyStore;
-import net.consensys.orion.api.enclave.PrivateKey;
-import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.api.exception.OrionErrorCode;
 
 import java.util.Arrays;
@@ -35,8 +34,8 @@ public class SodiumEnclave implements Enclave {
 
   private KeyStore keyStore;
 
-  private final PublicKey[] alwaysSendTo;
-  private final PublicKey[] nodeKeys;
+  private final Box.PublicKey[] alwaysSendTo;
+  private final Box.PublicKey[] nodeKeys;
 
   public SodiumEnclave(KeyStore keyStore) {
     this.keyStore = keyStore;
@@ -45,7 +44,7 @@ public class SodiumEnclave implements Enclave {
   }
 
   @Override
-  public EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients) {
+  public EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients) {
     // encrypt plaintext with a random key & nonce
     SecretBox.Key payloadKey = SecretBox.Key.random();
     SecretBox.Nonce secretNonce = SecretBox.Nonce.random();
@@ -53,13 +52,10 @@ public class SodiumEnclave implements Enclave {
 
     // encrypt payloadKey with public key of each recipient
     Box.SecretKey senderSecretKey = privateKey(senderKey);
-    final PublicKey[] recipientsAndSender = addSenderToRecipients(recipients, senderKey);
-    Box.PublicKey[] recipientPublicKeys =
-        Arrays.stream(recipientsAndSender).map(publicKey -> Box.PublicKey.fromBytes(publicKey.toBytes())).toArray(
-            Box.PublicKey[]::new);
+    final Box.PublicKey[] recipientsAndSender = addSenderToRecipients(recipients, senderKey);
     Box.Nonce nonce = Box.Nonce.random();
     final CombinedKey[] combinedKeys =
-        encryptPayloadKeyForRecipients(payloadKey, recipientPublicKeys, senderSecretKey, nonce);
+        encryptPayloadKeyForRecipients(payloadKey, recipientsAndSender, senderSecretKey, nonce);
 
     return new EncryptedPayload(
         senderKey,
@@ -71,7 +67,7 @@ public class SodiumEnclave implements Enclave {
   }
 
   @Override
-  public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, PublicKey identity) {
+  public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, Box.PublicKey identity) {
     Box.SecretKey secretKey = privateKey(identity);
     SecretBox.Key key = decryptPayloadKey(ciphertextAndMetadata, secretKey);
     SecretBox.Nonce nonce = SecretBox.Nonce.fromBytes(ciphertextAndMetadata.nonce());
@@ -79,36 +75,38 @@ public class SodiumEnclave implements Enclave {
   }
 
   @Override
-  public PublicKey[] alwaysSendTo() {
+  public Box.PublicKey[] alwaysSendTo() {
     return alwaysSendTo;
   }
 
   @Override
-  public PublicKey[] nodeKeys() {
+  public Box.PublicKey[] nodeKeys() {
     return nodeKeys;
   }
 
   @Override
-  public PublicKey readKey(String b64) {
+  public Box.PublicKey readKey(String b64) {
     try {
-      return new PublicKey(Base64.getDecoder().decode(b64.getBytes(UTF_8)));
+      return Box.PublicKey.fromBytes(Base64.getDecoder().decode(b64.getBytes(UTF_8)));
     } catch (final IllegalArgumentException e) {
       throw new EnclaveException(OrionErrorCode.ENCLAVE_DECODE_PUBLIC_KEY, e);
     }
   }
 
-  private PublicKey[] addSenderToRecipients(final PublicKey[] recipients, final PublicKey sender) {
-    final PublicKey[] recipientsAndSender = Arrays.copyOf(recipients, recipients.length + 1);
+  private Box.PublicKey[] addSenderToRecipients(final Box.PublicKey[] recipients, final Box.PublicKey sender) {
+    final Box.PublicKey[] recipientsAndSender = Arrays.copyOf(recipients, recipients.length + 1);
     recipientsAndSender[recipients.length] = sender;
     return recipientsAndSender;
   }
 
-  private Box.SecretKey privateKey(PublicKey identity) {
-    PrivateKey key = keyStore.privateKey(identity).orElseThrow(
-        () -> new EnclaveException(
-            OrionErrorCode.ENCLAVE_NO_MATCHING_PRIVATE_KEY,
-            "No StoredPrivateKey found in keystore"));
-    return Box.SecretKey.fromBytes(key.toBytes());
+  private Box.SecretKey privateKey(Box.PublicKey identity) {
+    SecretKey secretKey = keyStore.privateKey(identity);
+    if (secretKey == null) {
+      throw new EnclaveException(
+          OrionErrorCode.ENCLAVE_NO_MATCHING_PRIVATE_KEY,
+          "No StoredPrivateKey found in keystore");
+    }
+    return secretKey;
   }
 
   // Iterate through the combined keys to find one that decrypts successfully using our secret key.
@@ -119,8 +117,7 @@ public class SodiumEnclave implements Enclave {
     for (final CombinedKey key : ciphertextAndMetadata.combinedKeys()) {
       byte[] clearText;
       try {
-        PublicKey sender = ciphertextAndMetadata.sender();
-        Box.PublicKey senderPublicKey = Box.PublicKey.fromBytes(sender.toBytes());
+        Box.PublicKey senderPublicKey = ciphertextAndMetadata.sender();
         Box.Nonce nonce = Box.Nonce.fromBytes(ciphertextAndMetadata.combinedKeyNonce());
 
         // When decryption with the combined fails, SodiumLibrary exceptions
@@ -141,8 +138,8 @@ public class SodiumEnclave implements Enclave {
 
 
   /** Create mapping between combined keys and recipients */
-  private HashMap<PublicKey, Integer> combinedKeysMapping(PublicKey[] recipients) {
-    final HashMap<PublicKey, Integer> combinedKeysMapping = new HashMap<>();
+  private HashMap<Box.PublicKey, Integer> combinedKeysMapping(Box.PublicKey[] recipients) {
+    final HashMap<Box.PublicKey, Integer> combinedKeysMapping = new HashMap<>();
     for (int i = 0; i < recipients.length; i++) {
       combinedKeysMapping.put(recipients[i], i);
     }

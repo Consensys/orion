@@ -15,13 +15,13 @@ package net.consensys.orion.impl.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.enclave.CombinedKey;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
-import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.impl.http.server.HttpContentType;
 
@@ -61,7 +61,7 @@ class SerializerTest {
     CombinedKey[] combinedKeys = new CombinedKey[0];
     byte[] combinedKeyNonce = {};
     byte[] nonce = {};
-    PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
 
     // generate random byte content
     byte[] toEncrypt = new byte[342];

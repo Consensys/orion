@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.impl.helpers.StubEnclave;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
@@ -44,11 +43,10 @@ class SendHandlerWithNodeKeysTest extends SendHandlerTest {
   protected Enclave buildEnclave(Path tempDir) {
     return new StubEnclave() {
       @Override
-      public PublicKey[] nodeKeys() {
+      public Box.PublicKey[] nodeKeys() {
         try {
           Box.KeyPair keyPair = Box.KeyPair.random();
-          PublicKey publicKey = new PublicKey(keyPair.publicKey().bytesArray());
-          return new PublicKey[] {publicKey};
+          return new Box.PublicKey[] {keyPair.publicKey()};
         } catch (Throwable t) {
           throw new RuntimeException(t);
         }
@@ -71,7 +69,7 @@ class SendHandlerWithNodeKeysTest extends SendHandlerTest {
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    String[] to = new String[] {Base64.encode(fakePeer.publicKey.toBytes())};
+    String[] to = new String[] {Base64.encode(fakePeer.publicKey.bytesArray())};
 
     Map<String, Object> sendRequest = buildRequest(to, toEncrypt, null);
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);

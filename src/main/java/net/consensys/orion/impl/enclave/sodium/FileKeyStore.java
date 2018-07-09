@@ -22,8 +22,6 @@ import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
-import net.consensys.orion.api.enclave.PrivateKey;
-import net.consensys.orion.api.enclave.PublicKey;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
@@ -38,12 +36,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 public class FileKeyStore implements KeyStore {
 
   private final Config config;
 
-  private final Map<PublicKey, PrivateKey> cache = new HashMap<>();
+  private final Map<Box.PublicKey, Box.SecretKey> cache = new HashMap<>();
 
   public FileKeyStore(Config config) {
     this.config = config;
@@ -60,38 +59,35 @@ public class FileKeyStore implements KeyStore {
       final Path publicKeyFile = publicKeys.get(i);
       final Path privateKeyFile = privateKeys.get(i);
       final Optional<String> password = passwordList.isPresent() ? Optional.of(passwordList.get()[i]) : empty();
-      final PublicKey publicKey = readPublicKey(publicKeyFile);
-      final PrivateKey privateKey = readPrivateKey(privateKeyFile, password);
-
-      cache.put(publicKey, privateKey);
+      final Box.PublicKey publicKey = readPublicKey(publicKeyFile);
+      cache.put(publicKey, readPrivateKey(privateKeyFile, password));
     }
   }
 
-  private PrivateKey readPrivateKey(Path privateKeyFile, Optional<String> password) {
+  private Box.SecretKey readPrivateKey(Path privateKeyFile, Optional<String> password) {
     final StoredPrivateKey storedPrivateKey =
         Serializer.readFile(HttpContentType.JSON, privateKeyFile, StoredPrivateKey.class);
-
-    Box.SecretKey key = storedPrivateKey.toSecretKey(password.orElse(null));
-    return new PrivateKey(key.bytesArray());
+    return storedPrivateKey.toSecretKey(password.orElse(null));
   }
 
-  private PublicKey readPublicKey(Path publicKeyFile) {
+  private Box.PublicKey readPublicKey(Path publicKeyFile) {
     try (BufferedReader br = Files.newBufferedReader(publicKeyFile, UTF_8)) {
       final String base64Encoded = br.readLine();
       final byte[] decoded = Base64.decode(base64Encoded);
-      return new PublicKey(decoded);
+      return Box.PublicKey.fromBytes(decoded);
     } catch (final IOException e) {
       throw new EnclaveException(OrionErrorCode.ENCLAVE_READ_PUBLIC_KEY, e);
     }
   }
 
   @Override
-  public Optional<PrivateKey> privateKey(PublicKey publicKey) {
-    return Optional.ofNullable(cache.get(publicKey));
+  @Nullable
+  public Box.SecretKey privateKey(Box.PublicKey publicKey) {
+    return cache.get(publicKey);
   }
 
   @Override
-  public PublicKey generateKeyPair(KeyConfig config) {
+  public Box.PublicKey generateKeyPair(KeyConfig config) {
     final Path basePath = config.basePath();
     final Optional<String> password = config.password();
     return generateStoreAndCache(basePath, password);
@@ -112,17 +108,15 @@ public class FileKeyStore implements KeyStore {
     return empty();
   }
 
-  private PublicKey generateStoreAndCache(Path baseName, Optional<String> password) {
+  private Box.PublicKey generateStoreAndCache(Path baseName, Optional<String> password) {
     final Box.KeyPair keyPair = keyPair();
     final Path publicFile = baseName.resolveSibling(baseName.getFileName() + ".pub");
     final Path privateFile = baseName.resolveSibling(baseName.getFileName() + ".key");
     storePublicKey(keyPair.publicKey(), publicFile);
     final StoredPrivateKey privKey = StoredPrivateKey.fromSecretKey(keyPair.secretKey(), password.orElse(null));
     storePrivateKey(privKey, privateFile);
-    final PublicKey publicKey = new PublicKey(keyPair.publicKey().bytesArray());
-    final PrivateKey privateKey = new PrivateKey(keyPair.secretKey().bytesArray());
-    cache.put(publicKey, privateKey);
-    return publicKey;
+    cache.put(keyPair.publicKey(), keyPair.secretKey());
+    return keyPair.publicKey();
   }
 
   private Box.KeyPair keyPair() {
@@ -146,12 +140,12 @@ public class FileKeyStore implements KeyStore {
   }
 
   @Override
-  public PublicKey[] alwaysSendTo() {
-    return config.alwaysSendTo().stream().map(this::readPublicKey).toArray(PublicKey[]::new);
+  public Box.PublicKey[] alwaysSendTo() {
+    return config.alwaysSendTo().stream().map(this::readPublicKey).toArray(Box.PublicKey[]::new);
   }
 
   @Override
-  public PublicKey[] nodeKeys() {
-    return config.publicKeys().stream().map(this::readPublicKey).toArray(PublicKey[]::new);
+  public Box.PublicKey[] nodeKeys() {
+    return config.publicKeys().stream().map(this::readPublicKey).toArray(Box.PublicKey[]::new);
   }
 }

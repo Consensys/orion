@@ -13,7 +13,9 @@
 
 package net.consensys.orion.api.enclave;
 
-import java.util.Optional;
+import net.consensys.cava.crypto.sodium.Box;
+
+import javax.annotation.Nullable;
 
 /**
  * Interface for key put. Provides a mechanism for generating keys, and looking up a private key for a given public key.
@@ -27,7 +29,8 @@ public interface KeyStore {
    * @param publicKey PublicKey to get the private key for.
    * @return Optional Return the public key.
    */
-  Optional<PrivateKey> privateKey(PublicKey publicKey);
+  @Nullable
+  Box.SecretKey privateKey(Box.PublicKey publicKey);
 
   /**
    * Generate and put a new keypair, returning the public key for external use.
@@ -35,9 +38,9 @@ public interface KeyStore {
    * @param keyConfig Configuration for key generation.
    * @return Return the public key part of the key pair.
    */
-  PublicKey generateKeyPair(KeyConfig keyConfig);
+  Box.PublicKey generateKeyPair(KeyConfig keyConfig);
 
-  PublicKey[] alwaysSendTo();
+  Box.PublicKey[] alwaysSendTo();
 
-  PublicKey[] nodeKeys();
+  Box.PublicKey[] nodeKeys();
 }
