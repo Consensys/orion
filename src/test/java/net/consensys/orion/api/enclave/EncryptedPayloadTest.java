@@ -21,7 +21,6 @@ import net.consensys.orion.impl.utils.Serializer;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,7 +40,7 @@ class EncryptedPayloadTest {
         "fake combinedNonce".getBytes(UTF_8),
         new CombinedKey[] {combinedKey},
         "fake ciphertext".getBytes(UTF_8),
-        Optional.of(combinedKeysOwners));
+        combinedKeysOwners);
     assertEquals(payload, Serializer.roundTrip(HttpContentType.JSON, EncryptedPayload.class, payload));
     assertEquals(payload, Serializer.roundTrip(HttpContentType.CBOR, EncryptedPayload.class, payload));
   }
@@ -54,8 +53,7 @@ class EncryptedPayloadTest {
         "fake nonce".getBytes(UTF_8),
         "fake combinedNonce".getBytes(UTF_8),
         new CombinedKey[] {combinedKey},
-        "fake ciphertext".getBytes(UTF_8),
-        Optional.empty());
+        "fake ciphertext".getBytes(UTF_8));
     byte[] serialized = Serializer.serialize(HttpContentType.JSON, payload);
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readTree(serialized);

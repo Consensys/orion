@@ -19,10 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.PublicKey;
-import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.orion.impl.helpers.StubEnclave;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
@@ -32,21 +32,13 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Random;
 
-import com.muquit.libsodiumjna.SodiumKeyPair;
-import com.muquit.libsodiumjna.SodiumLibrary;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class SendHandlerWithNodeKeysTest extends SendHandlerTest {
-
-  @BeforeAll
-  static void setupSodiumLib() {
-    SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
-  }
 
   @Override
   protected Enclave buildEnclave(Path tempDir) {
@@ -54,8 +46,8 @@ class SendHandlerWithNodeKeysTest extends SendHandlerTest {
       @Override
       public PublicKey[] nodeKeys() {
         try {
-          SodiumKeyPair keyPair = SodiumLibrary.cryptoBoxKeyPair();
-          PublicKey publicKey = new PublicKey(keyPair.getPublicKey());
+          Box.KeyPair keyPair = Box.KeyPair.random();
+          PublicKey publicKey = new PublicKey(keyPair.publicKey().bytesArray());
           return new PublicKey[] {publicKey};
         } catch (Throwable t) {
           throw new RuntimeException(t);

@@ -28,7 +28,6 @@ import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
-import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.orion.impl.helpers.StubEnclave;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
@@ -40,7 +39,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Path;
 
-import com.muquit.libsodiumjna.SodiumLibrary;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
@@ -53,7 +51,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -78,11 +75,6 @@ abstract class HandlerTest {
 
   private KeyValueStore storage;
   protected Storage<EncryptedPayload> payloadStorage;
-
-  @BeforeAll
-  static void setupSodiumLib() {
-    SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
-  }
 
   @BeforeEach
   void setUp(@TempDirectory Path tempDir) throws Exception {

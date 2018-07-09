@@ -22,7 +22,6 @@ import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
 import net.consensys.orion.api.enclave.PublicKey;
-import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.impl.http.server.HttpContentType;
 
@@ -32,7 +31,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 
-import com.muquit.libsodiumjna.SodiumLibrary;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -57,7 +55,6 @@ class SerializerTest {
 
   @Test
   void sodiumEncryptedPayloadSerialization(@TempDirectory Path tempDir) {
-    SodiumLibrary.setLibraryPath(LibSodiumSettings.defaultLibSodiumPath());
     final KeyStore memoryKeyStore = new MemoryKeyStore();
     KeyConfig keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
 
