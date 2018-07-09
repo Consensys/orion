@@ -30,7 +30,6 @@ import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.config.ConfigException;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.exception.OrionException;
 import net.consensys.orion.api.storage.Storage;
@@ -475,11 +474,7 @@ public class Orion {
       //Prompt for Password from user
       out.format("Enter password for key pair [%s] : ", keyName);
       String pwd = scanner.nextLine().trim();
-      Optional<String> password = pwd.length() > 0 ? Optional.of(pwd) : Optional.empty();
-
-      out.println("Password for key [" + keyName + "] - [" + password + "]");
-
-      keyStore.generateKeyPair(new KeyConfig(basePath, password));
+      keyStore.generateKeyPair(basePath, pwd.length() > 0 ? pwd : null);
     }
   }
 

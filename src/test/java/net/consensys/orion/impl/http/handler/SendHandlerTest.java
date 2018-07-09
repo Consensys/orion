@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.impl.http.server.HttpContentType;
@@ -39,7 +38,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 
 import okhttp3.MediaType;
@@ -54,12 +52,10 @@ import org.junit.jupiter.api.Test;
 
 class SendHandlerTest extends HandlerTest {
 
-  private KeyConfig keyConfig;
   private MemoryKeyStore memoryKeyStore;
 
   @BeforeEach
   void setUpKeyStore(@TempDirectory Path tempDir) {
-    keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
     memoryKeyStore = new MemoryKeyStore();
   }
 
@@ -290,7 +286,7 @@ class SendHandlerTest extends HandlerTest {
 
     // configureRoutes the binary sendRequest
     RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
-    Box.PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey sender = memoryKeyStore.generateKeyPair();
 
     String from = Base64.encode(sender.bytesArray());
 
@@ -352,7 +348,7 @@ class SendHandlerTest extends HandlerTest {
     // configureRoutes the binary sendRequest
     RequestBody body =
         RequestBody.create(MediaType.parse(HttpContentType.APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
-    Box.PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey sender = memoryKeyStore.generateKeyPair();
 
     String from = Base64.encode(sender.bytesArray());
 
@@ -419,7 +415,7 @@ class SendHandlerTest extends HandlerTest {
   }
 
   private Map<String, Object> buildRequest(List<FakePeer> forPeers, byte[] toEncrypt) {
-    Box.PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey sender = memoryKeyStore.generateKeyPair();
     String from = Base64.encode(sender.bytesArray());
     return buildRequest(forPeers, toEncrypt, from);
   }
@@ -447,7 +443,7 @@ class SendHandlerTest extends HandlerTest {
 
     FakePeer(MockResponse response) throws IOException {
       server = new MockWebServer();
-      publicKey = memoryKeyStore.generateKeyPair(keyConfig);
+      publicKey = memoryKeyStore.generateKeyPair();
       server.enqueue(response);
       server.start();
     }

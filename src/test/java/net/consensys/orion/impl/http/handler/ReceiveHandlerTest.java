@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
@@ -34,7 +33,6 @@ import net.consensys.orion.impl.utils.Serializer;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 
 import okhttp3.MediaType;
@@ -44,14 +42,12 @@ import okhttp3.Response;
 import org.junit.jupiter.api.Test;
 
 class ReceiveHandlerTest extends HandlerTest {
-  private KeyConfig keyConfig;
   private MemoryKeyStore memoryKeyStore;
 
   @Override
   protected Enclave buildEnclave(Path tempDir) {
-    keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
     memoryKeyStore = new MemoryKeyStore();
-    Box.PublicKey defaultNodeKey = memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey defaultNodeKey = memoryKeyStore.generateKeyPair();
     memoryKeyStore.addNodeKey(defaultNodeKey);
     return new SodiumEnclave(memoryKeyStore);
   }
@@ -85,7 +81,7 @@ class ReceiveHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt a payload
-    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys());
 
     // store it
@@ -131,7 +127,7 @@ class ReceiveHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt a payload
-    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys());
 
     // store it
@@ -170,7 +166,7 @@ class ReceiveHandlerTest extends HandlerTest {
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {senderKey});
 
     String key = payloadStorage.put(originalPayload).get();
@@ -194,7 +190,7 @@ class ReceiveHandlerTest extends HandlerTest {
     assertEquals(receiveResponse, Serializer.roundTrip(HttpContentType.CBOR, Map.class, receiveResponse));
     assertEquals(receiveResponse, Serializer.roundTrip(HttpContentType.JSON, Map.class, receiveResponse));
 
-    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     ReceiveRequest receiveRequest = new ReceiveRequest("some key", Base64.encode(senderKey.bytesArray()));
     assertEquals(receiveRequest, Serializer.roundTrip(HttpContentType.CBOR, ReceiveRequest.class, receiveRequest));
     assertEquals(receiveRequest, Serializer.roundTrip(HttpContentType.JSON, ReceiveRequest.class, receiveRequest));
@@ -231,8 +227,8 @@ class ReceiveHandlerTest extends HandlerTest {
 
   private ReceiveRequest buildReceiveRequest(Storage<EncryptedPayload> storage, byte[] toEncrypt) throws Exception {
     // encrypt a payload
-    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair(keyConfig);
-    Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {recipientKey});
 
     // store it

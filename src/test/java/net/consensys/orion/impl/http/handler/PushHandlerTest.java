@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.impl.enclave.sodium.SodiumEnclave;
@@ -39,12 +38,10 @@ import org.junit.jupiter.api.Test;
 
 class PushHandlerTest extends HandlerTest {
 
-  private KeyConfig keyConfig;
   private MemoryKeyStore memoryKeyStore;
 
   @BeforeEach
   void setUpKeyStore(@TempDirectory Path tempDir) {
-    keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
     memoryKeyStore = new MemoryKeyStore();
   }
 
@@ -112,8 +109,8 @@ class PushHandlerTest extends HandlerTest {
 
   private EncryptedPayload mockPayload() {
     SodiumEnclave sEnclave = new SodiumEnclave(memoryKeyStore);
-    Box.PublicKey k1 = memoryKeyStore.generateKeyPair(keyConfig);
-    Box.PublicKey k2 = memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey k1 = memoryKeyStore.generateKeyPair();
+    Box.PublicKey k2 = memoryKeyStore.generateKeyPair();
     return sEnclave.encrypt("something important".getBytes(UTF_8), k1, new Box.PublicKey[] {k2});
   }
 }

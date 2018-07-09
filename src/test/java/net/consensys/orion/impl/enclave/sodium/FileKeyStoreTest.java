@@ -25,14 +25,12 @@ import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.EnclaveException;
-import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.impl.utils.Base64;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -128,7 +126,7 @@ class FileKeyStoreTest {
     Files.createDirectories(tempDir.resolve("keys"));
     Path keyPrefix = tempDir.resolve("keys").resolve("generated");
     keyStore = new FileKeyStore(config);
-    keyStore.generateKeyPair(new KeyConfig(keyPrefix, Optional.empty()));
+    keyStore.generateKeyPair(keyPrefix);
 
     // Load the a config using the generated key, and confirm that it is valid.
     // this shows that the key was stored and that we could load it.
@@ -154,7 +152,7 @@ class FileKeyStoreTest {
     Files.createDirectories(tempDir.resolve("keys"));
     Path keyPrefix = tempDir.resolve("keys").resolve("generated_password");
     keyStore = new FileKeyStore(config);
-    keyStore.generateKeyPair(new KeyConfig(keyPrefix, Optional.of("yolo")));
+    keyStore.generateKeyPair(keyPrefix, "yolo");
 
     Path privateKey = tempDir.resolve("keys").resolve("generated_password.key");
     Path publicKey = tempDir.resolve("keys").resolve("generated_password.pub");

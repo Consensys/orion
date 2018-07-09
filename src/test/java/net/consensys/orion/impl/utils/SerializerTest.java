@@ -16,25 +16,16 @@ package net.consensys.orion.impl.utils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.junit.TempDirectory;
-import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.enclave.EncryptedKey;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.KeyConfig;
-import net.consensys.orion.api.enclave.KeyStore;
-import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.impl.http.server.HttpContentType;
 
 import java.io.Serializable;
-import java.nio.file.Path;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Random;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(TempDirectoryExtension.class)
 class SerializerTest {
 
   @Test
@@ -54,13 +45,10 @@ class SerializerTest {
   }
 
   @Test
-  void sodiumEncryptedPayloadSerialization(@TempDirectory Path tempDir) {
-    final KeyStore memoryKeyStore = new MemoryKeyStore();
-    KeyConfig keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
-
+  void sodiumEncryptedPayloadSerialization() {
     EncryptedKey[] encryptedKeys = new EncryptedKey[0];
     byte[] nonce = {};
-    Box.PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey sender = Box.KeyPair.random().publicKey();
 
     // generate random byte content
     byte[] toEncrypt = new byte[342];

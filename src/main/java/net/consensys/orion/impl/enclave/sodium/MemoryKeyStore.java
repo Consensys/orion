@@ -14,9 +14,9 @@
 package net.consensys.orion.impl.enclave.sodium;
 
 import net.consensys.cava.crypto.sodium.Box;
+import net.consensys.cava.crypto.sodium.Box.PublicKey;
 import net.consensys.cava.crypto.sodium.SodiumException;
 import net.consensys.orion.api.enclave.EnclaveException;
-import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
 import net.consensys.orion.api.exception.OrionErrorCode;
 
@@ -37,8 +37,12 @@ public class MemoryKeyStore implements KeyStore {
     return store.get(publicKey);
   }
 
-  @Override
-  public Box.PublicKey generateKeyPair(KeyConfig keyConfig) {
+  /**
+   * Generate and put a new keypair, returning the public key for external use.
+   *
+   * @return Return the public key part of the key pair.
+   */
+  public PublicKey generateKeyPair() {
     try {
       Box.KeyPair keyPair = Box.KeyPair.random();
       Box.PublicKey publicKey = keyPair.publicKey();

@@ -20,7 +20,6 @@ import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.crypto.sodium.SodiumException;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.EnclaveException;
-import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.http.server.HttpContentType;
@@ -58,16 +57,15 @@ public class FileKeyStore implements KeyStore {
     for (int i = 0; i < publicKeys.size(); i++) {
       final Path publicKeyFile = publicKeys.get(i);
       final Path privateKeyFile = privateKeys.get(i);
-      final Optional<String> password = passwordList.isPresent() ? Optional.of(passwordList.get()[i]) : empty();
       final Box.PublicKey publicKey = readPublicKey(publicKeyFile);
-      cache.put(publicKey, readPrivateKey(privateKeyFile, password));
+      cache.put(publicKey, readPrivateKey(privateKeyFile, passwordList.isPresent() ? passwordList.get()[i] : null));
     }
   }
 
-  private Box.SecretKey readPrivateKey(Path privateKeyFile, Optional<String> password) {
+  private Box.SecretKey readPrivateKey(Path privateKeyFile, @Nullable String password) {
     final StoredPrivateKey storedPrivateKey =
         Serializer.readFile(HttpContentType.JSON, privateKeyFile, StoredPrivateKey.class);
-    return storedPrivateKey.toSecretKey(password.orElse(null));
+    return storedPrivateKey.toSecretKey(password);
   }
 
   private Box.PublicKey readPublicKey(Path publicKeyFile) {
@@ -86,11 +84,32 @@ public class FileKeyStore implements KeyStore {
     return cache.get(publicKey);
   }
 
-  @Override
-  public Box.PublicKey generateKeyPair(KeyConfig config) {
-    final Path basePath = config.basePath();
-    final Optional<String> password = config.password();
-    return generateStoreAndCache(basePath, password);
+  /**
+   * Generate and put a new keypair, returning the public key for external use.
+   *
+   * @param basePath The basename and path for the generated <code>.pub</code> and <code>.key</code> files.
+   * @return Return the public key part of the key pair.
+   */
+  public Box.PublicKey generateKeyPair(Path basePath) {
+    return generateKeyPair(basePath, null);
+  }
+
+  /**
+   * Generate and put a new keypair, returning the public key for external use.
+   *
+   * @param basePath The basename and path for the generated <code>.pub</code> and <code>.key</code> files.
+   * @param password The password for encrypting the key file.
+   * @return Return the public key part of the key pair.
+   */
+  public Box.PublicKey generateKeyPair(Path basePath, @Nullable String password) {
+    final Box.KeyPair keyPair = keyPair();
+    final Path publicFile = basePath.resolveSibling(basePath.getFileName() + ".pub");
+    final Path privateFile = basePath.resolveSibling(basePath.getFileName() + ".key");
+    storePublicKey(keyPair.publicKey(), publicFile);
+    final StoredPrivateKey privKey = StoredPrivateKey.fromSecretKey(keyPair.secretKey(), password);
+    storePrivateKey(privKey, privateFile);
+    cache.put(keyPair.publicKey(), keyPair.secretKey());
+    return keyPair.publicKey();
   }
 
   private Optional<String[]> lookupPasswords() {
@@ -106,17 +125,6 @@ public class FileKeyStore implements KeyStore {
     }
 
     return empty();
-  }
-
-  private Box.PublicKey generateStoreAndCache(Path baseName, Optional<String> password) {
-    final Box.KeyPair keyPair = keyPair();
-    final Path publicFile = baseName.resolveSibling(baseName.getFileName() + ".pub");
-    final Path privateFile = baseName.resolveSibling(baseName.getFileName() + ".key");
-    storePublicKey(keyPair.publicKey(), publicFile);
-    final StoredPrivateKey privKey = StoredPrivateKey.fromSecretKey(keyPair.secretKey(), password.orElse(null));
-    storePrivateKey(privKey, privateFile);
-    cache.put(keyPair.publicKey(), keyPair.secretKey());
-    return keyPair.publicKey();
   }
 
   private Box.KeyPair keyPair() {

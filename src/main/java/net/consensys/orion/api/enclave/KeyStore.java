@@ -32,14 +32,6 @@ public interface KeyStore {
   @Nullable
   Box.SecretKey privateKey(Box.PublicKey publicKey);
 
-  /**
-   * Generate and put a new keypair, returning the public key for external use.
-   *
-   * @param keyConfig Configuration for key generation.
-   * @return Return the public key part of the key pair.
-   */
-  Box.PublicKey generateKeyPair(KeyConfig keyConfig);
-
   Box.PublicKey[] alwaysSendTo();
 
   Box.PublicKey[] nodeKeys();
