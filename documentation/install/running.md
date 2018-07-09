@@ -1,12 +1,18 @@
 # Running Orion
 
-Running orion with Gradle:
+Options for how to run Orion:
+* [run Orion with Gradle](#running-orion-with-gradle) 
+* build from source and [run the resulting executable](#running-from-distribution-binaries)
+
+## Running orion with Gradle
 ```
 ./gradlew run
 ```
 If you want to add runtime options, use `-Pargs`, for example: `./gradlew run -Pargs="-g my-key"`
+* see [usage](#usage) for details
 
-Running from distribution binaries (after building from the source):
+## Running from distribution binaries
+First [build from source](../development/building.md). Then:
 ```
 cd build/distributions
 tar -xvzf orion*.tar.gz
@@ -23,9 +29,9 @@ e.g. `ln -s /Users/john/git/orion/build/distributions/orion/bin/orion /usr/local
 
 ## Usage
 
-Usage: orion [options] [config file]
+Usage: `orion [options] [config file]`
 
-where options include:
+### Options 
 
         -g
         --generatekeys <names>
@@ -36,6 +42,9 @@ where options include:
         -v
         --version       print version information
 
+### Config file
+See [configuring Orion](configure.md).
+
 
 ### Generating keys
 If you want to generate a pair of public/private keys:
@@ -43,3 +52,12 @@ If you want to generate a pair of public/private keys:
 orion -g foo
 ```
 This will generate a `foo.key` (private key) and `foo.pub` (public key) in the current folder.
+You will be prompted to enter a password to protect the private key. This is optional: however if 
+you do enter a password, you need to put this into the [config file](configure.md).
+
+### Upcheck
+**To check that Orion is up and running:**
+```
+$ curl -X GET http://localhost:8080/upcheck
+> I'm up!
+```
