@@ -31,29 +31,27 @@ class EncryptedPayloadTest {
 
   @Test
   void roundTripSerialization() {
-    CombinedKey combinedKey = new CombinedKey("Combined key fakery".getBytes(UTF_8));
-    Map<Box.PublicKey, Integer> combinedKeysOwners = new HashMap<>();
+    EncryptedKey encryptedKey = new EncryptedKey("Encrypted key fakery".getBytes(UTF_8));
+    Map<Box.PublicKey, Integer> encryptedKeysOwners = new HashMap<>();
     Box.PublicKey key = Box.KeyPair.random().publicKey();
-    combinedKeysOwners.put(key, 1);
+    encryptedKeysOwners.put(key, 1);
     EncryptedPayload payload = new EncryptedPayload(
         Box.KeyPair.random().publicKey(),
         "fake nonce".getBytes(UTF_8),
-        "fake combinedNonce".getBytes(UTF_8),
-        new CombinedKey[] {combinedKey},
+        new EncryptedKey[] {encryptedKey},
         "fake ciphertext".getBytes(UTF_8),
-        combinedKeysOwners);
+        encryptedKeysOwners);
     assertEquals(payload, Serializer.roundTrip(HttpContentType.JSON, EncryptedPayload.class, payload));
     assertEquals(payload, Serializer.roundTrip(HttpContentType.CBOR, EncryptedPayload.class, payload));
   }
 
   @Test
-  void serializationToJsonWithoutCombinedKeyOwners() throws Exception {
-    CombinedKey combinedKey = new CombinedKey("Combined key fakery".getBytes(UTF_8));
+  void serializationToJsonWithoutEncryptedKeyOwners() throws Exception {
+    EncryptedKey encryptedKey = new EncryptedKey("Encrypted key fakery".getBytes(UTF_8));
     EncryptedPayload payload = new EncryptedPayload(
         Box.KeyPair.random().publicKey(),
         "fake nonce".getBytes(UTF_8),
-        "fake combinedNonce".getBytes(UTF_8),
-        new CombinedKey[] {combinedKey},
+        new EncryptedKey[] {encryptedKey},
         "fake ciphertext".getBytes(UTF_8));
     byte[] serialized = Serializer.serialize(HttpContentType.JSON, payload);
     ObjectMapper mapper = new ObjectMapper();

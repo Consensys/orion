@@ -14,8 +14,8 @@
 package net.consensys.orion.impl.enclave.sodium;
 
 import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.orion.api.enclave.CombinedKey;
 import net.consensys.orion.api.enclave.Enclave;
+import net.consensys.orion.api.enclave.EncryptedKey;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 
 import java.nio.charset.StandardCharsets;
@@ -56,9 +56,6 @@ public class SodiumEnclaveStub implements Enclave {
       byte b = plaintext[i];
       cipherText[i] = (byte) (b + 10);
     }
-    CombinedKey[] combinedKeys = new CombinedKey[0];
-    byte[] combinedKeyNonce = {};
-    byte[] nonce = {};
-    return new EncryptedPayload(senderKey, nonce, combinedKeyNonce, combinedKeys, cipherText);
+    return new EncryptedPayload(senderKey, new byte[0], new EncryptedKey[0], cipherText);
   }
 }

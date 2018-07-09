@@ -126,7 +126,7 @@ public class SendHandler implements Handler<RoutingContext> {
 
       CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
 
-      // serialize payload, stripping non-relevant combinedKeys, and configureRoutes payload
+      // serialize payload, stripping non-relevant encryptedKeys, and configureRoutes payload
       final byte[] payload = Serializer.serialize(HttpContentType.CBOR, encryptedPayload.stripFor(pKey));
 
       // execute request

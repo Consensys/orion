@@ -18,10 +18,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.crypto.sodium.Box.SecretKey;
 import net.consensys.cava.crypto.sodium.SecretBox;
+import net.consensys.cava.crypto.sodium.SecretBox.Nonce;
 import net.consensys.cava.crypto.sodium.SodiumException;
-import net.consensys.orion.api.enclave.CombinedKey;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EnclaveException;
+import net.consensys.orion.api.enclave.EncryptedKey;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyStore;
 import net.consensys.orion.api.exception.OrionErrorCode;
@@ -31,6 +32,7 @@ import java.util.Base64;
 import java.util.HashMap;
 
 public class SodiumEnclave implements Enclave {
+  private static final Nonce ZERO_NONCE = Nonce.fromBytes(new byte[Nonce.length()]);
 
   private KeyStore keyStore;
 
@@ -45,33 +47,31 @@ public class SodiumEnclave implements Enclave {
 
   @Override
   public EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients) {
-    // encrypt plaintext with a random key & nonce
+    // encrypt plaintext with a random key
     SecretBox.Key payloadKey = SecretBox.Key.random();
-    SecretBox.Nonce secretNonce = SecretBox.Nonce.random();
-    byte[] cipherText = SecretBox.encrypt(plaintext, payloadKey, secretNonce);
+    // use a zero nonce, as the key is random
+    byte[] cipherText = SecretBox.encrypt(plaintext, payloadKey, ZERO_NONCE);
 
     // encrypt payloadKey with public key of each recipient
     Box.SecretKey senderSecretKey = privateKey(senderKey);
     final Box.PublicKey[] recipientsAndSender = addSenderToRecipients(recipients, senderKey);
     Box.Nonce nonce = Box.Nonce.random();
-    final CombinedKey[] combinedKeys =
+    final EncryptedKey[] encryptedKeys =
         encryptPayloadKeyForRecipients(payloadKey, recipientsAndSender, senderSecretKey, nonce);
 
     return new EncryptedPayload(
         senderKey,
-        secretNonce.bytesArray(),
         nonce.bytesArray(),
-        combinedKeys,
+        encryptedKeys,
         cipherText,
-        combinedKeysMapping(recipientsAndSender));
+        encryptedKeysMapping(recipientsAndSender));
   }
 
   @Override
   public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, Box.PublicKey identity) {
     Box.SecretKey secretKey = privateKey(identity);
     SecretBox.Key key = decryptPayloadKey(ciphertextAndMetadata, secretKey);
-    SecretBox.Nonce nonce = SecretBox.Nonce.fromBytes(ciphertextAndMetadata.nonce());
-    return SecretBox.decrypt(ciphertextAndMetadata.cipherText(), key, nonce);
+    return SecretBox.decrypt(ciphertextAndMetadata.cipherText(), key, ZERO_NONCE);
   }
 
   @Override
@@ -109,18 +109,16 @@ public class SodiumEnclave implements Enclave {
     return secretKey;
   }
 
-  // Iterate through the combined keys to find one that decrypts successfully using our secret key.
+  // Iterate through the encrypted keys to find one that decrypts successfully using our secret key.
   private SecretBox.Key decryptPayloadKey(EncryptedPayload ciphertextAndMetadata, Box.SecretKey secretKey) {
     SodiumException problem = null;
 
     // Try each key until we find one that successfully decrypts or we run out of keys
-    for (final CombinedKey key : ciphertextAndMetadata.combinedKeys()) {
+    for (final EncryptedKey key : ciphertextAndMetadata.encryptedKeys()) {
       byte[] clearText;
       try {
         Box.PublicKey senderPublicKey = ciphertextAndMetadata.sender();
-        Box.Nonce nonce = Box.Nonce.fromBytes(ciphertextAndMetadata.combinedKeyNonce());
-
-        // When decryption with the combined fails, SodiumLibrary exceptions
+        Box.Nonce nonce = Box.Nonce.fromBytes(ciphertextAndMetadata.nonce());
         clearText = Box.decrypt(key.getEncoded(), senderPublicKey, secretKey, nonce);
       } catch (final SodiumException e) {
         // The next next key might be the lucky one, so don't propagate just yet
@@ -136,37 +134,39 @@ public class SodiumEnclave implements Enclave {
     throw new EnclaveException(OrionErrorCode.ENCLAVE_DECRYPT_WRONG_PRIVATE_KEY, problem);
   }
 
-
-  /** Create mapping between combined keys and recipients */
-  private HashMap<Box.PublicKey, Integer> combinedKeysMapping(Box.PublicKey[] recipients) {
-    final HashMap<Box.PublicKey, Integer> combinedKeysMapping = new HashMap<>();
+  /** Create mapping between encrypted keys and recipients */
+  private HashMap<Box.PublicKey, Integer> encryptedKeysMapping(Box.PublicKey[] recipients) {
+    final HashMap<Box.PublicKey, Integer> encryptedKeysMapping = new HashMap<>();
     for (int i = 0; i < recipients.length; i++) {
-      combinedKeysMapping.put(recipients[i], i);
+      encryptedKeysMapping.put(recipients[i], i);
     }
-    return combinedKeysMapping;
+    return encryptedKeysMapping;
   }
 
-  private CombinedKey[] encryptPayloadKeyForRecipients(
+  private EncryptedKey[] encryptPayloadKeyForRecipients(
       SecretBox.Key payloadKey,
       Box.PublicKey[] recipients,
       Box.SecretKey senderSecretKey,
       Box.Nonce nonce) {
     byte[] message = payloadKey.bytesArray();
+    try {
+      final EncryptedKey[] encryptedKeys = new EncryptedKey[recipients.length];
+      for (int i = 0; i < recipients.length; i++) {
+        Box.PublicKey recipientPublicKey = recipients[i];
 
-    final CombinedKey[] combinedKeys = new CombinedKey[recipients.length];
-    for (int i = 0; i < recipients.length; i++) {
-      Box.PublicKey recipientPublicKey = recipients[i];
+        byte[] encryptedKey;
+        try {
+          encryptedKey = Box.encrypt(message, recipientPublicKey, senderSecretKey, nonce);
+        } catch (SodiumException e) {
+          throw new EnclaveException(OrionErrorCode.ENCLAVE_ENCRYPT_COMBINE_KEYS, e);
+        }
 
-      byte[] encryptedKey;
-      try {
-        encryptedKey = Box.encrypt(message, recipientPublicKey, senderSecretKey, nonce);
-      } catch (SodiumException e) {
-        throw new EnclaveException(OrionErrorCode.ENCLAVE_ENCRYPT_COMBINE_KEYS, e);
+        encryptedKeys[i] = new EncryptedKey(encryptedKey);
       }
-
-      combinedKeys[i] = new CombinedKey(encryptedKey);
+      return encryptedKeys;
+    } finally {
+      // ensure key material is overwritten
+      Arrays.fill(message, (byte) 0);
     }
-
-    return combinedKeys;
   }
 }

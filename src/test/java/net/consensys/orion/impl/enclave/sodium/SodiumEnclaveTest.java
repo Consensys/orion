@@ -21,8 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
-import net.consensys.orion.api.enclave.CombinedKey;
 import net.consensys.orion.api.enclave.EnclaveException;
+import net.consensys.orion.api.enclave.EncryptedKey;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
@@ -71,7 +71,7 @@ class SodiumEnclaveTest {
   }
 
   @Test
-  /* Sender decryption must not be affected by the presence of other combined keys (recipients) */
+  /* Sender decryption must not be affected by the presence of other encrypted keys (recipients) */
   void senderEncryptDecryptWithRecipients(@TempDirectory Path tempDir) {
     final Box.PublicKey senderKey = generateKey(tempDir);
     final Box.PublicKey recipientAKey = generateKey(tempDir);
@@ -100,14 +100,14 @@ class SodiumEnclaveTest {
 
     EnclaveException e = assertThrows(EnclaveException.class, () -> {
       final EncryptedPayload payload =
-          new EncryptedPayload(sender, new byte[] {}, new byte[] {}, new CombinedKey[] {}, new byte[] {});
+          new EncryptedPayload(sender, new byte[] {}, new EncryptedKey[] {}, new byte[] {});
       enclave.decrypt(payload, fake);
     });
     assertEquals("No StoredPrivateKey found in keystore", e.getMessage());
   }
 
   @Test
-  void encryptDecryptNoCombinedKeys(@TempDirectory Path tempDir) {
+  void encryptDecryptNoEncryptedKeys(@TempDirectory Path tempDir) {
     final Box.PublicKey senderKey = generateKey(tempDir);
     final Box.PublicKey recipientKey = generateKey(tempDir);
 
@@ -116,29 +116,10 @@ class SodiumEnclaveTest {
     final EncryptedPayload payload = new EncryptedPayload(
         encryptedPayload.sender(),
         encryptedPayload.nonce(),
-        encryptedPayload.combinedKeyNonce(),
-        new CombinedKey[] {},
+        new EncryptedKey[] {},
         encryptedPayload.cipherText());
 
     assertThrows(EnclaveException.class, () -> decrypt(payload, recipientKey));
-  }
-
-  @Test
-  void encryptDecryptBadCombinedKeyNonce(@TempDirectory Path tempDir) {
-    final Box.PublicKey senderKey = generateKey(tempDir);
-    final Box.PublicKey recipientKey = generateKey(tempDir);
-
-    final EncryptedPayload encryptedPayload = encrypt("hello", senderKey, recipientKey);
-
-    final EncryptedPayload payload = new EncryptedPayload(
-        encryptedPayload.sender(),
-        encryptedPayload.nonce(),
-        new byte[0],
-        encryptedPayload.combinedKeys(),
-        encryptedPayload.cipherText());
-
-    IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> decrypt(payload, recipientKey));
-    assertEquals("nonce must be 24 bytes, got 0", e.getMessage());
   }
 
   @Test
@@ -151,8 +132,7 @@ class SodiumEnclaveTest {
     final EncryptedPayload payload = new EncryptedPayload(
         encryptedPayload.sender(),
         new byte[0],
-        encryptedPayload.combinedKeyNonce(),
-        encryptedPayload.combinedKeys(),
+        encryptedPayload.encryptedKeys(),
         encryptedPayload.cipherText());
 
     IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> decrypt(payload, recipientKey));

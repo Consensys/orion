@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
-import net.consensys.orion.api.enclave.CombinedKey;
+import net.consensys.orion.api.enclave.EncryptedKey;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.enclave.KeyStore;
@@ -58,8 +58,7 @@ class SerializerTest {
     final KeyStore memoryKeyStore = new MemoryKeyStore();
     KeyConfig keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
 
-    CombinedKey[] combinedKeys = new CombinedKey[0];
-    byte[] combinedKeyNonce = {};
+    EncryptedKey[] encryptedKeys = new EncryptedKey[0];
     byte[] nonce = {};
     Box.PublicKey sender = memoryKeyStore.generateKeyPair(keyConfig);
 
@@ -67,7 +66,7 @@ class SerializerTest {
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    EncryptedPayload original = new EncryptedPayload(sender, nonce, combinedKeyNonce, combinedKeys, toEncrypt);
+    EncryptedPayload original = new EncryptedPayload(sender, nonce, encryptedKeys, toEncrypt);
 
     EncryptedPayload processed = Serializer.deserialize(
         HttpContentType.CBOR,

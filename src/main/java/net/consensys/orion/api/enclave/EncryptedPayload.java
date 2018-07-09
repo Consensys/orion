@@ -32,37 +32,29 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 public class EncryptedPayload implements Serializable {
 
-  private final byte[] combinedKeyNonce;
   private final Box.PublicKey sender;
-  private final byte[] cipherText;
   private final byte[] nonce;
-  private final CombinedKey[] combinedKeys;
-  private final Map<Box.PublicKey, Integer> combinedKeysOwners;
+  private final EncryptedKey[] encryptedKeys;
+  private final byte[] cipherText;
+  private final Map<Box.PublicKey, Integer> encryptedKeyOwners;
 
-  public EncryptedPayload(
-      Box.PublicKey sender,
-      byte[] nonce,
-      byte[] combinedKeyNonce,
-      CombinedKey[] combinedKeys,
-      byte[] cipherText) {
-    this(sender, nonce, combinedKeyNonce, combinedKeys, cipherText, Collections.emptyMap());
+  public EncryptedPayload(Box.PublicKey sender, byte[] nonce, EncryptedKey[] encryptedKeys, byte[] cipherText) {
+    this(sender, nonce, encryptedKeys, cipherText, Collections.emptyMap());
   }
 
   @JsonCreator
   public EncryptedPayload(
       @JsonProperty("sender") @JsonDeserialize(using = PublicKeyDeserializer.class) Box.PublicKey sender,
       @JsonProperty("nonce") byte[] nonce,
-      @JsonProperty("combinedKeyNonce") byte[] combinedKeyNonce,
-      @JsonProperty("combinedKeys") CombinedKey[] combinedKeys,
+      @JsonProperty("encryptedKeys") EncryptedKey[] encryptedKeys,
       @JsonProperty("cipherText") byte[] cipherText,
-      @JsonProperty("combinedKeysOwners") @JsonDeserialize(
-          keyUsing = PublicKeyMapKeyDeserializer.class) Map<Box.PublicKey, Integer> combinedKeysOwners) {
-    this.combinedKeyNonce = combinedKeyNonce;
+      @JsonProperty("encryptedKeyOwners") @JsonDeserialize(
+          keyUsing = PublicKeyMapKeyDeserializer.class) Map<Box.PublicKey, Integer> encryptedKeyOwners) {
     this.sender = sender;
-    this.cipherText = cipherText;
     this.nonce = nonce;
-    this.combinedKeys = combinedKeys;
-    this.combinedKeysOwners = combinedKeysOwners;
+    this.encryptedKeys = encryptedKeys;
+    this.cipherText = cipherText;
+    this.encryptedKeyOwners = encryptedKeyOwners;
   }
 
   @JsonProperty("sender")
@@ -76,36 +68,26 @@ public class EncryptedPayload implements Serializable {
     return cipherText;
   }
 
+  @JsonProperty("encryptedKeys")
+  public EncryptedKey[] encryptedKeys() {
+    return encryptedKeys;
+  }
+
   @JsonProperty("nonce")
   public byte[] nonce() {
     return nonce;
   }
 
-  @JsonProperty("combinedKeys")
-  public CombinedKey[] combinedKeys() {
-    return combinedKeys;
-  }
-
-  @JsonProperty("combinedKeyNonce")
-  public byte[] combinedKeyNonce() {
-    return combinedKeyNonce;
-  }
-
   public EncryptedPayload stripFor(Box.PublicKey key) {
-    final Integer toKeepIdx = combinedKeysOwners.get(key);
+    final Integer toKeepIdx = encryptedKeyOwners.get(key);
 
-    if (toKeepIdx == null || toKeepIdx < 0 || toKeepIdx >= combinedKeys.length) {
+    if (toKeepIdx == null || toKeepIdx < 0 || toKeepIdx >= encryptedKeys.length) {
       throw new EnclaveException(
           OrionErrorCode.ENCLAVE_NOT_PAYLOAD_OWNER,
           "can't strip encrypted payload for provided key");
     }
 
-    return new EncryptedPayload(
-        sender,
-        nonce,
-        combinedKeyNonce,
-        new CombinedKey[] {combinedKeys[toKeepIdx]},
-        cipherText);
+    return new EncryptedPayload(sender, nonce, new EncryptedKey[] {encryptedKeys[toKeepIdx]}, cipherText);
   }
 
   @Override
@@ -117,20 +99,18 @@ public class EncryptedPayload implements Serializable {
       return false;
     }
     EncryptedPayload that = (EncryptedPayload) o;
-    return Arrays.equals(combinedKeyNonce, that.combinedKeyNonce)
-        && Objects.equals(sender, that.sender)
-        && Arrays.equals(cipherText, that.cipherText)
+    return Objects.equals(sender, that.sender)
         && Arrays.equals(nonce, that.nonce)
-        && Arrays.equals(combinedKeys, that.combinedKeys);
+        && Arrays.equals(encryptedKeys, that.encryptedKeys)
+        && Arrays.equals(cipherText, that.cipherText);
   }
 
   @Override
   public int hashCode() {
-    int result = Arrays.hashCode(combinedKeyNonce);
-    result = 31 * result + sender.hashCode();
-    result = 31 * result + Arrays.hashCode(cipherText);
+    int result = sender.hashCode();
     result = 31 * result + Arrays.hashCode(nonce);
-    result = 31 * result + Arrays.hashCode(combinedKeys);
+    result = 31 * result + Arrays.hashCode(encryptedKeys);
+    result = 31 * result + Arrays.hashCode(cipherText);
     return result;
   }
 }

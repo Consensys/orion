@@ -18,12 +18,12 @@ import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class CombinedKey {
+public class EncryptedKey {
 
   private final byte[] encoded;
 
   @JsonCreator
-  public CombinedKey(@JsonProperty("encoded") byte[] encoded) {
+  public EncryptedKey(@JsonProperty("encoded") byte[] encoded) {
     this.encoded = encoded;
   }
 
@@ -39,9 +39,7 @@ public class CombinedKey {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-
-    CombinedKey that = (CombinedKey) o;
-
+    EncryptedKey that = (EncryptedKey) o;
     return Arrays.equals(encoded, that.encoded);
   }
 

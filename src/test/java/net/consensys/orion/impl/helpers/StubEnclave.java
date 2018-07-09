@@ -14,8 +14,8 @@
 package net.consensys.orion.impl.helpers;
 
 import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.orion.api.enclave.CombinedKey;
 import net.consensys.orion.api.enclave.Enclave;
+import net.consensys.orion.api.enclave.EncryptedKey;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 
 import java.nio.charset.StandardCharsets;
@@ -71,21 +71,20 @@ public class StubEnclave implements Enclave {
       ciphterText[i] = (byte) (b + 10);
     }
 
-    byte[] combinedKeyNonce = {};
     byte[] nonce = {};
 
-    CombinedKey[] combinedKeys;
-    Map<Box.PublicKey, Integer> combinedKeysOwners = new HashMap<>();
+    EncryptedKey[] encryptedKeys;
+    Map<Box.PublicKey, Integer> encryptedKeyOwners = new HashMap<>();
 
     if (recipients != null && recipients.length > 0) {
-      combinedKeys = new CombinedKey[recipients.length];
+      encryptedKeys = new EncryptedKey[recipients.length];
       for (int i = 0; i < recipients.length; i++) {
-        combinedKeysOwners.put(recipients[i], i);
-        combinedKeys[i] = new CombinedKey(recipients[i].bytesArray());
+        encryptedKeyOwners.put(recipients[i], i);
+        encryptedKeys[i] = new EncryptedKey(recipients[i].bytesArray());
       }
     } else {
-      combinedKeys = new CombinedKey[0];
+      encryptedKeys = new EncryptedKey[0];
     }
-    return new EncryptedPayload(senderKey, nonce, combinedKeyNonce, combinedKeys, ciphterText, combinedKeysOwners);
+    return new EncryptedPayload(senderKey, nonce, encryptedKeys, ciphterText, encryptedKeyOwners);
   }
 }
