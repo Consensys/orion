@@ -24,47 +24,28 @@ import java.util.Optional;
 public enum OrionErrorCode {
   UNMAPPED("0x000000F"),
 
-  /** 0x1xxxxx Node communication issues. */
+  /** Node communication issues. */
   NODE_MISSING_PEER_URL("NodeMissingPeerUrl"),
   NODE_PUSHING_TO_PEER("NodePushingToPeer"),
-  NODE_PUSHING_TO_PEER_RESPONSE("NodePushingToPeerResponse"),
   NODE_PROPAGATING_TO_ALL_PEERS("NodePropagatingToAllPeers"),
   NO_SENDER_KEY("NoSenderKey"),
   INVALID_PAYLOAD("InvalidPayload"),
 
-  /** 0x2xxxxx object mapping issues. */
+  /** Object mapping issues. */
   OBJECT_JSON_DESERIALIZATION("ObjectJsonDeserialization"),
   OBJECT_JSON_SERIALIZATION("ObjectJsonSerialization"),
-  OBJECT_READ("ObjectRead"),
   OBJECT_UNSUPPORTED_TYPE("ObjectUnsupportedType"),
-  OBJECT_WRITE("ObjectWrite"),
 
-  /** 0x4xxxxx Enclave category of issues. */
+  /** Enclave category of issues. */
   ENCLAVE_CREATE_KEY_PAIR("EnclaveCreateKeyPair"),
   ENCLAVE_DECODE_PUBLIC_KEY("EnclaveDecodePublicKey"),
-  ENCLAVE_DECRYPT("EnclaveDecrypt"),
   ENCLAVE_DECRYPT_WRONG_PRIVATE_KEY("EnclaveDecryptWrongPrivateKey"),
-  ENCLAVE_ENCRYPT("EnclaveEncrypt"),
   ENCLAVE_ENCRYPT_COMBINE_KEYS("EnclaveEncryptCombineKeys"),
   ENCLAVE_MISSING_PRIVATE_KEY_PASSWORD("EnclaveMissingPrivateKeyPasswords"),
   ENCLAVE_NO_MATCHING_PRIVATE_KEY("EnclaveNoMatchingPrivateKey"),
   ENCLAVE_NOT_PAYLOAD_OWNER("EnclaveNotPayloadOwner"),
   ENCLAVE_UNSUPPORTED_PRIVATE_KEY_TYPE("EnclaveUnsupportedPrivateKeyType"),
-  ENCLAVE_INVALID_PRIVATE_KEY("EnclaveInvalidPrivateKey"),
-  ENCLAVE_READ_PASSWORDS("EnclaveReadPasswords"),
-  ENCLAVE_READ_PUBLIC_KEY("EnclaveReadPublicKeys"),
-  ENCLAVE_STORAGE_ENCRYPT("EnclaveStorageEncrypt"),
-  ENCLAVE_STORAGE_DECRYPT("EnclaveStorageDecrypt"),
-  ENCLAVE_WRITE_PUBLIC_KEY("EnclaveWritePublicKey"),
-
-  /** 0x5xxxxx Storage category of issues. */
-  STORAGE_CLOSE("StorageClose"),
-  STORAGE_CLOSED_DELETE("StorageClosedDelete"),
-  STORAGE_CLOSED_READ("StorageClosedRead"),
-  STORAGE_CLOSED_WRITE("StorageClosedWrite"),
-  STORAGE_OPEN("StorageOpen"),
-
-  CONFIG_FILE_MISSING("ConfigFileMissing");
+  ENCLAVE_STORAGE_DECRYPT("EnclaveStorageDecrypt");
 
   private final String code;
 

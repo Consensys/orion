@@ -53,7 +53,7 @@ class FileKeyStoreTest {
   }
 
   @BeforeEach
-  void setupKeyStore() {
+  void setupKeyStore() throws Exception {
     keyStore = new FileKeyStore(config);
   }
 
@@ -75,7 +75,8 @@ class FileKeyStoreTest {
       + "publickeys=[\"Does not exist\"]\n"
       + "alwayssendto=[\"Does not exist\"]");
     // @formatter:on
-    assertThrows(EnclaveException.class, () -> new FileKeyStore(config));
+    IOException ex = assertThrows(IOException.class, () -> new FileKeyStore(config));
+    assertTrue(ex.getMessage().startsWith("Failed to read public key file '"));
   }
 
   @Test

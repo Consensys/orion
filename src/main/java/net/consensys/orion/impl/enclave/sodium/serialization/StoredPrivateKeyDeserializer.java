@@ -13,8 +13,6 @@
 
 package net.consensys.orion.impl.enclave.sodium.serialization;
 
-import net.consensys.orion.api.enclave.EnclaveException;
-import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.sodium.StoredPrivateKey;
 
 import java.io.IOException;
@@ -39,22 +37,16 @@ public final class StoredPrivateKeyDeserializer extends StdDeserializer<StoredPr
     JsonNode rootNode = p.getCodec().readTree(p);
     JsonNode typeNode = rootNode.get("type");
     if (typeNode == null) {
-      throw new EnclaveException(
-          OrionErrorCode.ENCLAVE_UNSUPPORTED_PRIVATE_KEY_TYPE,
-          "Unknown stored key format (missing 'type')");
+      throw new IOException("Unknown stored key format (missing 'type')");
     }
     String type = typeNode.textValue();
     JsonNode dataNode = rootNode.get("data");
     if (dataNode == null) {
-      throw new EnclaveException(
-          OrionErrorCode.ENCLAVE_INVALID_PRIVATE_KEY,
-          "Invalid stored key format (missing 'data')");
+      throw new IOException("Invalid stored key format (missing 'data')");
     }
     JsonNode bytesNode = dataNode.get("bytes");
     if (bytesNode == null) {
-      throw new EnclaveException(
-          OrionErrorCode.ENCLAVE_INVALID_PRIVATE_KEY,
-          "Invalid stored key format (missing 'data.bytes')");
+      throw new IOException("Invalid stored key format (missing 'data.bytes')");
     }
     String encoded = bytesNode.textValue();
     return new StoredPrivateKey(encoded, type);
