@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 ConsenSys AG.
+ * Copyright $YEAR ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -11,14 +11,3 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package net.consensys.orion.impl.utils;
-
-import net.consensys.orion.api.exception.OrionErrorCode;
-import net.consensys.orion.api.exception.OrionException;
-
-public class SerializationException extends OrionException {
-
-  public SerializationException(OrionErrorCode code, Throwable cause) {
-    super(code, cause);
-  }
-}
