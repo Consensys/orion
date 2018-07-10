@@ -268,7 +268,7 @@ dependencies {
 //////
 // Packaging
 
-mainClassName = 'net.consensys.orion.api.cmd.Orion'
+mainClassName = 'net.consensys.orion.cmd.Orion'
 group = 'net.consensys'
 
 jar {

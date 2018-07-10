@@ -21,7 +21,7 @@ import static net.consensys.orion.acceptance.NodeUtils.freePort;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
 import static net.consensys.orion.acceptance.NodeUtils.sendTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.viewTransaction;
-import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
+import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 
@@ -30,11 +30,11 @@ import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
-import net.consensys.orion.api.cmd.Orion;
-import net.consensys.orion.api.config.Config;
-import net.consensys.orion.impl.http.server.HttpContentType;
-import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
-import net.consensys.orion.impl.utils.Serializer;
+import net.consensys.orion.cmd.Orion;
+import net.consensys.orion.config.Config;
+import net.consensys.orion.http.server.HttpContentType;
+import net.consensys.orion.network.ConcurrentNetworkNodes;
+import net.consensys.orion.utils.Serializer;
 
 import java.net.URL;
 import java.nio.file.Path;

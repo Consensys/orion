@@ -23,9 +23,9 @@ import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
-import net.consensys.orion.api.cmd.Orion;
-import net.consensys.orion.api.config.Config;
-import net.consensys.orion.api.exception.OrionErrorCode;
+import net.consensys.orion.cmd.Orion;
+import net.consensys.orion.config.Config;
+import net.consensys.orion.exception.OrionErrorCode;
 
 import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;

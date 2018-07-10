@@ -17,8 +17,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import net.consensys.orion.api.cmd.Orion;
-import net.consensys.orion.api.config.Config;
+import net.consensys.orion.cmd.Orion;
+import net.consensys.orion.config.Config;
 
 import java.io.IOException;
 import java.net.ServerSocket;
