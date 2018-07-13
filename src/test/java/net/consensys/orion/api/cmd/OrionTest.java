@@ -21,9 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.config.Config;
-import net.consensys.orion.api.exception.OrionErrorCode;
-import net.consensys.orion.api.exception.OrionException;
-import net.consensys.orion.impl.enclave.sodium.storage.StoredPrivateKey;
+import net.consensys.orion.impl.enclave.sodium.StoredPrivateKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -86,7 +84,7 @@ class OrionTest {
     assertTrue(Files.exists(publicKey1));
 
     StoredPrivateKey storedPrivateKey = Serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
-    assertEquals(StoredPrivateKey.ARGON2_SBOX, storedPrivateKey.type());
+    assertEquals(StoredPrivateKey.ENCRYPTED, storedPrivateKey.type());
 
     Files.delete(privateKey1);
     Files.delete(publicKey1);
@@ -125,9 +123,9 @@ class OrionTest {
   @Test
   void missingConfigFile() {
     Orion orion = new Orion();
-    OrionException e =
-        assertThrows(OrionException.class, () -> orion.run(System.out, System.err, "someMissingFile.txt"));
-    assertEquals(OrionErrorCode.CONFIG_FILE_MISSING, e.code());
+    OrionStartException e =
+        assertThrows(OrionStartException.class, () -> orion.run(System.out, System.err, "someMissingFile.txt"));
+    assertTrue(e.getMessage().startsWith("Could not open '"));
   }
 
   @SuppressWarnings("unchecked")

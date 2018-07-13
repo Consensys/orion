@@ -15,16 +15,15 @@ package net.consensys.orion.impl.http.handler.receive;
 
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.storage.Storage;
-import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
-import java.security.PublicKey;
 import java.util.Collections;
 
 import io.vertx.core.Handler;
@@ -51,13 +50,13 @@ public class ReceiveHandler implements Handler<RoutingContext> {
     log.trace("receive handler called");
     ReceiveRequest receiveRequest;
     String key;
-    PublicKey to = null;
+    Box.PublicKey to = null;
     if (contentType == JSON) {
       receiveRequest = Serializer.deserialize(JSON, ReceiveRequest.class, routingContext.getBody().getBytes());
       log.debug("got receive request {}", receiveRequest);
       key = receiveRequest.key;
       if (receiveRequest.to != null) {
-        to = new SodiumPublicKey(Base64.decode(receiveRequest.to));
+        to = Box.PublicKey.fromBytes(Base64.decode(receiveRequest.to));
       }
     } else {
       key = routingContext.request().getHeader("c11n-key");
@@ -65,7 +64,7 @@ public class ReceiveHandler implements Handler<RoutingContext> {
     if (to == null) {
       to = enclave.nodeKeys()[0];
     }
-    PublicKey recipient = to;
+    Box.PublicKey recipient = to;
 
     storage.get(key).thenAccept(encryptedPayload -> {
       if (!encryptedPayload.isPresent()) {

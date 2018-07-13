@@ -11,19 +11,21 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package net.consensys.orion.impl.enclave.sodium;
+package net.consensys.orion.impl.enclave.sodium.serialization;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.impl.utils.Base64;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.KeyDeserializer;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 
-public class SodiumPublicKeyDeserializer extends KeyDeserializer {
+public final class PublicKeyDeserializer extends JsonDeserializer<Box.PublicKey> {
 
   @Override
-  public Object deserializeKey(String key, DeserializationContext ctxt) throws IOException {
-    return new SodiumPublicKey(Base64.decode(key));
+  public Box.PublicKey deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    return Box.PublicKey.fromBytes(Base64.decode(p.getValueAsString()));
   }
 }

@@ -13,7 +13,6 @@
 
 package net.consensys.orion.impl.network;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -21,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.cava.concurrent.AsyncCompletion;
 import net.consensys.cava.concurrent.CompletableAsyncCompletion;
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.api.config.Config;
-import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
 import net.consensys.orion.impl.helpers.FakePeer;
 import net.consensys.orion.impl.utils.Serializer;
 
@@ -77,9 +76,8 @@ class NetworkDiscoveryTest {
   @Test
   void networkDiscoveryWithUnresponsivePeer() throws Exception {
     // add peers
-    FakePeer fakePeer = new FakePeer(
-        new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE),
-        new SodiumPublicKey("pk1".getBytes(UTF_8)));
+    FakePeer fakePeer =
+        new FakePeer(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE), Box.KeyPair.random().publicKey());
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // start network discovery
@@ -108,16 +106,14 @@ class NetworkDiscoveryTest {
     Buffer unknownPeerBody = new Buffer();
     unknownPeerBody.write(unknownPeerNetworkNodes);
     // create a peer that's not in our current network nodes
-    FakePeer unknownPeer =
-        new FakePeer(new MockResponse().setBody(unknownPeerBody), new SodiumPublicKey("unknown.pk1".getBytes(UTF_8)));
+    FakePeer unknownPeer = new FakePeer(new MockResponse().setBody(unknownPeerBody), Box.KeyPair.random().publicKey());
 
     // create a peer that we know, and that knows the lonely unknown peer.
     ConcurrentNetworkNodes knownPeerNetworkNodes = new ConcurrentNetworkNodes(new URL("http://localhost/"));
     knownPeerNetworkNodes.addNode(unknownPeer.publicKey, unknownPeer.getURL());
     Buffer knownPeerBody = new Buffer();
     knownPeerBody.write(Serializer.serialize(CBOR, knownPeerNetworkNodes));
-    FakePeer knownPeer =
-        new FakePeer(new MockResponse().setBody(knownPeerBody), new SodiumPublicKey("known.pk1".getBytes(UTF_8)));
+    FakePeer knownPeer = new FakePeer(new MockResponse().setBody(knownPeerBody), Box.KeyPair.random().publicKey());
 
     // we know this peer, add it to our network nodes
     networkNodes.addNode(knownPeer.publicKey, knownPeer.getURL());

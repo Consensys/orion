@@ -20,6 +20,7 @@ import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import static net.consensys.orion.impl.http.server.HttpContentType.TEXT;
 
+import net.consensys.cava.crypto.sodium.Sodium;
 import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.cava.kv.LevelDBKeyValueStore;
 import net.consensys.cava.kv.MapDBKeyValueStore;
@@ -29,14 +30,11 @@ import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.config.ConfigException;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.KeyConfig;
-import net.consensys.orion.api.exception.OrionErrorCode;
-import net.consensys.orion.api.exception.OrionException;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
 import net.consensys.orion.impl.cmd.OrionArguments;
-import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
-import net.consensys.orion.impl.enclave.sodium.SodiumFileKeyStore;
+import net.consensys.orion.impl.enclave.sodium.FileKeyStore;
+import net.consensys.orion.impl.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.impl.http.handler.partyinfo.PartyInfoHandler;
 import net.consensys.orion.impl.http.handler.push.PushHandler;
 import net.consensys.orion.impl.http.handler.receive.ReceiveHandler;
@@ -54,13 +52,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Security;
-import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
 
-import com.muquit.libsodiumjna.SodiumLibrary;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -251,17 +248,15 @@ public class Orion {
     }
 
     // load config file
-    Config config = loadConfig(arguments.configFileName().map(fileName -> {
-      Path configFile = Paths.get(fileName);
-      if (!Files.exists(configFile)) {
-        throw new OrionException(OrionErrorCode.CONFIG_FILE_MISSING);
-      }
-      return configFile;
-    }));
+    Config config = loadConfig(arguments.configFileName().map(Paths::get).orElse(null));
 
     // generate key pair and exit
     if (arguments.keysToGenerate().isPresent()) {
-      generateKeyPairs(out, err, config, arguments.keysToGenerate().get());
+      try {
+        generateKeyPairs(out, err, config, arguments.keysToGenerate().get());
+      } catch (IOException ex) {
+        throw new OrionStartException(ex.getMessage(), ex);
+      }
       return;
     }
 
@@ -269,12 +264,20 @@ public class Orion {
   }
 
   public void run(PrintStream out, PrintStream err, Config config) {
-    SodiumLibrary.setLibraryPath(config.libSodiumPath());
+    Path libSodiumPath = config.libSodiumPath();
+    if (libSodiumPath != null) {
+      Sodium.loadLibrary(libSodiumPath);
+    }
 
-    SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
+    FileKeyStore keyStore;
+    try {
+      keyStore = new FileKeyStore(config);
+    } catch (IOException ex) {
+      throw new OrionStartException(ex.getMessage(), ex);
+    }
     ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(config, keyStore.nodeKeys());
 
-    Enclave enclave = new LibSodiumEnclave(keyStore);
+    Enclave enclave = new SodiumEnclave(keyStore);
 
     Path workDir = config.workDir();
     log.info("using working directory {}", workDir);
@@ -455,11 +458,15 @@ public class Orion {
     }
   }
 
-  private void generateKeyPairs(PrintStream out, PrintStream err, Config config, String[] keysToGenerate) {
+  private void generateKeyPairs(PrintStream out, PrintStream err, Config config, String[] keysToGenerate)
+      throws IOException {
     log.info("generating Key Pairs");
 
-    SodiumLibrary.setLibraryPath(config.libSodiumPath());
-    SodiumFileKeyStore keyStore = new SodiumFileKeyStore(config);
+    Path libSodiumPath = config.libSodiumPath();
+    if (libSodiumPath != null) {
+      Sodium.loadLibrary(libSodiumPath);
+    }
+    FileKeyStore keyStore = new FileKeyStore(config);
 
     Scanner scanner = new Scanner(System.in, UTF_8.name());
 
@@ -469,24 +476,20 @@ public class Orion {
       //Prompt for Password from user
       out.format("Enter password for key pair [%s] : ", keyName);
       String pwd = scanner.nextLine().trim();
-      Optional<String> password = pwd.length() > 0 ? Optional.of(pwd) : Optional.empty();
-
-      out.println("Password for key [" + keyName + "] - [" + password + "]");
-
-      keyStore.generateKeyPair(new KeyConfig(basePath, password));
+      keyStore.generateKeyPair(basePath, pwd.length() > 0 ? pwd : null);
     }
   }
 
-  private static Config loadConfig(Optional<Path> configFile) {
-    if (!configFile.isPresent()) {
+  private static Config loadConfig(@Nullable Path configFile) {
+    if (configFile == null) {
       log.warn("no config file provided, using default");
       return Config.defaultConfig();
     }
-    log.info("using {} provided config file", configFile.get().toAbsolutePath());
+    log.info("using {} provided config file", configFile.toAbsolutePath());
     try {
-      return Config.load(configFile.get());
+      return Config.load(configFile);
     } catch (IOException e) {
-      throw new OrionStartException("Could not open " + configFile.get() + ": " + e.getMessage(), e);
+      throw new OrionStartException("Could not open '" + configFile.toAbsolutePath() + "': " + e.getMessage(), e);
     }
   }
 }

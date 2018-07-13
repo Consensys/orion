@@ -18,24 +18,21 @@ import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.api.storage.Storage;
-import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
-import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
-import net.consensys.orion.impl.enclave.sodium.SodiumPublicKey;
+import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
+import net.consensys.orion.impl.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.impl.http.handler.receive.ReceiveRequest;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.nio.file.Path;
-import java.security.PublicKey;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 
 import okhttp3.MediaType;
@@ -45,16 +42,14 @@ import okhttp3.Response;
 import org.junit.jupiter.api.Test;
 
 class ReceiveHandlerTest extends HandlerTest {
-  private KeyConfig keyConfig;
-  private SodiumMemoryKeyStore memoryKeyStore;
+  private MemoryKeyStore memoryKeyStore;
 
   @Override
   protected Enclave buildEnclave(Path tempDir) {
-    keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
-    memoryKeyStore = new SodiumMemoryKeyStore();
-    SodiumPublicKey defaultNodeKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
+    memoryKeyStore = new MemoryKeyStore();
+    Box.PublicKey defaultNodeKey = memoryKeyStore.generateKeyPair();
     memoryKeyStore.addNodeKey(defaultNodeKey);
-    return new LibSodiumEnclave(memoryKeyStore);
+    return new SodiumEnclave(memoryKeyStore);
   }
 
   @SuppressWarnings("unchecked")
@@ -86,7 +81,7 @@ class ReceiveHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt a payload
-    SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys());
 
     // store it
@@ -132,7 +127,7 @@ class ReceiveHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt a payload
-    SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys());
 
     // store it
@@ -171,8 +166,8 @@ class ReceiveHandlerTest extends HandlerTest {
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
-    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {senderKey});
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {senderKey});
 
     String key = payloadStorage.put(originalPayload).get();
     RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
@@ -195,8 +190,8 @@ class ReceiveHandlerTest extends HandlerTest {
     assertEquals(receiveResponse, Serializer.roundTrip(HttpContentType.CBOR, Map.class, receiveResponse));
     assertEquals(receiveResponse, Serializer.roundTrip(HttpContentType.JSON, Map.class, receiveResponse));
 
-    SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
-    ReceiveRequest receiveRequest = new ReceiveRequest("some key", senderKey.toString());
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    ReceiveRequest receiveRequest = new ReceiveRequest("some key", Base64.encode(senderKey.bytesArray()));
     assertEquals(receiveRequest, Serializer.roundTrip(HttpContentType.CBOR, ReceiveRequest.class, receiveRequest));
     assertEquals(receiveRequest, Serializer.roundTrip(HttpContentType.JSON, ReceiveRequest.class, receiveRequest));
   }
@@ -232,14 +227,14 @@ class ReceiveHandlerTest extends HandlerTest {
 
   private ReceiveRequest buildReceiveRequest(Storage<EncryptedPayload> storage, byte[] toEncrypt) throws Exception {
     // encrypt a payload
-    SodiumPublicKey senderKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
-    SodiumPublicKey recipientKey = (SodiumPublicKey) memoryKeyStore.generateKeyPair(keyConfig);
-    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new PublicKey[] {recipientKey});
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {recipientKey});
 
     // store it
     String key = storage.put(originalPayload).get();
 
     // Receive operation, sending a ReceivePayload request
-    return new ReceiveRequest(key, recipientKey.toString());
+    return new ReceiveRequest(key, Base64.encode(recipientKey.bytesArray()));
   }
 }
