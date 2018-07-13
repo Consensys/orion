@@ -13,10 +13,10 @@
 
 package net.consensys.orion.acceptance;
 
+import static net.consensys.cava.io.Base64.decodeBytes;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 
 import net.consensys.orion.impl.http.handler.receive.ReceiveRequest;
-import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.util.HashMap;
@@ -80,7 +80,7 @@ public class EthClientStub {
     CompletableFuture<byte[]> payloadFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/receive").handler(resp -> {
       if (resp.statusCode() == 200) {
-        resp.bodyHandler(body -> payloadFuture.complete(Base64.decode(deserialize(body).get("payload"))));
+        resp.bodyHandler(body -> payloadFuture.complete(decodeBytes(deserialize(body).get("payload"))));
       } else {
         payloadFuture.complete(null);
       }

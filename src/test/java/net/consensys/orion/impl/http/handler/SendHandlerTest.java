@@ -15,6 +15,7 @@ package net.consensys.orion.impl.http.handler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.consensys.cava.crypto.Hash.sha2_512_256;
+import static net.consensys.cava.io.Base64.encodeBytes;
 import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -27,7 +28,6 @@ import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.impl.http.server.HttpContentType;
-import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.IOException;
@@ -140,7 +140,7 @@ class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest = Base64.encode(sha2_512_256(encryptedPayload.cipherText()));
+    String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
@@ -183,7 +183,7 @@ class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest = Base64.encode(sha2_512_256(encryptedPayload.cipherText()));
+    String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
@@ -211,7 +211,7 @@ class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest = Base64.encode(sha2_512_256(encryptedPayload.cipherText()));
+    String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peers
     List<FakePeer> fakePeers = new ArrayList<>(5);
@@ -252,7 +252,7 @@ class SendHandlerTest extends HandlerTest {
 
   @Test
   void sendWithInvalidContentType() throws Exception {
-    String b64String = Base64.encode("foo".getBytes(UTF_8));
+    String b64String = encodeBytes("foo".getBytes(UTF_8));
 
     Map<String, Object> sendRequest = buildRequest(new String[] {b64String}, b64String.getBytes(UTF_8), b64String);
     // CBOR type is not available
@@ -273,7 +273,7 @@ class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest = Base64.encode(sha2_512_256(encryptedPayload.cipherText()));
+    String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peers
     List<FakePeer> fakePeers = new ArrayList<>(5);
@@ -288,9 +288,9 @@ class SendHandlerTest extends HandlerTest {
     RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
     Box.PublicKey sender = memoryKeyStore.generateKeyPair();
 
-    String from = Base64.encode(sender.bytesArray());
+    String from = encodeBytes(sender.bytesArray());
 
-    String[] to = fakePeers.stream().map(fp -> Base64.encode(fp.publicKey.bytesArray())).toArray(String[]::new);
+    String[] to = fakePeers.stream().map(fp -> encodeBytes(fp.publicKey.bytesArray())).toArray(String[]::new);
 
     Request request = new Request.Builder()
         .post(body)
@@ -338,7 +338,7 @@ class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest = Base64.encode(sha2_512_256(encryptedPayload.cipherText()));
+    String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peers
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
@@ -350,13 +350,13 @@ class SendHandlerTest extends HandlerTest {
         RequestBody.create(MediaType.parse(HttpContentType.APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
     Box.PublicKey sender = memoryKeyStore.generateKeyPair();
 
-    String from = Base64.encode(sender.bytesArray());
+    String from = encodeBytes(sender.bytesArray());
 
     Request request = new Request.Builder()
         .post(body)
         .url(nodeBaseUrl + "sendraw")
         .addHeader("c11n-from", from)
-        .addHeader("c11n-to", Base64.encode(fakePeer.publicKey.bytesArray()))
+        .addHeader("c11n-to", encodeBytes(fakePeer.publicKey.bytesArray()))
         .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
         .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
         .build();
@@ -391,16 +391,16 @@ class SendHandlerTest extends HandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest = Base64.encode(sha2_512_256(encryptedPayload.cipherText()));
+    String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // configureRoutes our sendRequest
-    String payload = Base64.encode(toEncrypt);
+    String payload = encodeBytes(toEncrypt);
 
-    String[] to = new String[] {Base64.encode(fakePeer.publicKey.bytesArray())};
+    String[] to = new String[] {encodeBytes(fakePeer.publicKey.bytesArray())};
 
     Map<String, Object> sendRequest = buildRequest(to, payload.getBytes(UTF_8), null);
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
@@ -416,17 +416,17 @@ class SendHandlerTest extends HandlerTest {
 
   private Map<String, Object> buildRequest(List<FakePeer> forPeers, byte[] toEncrypt) {
     Box.PublicKey sender = memoryKeyStore.generateKeyPair();
-    String from = Base64.encode(sender.bytesArray());
+    String from = encodeBytes(sender.bytesArray());
     return buildRequest(forPeers, toEncrypt, from);
   }
 
   private Map<String, Object> buildRequest(List<FakePeer> forPeers, byte[] toEncrypt, String from) {
-    String[] to = forPeers.stream().map(fp -> Base64.encode(fp.publicKey.bytesArray())).toArray(String[]::new);
+    String[] to = forPeers.stream().map(fp -> encodeBytes(fp.publicKey.bytesArray())).toArray(String[]::new);
     return buildRequest(to, toEncrypt, from);
   }
 
   Map<String, Object> buildRequest(String[] to, byte[] toEncrypt, String from) {
-    String payload = Base64.encode(toEncrypt);
+    String payload = encodeBytes(toEncrypt);
 
     Map<String, Object> result = new HashMap<>();
     result.put("to", to);

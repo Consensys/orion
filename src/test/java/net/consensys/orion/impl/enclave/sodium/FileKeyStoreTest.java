@@ -13,6 +13,7 @@
 
 package net.consensys.orion.impl.enclave.sodium;
 
+import static net.consensys.cava.io.Base64.decodeBytes;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -25,7 +26,6 @@ import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.api.enclave.EnclaveException;
-import net.consensys.orion.impl.utils.Base64;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,9 +41,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class FileKeyStoreTest {
 
   private static final Box.PublicKey PUBLIC_KEY_1 =
-      Box.PublicKey.fromBytes(Base64.decode("BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo="));
+      Box.PublicKey.fromBytes(decodeBytes("BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo="));
   private static final Box.SecretKey PRIVATE_KEY_1 =
-      Box.SecretKey.fromBytes(Base64.decode("Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA="));
+      Box.SecretKey.fromBytes(decodeBytes("Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA="));
   private static Config config;
   private FileKeyStore keyStore;
 
@@ -101,8 +101,8 @@ class FileKeyStoreTest {
         new String[] {"Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA=", "wGEar7J9G0JAgdisp61ZChyrJWeW2QPyKvecjjeVHOY="};
 
     for (int i = 0; i < encodedPrivateKeys.length; i++) {
-      Box.SecretKey privateKey = Box.SecretKey.fromBytes(Base64.decode(encodedPrivateKeys[i]));
-      Box.PublicKey publicKey = Box.PublicKey.fromBytes(Base64.decode(encodedPublicKeys[i]));
+      Box.SecretKey privateKey = Box.SecretKey.fromBytes(decodeBytes(encodedPrivateKeys[i]));
+      Box.PublicKey publicKey = Box.PublicKey.fromBytes(decodeBytes(encodedPublicKeys[i]));
       assertEquals(privateKey, keyStore.privateKey(publicKey));
     }
   }
@@ -117,7 +117,7 @@ class FileKeyStoreTest {
 
     Box.PublicKey[] publicKeys = new Box.PublicKey[encodedPublicKeys.length];
     for (int i = 0; i < encodedPublicKeys.length; i++) {
-      publicKeys[i] = Box.PublicKey.fromBytes(Base64.decode(encodedPublicKeys[i]));
+      publicKeys[i] = Box.PublicKey.fromBytes(decodeBytes(encodedPublicKeys[i]));
     }
     assertArrayEquals(publicKeys, keyStore.alwaysSendTo());
   }

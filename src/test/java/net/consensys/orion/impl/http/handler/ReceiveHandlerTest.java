@@ -13,6 +13,8 @@
 
 package net.consensys.orion.impl.http.handler;
 
+import static net.consensys.cava.io.Base64.decodeBytes;
+import static net.consensys.cava.io.Base64.encodeBytes;
 import static net.consensys.orion.impl.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -27,7 +29,6 @@ import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.impl.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.impl.http.handler.receive.ReceiveRequest;
 import net.consensys.orion.impl.http.server.HttpContentType;
-import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.nio.file.Path;
@@ -69,7 +70,7 @@ class ReceiveHandlerTest extends HandlerTest {
 
     final Map<String, String> receiveResponse = Serializer.deserialize(JSON, Map.class, resp.body().bytes());
 
-    byte[] decodedPayload = Base64.decode(receiveResponse.get("payload"));
+    byte[] decodedPayload = decodeBytes(receiveResponse.get("payload"));
     assertArrayEquals(toEncrypt, decodedPayload);
   }
 
@@ -191,7 +192,7 @@ class ReceiveHandlerTest extends HandlerTest {
     assertEquals(receiveResponse, Serializer.roundTrip(HttpContentType.JSON, Map.class, receiveResponse));
 
     Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    ReceiveRequest receiveRequest = new ReceiveRequest("some key", Base64.encode(senderKey.bytesArray()));
+    ReceiveRequest receiveRequest = new ReceiveRequest("some key", encodeBytes(senderKey.bytesArray()));
     assertEquals(receiveRequest, Serializer.roundTrip(HttpContentType.CBOR, ReceiveRequest.class, receiveRequest));
     assertEquals(receiveRequest, Serializer.roundTrip(HttpContentType.JSON, ReceiveRequest.class, receiveRequest));
   }
@@ -235,6 +236,6 @@ class ReceiveHandlerTest extends HandlerTest {
     String key = storage.put(originalPayload).get();
 
     // Receive operation, sending a ReceivePayload request
-    return new ReceiveRequest(key, Base64.encode(recipientKey.bytesArray()));
+    return new ReceiveRequest(key, encodeBytes(recipientKey.bytesArray()));
   }
 }

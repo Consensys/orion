@@ -14,6 +14,8 @@
 package net.consensys.orion.impl.enclave.sodium;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static net.consensys.cava.io.Base64.decodeBytes;
+import static net.consensys.cava.io.Base64.encodeBytes;
 
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.crypto.sodium.SodiumException;
@@ -22,7 +24,6 @@ import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.KeyStore;
 import net.consensys.orion.api.exception.OrionErrorCode;
 import net.consensys.orion.impl.http.server.HttpContentType;
-import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.io.BufferedReader;
@@ -103,7 +104,7 @@ public class FileKeyStore implements KeyStore {
   private Box.PublicKey readPublicKey(Path publicKeyFile) throws IOException {
     try (BufferedReader br = Files.newBufferedReader(publicKeyFile, UTF_8)) {
       final String base64Encoded = br.readLine();
-      final byte[] decoded = Base64.decode(base64Encoded);
+      final byte[] decoded = decodeBytes(base64Encoded);
       return Box.PublicKey.fromBytes(decoded);
     } catch (final IOException ex) {
       throw new IOException("Failed to read public key file '" + publicKeyFile.toAbsolutePath() + "'", ex);
@@ -173,7 +174,7 @@ public class FileKeyStore implements KeyStore {
   private void storePublicKey(Box.PublicKey publicKey, Path publicFile) throws IOException {
     try (Writer fw = Files.newBufferedWriter(publicFile, UTF_8)) {
       try {
-        fw.write(Base64.encode(publicKey.bytesArray()));
+        fw.write(encodeBytes(publicKey.bytesArray()));
       } catch (IOException ex) {
         throw new IOException("Failed writing public key to " + publicFile, ex);
       }

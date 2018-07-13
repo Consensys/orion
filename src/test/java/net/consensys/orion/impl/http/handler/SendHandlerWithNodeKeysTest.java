@@ -14,6 +14,7 @@
 package net.consensys.orion.impl.http.handler;
 
 import static net.consensys.cava.crypto.Hash.sha2_512_256;
+import static net.consensys.cava.io.Base64.encodeBytes;
 import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,7 +25,6 @@ import net.consensys.orion.api.enclave.Enclave;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.impl.helpers.StubEnclave;
 import net.consensys.orion.impl.http.server.HttpContentType;
-import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.nio.file.Path;
@@ -63,13 +63,13 @@ class SendHandlerWithNodeKeysTest extends SendHandlerTest {
 
     // encrypt it here to compute digest
     EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
-    String digest = Base64.encode(sha2_512_256(encryptedPayload.cipherText()));
+    String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    String[] to = new String[] {Base64.encode(fakePeer.publicKey.bytesArray())};
+    String[] to = new String[] {encodeBytes(fakePeer.publicKey.bytesArray())};
 
     Map<String, Object> sendRequest = buildRequest(to, toEncrypt, null);
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);

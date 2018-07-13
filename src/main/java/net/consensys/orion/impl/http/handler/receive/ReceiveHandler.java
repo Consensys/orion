@@ -13,6 +13,8 @@
 
 package net.consensys.orion.impl.http.handler.receive;
 
+import static net.consensys.cava.io.Base64.decodeBytes;
+import static net.consensys.cava.io.Base64.encodeBytes;
 import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
 
 import net.consensys.cava.crypto.sodium.Box;
@@ -21,7 +23,6 @@ import net.consensys.orion.api.enclave.EnclaveException;
 import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.impl.http.server.HttpContentType;
-import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.util.Collections;
@@ -56,7 +57,7 @@ public class ReceiveHandler implements Handler<RoutingContext> {
       log.debug("got receive request {}", receiveRequest);
       key = receiveRequest.key;
       if (receiveRequest.to != null) {
-        to = Box.PublicKey.fromBytes(Base64.decode(receiveRequest.to));
+        to = Box.PublicKey.fromBytes(decodeBytes(receiveRequest.to));
       }
     } else {
       key = routingContext.request().getHeader("c11n-key");
@@ -87,7 +88,7 @@ public class ReceiveHandler implements Handler<RoutingContext> {
       Buffer toReturn;
       if (contentType == JSON) {
         toReturn = Buffer
-            .buffer(Serializer.serialize(JSON, Collections.singletonMap("payload", Base64.encode(decryptedPayload))));
+            .buffer(Serializer.serialize(JSON, Collections.singletonMap("payload", encodeBytes(decryptedPayload))));
       } else {
         toReturn = Buffer.buffer(decryptedPayload);
       }

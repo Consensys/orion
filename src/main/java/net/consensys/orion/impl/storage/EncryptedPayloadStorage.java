@@ -14,6 +14,7 @@
 package net.consensys.orion.impl.storage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static net.consensys.cava.io.Base64.encodeBytes;
 
 import net.consensys.cava.bytes.Bytes;
 import net.consensys.cava.concurrent.AsyncResult;
@@ -22,7 +23,6 @@ import net.consensys.orion.api.enclave.EncryptedPayload;
 import net.consensys.orion.api.storage.Storage;
 import net.consensys.orion.api.storage.StorageKeyBuilder;
 import net.consensys.orion.impl.http.server.HttpContentType;
-import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.util.Optional;
@@ -47,7 +47,7 @@ public class EncryptedPayloadStorage implements Storage<EncryptedPayload> {
 
   @Override
   public String generateDigest(EncryptedPayload data) {
-    return Base64.encode(keyBuilder.build(data.cipherText()));
+    return encodeBytes(keyBuilder.build(data.cipherText()));
   }
 
 
