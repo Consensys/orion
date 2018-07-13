@@ -13,6 +13,8 @@
 
 package net.consensys.orion.api.exception;
 
+import javax.annotation.Nullable;
+
 /** Base exception class encapsulating the Orion error codes. */
 public class OrionException extends RuntimeException {
 
@@ -23,12 +25,16 @@ public class OrionException extends RuntimeException {
   }
 
   public OrionException(OrionErrorCode code, String message) {
-    super(message);
+    this(code, message, null);
+  }
+
+  public OrionException(OrionErrorCode code, @Nullable Throwable cause) {
+    super(cause);
     this.code = code;
   }
 
-  public OrionException(OrionErrorCode code, Throwable cause) {
-    super(cause);
+  public OrionException(OrionErrorCode code, String message, @Nullable Throwable cause) {
+    super(message, cause);
     this.code = code;
   }
 

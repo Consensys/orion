@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import io.vertx.core.http.HttpClient;
 import junit.framework.AssertionFailedError;
@@ -32,15 +31,15 @@ import okhttp3.HttpUrl;
 
 public class NodeUtils {
 
-  public static String joinPathsAsTomlListEntry(String... paths) {
+  public static String joinPathsAsTomlListEntry(Path... paths) {
     StringBuilder builder = new StringBuilder();
     boolean first = true;
-    for (String path : paths) {
+    for (Path path : paths) {
       if (!first) {
         builder.append(",");
       }
       first = false;
-      builder.append("\"").append(Paths.get(path).toAbsolutePath().toString()).append("\"");
+      builder.append("\"").append(path.toAbsolutePath().toString()).append("\"");
     }
     return builder.toString();
   }

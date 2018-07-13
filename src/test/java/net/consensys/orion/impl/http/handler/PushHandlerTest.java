@@ -17,18 +17,16 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.orion.api.enclave.EncryptedPayload;
-import net.consensys.orion.api.enclave.KeyConfig;
 import net.consensys.orion.api.exception.OrionErrorCode;
-import net.consensys.orion.impl.enclave.sodium.LibSodiumEnclave;
-import net.consensys.orion.impl.enclave.sodium.SodiumEncryptedPayload;
-import net.consensys.orion.impl.enclave.sodium.SodiumMemoryKeyStore;
+import net.consensys.orion.impl.enclave.sodium.MemoryKeyStore;
+import net.consensys.orion.impl.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.nio.file.Path;
-import java.security.PublicKey;
 import java.util.Optional;
 
 import okhttp3.MediaType;
@@ -40,13 +38,11 @@ import org.junit.jupiter.api.Test;
 
 class PushHandlerTest extends HandlerTest {
 
-  private KeyConfig keyConfig;
-  private SodiumMemoryKeyStore memoryKeyStore;
+  private MemoryKeyStore memoryKeyStore;
 
   @BeforeEach
   void setUpKeyStore(@TempDirectory Path tempDir) {
-    keyConfig = new KeyConfig(tempDir.resolve("ignore"), Optional.empty());
-    memoryKeyStore = new SodiumMemoryKeyStore();
+    memoryKeyStore = new MemoryKeyStore();
   }
 
   @Test
@@ -76,8 +72,8 @@ class PushHandlerTest extends HandlerTest {
   @Test
   void roundTripSerialization() {
     EncryptedPayload pushRequest = mockPayload();
-    assertEquals(pushRequest, Serializer.roundTrip(HttpContentType.CBOR, SodiumEncryptedPayload.class, pushRequest));
-    assertEquals(pushRequest, Serializer.roundTrip(HttpContentType.JSON, SodiumEncryptedPayload.class, pushRequest));
+    assertEquals(pushRequest, Serializer.roundTrip(HttpContentType.CBOR, EncryptedPayload.class, pushRequest));
+    assertEquals(pushRequest, Serializer.roundTrip(HttpContentType.JSON, EncryptedPayload.class, pushRequest));
   }
 
   @Test
@@ -112,9 +108,9 @@ class PushHandlerTest extends HandlerTest {
   }
 
   private EncryptedPayload mockPayload() {
-    LibSodiumEnclave sEnclave = new LibSodiumEnclave(memoryKeyStore);
-    PublicKey k1 = memoryKeyStore.generateKeyPair(keyConfig);
-    PublicKey k2 = memoryKeyStore.generateKeyPair(keyConfig);
-    return sEnclave.encrypt("something important".getBytes(UTF_8), k1, new PublicKey[] {k2});
+    SodiumEnclave sEnclave = new SodiumEnclave(memoryKeyStore);
+    Box.PublicKey k1 = memoryKeyStore.generateKeyPair();
+    Box.PublicKey k2 = memoryKeyStore.generateKeyPair();
+    return sEnclave.encrypt("something important".getBytes(UTF_8), k1, new Box.PublicKey[] {k2});
   }
 }

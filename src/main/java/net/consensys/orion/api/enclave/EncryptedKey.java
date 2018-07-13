@@ -11,40 +11,22 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package net.consensys.orion.impl.enclave.sodium;
+package net.consensys.orion.api.enclave;
 
-import net.consensys.orion.impl.utils.Base64;
-
-import java.security.PublicKey;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class SodiumPublicKey implements PublicKey {
+public class EncryptedKey {
 
   private final byte[] encoded;
 
-  public SodiumPublicKey(String base64) {
-    this.encoded = Base64.decode(base64);
-  }
-
   @JsonCreator
-  public SodiumPublicKey(@JsonProperty("encoded") byte[] encoded) {
+  public EncryptedKey(@JsonProperty("encoded") byte[] encoded) {
     this.encoded = encoded;
   }
 
-  @Override
-  public String getAlgorithm() {
-    return null;
-  }
-
-  @Override
-  public String getFormat() {
-    return null;
-  }
-
-  @Override
   public byte[] getEncoded() {
     return encoded;
   }
@@ -57,15 +39,8 @@ public class SodiumPublicKey implements PublicKey {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-
-    SodiumPublicKey publicKey1 = (SodiumPublicKey) o;
-
-    return Arrays.equals(encoded, publicKey1.encoded);
-  }
-
-  @Override
-  public String toString() {
-    return Base64.encode(encoded);
+    EncryptedKey that = (EncryptedKey) o;
+    return Arrays.equals(encoded, that.encoded);
   }
 
   @Override

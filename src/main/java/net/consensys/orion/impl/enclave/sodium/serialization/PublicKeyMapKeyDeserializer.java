@@ -11,18 +11,18 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package net.consensys.orion.api.storage;
+package net.consensys.orion.impl.enclave.sodium.serialization;
 
-import net.consensys.orion.api.exception.OrionErrorCode;
-import net.consensys.orion.api.exception.OrionException;
+import net.consensys.cava.crypto.sodium.Box;
+import net.consensys.orion.impl.utils.Base64;
 
-public class StorageException extends OrionException {
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.KeyDeserializer;
 
-  public StorageException(OrionErrorCode code, String message) {
-    super(code, message);
-  }
+public final class PublicKeyMapKeyDeserializer extends KeyDeserializer {
 
-  public StorageException(OrionErrorCode code, Throwable cause) {
-    super(code, cause);
+  @Override
+  public Box.PublicKey deserializeKey(String key, DeserializationContext ctxt) {
+    return Box.PublicKey.fromBytes(Base64.decode(key));
   }
 }

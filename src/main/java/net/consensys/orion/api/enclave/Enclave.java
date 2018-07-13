@@ -13,7 +13,7 @@
 
 package net.consensys.orion.api.enclave;
 
-import java.security.PublicKey;
+import net.consensys.cava.crypto.sodium.Box;
 
 public interface Enclave {
 
@@ -26,7 +26,7 @@ public interface Enclave {
    * @param recipients public keys of the recipients.
    * @return Returns a EncryptedPayload that encapsulates the ciphertext and related metadata.
    */
-  EncryptedPayload encrypt(byte[] plaintext, PublicKey senderKey, PublicKey[] recipients);
+  EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients);
 
   /**
    * Decrypt the cipher text in the encrypted payload, using the private key associated with the public key identity. It
@@ -37,11 +37,11 @@ public interface Enclave {
    *        perform the decryption.
    * @return return the decrypted byte array that is the data.
    */
-  byte[] decrypt(EncryptedPayload ciphertextAndMetadata, PublicKey identity);
+  byte[] decrypt(EncryptedPayload ciphertextAndMetadata, Box.PublicKey identity);
 
-  PublicKey[] alwaysSendTo();
+  Box.PublicKey[] alwaysSendTo();
 
-  PublicKey[] nodeKeys();
+  Box.PublicKey[] nodeKeys();
 
-  PublicKey readKey(String b64);
+  Box.PublicKey readKey(String b64);
 }

@@ -72,20 +72,12 @@ public class Serializer {
     }
   }
 
-  public static void writeFile(HttpContentType contentType, Path file, Object obj) {
-    try {
-      getMapperOrThrows(contentType).writeValue(file.toFile(), obj);
-    } catch (final IOException io) {
-      throw new SerializationException(OrionErrorCode.OBJECT_WRITE, io);
-    }
+  public static void writeFile(HttpContentType contentType, Path file, Object obj) throws IOException {
+    getMapperOrThrows(contentType).writeValue(file.toFile(), obj);
   }
 
-  public static <T> T readFile(HttpContentType contentType, Path file, Class<T> valueType) {
-    try {
-      return getMapperOrThrows(contentType).readValue(file.toFile(), valueType);
-    } catch (final IOException io) {
-      throw new SerializationException(OrionErrorCode.OBJECT_READ, io);
-    }
+  public static <T> T readFile(HttpContentType contentType, Path file, Class<T> valueType) throws IOException {
+    return getMapperOrThrows(contentType).readValue(file.toFile(), valueType);
   }
 
   public static <T> T roundTrip(HttpContentType contentType, Class<T> valueType, Object obj) {

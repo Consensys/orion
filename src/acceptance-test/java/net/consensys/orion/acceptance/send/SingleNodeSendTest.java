@@ -15,6 +15,8 @@ package net.consensys.orion.acceptance.send;
 
 import static io.vertx.core.Vertx.vertx;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static net.consensys.cava.io.file.Files.copyResource;
+import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
 import static org.junit.Assert.assertEquals;
 
 import net.consensys.cava.junit.TempDirectory;
@@ -62,6 +64,11 @@ class SingleNodeSendTest {
     String baseUrl = NodeUtils.url(HOST_NAME, nodePort);
     String ethUrl = NodeUtils.url(HOST_NAME, ethPort);
 
+    Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
+    Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
+    Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
+    Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
+
     config = NodeUtils.nodeConfig(
         tempDir,
         baseUrl,
@@ -72,12 +79,8 @@ class SingleNodeSendTest {
         "127.0.0.1",
         "node1",
         baseUrl,
-        NodeUtils.joinPathsAsTomlListEntry(
-            "src/acceptance-test/resources/key1.pub",
-            "src/acceptance-test/resources/key2.pub"),
-        NodeUtils.joinPathsAsTomlListEntry(
-            "src/acceptance-test/resources/key1.key",
-            "src/acceptance-test/resources/key2.key"),
+        joinPathsAsTomlListEntry(key1pub, key2pub),
+        joinPathsAsTomlListEntry(key1key, key2key),
         "off",
         "tofu",
         "tofu");

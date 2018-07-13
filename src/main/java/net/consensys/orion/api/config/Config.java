@@ -25,7 +25,6 @@ import net.consensys.cava.config.DocumentPosition;
 import net.consensys.cava.config.PropertyValidator;
 import net.consensys.cava.config.Schema;
 import net.consensys.cava.config.SchemaBuilder;
-import net.consensys.orion.impl.enclave.sodium.LibSodiumSettings;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -143,19 +142,14 @@ public final class Config {
   /**
    * Path to the lib sodium shared library.
    *
-   * <p>
-   * <strong>Default:</strong>
-   *
-   * <ul>
-   * <li><b>Linux</b> /usr/local/lib/libsodium.so
-   * <li><b>Mac</b> /usr/local/lib/libsodium.dylib
-   * <li><b>Windows</b> C:/libsodium/libsodium.dll
-   * </ul>
-   *
    * @return Path to the lib sodium shared library.
    */
-  public String libSodiumPath() {
-    return configuration.getString("libsodiumpath");
+  @Nullable
+  public Path libSodiumPath() {
+    if (!configuration.contains("libsodiumpath")) {
+      return null;
+    }
+    return Paths.get(configuration.getString("libsodiumpath"));
   }
 
   /**
@@ -511,11 +505,7 @@ public final class Config {
         "The corresponding set of private keys. These must correspond to the public keys listed 'publickeys'.",
         null);
 
-    schemaBuilder.addString(
-        "libsodiumpath",
-        LibSodiumSettings.defaultLibSodiumPath(),
-        "The path at which to locate the lib sodium shared library",
-        null);
+    schemaBuilder.documentProperty("libsodiumpath", "The path at which to locate the lib sodium shared library");
 
     schemaBuilder.addListOfString(
         "alwayssendto",
