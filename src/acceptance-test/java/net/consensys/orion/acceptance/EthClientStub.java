@@ -10,14 +10,13 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package net.consensys.orion.acceptance;
 
 import static net.consensys.cava.io.Base64.decodeBytes;
-import static net.consensys.orion.impl.http.server.HttpContentType.JSON;
+import static net.consensys.orion.http.server.HttpContentType.JSON;
 
-import net.consensys.orion.impl.http.handler.receive.ReceiveRequest;
-import net.consensys.orion.impl.utils.Serializer;
+import net.consensys.orion.http.handler.receive.ReceiveRequest;
+import net.consensys.orion.utils.Serializer;
 
 import java.util.HashMap;
 import java.util.Map;

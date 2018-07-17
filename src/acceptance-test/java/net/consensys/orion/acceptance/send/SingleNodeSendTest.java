@@ -10,7 +10,6 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package net.consensys.orion.acceptance.send;
 
 import static io.vertx.core.Vertx.vertx;
@@ -23,9 +22,9 @@ import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
-import net.consensys.orion.api.cmd.Orion;
-import net.consensys.orion.api.config.Config;
-import net.consensys.orion.api.exception.OrionErrorCode;
+import net.consensys.orion.cmd.Orion;
+import net.consensys.orion.config.Config;
+import net.consensys.orion.exception.OrionErrorCode;
 
 import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;

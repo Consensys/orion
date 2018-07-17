@@ -10,15 +10,14 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package net.consensys.orion.acceptance;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import net.consensys.orion.api.cmd.Orion;
-import net.consensys.orion.api.config.Config;
+import net.consensys.orion.cmd.Orion;
+import net.consensys.orion.config.Config;
 
 import java.io.IOException;
 import java.net.ServerSocket;
