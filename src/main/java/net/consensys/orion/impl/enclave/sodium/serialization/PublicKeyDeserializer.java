@@ -13,8 +13,9 @@
 
 package net.consensys.orion.impl.enclave.sodium.serialization;
 
+import static net.consensys.cava.io.Base64.decodeBytes;
+
 import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.orion.impl.utils.Base64;
 
 import java.io.IOException;
 
@@ -26,6 +27,6 @@ public final class PublicKeyDeserializer extends JsonDeserializer<Box.PublicKey>
 
   @Override
   public Box.PublicKey deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-    return Box.PublicKey.fromBytes(Base64.decode(p.getValueAsString()));
+    return Box.PublicKey.fromBytes(decodeBytes(p.getValueAsString()));
   }
 }

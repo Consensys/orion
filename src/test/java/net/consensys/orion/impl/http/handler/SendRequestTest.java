@@ -14,12 +14,12 @@
 package net.consensys.orion.impl.http.handler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static net.consensys.cava.io.Base64.encodeBytes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.orion.impl.http.handler.send.SendRequest;
-import net.consensys.orion.impl.utils.Base64;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -77,7 +77,7 @@ class SendRequestTest {
   @Test
   void jsonToObject() throws Exception {
 
-    String json = "{\"payload\":\"" + Base64.encode("foo".getBytes(UTF_8)) + "\", \"from\":\"foo\", \"to\":[\"foo\"]}";
+    String json = "{\"payload\":\"" + encodeBytes("foo".getBytes(UTF_8)) + "\", \"from\":\"foo\", \"to\":[\"foo\"]}";
     ObjectMapper mapper = new ObjectMapper();
     SendRequest req = mapper.readerFor(SendRequest.class).readValue(json);
 

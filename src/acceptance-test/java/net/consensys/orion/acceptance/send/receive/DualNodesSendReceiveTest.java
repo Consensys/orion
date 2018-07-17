@@ -14,6 +14,7 @@
 package net.consensys.orion.acceptance.send.receive;
 
 import static io.vertx.core.Vertx.vertx;
+import static net.consensys.cava.io.Base64.decodeBytes;
 import static net.consensys.cava.io.file.Files.copyResource;
 import static net.consensys.orion.acceptance.NodeUtils.assertTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.freePort;
@@ -33,7 +34,6 @@ import net.consensys.orion.api.cmd.Orion;
 import net.consensys.orion.api.config.Config;
 import net.consensys.orion.impl.http.server.HttpContentType;
 import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
-import net.consensys.orion.impl.utils.Base64;
 import net.consensys.orion.impl.utils.Serializer;
 
 import java.net.URL;
@@ -122,8 +122,8 @@ class DualNodesSendReceiveTest {
     secondHttpClient = vertx.createHttpClient();
     networkNodes = new ConcurrentNetworkNodes(new URL(firstNodeBaseUrl));
 
-    Box.PublicKey pk1 = Box.PublicKey.fromBytes(Base64.decode(PK_1_B_64));
-    Box.PublicKey pk2 = Box.PublicKey.fromBytes(Base64.decode(PK_2_B_64));
+    Box.PublicKey pk1 = Box.PublicKey.fromBytes(decodeBytes(PK_1_B_64));
+    Box.PublicKey pk2 = Box.PublicKey.fromBytes(decodeBytes(PK_2_B_64));
     networkNodes.addNode(pk1, new URL(firstNodeBaseUrl));
     networkNodes.addNode(pk2, new URL(secondNodeBaseUrl));
     // prepare /partyinfo payload (our known peers)

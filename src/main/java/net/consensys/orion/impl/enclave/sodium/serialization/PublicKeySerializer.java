@@ -13,9 +13,10 @@
 
 package net.consensys.orion.impl.enclave.sodium.serialization;
 
+import static net.consensys.cava.io.Base64.encodeBytes;
+
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.crypto.sodium.Box.PublicKey;
-import net.consensys.orion.impl.utils.Base64;
 
 import java.io.IOException;
 
@@ -27,6 +28,6 @@ public final class PublicKeySerializer extends JsonSerializer<Box.PublicKey> {
 
   @Override
   public void serialize(PublicKey key, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-    gen.writeString(Base64.encode(key.bytesArray()));
+    gen.writeString(encodeBytes(key.bytesArray()));
   }
 }

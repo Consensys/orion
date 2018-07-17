@@ -13,8 +13,9 @@
 
 package net.consensys.orion.impl.enclave.sodium.serialization;
 
+import static net.consensys.cava.io.Base64.decodeBytes;
+
 import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.orion.impl.utils.Base64;
 
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.KeyDeserializer;
@@ -23,6 +24,6 @@ public final class PublicKeyMapKeyDeserializer extends KeyDeserializer {
 
   @Override
   public Box.PublicKey deserializeKey(String key, DeserializationContext ctxt) {
-    return Box.PublicKey.fromBytes(Base64.decode(key));
+    return Box.PublicKey.fromBytes(decodeBytes(key));
   }
 }

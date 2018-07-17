@@ -13,7 +13,8 @@
 
 package net.consensys.orion.impl.http.handler.send;
 
-import net.consensys.orion.impl.utils.Base64;
+import static net.consensys.cava.io.Base64.decodeBytes;
+import static net.consensys.cava.io.Base64.encodeBytes;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -42,7 +43,7 @@ public class SendRequest implements Serializable {
     if (rawPayload == null) {
       return null;
     }
-    return Base64.encode(rawPayload);
+    return encodeBytes(rawPayload);
   }
 
   @JsonCreator
@@ -58,7 +59,7 @@ public class SendRequest implements Serializable {
       return new byte[0];
     }
     try {
-      return Base64.decode(payload);
+      return decodeBytes(payload);
     } catch (IllegalArgumentException e) {
       return null;
     }
@@ -101,7 +102,7 @@ public class SendRequest implements Serializable {
   public String toString() {
     return "SendRequest{"
         + "payload='"
-        + Base64.encode(rawPayload)
+        + encodeBytes(rawPayload)
         + '\''
         + ", from='"
         + from
