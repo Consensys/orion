@@ -10,17 +10,17 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package net.consensys.orion.acceptance.send.receive;
 
 import static io.vertx.core.Vertx.vertx;
+import static net.consensys.cava.io.Base64.decodeBytes;
 import static net.consensys.cava.io.file.Files.copyResource;
 import static net.consensys.orion.acceptance.NodeUtils.assertTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.freePort;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
 import static net.consensys.orion.acceptance.NodeUtils.sendTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.viewTransaction;
-import static net.consensys.orion.impl.http.server.HttpContentType.CBOR;
+import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 
@@ -29,12 +29,11 @@ import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
-import net.consensys.orion.api.cmd.Orion;
-import net.consensys.orion.api.config.Config;
-import net.consensys.orion.impl.http.server.HttpContentType;
-import net.consensys.orion.impl.network.ConcurrentNetworkNodes;
-import net.consensys.orion.impl.utils.Base64;
-import net.consensys.orion.impl.utils.Serializer;
+import net.consensys.orion.cmd.Orion;
+import net.consensys.orion.config.Config;
+import net.consensys.orion.http.server.HttpContentType;
+import net.consensys.orion.network.ConcurrentNetworkNodes;
+import net.consensys.orion.utils.Serializer;
 
 import java.net.URL;
 import java.nio.file.Path;
@@ -122,8 +121,8 @@ class DualNodesSendReceiveTest {
     secondHttpClient = vertx.createHttpClient();
     networkNodes = new ConcurrentNetworkNodes(new URL(firstNodeBaseUrl));
 
-    Box.PublicKey pk1 = Box.PublicKey.fromBytes(Base64.decode(PK_1_B_64));
-    Box.PublicKey pk2 = Box.PublicKey.fromBytes(Base64.decode(PK_2_B_64));
+    Box.PublicKey pk1 = Box.PublicKey.fromBytes(decodeBytes(PK_1_B_64));
+    Box.PublicKey pk2 = Box.PublicKey.fromBytes(decodeBytes(PK_2_B_64));
     networkNodes.addNode(pk1, new URL(firstNodeBaseUrl));
     networkNodes.addNode(pk2, new URL(secondNodeBaseUrl));
     // prepare /partyinfo payload (our known peers)

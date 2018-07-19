@@ -16,6 +16,8 @@ workdir = "/data"
 publickeys = ["orion.pub"]
 privatekeys = ["orion.key"]
 tls = "off"
+nodenetworkinterface = "0.0.0.0"
+clientnetworkinterface = "0.0.0.0"
 ```
 
 **`data` folder:**
@@ -35,7 +37,7 @@ $ docker build --force-rm -t orion .
 
 **Starting the container:**
 ``` 
-$ docker run -d -p 8080:8080 -v data:/data orion
+$ docker run -d -p 8080:8080 -v <full-path-to-local-data-directory>:/data orion
 ``` 
 
 **To check that orion is up and running:**
