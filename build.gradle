@@ -25,22 +25,7 @@ apply plugin: 'application'
 apply plugin: 'maven-publish'
 apply from: "gradle/check-licenses.gradle"
 
-
-//////
-// Version numbering
-
-def versionNumber = '0.1.0'
-version = versionNumber + buildTag()
-
-String buildTag() {
-  if (!System.getenv('CIRCLECI')) {
-    return '-dev'
-  }
-  return '-' + System.getenv('CIRCLE_SHA1').take(4).toUpperCase() +
-    String.format('%02X', System.getenv('CIRCLE_BUILD_NUM').toInteger() % 256, 16) +
-    (System.getenv('BUILD_ENVIRONMENT_TAG') ?: '-snapshot')
-}
-
+version = '0.1.0-SNAPSHOT'
 
 //////
 // Default tasks and build aliases
