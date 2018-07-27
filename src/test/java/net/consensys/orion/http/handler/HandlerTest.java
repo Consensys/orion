@@ -170,7 +170,7 @@ abstract class HandlerTest {
     return buildPostRequest(nodeBaseUrl, path, contentType, Serializer.serialize(contentType, payload));
   }
 
-  private Request buildPostRequest(String baseurl, String path, HttpContentType contentType, byte[] payload) {
+  private static Request buildPostRequest(String baseurl, String path, HttpContentType contentType, byte[] payload) {
     RequestBody body = RequestBody.create(MediaType.parse(contentType.httpHeaderValue), payload);
 
     if (path.startsWith("/")) {

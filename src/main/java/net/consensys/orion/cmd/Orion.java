@@ -169,7 +169,7 @@ public class Orion {
     this.vertx = vertx;
   }
 
-  private AtomicBoolean isRunning = new AtomicBoolean(false);
+  private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
   public void stop() {
     if (!isRunning.compareAndSet(true, false)) {
@@ -421,7 +421,7 @@ public class Orion {
     isRunning.set(true);
   }
 
-  private Handler<AsyncResult<HttpServer>> completeFutureInHandler(CompletableFuture<Boolean> future) {
+  private static Handler<AsyncResult<HttpServer>> completeFutureInHandler(CompletableFuture<Boolean> future) {
     return result -> {
       if (result.succeeded()) {
         future.complete(true);
@@ -431,7 +431,7 @@ public class Orion {
     };
   }
 
-  private KeyValueStore createStorage(String storage, Path storagePath) {
+  private static KeyValueStore createStorage(String storage, Path storagePath) {
     String db = "routerdb";
     String[] storageOptions = storage.split(":", 2);
     if (storageOptions.length > 1) {
@@ -456,7 +456,7 @@ public class Orion {
     }
   }
 
-  private void generateKeyPairs(PrintStream out, PrintStream err, Config config, String[] keysToGenerate)
+  private static void generateKeyPairs(PrintStream out, PrintStream err, Config config, String[] keysToGenerate)
       throws IOException {
     log.info("generating Key Pairs");
 

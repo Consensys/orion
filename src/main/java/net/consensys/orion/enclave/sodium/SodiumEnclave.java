@@ -33,7 +33,7 @@ import java.util.HashMap;
 public class SodiumEnclave implements Enclave {
   private static final Nonce ZERO_NONCE = Nonce.fromBytes(new byte[Nonce.length()]);
 
-  private KeyStore keyStore;
+  private final KeyStore keyStore;
 
   private final Box.PublicKey[] alwaysSendTo;
   private final Box.PublicKey[] nodeKeys;
@@ -92,7 +92,7 @@ public class SodiumEnclave implements Enclave {
     }
   }
 
-  private Box.PublicKey[] addSenderToRecipients(final Box.PublicKey[] recipients, final Box.PublicKey sender) {
+  private static Box.PublicKey[] addSenderToRecipients(final Box.PublicKey[] recipients, final Box.PublicKey sender) {
     final Box.PublicKey[] recipientsAndSender = Arrays.copyOf(recipients, recipients.length + 1);
     recipientsAndSender[recipients.length] = sender;
     return recipientsAndSender;
@@ -109,7 +109,7 @@ public class SodiumEnclave implements Enclave {
   }
 
   // Iterate through the encrypted keys to find one that decrypts successfully using our secret key.
-  private SecretBox.Key decryptPayloadKey(EncryptedPayload ciphertextAndMetadata, Box.SecretKey secretKey) {
+  private static SecretBox.Key decryptPayloadKey(EncryptedPayload ciphertextAndMetadata, Box.SecretKey secretKey) {
     SodiumException problem = null;
 
     // Try each key until we find one that successfully decrypts or we run out of keys
@@ -134,7 +134,7 @@ public class SodiumEnclave implements Enclave {
   }
 
   /** Create mapping between encrypted keys and recipients */
-  private HashMap<Box.PublicKey, Integer> encryptedKeysMapping(Box.PublicKey[] recipients) {
+  private static HashMap<Box.PublicKey, Integer> encryptedKeysMapping(Box.PublicKey[] recipients) {
     final HashMap<Box.PublicKey, Integer> encryptedKeysMapping = new HashMap<>();
     for (int i = 0; i < recipients.length; i++) {
       encryptedKeysMapping.put(recipients[i], i);
@@ -142,7 +142,7 @@ public class SodiumEnclave implements Enclave {
     return encryptedKeysMapping;
   }
 
-  private EncryptedKey[] encryptPayloadKeyForRecipients(
+  private static EncryptedKey[] encryptPayloadKeyForRecipients(
       SecretBox.Key payloadKey,
       Box.PublicKey[] recipients,
       Box.SecretKey senderSecretKey,

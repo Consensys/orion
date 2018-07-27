@@ -123,11 +123,11 @@ class SingleNodeSendTest {
   }
 
   /** Verifies the Orion error JSON matches the desired Orion code. */
-  private void assertError(OrionErrorCode expected, String actual) {
+  private static void assertError(OrionErrorCode expected, String actual) {
     assertEquals(String.format("{\"error\":\"%s\"}", expected.code()), actual);
   }
 
-  private String sendTransactionExpectingError(EthClientStub sender, String senderKey, String... recipientsKey) {
+  private static String sendTransactionExpectingError(EthClientStub sender, String senderKey, String... recipientsKey) {
     return sender.sendExpectingError(originalPayload, senderKey, recipientsKey).orElseThrow(AssertionFailedError::new);
   }
 }

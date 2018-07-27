@@ -49,7 +49,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(TempDirectoryExtension.class)
 class CAOrTofuSecurityTest {
 
-  private static Vertx vertx = vertx();
+  private final static Vertx vertx = vertx();
   private static Path knownClientsFile;
   private static String exampleComFingerprint;
   private static HttpClient nonCAhttpClient;

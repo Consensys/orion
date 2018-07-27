@@ -47,7 +47,7 @@ public class HttpErrorHandler implements Handler<RoutingContext> {
     }
   }
 
-  private Buffer errorJson(final Throwable failure, final Route failureRoute) {
+  private static Buffer errorJson(final Throwable failure, final Route failureRoute) {
     final OrionErrorCode orionError = orionError(failure);
     final HttpError httpError = new HttpError(orionError);
     final Buffer buffer = Buffer.buffer(Serializer.serialize(HttpContentType.JSON, httpError));
@@ -60,16 +60,16 @@ public class HttpErrorHandler implements Handler<RoutingContext> {
   /**
    * Status code may not have been set (left as a negative number), in which case assume server side issue.
    */
-  private int statusCode(RoutingContext failureContext) {
+  private static int statusCode(RoutingContext failureContext) {
     return failureContext.statusCode() < 0 ? HttpResponseStatus.INTERNAL_SERVER_ERROR.code()
         : failureContext.statusCode();
   }
 
-  private boolean hasError(RoutingContext failureContext) {
+  private static boolean hasError(RoutingContext failureContext) {
     return failureContext.failure() != null;
   }
 
-  private OrionErrorCode orionError(final Throwable failure) {
+  private static OrionErrorCode orionError(final Throwable failure) {
 
     if (failure instanceof OrionException) {
       log.info(failure);

@@ -89,11 +89,11 @@ public class EthClientStub {
   }
 
   @SuppressWarnings("unchecked")
-  private Map<String, String> deserialize(Buffer httpSendResponse) {
+  private static Map<String, String> deserialize(Buffer httpSendResponse) {
     return Serializer.deserialize(JSON, Map.class, httpSendResponse.getBytes());
   }
 
-  private Map<String, Object> sendRequest(byte[] payload, String from, String[] to) {
+  private static Map<String, Object> sendRequest(byte[] payload, String from, String[] to) {
     Map<String, Object> map = new HashMap<>();
     map.put("payload", payload);
     map.put("from", from);

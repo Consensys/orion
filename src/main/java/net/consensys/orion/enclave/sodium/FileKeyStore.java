@@ -54,7 +54,7 @@ public class FileKeyStore implements KeyStore {
     nodeKeys = loadPublicKeysFromConfig(config.publicKeys());
   }
 
-  private Map<Box.PublicKey, Box.SecretKey> loadKeyPairsFromConfig(Config config) throws IOException {
+  private static Map<Box.PublicKey, Box.SecretKey> loadKeyPairsFromConfig(Config config) throws IOException {
     final Optional<Path> passwords = config.passwords();
     final List<String> passwordList;
     if (passwords.isPresent()) {
@@ -80,7 +80,7 @@ public class FileKeyStore implements KeyStore {
     return keys;
   }
 
-  private Box.PublicKey[] loadPublicKeysFromConfig(List<Path> paths) throws IOException {
+  private static Box.PublicKey[] loadPublicKeysFromConfig(List<Path> paths) throws IOException {
     Box.PublicKey[] keys = new Box.PublicKey[paths.size()];
     int i = 0;
     for (Path path : paths) {
@@ -89,7 +89,7 @@ public class FileKeyStore implements KeyStore {
     return keys;
   }
 
-  private Box.SecretKey readPrivateKey(Path privateKeyFile, @Nullable String password) throws IOException {
+  private static Box.SecretKey readPrivateKey(Path privateKeyFile, @Nullable String password) throws IOException {
     final StoredPrivateKey storedPrivateKey;
     try {
       storedPrivateKey = Serializer.readFile(HttpContentType.JSON, privateKeyFile, StoredPrivateKey.class);
@@ -99,7 +99,7 @@ public class FileKeyStore implements KeyStore {
     return storedPrivateKey.toSecretKey(password);
   }
 
-  private Box.PublicKey readPublicKey(Path publicKeyFile) throws IOException {
+  private static Box.PublicKey readPublicKey(Path publicKeyFile) throws IOException {
     try (BufferedReader br = Files.newBufferedReader(publicKeyFile, UTF_8)) {
       final String base64Encoded = br.readLine();
       final byte[] decoded = decodeBytes(base64Encoded);
@@ -109,7 +109,7 @@ public class FileKeyStore implements KeyStore {
     }
   }
 
-  private List<String> readPasswords(Path passwords) throws IOException {
+  private static List<String> readPasswords(Path passwords) throws IOException {
     try {
       return Files.readAllLines(passwords);
     } catch (final IOException ex) {
@@ -153,7 +153,7 @@ public class FileKeyStore implements KeyStore {
     return keyPair.publicKey();
   }
 
-  private Box.KeyPair keyPair() {
+  private static Box.KeyPair keyPair() {
     try {
       return Box.KeyPair.random();
     } catch (final SodiumException e) {
@@ -161,7 +161,7 @@ public class FileKeyStore implements KeyStore {
     }
   }
 
-  private void storePrivateKey(StoredPrivateKey privKey, Path privateFile) throws IOException {
+  private static void storePrivateKey(StoredPrivateKey privKey, Path privateFile) throws IOException {
     try {
       Serializer.writeFile(HttpContentType.JSON, privateFile, privKey);
     } catch (IOException ex) {
@@ -169,7 +169,7 @@ public class FileKeyStore implements KeyStore {
     }
   }
 
-  private void storePublicKey(Box.PublicKey publicKey, Path publicFile) throws IOException {
+  private static void storePublicKey(Box.PublicKey publicKey, Path publicFile) throws IOException {
     try (Writer fw = Files.newBufferedWriter(publicFile, UTF_8)) {
       try {
         fw.write(encodeBytes(publicKey.bytesArray()));
