@@ -50,7 +50,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(TempDirectoryExtension.class)
 class TofuSecurityTest {
 
-  private Vertx vertx = vertx();
+  private final Vertx vertx = vertx();
   private Path knownClientsFile;
   private String exampleComFingerprint;
   private HttpClient httpClient;

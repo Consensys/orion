@@ -49,7 +49,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(TempDirectoryExtension.class)
 class WhiteListSecurityTest {
 
-  private static Vertx vertx = vertx();
+  private final static Vertx vertx = vertx();
   private static HttpClient httpClient;
   private static HttpClient httpClientWithUnregisteredCert;
   private static HttpClient httpClientWithImproperCertificate;

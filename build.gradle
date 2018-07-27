@@ -14,7 +14,7 @@ plugins {
   id "com.diffplug.gradle.spotless" version "3.10.0"
   id "com.github.hierynomus.license" version "0.14.0"
   id "com.jfrog.bintray" version "1.8.0"
-  id 'net.ltgt.errorprone' version '0.0.13'
+  id 'net.ltgt.errorprone' version '0.0.14'
 }
 
 apply plugin: 'java-library'
@@ -93,7 +93,11 @@ tasks.withType(JavaCompile) {
     '-Xlint:finally',
     '-Xlint:static',
     '-Werror',
-    '-Xep:FutureReturnValueIgnored:OFF'
+    '-Xep:FutureReturnValueIgnored:OFF',
+    '-Xep:InsecureCryptoUsage:WARN',
+    '-Xep:FieldCanBeFinal:WARN',
+    '-Xep:WildcardImport:WARN',
+    '-Xep:TestExceptionChecker:WARN'
   ]
 }
 

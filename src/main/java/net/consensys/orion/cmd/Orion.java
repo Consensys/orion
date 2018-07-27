@@ -169,7 +169,7 @@ public class Orion {
     this.vertx = vertx;
   }
 
-  private AtomicBoolean isRunning = new AtomicBoolean(false);
+  private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
   public void stop() {
     if (!isRunning.compareAndSet(true, false)) {
