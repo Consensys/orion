@@ -33,7 +33,7 @@ import java.util.HashMap;
 public class SodiumEnclave implements Enclave {
   private static final Nonce ZERO_NONCE = Nonce.fromBytes(new byte[Nonce.length()]);
 
-  private KeyStore keyStore;
+  private final KeyStore keyStore;
 
   private final Box.PublicKey[] alwaysSendTo;
   private final Box.PublicKey[] nodeKeys;

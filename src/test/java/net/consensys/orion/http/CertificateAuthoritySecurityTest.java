@@ -45,7 +45,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(TempDirectoryExtension.class)
 class CertificateAuthoritySecurityTest {
 
-  private static Vertx vertx = vertx();
+  private final static Vertx vertx = vertx();
   private static HttpClient httpClient;
   private static int nodePort;
   private static Orion orion;

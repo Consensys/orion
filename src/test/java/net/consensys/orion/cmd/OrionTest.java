@@ -41,7 +41,7 @@ import org.mockito.Mockito;
 
 @ExtendWith(TempDirectoryExtension.class)
 class OrionTest {
-  private Orion orion = new Orion();
+  private final Orion orion = new Orion();
 
   @Test
   void generateUnlockedKeysWithArgumentProvided(@TempDirectory Path tempDir) throws Exception {

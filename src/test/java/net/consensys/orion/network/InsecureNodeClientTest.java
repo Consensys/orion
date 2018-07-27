@@ -50,7 +50,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(TempDirectoryExtension.class)
 class InsecureNodeClientTest {
 
-  private static Vertx vertx = Vertx.vertx();
+  private final static Vertx vertx = Vertx.vertx();
   private static HttpServer insecureServer;
   private static HttpServer foobarComServer;
   private static Path knownServersFile;
