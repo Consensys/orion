@@ -13,7 +13,7 @@ DIR_PATH=${8}   # Path on server that the file will be uploaded to (e.g. dir/)
 
 echo "Uploading file ${FILE} to repository ${REPO}\n"
 
-RESPONSE=$(curl -T ${FILE} -u${BT_USER}:${BT_KEY} https://api.bintray.com/content/${ORG}/${REPO}/${PACKAGE}/${VERSION}/${DIR_PATH})
+RESPONSE=$(curl -T ${FILE} -u${BT_USER}:${BT_KEY} -G https://api.bintray.com/content/${ORG}/${REPO}/${PACKAGE}/${VERSION}/${DIR_PATH} -d override=1 -d publish=1)
 
 if [ "${RESPONSE}" != '{"message":"success"}' ]; then
   echo "Error uploading file to Bintray: ${RESPONSE}/n"
