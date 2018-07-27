@@ -53,7 +53,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(TempDirectoryExtension.class)
 class WhitelistNodeClientTest {
 
-  private static Vertx vertx = Vertx.vertx();
+  private final static Vertx vertx = Vertx.vertx();
   private static HttpServer whitelistedServer;
   private static HttpServer unknownServer;
   private static HttpClient client;

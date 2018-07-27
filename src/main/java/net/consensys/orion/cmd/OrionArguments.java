@@ -74,7 +74,7 @@ class OrionArguments {
     }
   }
 
-  private void displayHelp(PrintStream out) {
+  private static void displayHelp(PrintStream out) {
     out.println("Usage: " + Orion.NAME + " [options] [config file]");
     out.println("where options include:");
     out.println("\t-g");
@@ -87,7 +87,7 @@ class OrionArguments {
     out.println("\t--version\tprint version information");
   }
 
-  private void displayVersion(PrintStream out, PrintStream err) {
+  private static void displayVersion(PrintStream out, PrintStream err) {
     try (InputStream versionAsStream = OrionArguments.class.getResourceAsStream("/version.txt")) {
       if (versionAsStream == null) {
         out.println("(development)");

@@ -138,7 +138,8 @@ class DualNodesSendReceiveTest {
 
   }
 
-  private ConcurrentNetworkNodes getPartyInfoResponse(OkHttpClient httpClient, Request request) throws Exception {
+  private static ConcurrentNetworkNodes getPartyInfoResponse(OkHttpClient httpClient, Request request)
+      throws Exception {
     Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
 

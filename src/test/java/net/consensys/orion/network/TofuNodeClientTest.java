@@ -56,7 +56,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(TempDirectoryExtension.class)
 class TofuNodeClientTest {
 
-  private static Vertx vertx = Vertx.vertx();
+  private final static Vertx vertx = Vertx.vertx();
   private static Config config;
   private static Path knownServersFile;
 

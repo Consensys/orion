@@ -101,7 +101,7 @@ public class NetworkDiscovery extends AbstractVerticle {
    * Its job is to call /partyInfo periodically on a specified URL and merge results if needed in NetworkDiscovery state
    */
   class Discoverer implements Handler<Long> {
-    private URL nodeUrl;
+    private final URL nodeUrl;
     long currentRefreshDelay;
     Instant lastUpdate = Instant.MIN;
     long attempts = 0;

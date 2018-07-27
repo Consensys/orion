@@ -31,9 +31,10 @@ class EncryptedPayloadStorageTest {
     Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
   }
 
-  private Enclave enclave = new SodiumEnclaveStub();
-  private StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
-  private Storage<EncryptedPayload> payloadStorage = new EncryptedPayloadStorage(new MapKeyValueStore(), keyBuilder);
+  private final Enclave enclave = new SodiumEnclaveStub();
+  private final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
+  private final Storage<EncryptedPayload> payloadStorage =
+      new EncryptedPayloadStorage(new MapKeyValueStore(), keyBuilder);
 
   @Test
   void storeAndRetrieve() throws Exception {

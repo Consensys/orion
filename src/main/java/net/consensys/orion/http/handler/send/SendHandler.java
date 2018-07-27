@@ -164,7 +164,7 @@ public class SendHandler implements Handler<RoutingContext> {
     });
   }
 
-  private void handleFailure(RoutingContext routingContext, Throwable ex) {
+  private static void handleFailure(RoutingContext routingContext, Throwable ex) {
     log.warn("propagating the payload failed");
 
     Throwable cause = ex.getCause();
@@ -175,7 +175,7 @@ public class SendHandler implements Handler<RoutingContext> {
     }
   }
 
-  private SendRequest binaryRequest(RoutingContext routingContext) {
+  private static SendRequest binaryRequest(RoutingContext routingContext) {
     String from = routingContext.request().getHeader("c11n-from");
     String[] to = routingContext.request().getHeader("c11n-to").split(",");
     return new SendRequest(routingContext.getBody().getBytes(), from, to);
