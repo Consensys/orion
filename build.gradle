@@ -27,6 +27,7 @@ apply from: "gradle/check-licenses.gradle"
 
 version = '0.1.0-SNAPSHOT'
 
+// TESTING
 //////
 // Default tasks and build aliases
 
