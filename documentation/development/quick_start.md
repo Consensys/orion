@@ -74,4 +74,4 @@ $ curl -X POST \
 
 $ {"payload":"SGVsbG8sIFdvcmxkIQ=="}
 ```
-Where `SGVsbG8sIFdvcmxkIQ==` is is `Hello, World!` in Base64. :)
+Where `SGVsbG8sIFdvcmxkIQ==` is `Hello, World!` in Base64. :)
