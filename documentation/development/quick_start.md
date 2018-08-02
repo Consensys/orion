@@ -3,7 +3,7 @@
 ## Dependencies
 
 To run Orion, you need Java and Libsodium installed in your system.
-For instruction on how to install Libsodium [click here](documentation/development/dependencies.md).
+For instruction on how to install Libsodium [click here](dependencies.md).
 
 ## Downloading and Running Orion
 
@@ -74,4 +74,4 @@ $ curl -X POST \
 
 $ {"payload":"SGVsbG8sIFdvcmxkIQ=="}
 ```
-Where `SGVsbG8sIFdvcmxkIQ==` is is `Hello, World!` in Base64. :)
+Where `SGVsbG8sIFdvcmxkIQ==` is `Hello, World!` in Base64. :)
