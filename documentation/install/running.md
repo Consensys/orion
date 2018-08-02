@@ -45,7 +45,6 @@ Usage: `orion [options] [config file]`
 ### Config file
 See [configuring Orion](configure.md).
 
-
 ### Generating keys
 If you want to generate a pair of public/private keys:
 ```
@@ -54,6 +53,12 @@ orion -g foo
 This will generate a `foo.key` (private key) and `foo.pub` (public key) in the current folder.
 You will be prompted to enter a password to protect the private key. This is optional: however if 
 you do enter a password, you need to put this into the [config file](configure.md).
+
+### Running
+After generating your keys and creating the config file, the following command will start Orion:
+```
+orion <config_filename>
+```
 
 ### Upcheck
 **To check that Orion is up and running:**
