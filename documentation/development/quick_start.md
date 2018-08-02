@@ -3,7 +3,7 @@
 ## Dependencies
 
 To run Orion, you need Java and Libsodium installed in your system.
-For instruction on how to install Libsodium [click here](documentation/development/dependencies.md).
+For instruction on how to install Libsodium [click here](dependencies.md).
 
 ## Downloading and Running Orion
 
