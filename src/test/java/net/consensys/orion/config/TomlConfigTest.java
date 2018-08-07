@@ -71,7 +71,7 @@ class TomlConfigTest {
     Config testConf = Config.load(this.getClass().getClassLoader().getResourceAsStream("defaultConfigTest.toml"));
 
     assertEquals("leveldb", testConf.storage());
-    assertEquals("strict", testConf.tls());
+    assertEquals("off", testConf.tls());
     assertEquals("tofu", testConf.tlsServerTrust());
     assertEquals("ca-or-tofu", testConf.tlsClientTrust());
 
