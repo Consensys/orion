@@ -265,7 +265,7 @@ public class Config {
    * security mechanism like WireGuard is in place.
    * </ul>
    *
-   * <strong>Default:</strong> "strict"
+   * <strong>Default:</strong> "off"
    *
    * @see #tlsServerTrust()
    * @see #tlsClientTrust()
@@ -534,7 +534,7 @@ public class Config {
 
     schemaBuilder.addString(
         "tls",
-        "strict",
+        "off",
         "TLS status. Options:\n"
             + "\n"
             + "   - strict: All connections to and from this node must use TLS with mutual\n"
