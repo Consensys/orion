@@ -94,6 +94,7 @@ tasks.withType(JavaCompile) {
     '-Xlint:static',
     '-Werror',
     '-Xep:FutureReturnValueIgnored:OFF',
+    '-Xep:EqualsGetClass:OFF',
     '-Xep:InsecureCryptoUsage:WARN',
     '-Xep:FieldCanBeFinal:WARN',
     '-Xep:WildcardImport:WARN',

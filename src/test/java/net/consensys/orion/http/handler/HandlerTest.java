@@ -82,7 +82,7 @@ abstract class HandlerTest {
 
     // Initialize the base HTTP url in two forms: String and OkHttp's HttpUrl object to allow for simpler composition
     // of complex URLs with path parameters, query strings, etc.
-    HttpUrl nodeHTTP = new Builder().scheme("http").host("localhost").port(nodeHTTPServerPort).build();
+    HttpUrl nodeHTTP = new HttpUrl.Builder().scheme("http").host("localhost").port(nodeHTTPServerPort).build();
     nodeBaseUrl = nodeHTTP.toString();
 
     // orion dependencies, reset them all between tests
@@ -120,7 +120,7 @@ abstract class HandlerTest {
   }
 
   private void setupClientServer(Router router) throws Exception {
-    HttpUrl clientHTTP = new Builder().scheme("http").host("localhost").port(clientHTTPServerPort).build();
+    HttpUrl clientHTTP = new HttpUrl.Builder().scheme("http").host("localhost").port(clientHTTPServerPort).build();
     clientBaseUrl = clientHTTP.toString();
 
     HttpServerOptions privateServerOptions = new HttpServerOptions();
