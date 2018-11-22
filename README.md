@@ -2,7 +2,7 @@
 Orion is a PegaSys component for doing private transactions.
 
 [![Gitter chat](https://badges.gitter.im/PegaSysEng/orion.png)](https://gitter.im/PegaSysEng/orion)
-[![CircleCI](https://circleci.com/gh/ConsenSys/orion.svg?style=shield&circle-token=5f92fd966a971e60e57f53f2257fe5dda0fcf52c)](https://circleci.com/gh/PegaSysEng/orion)
+[![CircleCI](https://circleci.com/gh/PegaSysEng/orion.svg?style=svg&circle-token=5f92fd966a971e60e57f53f2257fe5dda0fcf52c)](https://circleci.com/gh/PegaSysEng/orion)
 [![Download](https://api.bintray.com/packages/consensys/binaries/orion/images/download.svg)](https://bintray.com/consensys/binaries/orion/_latestVersion)
 
 ## Development
