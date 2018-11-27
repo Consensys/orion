@@ -23,6 +23,7 @@ import net.consensys.cava.crypto.sodium.Sodium;
 import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.cava.kv.LevelDBKeyValueStore;
 import net.consensys.cava.kv.MapDBKeyValueStore;
+import net.consensys.cava.kv.SQLKeyValueStore;
 import net.consensys.cava.net.tls.TLS;
 import net.consensys.cava.net.tls.VertxTrustOptions;
 import net.consensys.orion.config.Config;
@@ -438,18 +439,23 @@ public class Orion {
       db = storageOptions[1];
     }
 
-    Path dbPath = storagePath.resolve(db);
     if (storage.toLowerCase().startsWith("mapdb")) {
       try {
-        return MapDBKeyValueStore.open(dbPath);
+        return MapDBKeyValueStore.open(storagePath.resolve(db));
       } catch (IOException e) {
-        throw new OrionStartException("Couldn't create MapDB store: " + dbPath, e);
+        throw new OrionStartException("Couldn't create MapDB store: " + db, e);
       }
     } else if (storage.toLowerCase().startsWith("leveldb")) {
       try {
-        return LevelDBKeyValueStore.open(dbPath);
+        return LevelDBKeyValueStore.open(storagePath.resolve(db));
       } catch (IOException e) {
-        throw new OrionStartException("Couldn't create LevelDB store: " + dbPath, e);
+        throw new OrionStartException("Couldn't create LevelDB store: " + db, e);
+      }
+    } else if (storage.toLowerCase().startsWith("sql")) {
+      try {
+        return SQLKeyValueStore.open(db);
+      } catch (IOException e) {
+        throw new OrionStartException("Couldn't create SQL-backed store: " + db, e);
       }
     } else {
       throw new OrionStartException("unsupported storage mechanism: " + storage);

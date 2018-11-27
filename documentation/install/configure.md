@@ -41,3 +41,40 @@ privatekeys = ["foo.key"]
 
 You can check all the available properties in the  
 [`sample.conf`](https://github.com/ConsenSys/orion/blob/master/src/main/resources/sample.conf) file.
+
+### Storage
+
+By default, Orion relies on leveldb to store information.
+
+#### LevelDB
+
+```
+storage = "leveldb:oriondb"
+```
+
+#### MapDB
+
+Orion offers persistence using [MapDB](http://www.mapdb.org/).
+
+```
+storage = "mapdb:oriondb"
+```
+
+#### SQL
+
+Orion supports working with relational databases.
+
+* Add the SQL driver jar to the lib folder of the Orion installation
+* Create a table in your database:
+
+| Database | Create statement |
+|---|---|
+| MySQL | `create table store(key varbinary, value varbinary, primary key(key))` |
+| PostgresQL | `create table store(key bytea, value bytea, primary key(key))` |
+
+* Set storage to:
+
+```
+storage = "sql:jdbc:postgresql://localhost/oriondb"
+
+```

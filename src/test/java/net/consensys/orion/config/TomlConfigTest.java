@@ -92,7 +92,7 @@ class TomlConfigTest {
         ConfigException.class,
         () -> Config.load(this.getClass().getClassLoader().getResourceAsStream("invalidConfigTest.toml")));
     String message = "Value of property 'clienturl' is not a valid URL (line 4, column 1)\n"
-        + "Value of property 'storage' must have storage type of \"leveldb\", \"mapdb\", or \"memory\" (line 11, column 1)\n"
+        + "Value of property 'storage' must have storage type of \"leveldb\", \"mapdb\", \"sql\" or \"memory\" (line 11, column 1)\n"
         + "Value of property 'othernodes' is not a valid URL (line 6, column 1)\n"
         + "Value of property 'othernodes' is not a valid URL (line 6, column 1)\n"
         + "Value of property 'tlsservertrust' should be \"whitelist\", \"ca\", \"ca-or-whitelist\", \"tofu\", \"insecure-tofa\", \"ca-or-tofu\", \"insecure-ca-or-tofa\", \"insecure-no-validation\", \"insecure-record\", or \"insecure-ca-or-record\" (line 9, column 1)\n"
@@ -126,6 +126,7 @@ class TomlConfigTest {
     Config.load("storage=\"memory\"");
     Config.load("storage=\"leveldb\"");
     Config.load("storage=\"mapdb\"");
+    Config.load("storage=\"sql:url\"");
     assertThrows(ConfigException.class, () -> Config.load("storage=\"memoryX\""));
     assertThrows(ConfigException.class, () -> Config.load("storage=\"invalidStorage\""));
   }

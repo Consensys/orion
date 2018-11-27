@@ -243,6 +243,7 @@ public class Config {
    * <ul>
    * <li>leveldb:path - LevelDB
    * <li>mapdb:path - MapDB
+   * <li>sql:jdbcurl - Relational database</li>
    * <li>memory - Contents are cleared when Orion exits
    * </ul>
    *
@@ -523,6 +524,7 @@ public class Config {
             + "\n"
             + "   - leveldb:path - LevelDB\n"
             + "   - mapdb:path - MapDB\n"
+            + "   - sql:jdbcurl - SQL database\n"
             + "   - memory - Contents are cleared when Orion exits",
         Config::validateStorage);
 
@@ -663,10 +665,10 @@ public class Config {
       @Nullable String value) {
     assert (value != null);
     String storageType = value.split(":", 2)[0];
-    if (!Arrays.asList("mapdb", "leveldb", "memory").contains(storageType)) {
+    if (!Arrays.asList("mapdb", "leveldb", "sql", "memory").contains(storageType)) {
       return singleError(
           position,
-          "Value of property '" + key + "' must have storage type of \"leveldb\", \"mapdb\", or \"memory\"");
+          "Value of property '" + key + "' must have storage type of \"leveldb\", \"mapdb\", \"sql\" or \"memory\"");
     }
     return noErrors();
   }

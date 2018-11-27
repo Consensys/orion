@@ -37,6 +37,9 @@ import net.consensys.orion.utils.Serializer;
 
 import java.net.URL;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
 import io.vertx.core.Vertx;
@@ -84,6 +87,12 @@ class DualNodesSendReceiveTest {
     Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
     Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
 
+    String jdbcUrl = "jdbc:h2:" + tempDir.resolve("node2").toString();
+    try (Connection conn = DriverManager.getConnection(jdbcUrl)) {
+      Statement st = conn.createStatement();
+      st.executeUpdate("create table if not exists store(key binary, value binary, primary key(key))");
+    }
+
     firstNodeConfig = NodeUtils.nodeConfig(
         tempDir,
         firstNodeBaseUrl,
@@ -98,7 +107,8 @@ class DualNodesSendReceiveTest {
         joinPathsAsTomlListEntry(key1key),
         "off",
         "tofu",
-        "tofu");
+        "tofu",
+        "leveldb:database/node1");
     secondNodeConfig = NodeUtils.nodeConfig(
         tempDir,
         secondNodeBaseUrl,
@@ -113,7 +123,8 @@ class DualNodesSendReceiveTest {
         joinPathsAsTomlListEntry(key2key),
         "off",
         "tofu",
-        "tofu");
+        "tofu",
+        "sql:" + jdbcUrl);
     vertx = vertx();
     firstOrionLauncher = NodeUtils.startOrion(firstNodeConfig);
     firstHttpClient = vertx.createHttpClient();
