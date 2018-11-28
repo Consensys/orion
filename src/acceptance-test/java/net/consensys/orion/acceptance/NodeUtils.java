@@ -61,7 +61,8 @@ public class NodeUtils {
       String privKeys,
       String tls,
       String tlsServerTrust,
-      String tlsClientTrust) throws IOException {
+      String tlsClientTrust,
+      String storage) throws IOException {
 
     Path workDir = tempDir.resolve("acceptance").toAbsolutePath();
     Files.createDirectories(workDir);
@@ -77,7 +78,7 @@ public class NodeUtils {
         + "clienturl = \"" + clientUrl + "\"\n"
         + "clientport = " + clientPort + "\n"
         + "clientnetworkinterface = \"" + clientNetworkInterface + "\"\n"
-        + "storage = \"leveldb:database/" + nodeName + "\"\n"
+        + "storage = \"" + storage + "\"\n"
         + "othernodes = [\"" + otherNodes + "\"]\n"
         + "publickeys = [" + pubKeys + "]\n"
         + "privatekeys = [" + privKeys + "]\n"

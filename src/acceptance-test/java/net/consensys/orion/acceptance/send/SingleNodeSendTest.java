@@ -82,7 +82,8 @@ class SingleNodeSendTest {
         joinPathsAsTomlListEntry(key1key, key2key),
         "off",
         "tofu",
-        "tofu");
+        "tofu",
+        "leveldb:database/node1");
   }
 
   @BeforeEach
