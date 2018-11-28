@@ -209,12 +209,12 @@ dependencies {
   compile 'net.consensys.cava:cava:0.5.0'
 
   // vertx
-  compile 'io.vertx:vertx-core:3.5.2'
-  compile 'io.vertx:vertx-web:3.5.2'
+  compile 'io.vertx:vertx-core:3.5.4'
+  compile 'io.vertx:vertx-web:3.5.4'
 
   // crypto
-  compile 'org.bouncycastle:bcprov-jdk15on:1.59'
-  compile 'org.bouncycastle:bcpkix-jdk15on:1.59'
+  compile 'org.bouncycastle:bcprov-jdk15on:1.60'
+  compile 'org.bouncycastle:bcpkix-jdk15on:1.60'
   compile 'com.github.jnr:jnr-ffi:2.1.8'
 
   // http client
@@ -227,9 +227,9 @@ dependencies {
 
   // serialization
   compile 'com.moandjiezana.toml:toml4j:0.7.2'
-  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.6'
-  compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.6'
-  compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.6'
+  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
+  compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.7'
+  compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.7'
 
   // logging
   compile 'org.apache.logging.log4j:log4j-api:2.11.0'
