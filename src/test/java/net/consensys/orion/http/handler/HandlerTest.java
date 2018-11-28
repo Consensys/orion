@@ -90,7 +90,7 @@ abstract class HandlerTest {
     enclave = buildEnclave(tempDir);
 
     Path path = tempDir.resolve("routerdb");
-    storage = new MapDBKeyValueStore(path);
+    storage = MapDBKeyValueStore.open(path);
     // create our vertx object
     vertx = Vertx.vertx();
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();

@@ -441,13 +441,13 @@ public class Orion {
     Path dbPath = storagePath.resolve(db);
     if (storage.toLowerCase().startsWith("mapdb")) {
       try {
-        return new MapDBKeyValueStore(dbPath);
+        return MapDBKeyValueStore.open(dbPath);
       } catch (IOException e) {
         throw new OrionStartException("Couldn't create MapDB store: " + dbPath, e);
       }
     } else if (storage.toLowerCase().startsWith("leveldb")) {
       try {
-        return new LevelDBKeyValueStore(dbPath);
+        return LevelDBKeyValueStore.open(dbPath);
       } catch (IOException e) {
         throw new OrionStartException("Couldn't create LevelDB store: " + dbPath, e);
       }
