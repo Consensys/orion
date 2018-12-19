@@ -8,4 +8,4 @@ set -e
 exec 1>&2
 
 # do a spotlessCheck, don't apply automatically just now.
-exec gradle spotlessCheck
+exec ./gradlew spotlessCheck
