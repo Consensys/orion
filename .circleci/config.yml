@@ -128,6 +128,16 @@ jobs:
       - run:
           name: Upload skinny zip file to Bintray
           command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/distributions/orion-$(cat build/version).zip consensys binaries orion $(cat build/version)"
+      - deploy:
+          name: Deploying snapshot to Bintray (release branches only)
+          command: |
+            if [ -z "${CIRCLE_PULL_REQUEST}" ] && echo "${CIRCLE_BRANCH}" | grep -q -E '^master$|^[0-9]+\.[0-9]+$'; then
+              echo "Start deployment"
+              BINTRAY_DEPLOY=true ./gradlew deploy
+            else
+              echo "Start dry run deployment"
+              ./gradlew deploy
+            fi
 
 workflows:
   version: 2
