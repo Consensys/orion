@@ -47,6 +47,8 @@ import net.consensys.orion.storage.StorageKeyBuilder;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -398,9 +400,9 @@ public class Orion {
         vertx.createHttpServer(clientOptions).requestHandler(clientRouter::accept).exceptionHandler(log::error).listen(
             completeFutureInHandler(clientFuture));
 
+    CompletableFuture<Boolean> verticleFuture = new CompletableFuture<>();
     // start network discovery of other peers
     discovery = new NetworkDiscovery(networkNodes, config);
-    CompletableFuture<Boolean> verticleFuture = new CompletableFuture<>();
     vertx.deployVerticle(discovery, result -> {
       if (result.succeeded()) {
         verticleFuture.complete(true);
@@ -411,7 +413,13 @@ public class Orion {
 
     try {
       CompletableFuture.allOf(nodeFuture, clientFuture, verticleFuture).get();
-    } catch (ExecutionException e) {
+      // if there is not a node url in the config, then grab the actual port and use it to set the node url.
+      if (!config.nodeUrl().isPresent()) {
+        networkNodes.setNodeUrl(
+            new URL("http", config.nodeNetworkInterface(), nodeHTTPServer.actualPort(), ""),
+            keyStore.nodeKeys());
+      }
+    } catch (ExecutionException | MalformedURLException e) {
       throw new OrionStartException("Orion failed to start: " + e.getCause().getMessage(), e.getCause());
     } catch (InterruptedException e) {
       throw new OrionStartException("Orion was interrupted while starting services");
@@ -495,5 +503,17 @@ public class Orion {
     } catch (IOException e) {
       throw new OrionStartException("Could not open '" + configFile.toAbsolutePath() + "': " + e.getMessage(), e);
     }
+  }
+
+  public int nodePort() {
+    return nodeHTTPServer.actualPort();
+  }
+
+  public int clientPort() {
+    return clientHTTPServer.actualPort();
+  }
+
+  public void addPeer(final URL url) {
+    discovery.addPeer(url);
   }
 }

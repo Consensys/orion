@@ -85,11 +85,12 @@ public class Config {
   /**
    * Externally accessible URL for this node's Orion API
    * <p>
-   * This is what is advertised to other nodes on the network and must be reachable by them.
-   *
+   * This is what is advertised to other nodes on the network and must be reachable by them. This is optional, as the
+   * url might be derived from the actual node port and node network interface
+   * 
    * @return URL for this node's Orion API
    */
-  public URL nodeUrl() {
+  public Optional<URL> nodeUrl() {
     return getURL("nodeurl");
   }
 
@@ -114,9 +115,12 @@ public class Config {
   /**
    * URL advertised to the Ethereum client paired with this node.
    *
+   * <p>
+   * This is optional, as the url might be derived from the actual client port and client network interface
+   *
    * @return URL for this node's client API
    */
-  public URL clientUrl() {
+  public Optional<URL> clientUrl() {
     return getURL("clienturl");
   }
 
@@ -439,9 +443,12 @@ public class Config {
     return getPath("tlsknownservers");
   }
 
-  private URL getURL(String key) {
+  private Optional<URL> getURL(String key) {
     try {
-      return new URL(configuration.getString(key));
+      if (!configuration.contains(key)) {
+        return Optional.empty();
+      }
+      return Optional.of(new URL(configuration.getString(key)));
     } catch (MalformedURLException e) {
       throw new IllegalStateException("key '" + key + "' should have been validated, yet it's invalid", e);
     }
@@ -460,22 +467,22 @@ public class Config {
 
     schemaBuilder.addString(
         "nodeurl",
-        "http://127.0.0.1:8080/",
+        null,
         "Externally accessible URL for this node's public API This is what is advertised to other nodes on the network and must be reachable by them.",
         isURL());
 
-    schemaBuilder.addInteger("nodeport", 8080, "Port to listen on for the Orion API.", inRange(1, 65536));
+    schemaBuilder.addInteger("nodeport", 8080, "Port to listen on for the Orion API.", inRange(0, 65536));
 
     schemaBuilder
         .addString("nodenetworkinterface", "127.0.0.1", "Network interface to which the Orion API will bind.", null);
 
     schemaBuilder.addString(
         "clienturl",
-        "http://127.0.0.1:8888/",
+        null,
         "Internally accessible URL for this node's public API This is what is advertised to other nodes on the network and must be reachable by them.",
         isURL());
 
-    schemaBuilder.addInteger("clientport", 8888, "Port to listen on for the Ethereum client API.", inRange(1, 65536));
+    schemaBuilder.addInteger("clientport", 8888, "Port to listen on for the Ethereum client API.", inRange(0, 65536));
 
     schemaBuilder.addString(
         "clientnetworkinterface",
@@ -676,9 +683,11 @@ public class Config {
   private static List<ConfigurationError> validateConfiguration(Configuration config) {
     List<ConfigurationError> errors = new ArrayList<>();
 
+    // nodeport and client port must be different (unless they are 0 and defaulted).
     if (config.contains("nodeport")
         && config.contains("clientport")
-        && config.getInteger("nodeport") == config.getInteger("clientport")) {
+        && config.getInteger("nodeport") == config.getInteger("clientport")
+        && config.getInteger("nodeport") != 0) {
       errors.add(
           new ConfigurationError(
               config.inputPositionOf("clientport"),

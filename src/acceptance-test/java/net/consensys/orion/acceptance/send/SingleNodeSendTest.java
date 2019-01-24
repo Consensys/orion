@@ -26,8 +26,9 @@ import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.exception.OrionErrorCode;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Path;
-import java.util.concurrent.ExecutionException;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
@@ -57,12 +58,6 @@ class SingleNodeSendTest {
 
   @BeforeAll
   static void setUpSingleNode(@TempDirectory Path tempDir) throws Exception {
-    int nodePort = NodeUtils.freePort();
-    int ethPort = NodeUtils.freePort();
-
-    String baseUrl = NodeUtils.url(HOST_NAME, nodePort);
-    String ethUrl = NodeUtils.url(HOST_NAME, ethPort);
-
     Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
     Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
     Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
@@ -70,14 +65,11 @@ class SingleNodeSendTest {
 
     config = NodeUtils.nodeConfig(
         tempDir,
-        baseUrl,
-        nodePort,
+        0,
         "127.0.0.1",
-        ethUrl,
-        ethPort,
+        0,
         "127.0.0.1",
         "node1",
-        baseUrl,
         joinPathsAsTomlListEntry(key1pub, key2pub),
         joinPathsAsTomlListEntry(key1key, key2key),
         "off",
@@ -86,10 +78,12 @@ class SingleNodeSendTest {
         "leveldb:database/node1");
   }
 
+
   @BeforeEach
-  void setUp() throws ExecutionException, InterruptedException {
+  void setUp() throws MalformedURLException {
     orionLauncher = NodeUtils.startOrion(config);
     vertx = vertx();
+    orionLauncher.addPeer(new URL(NodeUtils.urlString(HOST_NAME, orionLauncher.nodePort())));
     httpClient = vertx.createHttpClient();
   }
 
@@ -120,7 +114,7 @@ class SingleNodeSendTest {
   }
 
   private EthClientStub client() {
-    return NodeUtils.client(config.clientPort(), httpClient);
+    return NodeUtils.client(orionLauncher.clientPort(), httpClient);
   }
 
   /** Verifies the Orion error JSON matches the desired Orion code. */

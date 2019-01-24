@@ -31,17 +31,28 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 public class ConcurrentNetworkNodes implements NetworkNodes {
-  private final URL url;
+  private URL url;
   private final CopyOnWriteArrayList<URL> nodeURLs;
   @JsonSerialize(keyUsing = PublicKeyMapKeySerializer.class)
   private final ConcurrentHashMap<Box.PublicKey, URL> nodePKs;
 
   public ConcurrentNetworkNodes(Config config, Box.PublicKey[] publicKeys) {
-    url = config.nodeUrl();
     nodeURLs = new CopyOnWriteArrayList<>(config.otherNodes());
     nodePKs = new ConcurrentHashMap<>();
+    config.nodeUrl().ifPresent(url -> setNodeUrl(url, publicKeys));
+  }
 
+  /**
+   * Set the url of the node we are running on. This is useful to do when we are running using default ports, and the
+   * construction of this class will be performed before we have settled on what port Orion will be running on.
+   * 
+   * @param url URL of the node.
+   * @param publicKeys PublicKeys used by the node.
+   */
+  public void setNodeUrl(final URL url, Box.PublicKey[] publicKeys) {
+    this.url = url;
     // adding my publickey(s) so /partyinfo returns my info when called.
+    addNodeUrl(url);
     for (Box.PublicKey publicKey : publicKeys) {
       nodePKs.put(publicKey, url);
     }
@@ -71,6 +82,15 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
   public void addNode(Box.PublicKey nodePk, URL node) {
     this.nodeURLs.add(node);
     this.nodePKs.put(nodePk, node);
+  }
+
+  /**
+   * Add a url of a node to perform discovery using that node.
+   * 
+   * @param node
+   */
+  public void addNodeUrl(URL node) {
+    this.nodeURLs.add(node);
   }
 
   @Override
