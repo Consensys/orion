@@ -94,6 +94,11 @@ public class NetworkDiscovery extends AbstractVerticle {
     return new HashMap<>(discoverers);
   }
 
+  public void addPeer(final URL url) {
+    nodes.addNodeUrl(url);
+    updateDiscoverers();
+  }
+
   /**
    * Discoverer handle() is fired by a timer
    *

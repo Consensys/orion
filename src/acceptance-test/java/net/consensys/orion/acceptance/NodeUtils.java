@@ -21,6 +21,7 @@ import net.consensys.orion.config.Config;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -43,20 +44,25 @@ public class NodeUtils {
     return builder.toString();
   }
 
-  public static String url(String host, int port) {
-    return new HttpUrl.Builder().scheme("http").host(host).port(port).build().toString();
+  private static HttpUrl buildUrl(final String host, final int port) {
+    return new HttpUrl.Builder().scheme("http").host(host).port(port).build();
+  }
+
+  public static String urlString(String host, int port) {
+    return buildUrl(host, port).toString();
+  }
+
+  public static URL url(String host, int port) {
+    return buildUrl(host, port).url();
   }
 
   public static Config nodeConfig(
       Path tempDir,
-      String nodeUrl,
       int nodePort,
       String nodeNetworkInterface,
-      String clientUrl,
       int clientPort,
       String clientNetworkInterface,
       String nodeName,
-      String otherNodes,
       String pubKeys,
       String privKeys,
       String tls,
@@ -72,14 +78,11 @@ public class NodeUtils {
           "tls=\"" + tls + "\"\n"
         + "tlsservertrust=\"" + tlsServerTrust + "\"\n"
         + "tlsclienttrust=\"" + tlsClientTrust + "\"\n"
-        + "nodeurl = \"" + nodeUrl + "\"\n"
         + "nodeport = " + nodePort + "\n"
         + "nodenetworkinterface = \"" + nodeNetworkInterface + "\"\n"
-        + "clienturl = \"" + clientUrl + "\"\n"
         + "clientport = " + clientPort + "\n"
         + "clientnetworkinterface = \"" + clientNetworkInterface + "\"\n"
         + "storage = \"" + storage + "\"\n"
-        + "othernodes = [\"" + otherNodes + "\"]\n"
         + "publickeys = [" + pubKeys + "]\n"
         + "privatekeys = [" + privKeys + "]\n"
         + "workdir= \"" + workDir.toString() + "\"\n";

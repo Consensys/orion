@@ -34,7 +34,7 @@ class TomlConfigTest {
     Config testConf = Config.load(configAsStream);
 
     URL expectedURL = new URL("http://127.0.0.1:9001/");
-    assertEquals(expectedURL, testConf.nodeUrl());
+    assertEquals(expectedURL, testConf.nodeUrl().get());
     assertEquals(9001, testConf.nodePort());
     assertEquals("0.0.0.0", testConf.nodeNetworkInterface());
     assertEquals("memory", testConf.storage());

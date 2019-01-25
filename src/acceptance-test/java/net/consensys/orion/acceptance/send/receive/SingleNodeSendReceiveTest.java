@@ -58,9 +58,6 @@ class SingleNodeSendReceiveTest {
     final int nodePort = freePort();
     clientPort = freePort();
 
-    String baseUrl = NodeUtils.url(HOST_NAME, nodePort);
-    String clientUrl = NodeUtils.url(HOST_NAME, clientPort);
-
     Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
     Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
     Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
@@ -68,14 +65,11 @@ class SingleNodeSendReceiveTest {
 
     config = NodeUtils.nodeConfig(
         tempDir,
-        baseUrl,
         nodePort,
-        "127.0.0.1",
-        clientUrl,
+        HOST_NAME,
         clientPort,
-        "127.0.0.1",
+        HOST_NAME,
         "node1",
-        baseUrl,
         joinPathsAsTomlListEntry(key1pub, key2pub),
         joinPathsAsTomlListEntry(key1key, key2key),
         "off",

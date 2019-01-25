@@ -16,7 +16,6 @@ import static io.vertx.core.Vertx.vertx;
 import static net.consensys.cava.io.Base64.decodeBytes;
 import static net.consensys.cava.io.file.Files.copyResource;
 import static net.consensys.orion.acceptance.NodeUtils.assertTransaction;
-import static net.consensys.orion.acceptance.NodeUtils.freePort;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
 import static net.consensys.orion.acceptance.NodeUtils.sendTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.viewTransaction;
@@ -35,7 +34,6 @@ import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.utils.Serializer;
 
-import java.net.URL;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -63,8 +61,6 @@ class DualNodesSendReceiveTest {
 
   private Config firstNodeConfig;
   private Config secondNodeConfig;
-  private int firstNodeClientPort;
-  private int secondNodeClientPort;
   private ConcurrentNetworkNodes networkNodes;
 
   private Orion firstOrionLauncher;
@@ -75,12 +71,6 @@ class DualNodesSendReceiveTest {
 
   @BeforeEach
   void setUpDualNodes(@TempDirectory Path tempDir) throws Exception {
-    int firstNodePort = freePort();
-    firstNodeClientPort = freePort();
-    int secondNodePort = freePort();
-    secondNodeClientPort = freePort();
-    String firstNodeBaseUrl = NodeUtils.url("127.0.0.1", firstNodePort);
-    String secondNodeBaseUrl = NodeUtils.url("127.0.0.1", secondNodePort);
 
     Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
     Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
@@ -95,14 +85,11 @@ class DualNodesSendReceiveTest {
 
     firstNodeConfig = NodeUtils.nodeConfig(
         tempDir,
-        firstNodeBaseUrl,
-        firstNodePort,
+        0,
         "127.0.0.1",
-        NodeUtils.url("127.0.0.1", firstNodeClientPort),
-        firstNodeClientPort,
+        0,
         "127.0.0.1",
         "node1",
-        secondNodeBaseUrl,
         joinPathsAsTomlListEntry(key1pub),
         joinPathsAsTomlListEntry(key1key),
         "off",
@@ -111,14 +98,11 @@ class DualNodesSendReceiveTest {
         "leveldb:database/node1");
     secondNodeConfig = NodeUtils.nodeConfig(
         tempDir,
-        secondNodeBaseUrl,
-        secondNodePort,
+        0,
         "127.0.0.1",
-        NodeUtils.url("127.0.0.1", secondNodeClientPort),
-        secondNodeClientPort,
+        0,
         "127.0.0.1",
         "node2",
-        firstNodeBaseUrl,
         joinPathsAsTomlListEntry(key2pub),
         joinPathsAsTomlListEntry(key2key),
         "off",
@@ -130,20 +114,20 @@ class DualNodesSendReceiveTest {
     firstHttpClient = vertx.createHttpClient();
     secondOrionLauncher = NodeUtils.startOrion(secondNodeConfig);
     secondHttpClient = vertx.createHttpClient();
-    networkNodes = new ConcurrentNetworkNodes(new URL(firstNodeBaseUrl));
-
     Box.PublicKey pk1 = Box.PublicKey.fromBytes(decodeBytes(PK_1_B_64));
     Box.PublicKey pk2 = Box.PublicKey.fromBytes(decodeBytes(PK_2_B_64));
-    networkNodes.addNode(pk1, new URL(firstNodeBaseUrl));
-    networkNodes.addNode(pk2, new URL(secondNodeBaseUrl));
+    networkNodes = new ConcurrentNetworkNodes(NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
+
+    networkNodes.addNode(pk1, NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
+    networkNodes.addNode(pk2, NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
     // prepare /partyinfo payload (our known peers)
     RequestBody partyInfoBody =
         RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), Serializer.serialize(CBOR, networkNodes));
     // call http endpoint
     OkHttpClient httpClient = new OkHttpClient();
 
+    final String firstNodeBaseUrl = NodeUtils.urlString("127.0.0.1", firstOrionLauncher.nodePort());
     Request request = new Request.Builder().post(partyInfoBody).url(firstNodeBaseUrl + "/partyinfo").build();
-
     // first /partyinfo call may just get the one node, so wait until we get at least 2 nodes
     await().atMost(5, TimeUnit.SECONDS).until(() -> getPartyInfoResponse(httpClient, request).nodeURLs().size() == 2);
 
@@ -167,8 +151,8 @@ class DualNodesSendReceiveTest {
 
   @Test
   void receiverCanView() {
-    final EthClientStub firstNode = NodeUtils.client(firstNodeClientPort, firstHttpClient);
-    final EthClientStub secondNode = NodeUtils.client(secondNodeClientPort, secondHttpClient);
+    final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
+    final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
     final byte[] receivedPayload = viewTransaction(secondNode, PK_2_B_64, digest);
@@ -178,7 +162,7 @@ class DualNodesSendReceiveTest {
 
   @Test
   void senderCanView() {
-    final EthClientStub firstNode = NodeUtils.client(firstNodeConfig.clientPort(), firstHttpClient);
+    final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
     final byte[] receivedPayload = viewTransaction(firstNode, PK_1_B_64, digest);
