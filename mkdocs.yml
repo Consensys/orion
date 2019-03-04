@@ -22,6 +22,7 @@ extra:
   support:
     gitter: https://gitter.im/PegaSysEng/orion
     email: support@pegasys.tech
+    pegasys_website: https://pegasys.tech/
   google:
     analytics_id: 'UA-117921923-2'
     site_verification: 'za1cLzyS6LXDGO-pMzvfQdYTZ0Zc67uZtY0asA4YXZ0'
@@ -36,55 +37,54 @@ theme:
   name: material
   custom_dir: docs/custom_theme
   palette:
-    primary: blue-grey
+    primary: deep-purple
     accent: teal
   favicon: favicon.ico
   logo:
-    icon: account_balance
+    icon: lock
 nav:
-- Installation:
-  - Dependencies: Installation/Dependencies.md
-  - Install Binary Distribution: Installation/Install-Binaries.md
-  - Build from Source: Installation/Build-From-Source.md
-- Getting Started:
-  - Quickstart: Getting-Started/Quickstart.md
-- Configuring Orion:
-  - Configuration File: Configuring-Orion/Configuration-File.md
-- Using Orion:
-
-- Reference:
-  - Orion Command Line: Reference/Orion-CLI-Syntax.md
-  - Client API Methods: Reference/API-Methods.md
+  - Installation:
+    - Dependencies: Installation/Dependencies.md
+    - Install Binary Distribution: Installation/Install-Binaries.md
+    - Build from Source: Installation/Build-From-Source.md
+  - Getting Started:
+    - Quickstart: Getting-Started/Quickstart.md
+  - Configuring Orion:
+    - Configuration File: Configuring-Orion/Configuration-File.md
+  - Using Orion:
+    - Reference:
+      - Orion Command Line: Reference/Orion-CLI-Syntax.md
+      - Client API Methods: Reference/API-Methods.md
 
 
 markdown_extensions:
-- toc:
-    permalink: 
-    toc_depth: 3
-- pymdownx.highlight:
-- markdown_include.include:
-    base_path: docs
-- admonition
-- footnotes
-- def_list
-- abbr
-- pymdownx.arithmatex
-- pymdownx.betterem:
-    smart_enable: all
-- pymdownx.caret
-- pymdownx.keys
-- pymdownx.critic
-- pymdownx.details
-- pymdownx.emoji
-- pymdownx.magiclink
-- pymdownx.mark
-- pymdownx.smartsymbols
-- pymdownx.superfences
-- pymdownx.tasklist:
-    custom_checkbox: true
-- pymdownx.tilde
-- meta
-- smarty
+  - toc:
+      permalink: 
+      toc_depth: 3
+  - pymdownx.highlight:
+  - markdown_include.include:
+      base_path: docs
+  - admonition
+  - footnotes
+  - def_list
+  - abbr
+  - pymdownx.arithmatex
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - meta
+  - smarty
 
 plugins:
-- search
+  - search
