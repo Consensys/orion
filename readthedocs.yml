@@ -2,12 +2,14 @@
 
 version: 2
 
+build:
+  image: latest
+
 python:
   version: 3.7
   install:
     - requirements: docs/requirements.txt
-    - method: pip
-      path: .
+
 mkdocs:
   configuration: mkdocs.yml
   fail_on_warning: false
