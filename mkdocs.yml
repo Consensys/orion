@@ -11,7 +11,7 @@
 
 # Project information
 site_name: Orion
-site_url: https://docs.pantheon.pegasys.tech/orion/en/latest
+site_url: https://docs.pantheon.pegasys.tech/projects/orion/en/latest/
 site_description: Orion Transaction Manager documentation.
 site_author: Orion community
 copyright: Orion and its documentation are licensed under Apache 2.0 license /
