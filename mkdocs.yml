@@ -39,8 +39,7 @@ theme:
     primary: deep-purple
     accent: teal
   favicon: favicon.ico
-  logo:
-    icon: lock
+  logo: orion_logo.svg
 nav:
   - Installation:
     - Dependencies: Installation/Dependencies.md
