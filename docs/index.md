@@ -15,6 +15,9 @@ Orion:
 
 * Generates and maintains private/public keypairs.  
 
+* Stores privacy group details. 
+
 * Self manages and discovers all nodes in the Orion network.
 
-* Provides an API for communication between Orion nodes. 
+* Provides APIs for communication between Orion nodes and an API for communicating with the Ethereum 
+client (for example, Pantheon). 
