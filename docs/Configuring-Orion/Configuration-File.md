@@ -3,7 +3,7 @@ description: Configuration File
 
 # Configuration File 
 
-The configuration file is specified when [starting Orion](../Reference/Orion-CLI-Syntax.md#configuration-file). 
+Specify the configuration file when [starting Orion](../Reference/Orion-CLI-Syntax.md#configuration-file). 
 
 ## Properties 
 
