@@ -12,7 +12,6 @@
  */
 package net.consensys.orion.http.handler;
 
-import static net.consensys.cava.io.Base64.decodeBytes;
 import static net.consensys.cava.io.Base64.encodeBytes;
 import static net.consensys.orion.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
@@ -26,6 +25,7 @@ import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.http.handler.receive.ReceiveRequest;
+import net.consensys.orion.http.handler.receive.ReceiveResponse;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.utils.Serializer;
@@ -67,10 +67,9 @@ class ReceiveHandlerTest extends HandlerTest {
 
     assertEquals(200, resp.code());
 
-    final Map<String, String> receiveResponse = Serializer.deserialize(JSON, Map.class, resp.body().bytes());
+    ReceiveResponse receiveResponse = Serializer.deserialize(JSON, ReceiveResponse.class, resp.body().bytes());
 
-    byte[] decodedPayload = decodeBytes(receiveResponse.get("payload"));
-    assertArrayEquals(toEncrypt, decodedPayload);
+    assertArrayEquals(toEncrypt, receiveResponse.getPayload());
   }
 
   @Test

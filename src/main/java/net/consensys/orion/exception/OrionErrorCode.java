@@ -44,7 +44,8 @@ public enum OrionErrorCode {
   ENCLAVE_NO_MATCHING_PRIVATE_KEY("EnclaveNoMatchingPrivateKey"),
   ENCLAVE_NOT_PAYLOAD_OWNER("EnclaveNotPayloadOwner"),
   ENCLAVE_UNSUPPORTED_PRIVATE_KEY_TYPE("EnclaveUnsupportedPrivateKeyType"),
-  ENCLAVE_STORAGE_DECRYPT("EnclaveStorageDecrypt");
+  ENCLAVE_STORAGE_DECRYPT("EnclaveStorageDecrypt"),
+  ENCLAVE_PRIVACY_GROUP_CREATION("EnclavePrivacyGroupIdCreation");
 
   private final String code;
 

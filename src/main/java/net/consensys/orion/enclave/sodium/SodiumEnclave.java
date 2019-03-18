@@ -26,6 +26,8 @@ import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.enclave.KeyStore;
 import net.consensys.orion.exception.OrionErrorCode;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
@@ -58,12 +60,27 @@ public class SodiumEnclave implements Enclave {
     final EncryptedKey[] encryptedKeys =
         encryptPayloadKeyForRecipients(payloadKey, recipientsAndSender, senderSecretKey, nonce);
 
+    final byte[] privacyGroupId = generatePrivacyGroupId(recipientsAndSender);
+
     return new EncryptedPayload(
         senderKey,
         nonce.bytesArray(),
         encryptedKeys,
         cipherText,
-        encryptedKeysMapping(recipientsAndSender));
+        encryptedKeysMapping(recipientsAndSender),
+        privacyGroupId);
+  }
+
+  private byte[] generatePrivacyGroupId(Box.PublicKey[] recipientsAndSender) {
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    for (Box.PublicKey key : recipientsAndSender) {
+      try {
+        outputStream.write(key.bytesArray());
+      } catch (IOException e) {
+        throw new EnclaveException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_CREATION, e.getMessage());
+      }
+    }
+    return outputStream.toByteArray();
   }
 
   @Override

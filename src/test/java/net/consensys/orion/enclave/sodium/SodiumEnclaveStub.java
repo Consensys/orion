@@ -55,6 +55,6 @@ public class SodiumEnclaveStub implements Enclave {
       byte b = plaintext[i];
       cipherText[i] = (byte) (b + 10);
     }
-    return new EncryptedPayload(senderKey, new byte[0], new EncryptedKey[0], cipherText);
+    return new EncryptedPayload(senderKey, new byte[0], new EncryptedKey[0], cipherText, new byte[0]);
   }
 }

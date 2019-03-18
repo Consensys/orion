@@ -12,12 +12,16 @@
  */
 package net.consensys.orion.utils;
 
+import static net.consensys.orion.exception.OrionErrorCode.OBJECT_JSON_SERIALIZATION;
+
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.http.server.HttpContentType;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.NotSerializableException;
+import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
@@ -82,6 +86,18 @@ public class Serializer {
 
   public static <T> T roundTrip(HttpContentType contentType, Class<T> valueType, Object obj) {
     return deserialize(contentType, valueType, serialize(contentType, obj));
+  }
+
+  public static byte[] toByteArray(Object obj) {
+    byte[] toReturn;
+    try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+      ObjectOutputStream out = new ObjectOutputStream(outputStream);
+      out.writeObject(obj);
+      toReturn = outputStream.toByteArray();
+    } catch (IOException e) {
+      throw new OrionException(OBJECT_JSON_SERIALIZATION, e.getMessage());
+    }
+    return toReturn;
   }
 
   private static ObjectMapper getMapperOrThrows(HttpContentType contentType) {

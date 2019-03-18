@@ -13,7 +13,6 @@
 package net.consensys.orion.http.handler.receive;
 
 import static net.consensys.cava.io.Base64.decodeBytes;
-import static net.consensys.cava.io.Base64.encodeBytes;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
 import net.consensys.cava.crypto.sodium.Box;
@@ -23,8 +22,6 @@ import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.utils.Serializer;
-
-import java.util.Collections;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -84,9 +81,9 @@ public class ReceiveHandler implements Handler<RoutingContext> {
 
       // configureRoutes a ReceiveResponse
       Buffer toReturn;
+      ReceiveResponse receiveResponse = new ReceiveResponse(decryptedPayload, encryptedPayload.get().privacyGroupId());
       if (contentType == JSON) {
-        toReturn = Buffer
-            .buffer(Serializer.serialize(JSON, Collections.singletonMap("payload", encodeBytes(decryptedPayload))));
+        toReturn = Buffer.buffer(Serializer.serialize(JSON, receiveResponse));
       } else {
         toReturn = Buffer.buffer(decryptedPayload);
       }

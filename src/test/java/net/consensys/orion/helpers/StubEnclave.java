@@ -17,6 +17,7 @@ import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedKey;
 import net.consensys.orion.enclave.EncryptedPayload;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
@@ -74,16 +75,24 @@ public class StubEnclave implements Enclave {
 
     EncryptedKey[] encryptedKeys;
     Map<Box.PublicKey, Integer> encryptedKeyOwners = new HashMap<>();
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
     if (recipients != null && recipients.length > 0) {
       encryptedKeys = new EncryptedKey[recipients.length];
       for (int i = 0; i < recipients.length; i++) {
+        outputStream.write(i);
         encryptedKeyOwners.put(recipients[i], i);
         encryptedKeys[i] = new EncryptedKey(recipients[i].bytesArray());
       }
     } else {
       encryptedKeys = new EncryptedKey[0];
     }
-    return new EncryptedPayload(senderKey, nonce, encryptedKeys, ciphterText, encryptedKeyOwners);
+    return new EncryptedPayload(
+        senderKey,
+        nonce,
+        encryptedKeys,
+        ciphterText,
+        encryptedKeyOwners,
+        outputStream.toByteArray());
   }
 }
