@@ -1,5 +1,5 @@
 title: Orion Private Transaction Manager
-description: Orion is an open-source private transaction manager for Pantheon developed under the Apache 2.0 license and written in Java. 
+description: Orion is an open-source private transaction manager developed under the Apache 2.0 license and written in Java. 
 <!--- END of page meta data -->
 
 # Orion Private Transaction Manager
@@ -19,5 +19,5 @@ Orion:
 
 * Self manages and discovers all nodes in the Orion network.
 
-* Provides APIs for communication between Orion nodes and an API for communicating with the Ethereum 
-client (for example, Pantheon). 
+* Provides an API for communicating between Orion nodes and an API for communicating with Ethereum 
+clients (for example, Pantheon). 

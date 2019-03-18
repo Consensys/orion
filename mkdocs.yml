@@ -49,10 +49,9 @@ nav:
     - Quickstart: Getting-Started/Quickstart.md
   - Configuring Orion:
     - Configuration File: Configuring-Orion/Configuration-File.md
-  - Using Orion:
-    - Reference:
-      - Orion Command Line: Reference/Orion-CLI-Syntax.md
-      - Client API Methods: Reference/API-Methods.md
+  - Reference:
+    - Orion Command Line: Reference/Orion-CLI-Syntax.md
+    - Client API Methods: Reference/API-Methods.md
 
 
 markdown_extensions:

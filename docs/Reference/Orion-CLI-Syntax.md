@@ -23,7 +23,7 @@ Runs Orion private transaction manager.
 --generatekeys orion
 ```
 
-Generate public/private key pairs for each of the names supplied where <names> is a comma-seperated list. 
+Generates public/private key pairs for each name supplied where `<names>` is a comma-seperated list. 
 
 ### help
 
@@ -31,7 +31,7 @@ Generate public/private key pairs for each of the names supplied where <names> i
 -h, --help
 ```
 
-Show the help message and exit.
+Displays help and exits.
 
 ### version
 
@@ -39,7 +39,7 @@ Show the help message and exit.
   -v, --version
 ```
 
-Print version information and exit.
+Displays version information and exits.
 
  
 ## Configuration File 
@@ -52,4 +52,4 @@ orion <configFile>
 orion orion.conf
 ```
 
-Specify the [configuration file](../Configuring-Orion/Configuration-File.md) with which to start Orion. 
+Specifies the [configuration file](../Configuring-Orion/Configuration-File.md) with which to start Orion. 
