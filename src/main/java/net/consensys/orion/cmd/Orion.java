@@ -470,6 +470,7 @@ public class Orion {
     }
   }
 
+  @SuppressWarnings("unused")
   private void generateKeyPairs(PrintStream out, PrintStream err, Config config, String[] keysToGenerate)
       throws IOException {
     log.info("generating Key Pairs");
