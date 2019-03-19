@@ -75,12 +75,10 @@ public class StubEnclave implements Enclave {
 
     EncryptedKey[] encryptedKeys;
     Map<Box.PublicKey, Integer> encryptedKeyOwners = new HashMap<>();
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
     if (recipients != null && recipients.length > 0) {
       encryptedKeys = new EncryptedKey[recipients.length];
       for (int i = 0; i < recipients.length; i++) {
-        outputStream.write(i);
         encryptedKeyOwners.put(recipients[i], i);
         encryptedKeys[i] = new EncryptedKey(recipients[i].bytesArray());
       }
@@ -93,6 +91,17 @@ public class StubEnclave implements Enclave {
         encryptedKeys,
         ciphterText,
         encryptedKeyOwners,
-        outputStream.toByteArray());
+        generatePrivacyGroupId(recipients));
+  }
+
+  @Override
+  public byte[] generatePrivacyGroupId(Box.PublicKey[] recipientsAndSender) {
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    for (int i = 0; recipientsAndSender != null && i < recipientsAndSender.length; i++) {
+      outputStream.write(i);
+    }
+
+    return outputStream.toByteArray();
   }
 }

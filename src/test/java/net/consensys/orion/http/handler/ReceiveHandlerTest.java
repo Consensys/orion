@@ -73,6 +73,30 @@ class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Test
+  void validPrivacyGroupId() throws Exception {
+    // generate keys and the privacy group
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    byte[] privacyGroupId = getPrivacyGroupId(senderKey, recipientKey);
+
+    byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    ReceiveRequest receiveRequest =
+        buildReceiveRequestSenderRecipient(payloadStorage, toEncrypt, senderKey, recipientKey);
+    Request request = buildPrivateAPIRequest("/receive", HttpContentType.JSON, receiveRequest);
+
+    // execute request
+    Response resp = httpClient.newCall(request).execute();
+
+    assertEquals(200, resp.code());
+
+    ReceiveResponse receiveResponse = Serializer.deserialize(JSON, ReceiveResponse.class, resp.body().bytes());
+    assertArrayEquals(toEncrypt, receiveResponse.getPayload());
+    assertArrayEquals(privacyGroupId, receiveResponse.getPrivacyGroupId());
+  }
+
+  @Test
   void rawPayloadIsRetrieved() throws Exception {
 
     // generate random byte content
@@ -228,6 +252,16 @@ class ReceiveHandlerTest extends HandlerTest {
     // encrypt a payload
     Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+
+    return buildReceiveRequestSenderRecipient(storage, toEncrypt, senderKey, recipientKey);
+  }
+
+  private ReceiveRequest buildReceiveRequestSenderRecipient(
+      Storage<EncryptedPayload> storage,
+      byte[] toEncrypt,
+      Box.PublicKey senderKey,
+      Box.PublicKey recipientKey) throws Exception {
+    // encrypt a payload
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {recipientKey});
 
     // store it
@@ -235,5 +269,10 @@ class ReceiveHandlerTest extends HandlerTest {
 
     // Receive operation, sending a ReceivePayload request
     return new ReceiveRequest(key, encodeBytes(recipientKey.bytesArray()));
+  }
+
+  byte[] getPrivacyGroupId(Box.PublicKey sender, Box.PublicKey recipient) {
+    Box.PublicKey[] tempArray = new Box.PublicKey[] {sender, recipient};
+    return enclave.generatePrivacyGroupId(tempArray);
   }
 }
