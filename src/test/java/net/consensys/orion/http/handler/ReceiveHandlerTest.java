@@ -31,6 +31,7 @@ import net.consensys.orion.storage.Storage;
 import net.consensys.orion.utils.Serializer;
 
 import java.nio.file.Path;
+import java.security.Security;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
@@ -43,6 +44,10 @@ import org.junit.jupiter.api.Test;
 
 class ReceiveHandlerTest extends HandlerTest {
   private MemoryKeyStore memoryKeyStore;
+
+  static {
+    Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+  }
 
   @Override
   protected Enclave buildEnclave(Path tempDir) {

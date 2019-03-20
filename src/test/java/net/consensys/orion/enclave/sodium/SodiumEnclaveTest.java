@@ -23,6 +23,8 @@ import net.consensys.orion.enclave.EncryptedKey;
 import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.exception.OrionErrorCode;
 
+import java.security.Security;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +32,10 @@ class SodiumEnclaveTest {
 
   private final MemoryKeyStore keyStore = new MemoryKeyStore();
   private SodiumEnclave enclave;
+
+  static {
+    Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+  }
 
   @BeforeEach
   void setUp() {

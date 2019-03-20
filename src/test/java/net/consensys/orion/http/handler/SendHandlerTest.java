@@ -32,6 +32,7 @@ import net.consensys.orion.utils.Serializer;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,6 +53,10 @@ import org.junit.jupiter.api.Test;
 class SendHandlerTest extends HandlerTest {
 
   private MemoryKeyStore memoryKeyStore;
+
+  static {
+    Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+  }
 
   @BeforeEach
   void setUpKeyStore(@TempDirectory Path tempDir) {
