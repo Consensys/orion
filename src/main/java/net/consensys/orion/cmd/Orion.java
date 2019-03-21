@@ -17,6 +17,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.consensys.orion.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
+import static net.consensys.orion.http.server.HttpContentType.PANTHEON;
 import static net.consensys.orion.http.server.HttpContentType.TEXT;
 
 import net.consensys.cava.crypto.sodium.Sodium;
@@ -157,6 +158,8 @@ public class Orion {
 
     clientRouter.post("/receive").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
         new ReceiveHandler(enclave, storage, JSON));
+    clientRouter.post("/receive").produces(PANTHEON.httpHeaderValue).consumes(PANTHEON.httpHeaderValue).handler(
+        new ReceiveHandler(enclave, storage, PANTHEON));
     clientRouter
         .post("/receiveraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)

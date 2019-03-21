@@ -89,7 +89,7 @@ class ReceiveHandlerTest extends HandlerTest {
 
     ReceiveRequest receiveRequest =
         buildReceiveRequestSenderRecipient(payloadStorage, toEncrypt, senderKey, recipientKey);
-    Request request = buildPrivateAPIRequest("/receive", HttpContentType.JSON, receiveRequest);
+    Request request = buildPrivateAPIRequest("/receive", HttpContentType.PANTHEON, receiveRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();

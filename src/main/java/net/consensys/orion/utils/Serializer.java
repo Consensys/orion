@@ -45,6 +45,8 @@ public class Serializer {
   public static byte[] serialize(HttpContentType contentType, Object obj) {
     try {
       switch (contentType) {
+        case PANTHEON:
+          return jsonObjectMapper.writeValueAsString(obj).getBytes(StandardCharsets.UTF_8);
         case JSON:
           return jsonObjectMapper.writeValueAsString(obj).getBytes(StandardCharsets.UTF_8);
         case TEXT:
@@ -62,6 +64,8 @@ public class Serializer {
   public static <T> T deserialize(HttpContentType contentType, Class<T> valueType, byte[] bytes) {
     try {
       switch (contentType) {
+        case PANTHEON:
+          return jsonObjectMapper.readValue(bytes, valueType);
         case JSON:
           return jsonObjectMapper.readValue(bytes, valueType);
         case CBOR:
@@ -102,6 +106,8 @@ public class Serializer {
 
   private static ObjectMapper getMapperOrThrows(HttpContentType contentType) {
     switch (contentType) {
+      case PANTHEON:
+        return jsonObjectMapper;
       case JSON:
         return jsonObjectMapper;
       case CBOR:

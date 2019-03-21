@@ -28,6 +28,7 @@ import net.consensys.orion.utils.Serializer;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -153,9 +154,8 @@ public class SendHandler implements Handler<RoutingContext> {
       storage.put(encryptedPayload).thenAccept((result) -> {
 
         final Buffer responseData;
-        SendResponse sendResponse = new SendResponse(digest, encryptedPayload.privacyGroupId());
         if (contentType == JSON) {
-          responseData = Buffer.buffer(Serializer.serialize(JSON, sendResponse));
+          responseData = Buffer.buffer(Serializer.serialize(JSON, Collections.singletonMap("key", digest)));
         } else {
           responseData = Buffer.buffer(digest);
         }
