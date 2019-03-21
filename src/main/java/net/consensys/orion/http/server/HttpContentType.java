@@ -19,7 +19,7 @@ public enum HttpContentType {
   APPLICATION_OCTET_STREAM(HttpHeaderValues.APPLICATION_OCTET_STREAM.toString()),
   TEXT(HttpHeaderValues.TEXT_PLAIN.toString() + "; charset=utf-8"),
   CBOR("application/cbor"),
-  PANTHEON("application/vnd.orion.v1+json");
+  ORION("application/vnd.orion.v1+json");
 
   public final String httpHeaderValue;
 
