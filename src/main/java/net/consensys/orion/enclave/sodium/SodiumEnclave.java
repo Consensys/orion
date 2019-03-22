@@ -14,11 +14,14 @@ package net.consensys.orion.enclave.sodium;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import net.consensys.cava.bytes.Bytes;
+import net.consensys.cava.crypto.Hash;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.crypto.sodium.Box.SecretKey;
 import net.consensys.cava.crypto.sodium.SecretBox;
 import net.consensys.cava.crypto.sodium.SecretBox.Nonce;
 import net.consensys.cava.crypto.sodium.SodiumException;
+import net.consensys.cava.rlp.RLP;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EnclaveException;
 import net.consensys.orion.enclave.EncryptedKey;
@@ -28,7 +31,10 @@ import net.consensys.orion.exception.OrionErrorCode;
 
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SodiumEnclave implements Enclave {
   private static final Nonce ZERO_NONCE = Nonce.fromBytes(new byte[Nonce.length()]);
@@ -58,12 +64,28 @@ public class SodiumEnclave implements Enclave {
     final EncryptedKey[] encryptedKeys =
         encryptPayloadKeyForRecipients(payloadKey, recipientsAndSender, senderSecretKey, nonce);
 
+    final byte[] privacyGroupId = generatePrivacyGroupId(recipientsAndSender);
+
     return new EncryptedPayload(
         senderKey,
         nonce.bytesArray(),
         encryptedKeys,
         cipherText,
-        encryptedKeysMapping(recipientsAndSender));
+        encryptedKeysMapping(recipientsAndSender),
+        privacyGroupId);
+  }
+
+  @Override
+  public byte[] generatePrivacyGroupId(Box.PublicKey[] recipientsAndSender) {
+    final List<byte[]> recipientsAndSenderList = Arrays
+        .stream(recipientsAndSender)
+        .sorted(Comparator.comparing(Box.PublicKey::hashCode))
+        .map(Box.PublicKey::bytesArray)
+        .collect(Collectors.toList());
+
+    Bytes rlpEncoded = RLP.encodeList(listWriter -> recipientsAndSenderList.forEach(listWriter::writeByteArray));
+
+    return Hash.keccak256(rlpEncoded).toArray();
   }
 
   @Override

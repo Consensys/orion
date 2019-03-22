@@ -53,7 +53,7 @@ class SerializerTest {
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    EncryptedPayload original = new EncryptedPayload(sender, nonce, encryptedKeys, toEncrypt);
+    EncryptedPayload original = new EncryptedPayload(sender, nonce, encryptedKeys, toEncrypt, new byte[0]);
 
     EncryptedPayload processed = Serializer.deserialize(
         HttpContentType.CBOR,

@@ -12,12 +12,16 @@
  */
 package net.consensys.orion.utils;
 
+import static net.consensys.orion.exception.OrionErrorCode.OBJECT_JSON_SERIALIZATION;
+
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.http.server.HttpContentType;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.NotSerializableException;
+import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
@@ -41,6 +45,8 @@ public class Serializer {
   public static byte[] serialize(HttpContentType contentType, Object obj) {
     try {
       switch (contentType) {
+        case ORION:
+          return jsonObjectMapper.writeValueAsString(obj).getBytes(StandardCharsets.UTF_8);
         case JSON:
           return jsonObjectMapper.writeValueAsString(obj).getBytes(StandardCharsets.UTF_8);
         case TEXT:
@@ -58,6 +64,8 @@ public class Serializer {
   public static <T> T deserialize(HttpContentType contentType, Class<T> valueType, byte[] bytes) {
     try {
       switch (contentType) {
+        case ORION:
+          return jsonObjectMapper.readValue(bytes, valueType);
         case JSON:
           return jsonObjectMapper.readValue(bytes, valueType);
         case CBOR:
@@ -84,8 +92,22 @@ public class Serializer {
     return deserialize(contentType, valueType, serialize(contentType, obj));
   }
 
+  public static byte[] toByteArray(Object obj) {
+    byte[] toReturn;
+    try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+      ObjectOutputStream out = new ObjectOutputStream(outputStream);
+      out.writeObject(obj);
+      toReturn = outputStream.toByteArray();
+    } catch (IOException e) {
+      throw new OrionException(OBJECT_JSON_SERIALIZATION, e.getMessage());
+    }
+    return toReturn;
+  }
+
   private static ObjectMapper getMapperOrThrows(HttpContentType contentType) {
     switch (contentType) {
+      case ORION:
+        return jsonObjectMapper;
       case JSON:
         return jsonObjectMapper;
       case CBOR:

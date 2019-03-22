@@ -36,9 +36,15 @@ public class EncryptedPayload implements Serializable {
   private final EncryptedKey[] encryptedKeys;
   private final byte[] cipherText;
   private final Map<Box.PublicKey, Integer> encryptedKeyOwners;
+  private final byte[] privacyGroupId;
 
-  public EncryptedPayload(Box.PublicKey sender, byte[] nonce, EncryptedKey[] encryptedKeys, byte[] cipherText) {
-    this(sender, nonce, encryptedKeys, cipherText, Collections.emptyMap());
+  public EncryptedPayload(
+      Box.PublicKey sender,
+      byte[] nonce,
+      EncryptedKey[] encryptedKeys,
+      byte[] cipherText,
+      byte[] privacyGroupId) {
+    this(sender, nonce, encryptedKeys, cipherText, Collections.emptyMap(), privacyGroupId);
   }
 
   @JsonCreator
@@ -48,12 +54,14 @@ public class EncryptedPayload implements Serializable {
       @JsonProperty("encryptedKeys") EncryptedKey[] encryptedKeys,
       @JsonProperty("cipherText") byte[] cipherText,
       @JsonProperty("encryptedKeyOwners") @JsonDeserialize(
-          keyUsing = PublicKeyMapKeyDeserializer.class) Map<Box.PublicKey, Integer> encryptedKeyOwners) {
+          keyUsing = PublicKeyMapKeyDeserializer.class) Map<Box.PublicKey, Integer> encryptedKeyOwners,
+      @JsonProperty("privacyGroupId") byte[] privacyGroupId) {
     this.sender = sender;
     this.nonce = nonce;
     this.encryptedKeys = encryptedKeys;
     this.cipherText = cipherText;
     this.encryptedKeyOwners = encryptedKeyOwners;
+    this.privacyGroupId = privacyGroupId;
   }
 
   @JsonProperty("sender")
@@ -77,6 +85,11 @@ public class EncryptedPayload implements Serializable {
     return nonce;
   }
 
+  @JsonProperty("privacyGroupId")
+  public byte[] privacyGroupId() {
+    return privacyGroupId;
+  }
+
   public EncryptedPayload stripFor(Box.PublicKey key) {
     final Integer toKeepIdx = encryptedKeyOwners.get(key);
 
@@ -86,7 +99,12 @@ public class EncryptedPayload implements Serializable {
           "can't strip encrypted payload for provided key");
     }
 
-    return new EncryptedPayload(sender, nonce, new EncryptedKey[] {encryptedKeys[toKeepIdx]}, cipherText);
+    return new EncryptedPayload(
+        sender,
+        nonce,
+        new EncryptedKey[] {encryptedKeys[toKeepIdx]},
+        cipherText,
+        privacyGroupId);
   }
 
   @Override

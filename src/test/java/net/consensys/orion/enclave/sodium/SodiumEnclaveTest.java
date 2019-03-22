@@ -23,6 +23,8 @@ import net.consensys.orion.enclave.EncryptedKey;
 import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.exception.OrionErrorCode;
 
+import java.security.Security;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +32,10 @@ class SodiumEnclaveTest {
 
   private final MemoryKeyStore keyStore = new MemoryKeyStore();
   private SodiumEnclave enclave;
+
+  static {
+    Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+  }
 
   @BeforeEach
   void setUp() {
@@ -90,7 +96,7 @@ class SodiumEnclaveTest {
 
     EnclaveException e = assertThrows(EnclaveException.class, () -> {
       final EncryptedPayload payload =
-          new EncryptedPayload(sender, new byte[] {}, new EncryptedKey[] {}, new byte[] {});
+          new EncryptedPayload(sender, new byte[] {}, new EncryptedKey[] {}, new byte[] {}, new byte[0]);
       enclave.decrypt(payload, fake);
     });
     assertEquals("No StoredPrivateKey found in keystore", e.getMessage());
@@ -107,7 +113,8 @@ class SodiumEnclaveTest {
         encryptedPayload.sender(),
         encryptedPayload.nonce(),
         new EncryptedKey[] {},
-        encryptedPayload.cipherText());
+        encryptedPayload.cipherText(),
+        new byte[0]);
 
     assertThrows(EnclaveException.class, () -> decrypt(payload, recipientKey));
   }
@@ -123,7 +130,8 @@ class SodiumEnclaveTest {
         encryptedPayload.sender(),
         new byte[0],
         encryptedPayload.encryptedKeys(),
-        encryptedPayload.cipherText());
+        encryptedPayload.cipherText(),
+        new byte[0]);
 
     IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> decrypt(payload, recipientKey));
     assertEquals("nonce must be 24 bytes, got 0", e.getMessage());
