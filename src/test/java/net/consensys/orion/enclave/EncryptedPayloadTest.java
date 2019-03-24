@@ -39,7 +39,8 @@ class EncryptedPayloadTest {
         "fake nonce".getBytes(UTF_8),
         new EncryptedKey[] {encryptedKey},
         "fake ciphertext".getBytes(UTF_8),
-        encryptedKeysOwners);
+        encryptedKeysOwners,
+        "fake group".getBytes(UTF_8));
     assertEquals(payload, Serializer.roundTrip(HttpContentType.JSON, EncryptedPayload.class, payload));
     assertEquals(payload, Serializer.roundTrip(HttpContentType.CBOR, EncryptedPayload.class, payload));
   }
@@ -51,7 +52,8 @@ class EncryptedPayloadTest {
         Box.KeyPair.random().publicKey(),
         "fake nonce".getBytes(UTF_8),
         new EncryptedKey[] {encryptedKey},
-        "fake ciphertext".getBytes(UTF_8));
+        "fake ciphertext".getBytes(UTF_8),
+        "fake group".getBytes(UTF_8));
     byte[] serialized = Serializer.serialize(HttpContentType.JSON, payload);
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readTree(serialized);

@@ -12,7 +12,6 @@
  */
 package net.consensys.orion.http.handler;
 
-import static net.consensys.cava.io.Base64.decodeBytes;
 import static net.consensys.cava.io.Base64.encodeBytes;
 import static net.consensys.orion.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
@@ -26,11 +25,13 @@ import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.http.handler.receive.ReceiveRequest;
+import net.consensys.orion.http.handler.receive.ReceiveResponse;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.utils.Serializer;
 
 import java.nio.file.Path;
+import java.security.Security;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
@@ -43,6 +44,10 @@ import org.junit.jupiter.api.Test;
 
 class ReceiveHandlerTest extends HandlerTest {
   private MemoryKeyStore memoryKeyStore;
+
+  static {
+    Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+  }
 
   @Override
   protected Enclave buildEnclave(Path tempDir) {
@@ -67,10 +72,33 @@ class ReceiveHandlerTest extends HandlerTest {
 
     assertEquals(200, resp.code());
 
-    final Map<String, String> receiveResponse = Serializer.deserialize(JSON, Map.class, resp.body().bytes());
+    ReceiveResponse receiveResponse = Serializer.deserialize(JSON, ReceiveResponse.class, resp.body().bytes());
 
-    byte[] decodedPayload = decodeBytes(receiveResponse.get("payload"));
-    assertArrayEquals(toEncrypt, decodedPayload);
+    assertArrayEquals(toEncrypt, receiveResponse.getPayload());
+  }
+
+  @Test
+  void validPrivacyGroupId() throws Exception {
+    // generate keys and the privacy group
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    byte[] privacyGroupId = getPrivacyGroupId(senderKey, recipientKey);
+
+    byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    ReceiveRequest receiveRequest =
+        buildReceiveRequestSenderRecipient(payloadStorage, toEncrypt, senderKey, recipientKey);
+    Request request = buildPrivateAPIRequest("/receive", HttpContentType.ORION, receiveRequest);
+
+    // execute request
+    Response resp = httpClient.newCall(request).execute();
+
+    assertEquals(200, resp.code());
+
+    ReceiveResponse receiveResponse = Serializer.deserialize(JSON, ReceiveResponse.class, resp.body().bytes());
+    assertArrayEquals(toEncrypt, receiveResponse.getPayload());
+    assertArrayEquals(privacyGroupId, receiveResponse.getPrivacyGroupId());
   }
 
   @Test
@@ -229,6 +257,16 @@ class ReceiveHandlerTest extends HandlerTest {
     // encrypt a payload
     Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+
+    return buildReceiveRequestSenderRecipient(storage, toEncrypt, senderKey, recipientKey);
+  }
+
+  private ReceiveRequest buildReceiveRequestSenderRecipient(
+      Storage<EncryptedPayload> storage,
+      byte[] toEncrypt,
+      Box.PublicKey senderKey,
+      Box.PublicKey recipientKey) throws Exception {
+    // encrypt a payload
     EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {recipientKey});
 
     // store it
@@ -236,5 +274,10 @@ class ReceiveHandlerTest extends HandlerTest {
 
     // Receive operation, sending a ReceivePayload request
     return new ReceiveRequest(key, encodeBytes(recipientKey.bytesArray()));
+  }
+
+  byte[] getPrivacyGroupId(Box.PublicKey sender, Box.PublicKey recipient) {
+    Box.PublicKey[] tempArray = new Box.PublicKey[] {sender, recipient};
+    return enclave.generatePrivacyGroupId(tempArray);
   }
 }
