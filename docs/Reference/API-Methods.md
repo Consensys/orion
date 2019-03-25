@@ -5,138 +5,164 @@ The Client API is used by Ethereum clients (for example, Pantheon) to interact w
 The port used by the Client API is defined by the `clientport ` property in the [configuration file](../Configuring-Orion/Configuration-File.md). 
 The default port is `8888`.
 
-## Summary
+## send
 
-| Method  | Description |
-| ------------- | ------------- |
-| [/upcheck](#upcheck)  | Check if Orion is up and running. |
-| [/send](#send) | Send a Base64 encoded payload to Orion. Returns a payload key. |
-| [/receive](#receive)  | Receive a Base64 encoded payload from Orion using the payload key.  |
-| [/sendRaw](#send-raw ) | Send an arbitrary payload to Orion. Returns a payload key. |
-| [/receiveRaw](#receive-raw) | Receive a payload from Orion using the payload key. |
+Sends a payload to Orion.
 
-## Upcheck
-This method checks if Orion is up and running.
-
-**HTTP Verb:** GET
-
-**Headers:** none
-
-**Request body:** none
-
-**Response body (String):**
-* "I'm up" string
-
-**Example:**
-```
-$ curl -X GET http://127.0.0.1:8888/upcheck
-
-$ I'm up
-```
-
-## Send
-This method is used by a client to send a payload to Orion.
-
-**HTTP Verb:** POST
+**HTTP Verb**
+POST 
 
 **Headers:**
-* Content-Type: application/json
+Content-Type: application/json
 
-**Request body (JSON):**
-* payload (String): the Base64 encoded payload
-* from (String): the public key of the sender
-* to (Array of Strings): the list of public keys of the receivers of this payload
+**Request Body**
 
-**Response body (JSON):**
-* key (String): the key that should be used to receive the payload
+`payload` : *string* - Base64 encoded payload
 
-**Example:**
-```
-$ curl -X POST http://127.0.0.1:8888/send \
-  -H 'Content-Type: application/json' \
-  -d '{
-	"payload": "SGVsbG8sIFdvcmxkIQ==",
-	"from": "4xanJzyaDPcBVMUSwl/tLp+DbXzd3jF9MKk1yJuyewE=",
-	"to": ["YE5cJRJYTRO4XFo7yuAi/0K9DwjySGjsHB2YrFPnJXo="]
-      }'
+`from` : *string*  - Public key of sender
 
-$ {"key":"wS+RMprLKIuCaHzOBfPeHmkJWUdOJ7Ji/9U3qj2jbXQ="}
-```
+`to` : *array of strings* - List of public keys to receive this payload
 
-## Receive
-This method is used by a client to receive a payload from Orion using the payload key.
 
-**HTTP Verb:** POST
+**Returns**
 
-**Headers:**
-* Content-Type: application/json
+`key` : *string* - Key used to receive the payload
 
-**Request body (JSON):**
-* key (String): the key of the payload
-* to (String): the public key of the receiver
+!!! example
+    ```bash tab="curl HTTP request"
+    curl -X POST http://127.0.0.1:8888/send \
+      -H 'Content-Type: application/json' \
+      -d '{
+    	"payload": "SGVsbG8sIFdvcmxkIQ==",
+    	"from": "4xanJzyaDPcBVMUSwl/tLp+DbXzd3jF9MKk1yJuyewE=",
+    	"to": ["YE5cJRJYTRO4XFo7yuAi/0K9DwjySGjsHB2YrFPnJXo="]
+    }'
+    ```
+   
+    ```json tab="Result"
+    {"key":"wS+RMprLKIuCaHzOBfPeHmkJWUdOJ7Ji/9U3qj2jbXQ="}
+    ```
 
-**Response body (JSON):**
-* payload (String): the Base64 encoded payload
+## receive
 
-**Example:**
-```
-$ curl -X POST http://127.0.0.1:8888/receive \
-  -H 'Content-Type: application/json' \
-  -d '{
-	"key": "wS+RMprLKIuCaHzOBfPeHmkJWUdOJ7Ji/9U3qj2jbXQ=",
-	"to": "YE5cJRJYTRO4XFo7yuAi/0K9DwjySGjsHB2YrFPnJXo="
-      }'
+Receives a payload from Orion using the payload key. The payload key is returned by the [send](#send) method.
 
-$ {"payload":"SGVsbG8sIFdvcmxkIQ=="}
-```
-
-## Send Raw
-This method is used by a client to send a raw payload to Orion.
-
-**HTTP Verb:** POST
+**HTTP Verb**
+POST 
 
 **Headers:**
-* Content-Type: application/octet-stream
-* c11n-from: The sender's public key
-* c11n-to: A list of receiver's public keys (separated by commas)
+Content-Type: application/json
 
-**Request body:**
-* A payload
+**Request Body**
 
-**Response body (String):**
-* A string representing the payload key
+`key` : *string* - Key used to receive the payload
 
-**Example:**
-```
-$ curl -X POST http://127.0.0.1:8888/sendraw \
-  -H 'Content-Type: application/octet-stream' \
-  -H 'c11n-from: 4xanJzyaDPcBVMUSwl/tLp+DbXzd3jF9MKk1yJuyewE=' \
-  -H 'c11n-to: YE5cJRJYTRO4XFo7yuAi/0K9DwjySGjsHB2YrFPnJXo=' \
-  -d 'Hello, World!'
+`to` : *string* - Public key of the receiver
 
-$ +3gnwO0oHXe4kXsr3kegd9jTTqsq3Y6Hm3w26WHR/RM=
-```
+**Returns**
 
-## Receive Raw
-This method is used by a client to receive a payload from Orion using the payload key.
+`payload` : *string* - Base64 encoded payload
 
-**HTTP Verb:** POST
+!!! example
+    ```bash tab="curl HTTP request"
+    curl -X POST http://127.0.0.1:8888/receive \
+      -H 'Content-Type: application/json' \
+      -d '{
+    	"key": "wS+RMprLKIuCaHzOBfPeHmkJWUdOJ7Ji/9U3qj2jbXQ=",
+    	"to": "YE5cJRJYTRO4XFo7yuAi/0K9DwjySGjsHB2YrFPnJXo="
+    }'
+    ```
+   
+    ```json tab="Result"
+     {"payload":"SGVsbG8sIFdvcmxkIQ=="}
+    ```
+
+## sendraw
+
+Sends a raw payload to Orion.
+
+**HTTP Verb**
+POST 
 
 **Headers:**
-* Content-Type: application/octet-stream
-* c11n-key: the receiver's public key
+Content-Type: application/octet-stream
+c11n-from: Public key of the sender
+c11n-to: List of public keys to receive this payload
 
-**Request body:** none
+**Request Body**
 
-**Response body:**
-The payload
+`payload` : *string* - Payload
 
-**Example:**
-```
-$ curl -X POST \
-  http://127.0.0.1:8888/receiveraw \
-  -H 'Content-Type: application/octet-stream' \
-  -H 'c11n-key: +3gnwO0oHXe4kXsr3kegd9jTTqsq3Y6Hm3w26WHR/RM='
+**Returns**
 
-$ Hello, World!
-```
+Key used to receive the payload
+
+!!! example
+    ```bash tab="curl HTTP request"
+    curl -X POST http://127.0.0.1:8888/sendraw \
+      -H 'Content-Type: application/octet-stream' \
+      -H 'c11n-from: 4xanJzyaDPcBVMUSwl/tLp+DbXzd3jF9MKk1yJuyewE=' \
+      -H 'c11n-to: YE5cJRJYTRO4XFo7yuAi/0K9DwjySGjsHB2YrFPnJXo=' \
+      -d 'Hello, World!'
+    ```
+   
+    ```json tab="Result"
+    +3gnwO0oHXe4kXsr3kegd9jTTqsq3Y6Hm3w26WHR/RM=
+    ```
+
+## receiveraw
+
+Receives a raw payload from Orion using the payload key. The payload key is returned by the [sendraw](#sendraw) method
+
+**HTTP Verb**
+POST 
+
+**Headers:**
+Content-Type: application/octet-stream
+c11n-key: Key used to receive the payload
+
+**Request Body**
+
+None
+
+**Returns**
+
+Payload
+
+!!! example
+    ```bash tab="curl HTTP request"
+    curl -X POST \
+      http://127.0.0.1:8888/receiveraw \
+      -H 'Content-Type: application/octet-stream' \
+      -H 'c11n-key: +3gnwO0oHXe4kXsr3kegd9jTTqsq3Y6Hm3w26WHR/RM='
+    ```
+   
+    ```json tab="Result"
+    Hello, World!
+    ```
+
+## upcheck
+
+Confirms if Orion is running.
+
+**HTTP Verb**
+GET 
+
+**Headers:**
+None
+
+**Request Body**
+None
+
+**Returns**
+
+*string* : I'm up
+
+!!! example
+    ```bash tab="curl HTTP request"
+    curl -X GET http://127.0.0.1:8888/upcheck
+    ```
+   
+    ```json tab="Result"
+    I'm up
+    ```
