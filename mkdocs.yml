@@ -45,10 +45,11 @@ nav:
     - Dependencies: Installation/Dependencies.md
     - Install Binary Distribution: Installation/Install-Binaries.md
     - Build from Source: Installation/Build-From-Source.md
-  - Getting Started:
-    - Quickstart: Getting-Started/Quickstart.md
+  - Using Orion:
+    - Getting Started: Getting-Started/Quickstart.md
   - Configuring Orion:
     - Configuration File: Configuring-Orion/Configuration-File.md
+    - Disaster Recovery: Configuring-Orion/Disaster-Recovery.md
   - Reference:
     - Orion Command Line: Reference/Orion-CLI-Syntax.md
     - Client API Methods: Reference/API-Methods.md
