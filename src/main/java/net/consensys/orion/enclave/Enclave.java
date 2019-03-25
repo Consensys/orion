@@ -43,4 +43,6 @@ public interface Enclave {
   Box.PublicKey[] nodeKeys();
 
   Box.PublicKey readKey(String b64);
+
+  byte[] generatePrivacyGroupId(Box.PublicKey[] recipientsAndSender);
 }
