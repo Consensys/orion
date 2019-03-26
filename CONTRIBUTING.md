@@ -75,6 +75,9 @@ the following information:
 * Specify the **name and version of any relevant packages** - eg Geth.
 
 ### Pull Requests
+
+Complete the CLA, as described in [CLA.md].
+
 There are a number of automated checks:
 * unit tests
 * integration tests
@@ -125,3 +128,4 @@ in this guide.
 [private@pegasys.tech]: mailto:private@pegasys.tech
 [Gitter]: https://gitter.im/PegaSysEng/orion
 [Orion documentation]: https://docs.orion.pegasys.tech/
+[CLA.md]: /CLA.md

@@ -7,16 +7,16 @@ description: Community organisation and members responsibilities
 This doc outlines the various responsibilities of contributor roles in
 this project.
 
-| Role | Responsibilities | Defined by |
-| -----| ---------------- | ---------- |
-| Everyone | none | anybody with a belly button
-| Member | everyone who contributes - code or otherwise | Orion GitHub org member
-| Approver | approve accepting contributions | write permissions on master
-| Project Manager | management of the project | PegaSys
-| Project Sponsor | contribute developer resources | PegaSys
-| Open Source Circle | OSS support | PegaSys
-| Project Evangelist | promote the project | PegaSys
-| Benevolent Dictator | decision tie-breaker | PegaSys
+| Role                | Responsibilities                             | Defined by                  |
+|---------------------|----------------------------------------------|-----------------------------|
+| Everyone            | none                                         | anybody with a belly button |
+| Member              | everyone who contributes - code or otherwise | Orion GitHub org member     |
+| Approver            | approve accepting contributions              | write permissions on master |
+| Project Manager     | management of the project                    | PegaSys                     |
+| Project Sponsor     | contribute developer resources               | PegaSys                     |
+| Open Source Circle  | OSS support                                  | PegaSys                     |
+| Project Evangelist  | promote the project                          | PegaSys                     |
+| Benevolent Dictator | decision tie-breaker                         | PegaSys                     |
 
 ## Everyone
 Any person from the public is able to access the code.  The standard permissions grant the ability to view the code, view open bugs, access the wiki, download binaries, view CI results and comment on pull requests.
