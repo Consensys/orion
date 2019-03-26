@@ -3,6 +3,15 @@ description: Install Orion from binary distribution
 
 # Install Binary Distribution
 
+## Prerequisites
+
+* [Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+
+!!!important
+    Orion requires Java 8+ to compile; earlier versions are not supported.
+    
+## Install Binaries
+
 Download the Orion [packaged binaries](https://bintray.com/consensys/binaries/orion/_latestVersion#files).
 
 Unpack the downloaded files and change into the `orion-<release>` directory. 

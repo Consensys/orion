@@ -21,7 +21,7 @@ description: Building Orion from source code
 Clone the **PegaSysEng/orion** repository:
 
 ```bash
-$ git clone --recursive https://github.com/PegaSysEng/orion.git
+git clone https://github.com/PegaSysEng/orion.git
 ```
 
 ### Build Orion
@@ -31,37 +31,33 @@ After cloning, go to the `orion` directory.
 Build Orion with the Gradle wrapper `gradlew`, omitting tests as follows:
 
 ```bash
-$ ./gradlew build -x test
+./gradlew build -x test
 ```
 
 Go to the distribution directory: 
 ```bash
-$ cd build/distributions/
+cd build/distributions/
 ```
 
 Expand the distribution archive: 
 ```bash
-$ tar -xzf orion-<version>.tar.gz
+tar -xzf orion-<version>.tar.gz
 ```
 
 Move to the expanded folder and display the Orion help to confirm installation. 
 ````bash
-$ cd orion-<version>/
-$ bin/orion --help
+cd orion-<version>/
+bin/orion --help
 ````
 
 ## Installation on Windows
-
-!!!note
-    Orion is currently supported only on 64-bit versions of Windows, and requires a 64-bit version of JDK/JRE. 
-    We recommend that you also remove any 32-bit JDK/JRE installations.
 
 ### Install Orion
 
 Clone the `PegaSysEng/orion` repository:
 
 ```bat
-git clone --recursive https://github.com/PegaSysEng/orion.git
+git clone https://github.com/PegaSysEng/orion.git
 ```
 
 ### Build Orion
