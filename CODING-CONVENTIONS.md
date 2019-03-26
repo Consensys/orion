@@ -180,7 +180,7 @@ Method parameters must be final.  Class level and local fields should be final w
 
 # 5 Logging
 
-Logging is important for understanding what Orion is doing at any given time (for example, progress while synchronizing) and investigating defects.  During development, add logging to aid in these cases. 
+Logging is important for understanding what Orion is doing at any given time and investigating defects.  During development, add logging to aid in these cases. 
 
 ## 5.1 Log Messages
 
