@@ -8,7 +8,7 @@ Where `foo.conf` is a file in the current directory.
 
 ### Configuration file
 
-The only required properties are `nodeurl` and `nodeport`. Although, it is recommended to set at least the
+All required properties have default values. However, it is recommended to set at least the
 following properties:
 
 | property name | description |
