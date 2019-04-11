@@ -1,4 +1,4 @@
-# Test file with complete config settings except the mandatory URL, Port and ethport
+# Test file with complete config settings except the mandatory node URL and Port, and client URL and port
 #nodeurl = "http://127.0.0.1:9001/"
 #nodeport = 9001
 #clienturl = "http://127.0.0.1:9002/"
