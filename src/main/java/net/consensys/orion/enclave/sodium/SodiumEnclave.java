@@ -79,6 +79,7 @@ public class SodiumEnclave implements Enclave {
   public byte[] generatePrivacyGroupId(Box.PublicKey[] recipientsAndSender) {
     final List<byte[]> recipientsAndSenderList = Arrays
         .stream(recipientsAndSender)
+        .distinct()
         .sorted(Comparator.comparing(Box.PublicKey::hashCode))
         .map(Box.PublicKey::bytesArray)
         .collect(Collectors.toList());
