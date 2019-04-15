@@ -41,7 +41,7 @@ you are agreeing to uphold this code. Please report unacceptable behavior. Pleas
 ### Reporting Bugs
 #### Before Submitting A Bug 
 * Ensure the bug is not already reported by searching on GitHub under 
-[Issues](https://github.com/consensys/orion/issues).
+[Issues](https://github.com/pegasyseng/orion/issues).
 #### How Do I Submit a (Good) Bug?
 * If you are unable to find an open issue addressing the problem, open a new one. Be sure to include a 
 **title and clear description**, as much relevant information as possible, and a **code sample** or 
@@ -60,7 +60,7 @@ happens and under which conditions it normally happens.
 
 ### Suggesting Enhancements
 #### Before Submitting An Enhancement Suggestion
-* [Search](https://github.com/consensys/orion/issues) to see if the enhancement has already been 
+* [Search](https://github.com/pegasyseng/orion/issues) to see if the enhancement has already been 
 suggested. If it has, add a comment to the existing issue instead of opening a new one.
 
 #### How Do I Submit A (Good) Enhancement Suggestion?
