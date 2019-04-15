@@ -27,7 +27,7 @@ import com.google.common.base.Strings;
 
 public class SendRequest implements Serializable {
   private final String from; // b64 encoded
-  private final String[] to; // b64 encoded
+  private String[] to; // b64 encoded
   private final byte[] rawPayload;
 
   public Optional<String> from() {
@@ -113,5 +113,9 @@ public class SendRequest implements Serializable {
 
   public byte[] rawPayload() {
     return rawPayload;
+  }
+
+  public void setTo(String[] to) {
+    this.to = to;
   }
 }
