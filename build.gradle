@@ -233,9 +233,9 @@ dependencies {
   compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.7'
 
   // logging
-  compile 'org.apache.logging.log4j:log4j-api:2.11.0'
-  compile 'org.apache.logging.log4j:log4j-core:2.11.0'
-  compile 'org.apache.logging.log4j:log4j-1.2-api:2.11.0'
+  compile 'org.apache.logging.log4j:log4j-api:2.11.2'
+  compile 'org.apache.logging.log4j:log4j-core:2.11.2'
+  compile 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.2'
 
   // testing
   testCompile 'com.h2database:h2:1.4.197'
@@ -336,8 +336,8 @@ publishing {
           resolveStrategy = Closure.DELEGATE_FIRST
           name 'Orion'
           description 'A java implementation of a Enterprise Ethereum Private Transaction Manager.'
-          url 'https://github.com/ConsenSys/orion'
-          scm { url 'https://github.com/ConsenSys/orion' }
+          url 'https://github.com/pegasyseng/orion'
+          scm { url 'https://github.com/pegasyseng/orion' }
           licenses {
             license {
               name 'The Apache Software License, Version 2.0'
@@ -365,7 +365,7 @@ bintray {
     name = "orion"
     userOrg = "consensys"
     licenses = ["Apache-2.0"]
-    vcsUrl = "https://github.com/ConsenSys/orion"
+    vcsUrl = "https://github.com/pegasyseng/orion"
     version { name = project.version }
   }
 }

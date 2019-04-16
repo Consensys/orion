@@ -40,7 +40,7 @@ privatekeys = ["foo.key"]
 ```
 
 You can check all the available properties in the  
-[`sample.conf`](https://github.com/ConsenSys/orion/blob/master/src/main/resources/sample.conf) file.
+[`sample.conf`](https://github.com/pegasyseng/orion/blob/master/src/main/resources/sample.conf) file.
 
 ### Storage
 
