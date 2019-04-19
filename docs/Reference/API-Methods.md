@@ -77,6 +77,28 @@ Content-Type: application/json
      {"payload":"SGVsbG8sIFdvcmxkIQ=="}
     ```
 
+### Privacy Group ID 
+
+To return the Privacy Group ID with the payload, use the `receive` method with the header `Content-Type: application/vnd.orion.v1+json`. 
+
+!!! example
+    ```bash tab="curl HTTP request"
+    curl -X POST \
+      http://127.0.0.1:8888/receive \
+      -H 'Content-Type: application/vnd.orion.v1+json' \
+      -d '{
+    	"key": "X0iCPeAy8I/+IUeq13X1ozdVH5AHL6ISwmLXk6nPkPo=",
+    	"to": "negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk="
+    }'
+    ```
+
+    ```json tab="Result"
+     {
+         "payload": "SGVsbG8sIFdvcmxkIQ==",
+         "privacyGroupId": "68/Cq0mVjB8FbXDLE1tbDRAvD/srluIok137uFOaClM="
+     }
+    ```
+
 ## sendraw
 
 Sends a raw payload to Orion.
