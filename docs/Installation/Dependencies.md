@@ -33,6 +33,7 @@ sudo make install
 #### Windows
 
 Perform the following steps:
+
 1. Download the [latest stable **msvc** build](https://download.libsodium.org/libsodium/releases/) of libsodium.
 1. Extract the libsodium archive
 1. Navigate to the current OS architecture (win32 or x64) directory
