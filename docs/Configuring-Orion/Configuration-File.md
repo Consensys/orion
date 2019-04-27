@@ -23,7 +23,6 @@ Specify the configuration file when [starting Orion](../Reference/Orion-CLI-Synt
 | `alwayssendto`           | Optional          | List of files containing public keys to include as recipients for every transaction| `[]` 
 | `passwords`              | Optional          | File containing [passwords](#passwords) to unlock `privatekeys`                      | `Not set`
 | `storage`                | Optional          | [Storage](#storage) for payloads and related information                         | `"leveldb"` 
-| `ipwhitelist`            | Optional          | [IP whitelist](#ipwhitelist) for Orion node API                                           | `[]`
 | `tls`                    | Optional          | [TLS status options](#tls)                                                       |  `"strict"`
 | `tlsservercert`          | Optional          | [Server TLS certificate](#tlsservercert)                                         | `"tls-server-cert.pem"`
 | `tlsserverchain`         | Optional          | [Files that make up the CA trust chain](#tlsserverchain)                         | `[]`
@@ -50,19 +49,6 @@ Orion node on the network. That is, there must be an Orion node with the specifi
 ### passwords
 
 File contains one password per line. Include an empty line for keys that are not locked. 
-
-### storage
-
-Storage for payloads and related information. Options are:
-
-* `leveldb:path` - LevelDB
-* `mapdb:path` - MapDB
-* `memory` - Contents cleared when Orion exits.
-
-### ipwhitelist
-
-If unspecified or empty, connections from all sources are allowed. To allow connections from localhost 
-when a whitelist is defined and running multiple Orion nodes on the same machine, add `127.0.0.1` and `::1` to this list.
 
 ### tls 
 
