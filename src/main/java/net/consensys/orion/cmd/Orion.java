@@ -25,7 +25,6 @@ import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.cava.kv.LevelDBKeyValueStore;
 import net.consensys.cava.kv.MapDBKeyValueStore;
 import net.consensys.cava.kv.SQLKeyValueStore;
-import net.consensys.cava.net.tls.TLS;
 import net.consensys.cava.net.tls.VertxTrustOptions;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.config.ConfigException;
@@ -45,6 +44,7 @@ import net.consensys.orion.storage.EncryptedPayloadStorage;
 import net.consensys.orion.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.storage.StorageKeyBuilder;
+import net.consensys.orion.utils.TLS;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -298,7 +298,7 @@ public class Orion {
       Path tlsServerKey = config.tlsServerKey();
 
       try {
-        TLS.createSelfSignedCertificateIfMissing(tlsServerKey, tlsServerCert);
+        TLS.createSelfSignedCertificateIfMissing(tlsServerKey, tlsServerCert, config);
       } catch (IOException e) {
         throw new OrionStartException(
             "An error occurred while writing the server TLS certificate files: " + e.getMessage(),
@@ -315,7 +315,7 @@ public class Orion {
       Path tlsClientKey = config.tlsClientKey();
 
       try {
-        TLS.createSelfSignedCertificateIfMissing(tlsClientKey, tlsClientCert);
+        TLS.createSelfSignedCertificateIfMissing(tlsClientKey, tlsClientCert, config);
       } catch (IOException e) {
         throw new OrionStartException(
             "An error occurred while writing the client TLS certificate files: " + e.getMessage(),
