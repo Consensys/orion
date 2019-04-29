@@ -34,6 +34,7 @@ import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.enclave.sodium.FileKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.http.handler.partyinfo.PartyInfoHandler;
+import net.consensys.orion.http.handler.privacy.PrivacyGroupHandler;
 import net.consensys.orion.http.handler.push.PushHandler;
 import net.consensys.orion.http.handler.receive.ReceiveHandler;
 import net.consensys.orion.http.handler.send.SendHandler;
@@ -165,6 +166,8 @@ public class Orion {
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .handler(new ReceiveHandler(enclave, storage, APPLICATION_OCTET_STREAM));
+    clientRouter.post("/privacyGroupId").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
+        new PrivacyGroupHandler(enclave));
   }
 
   public Orion() {
