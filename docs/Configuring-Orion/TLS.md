@@ -9,36 +9,9 @@ Enable TLS by setting the `tls` property to `strict` in the [Orion configuration
 
 ## Getting Started with TLS
 
-To generate certificates and populate the [`tlsknownclients`](#tlsknownclients) and [`tlsknownservers`](#tlsknownservers)
-files: 
-
-1. Start the first Orion node with the following TLS properties specified in the [configuration file](Configuration-File.md): 
-   ```bash
-   tls = "strict"
-   tlsservertrust="insecure-no-validation"
-   tlsclienttrust="insecure-no-validation"    
-   ```
-   
-    The following files are generated: 
-   
-    * [`tlsknownclients`](#tlsknownclients) and [`tlsknownservers`](#tlsknownservers)
-    * `tls-client-cert.pem` and `tls-client-key.pem`
-    * `tls-server-cert.pem` and `tls-server-key.pem`
-   
-2. Copy the generated files to the other Orion nodes. 
-
-3. In the configuration files for the other Orion nodes, include the same TLS properties as the first node. 
-
-4. Start all of the nodes. The `tls-known-servers` file for each node is updated to include the other nodes. 
-
-5. Stop all of the nodes and update the TLS properties in the configuration file: 
-   ```bash
-   tls = "strict"
-   tlsservertrust="whitelist"
-   tlsclienttrust="whitelist"    
-   ```
-   
-    When the nodes are restarted, only the nodes that have been started in the previous step can connect.  
+To have Orion generate certificates, start the nodes with the TLS trust mode set to `whitelist` for `tlsclienttrust` 
+and `tlsservertrust` until the `tlsknownclients` and `tlsknownservers` files are populated. When the files are populated, 
+restart the nodes with the TLS trust mode set to `whitelist` for `tlsclienttrust` and `tlsservertrust`. 
 
 ## Configuring TLS 
 
