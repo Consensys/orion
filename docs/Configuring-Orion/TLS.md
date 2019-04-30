@@ -9,7 +9,7 @@ Enable TLS by setting the `tls` property to `strict` in the [Orion configuration
 
 ## Getting Started with TLS
 
-To have Orion generate certificates, start the nodes with the TLS trust mode set to `whitelist` for `tlsclienttrust` 
+To have Orion generate certificates, start the nodes with the TLS trust mode set to `insecure-no-validation` for `tlsclienttrust` 
 and `tlsservertrust` until the `tlsknownclients` and `tlsknownservers` files are populated. When the files are populated, 
 restart the nodes with the TLS trust mode set to `whitelist` for `tlsclienttrust` and `tlsservertrust`. 
 
