@@ -6,9 +6,11 @@ RUN apt-get -qq update && \
 EXPOSE 8080
 EXPOSE 8888
 
-ADD build/distributions/orion*.tar.gz /tmp
-RUN mv /tmp/orion* /orion
+ADD . /orion
+WORKDIR /orion
+RUN ./gradlew build -x test
+WORKDIR /orion/build/distributions
+RUN tar -xzf orion-*-SNAPSHOT.tar.gz
+RUN ln -s /orion/build/distributions/orion-*-SNAPSHOT/bin/orion /usr/local/bin/orion
 
-VOLUME /data
-
-CMD /orion/bin/orion /data/orion.conf
+CMD orion
