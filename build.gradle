@@ -210,8 +210,8 @@ dependencies {
   compile 'net.consensys.cava:cava:0.5.0'
 
   // vertx
-  compile 'io.vertx:vertx-core:3.6.2'
-  compile 'io.vertx:vertx-web:3.6.2'
+  compile 'io.vertx:vertx-core:3.7.0'
+  compile 'io.vertx:vertx-web:3.7.0'
 
   // crypto
   compile 'org.bouncycastle:bcprov-jdk15on:1.60'
@@ -228,9 +228,9 @@ dependencies {
 
   // serialization
   compile 'com.moandjiezana.toml:toml4j:0.7.2'
-  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
-  compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.7'
-  compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.7'
+  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+  compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.8'
+  compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.8'
 
   // logging
   compile 'org.apache.logging.log4j:log4j-api:2.11.2'
