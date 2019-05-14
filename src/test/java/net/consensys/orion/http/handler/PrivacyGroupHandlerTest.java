@@ -24,6 +24,7 @@ import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
 import net.consensys.orion.http.handler.privacy.PrivacyGroups;
 import net.consensys.orion.utils.Serializer;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 
@@ -48,6 +49,60 @@ public class PrivacyGroupHandlerTest extends HandlerTest {
     Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
 
     String[] toEncrypt = new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
+    Box.PublicKey[] addresses = Arrays.stream(toEncrypt).map(enclave::readKey).toArray(Box.PublicKey[]::new);
+    PrivacyGroupRequest privacyGroupRequestExpected = buildPrivacyGroupRequest(toEncrypt);
+    Request request = buildPrivateAPIRequest("/privacyGroupId", JSON, privacyGroupRequestExpected);
+
+    // execute request
+    Response resp = httpClient.newCall(request).execute();
+
+    assertEquals(200, resp.code());
+
+
+    PrivacyGroups[] privacyGroups = Serializer.deserialize(JSON, PrivacyGroups[].class, resp.body().bytes());
+
+    assertEquals(privacyGroups[0].getPrivacyGroupId(), encodeBytes(enclave.generatePrivacyGroupId(addresses)));
+  }
+
+  @Test
+  void oddNumberOfRecipientsPrivacyGroupId() throws IOException {
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    Box.PublicKey recipientKey1 = memoryKeyStore.generateKeyPair();
+    Box.PublicKey recipientKey2 = memoryKeyStore.generateKeyPair();
+    Box.PublicKey recipientKey3 = memoryKeyStore.generateKeyPair();
+
+    String[] toEncrypt = new String[] {
+        encodeBytes(senderKey.bytesArray()),
+        encodeBytes(recipientKey1.bytesArray()),
+        encodeBytes(recipientKey2.bytesArray()),
+        encodeBytes(recipientKey3.bytesArray())};
+
+    Box.PublicKey[] addresses = Arrays.stream(toEncrypt).map(enclave::readKey).toArray(Box.PublicKey[]::new);
+    PrivacyGroupRequest privacyGroupRequestExpected = buildPrivacyGroupRequest(toEncrypt);
+    Request request = buildPrivateAPIRequest("/privacyGroupId", JSON, privacyGroupRequestExpected);
+
+    // execute request
+    Response resp = httpClient.newCall(request).execute();
+
+    assertEquals(200, resp.code());
+
+
+    PrivacyGroups[] privacyGroups = Serializer.deserialize(JSON, PrivacyGroups[].class, resp.body().bytes());
+
+    assertEquals(privacyGroups[0].getPrivacyGroupId(), encodeBytes(enclave.generatePrivacyGroupId(addresses)));
+  }
+
+  @Test
+  void RepeatedRecipientsPrivacyGroupId() throws IOException {
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    Box.PublicKey recipientKey1 = memoryKeyStore.generateKeyPair();
+
+    String[] toEncrypt = new String[] {
+        encodeBytes(senderKey.bytesArray()),
+        encodeBytes(recipientKey1.bytesArray()),
+        encodeBytes(recipientKey1.bytesArray()),
+        encodeBytes(senderKey.bytesArray())};
+
     Box.PublicKey[] addresses = Arrays.stream(toEncrypt).map(enclave::readKey).toArray(Box.PublicKey[]::new);
     PrivacyGroupRequest privacyGroupRequestExpected = buildPrivacyGroupRequest(toEncrypt);
     Request request = buildPrivateAPIRequest("/privacyGroupId", JSON, privacyGroupRequestExpected);
