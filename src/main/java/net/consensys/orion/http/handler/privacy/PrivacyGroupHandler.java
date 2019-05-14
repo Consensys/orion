@@ -12,14 +12,16 @@
  */
 package net.consensys.orion.http.handler.privacy;
 
+import static net.consensys.cava.io.Base64.encodeBytes;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.utils.Serializer;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -47,8 +49,11 @@ public class PrivacyGroupHandler implements Handler<RoutingContext> {
 
     byte[] privacyGroupId = enclave.generatePrivacyGroupId(addresses);
 
-    Buffer toReturn =
-        Buffer.buffer(Serializer.serialize(JSON, Collections.singletonMap("privacyGroupId", privacyGroupId)));
+    List<PrivacyGroups> groups = new ArrayList<>();
+
+    groups.add(new PrivacyGroups(encodeBytes(privacyGroupId), true));
+
+    Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, groups));
     routingContext.response().end(toReturn);
   }
 }

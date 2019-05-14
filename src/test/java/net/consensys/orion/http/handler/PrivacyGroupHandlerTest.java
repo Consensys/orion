@@ -21,7 +21,7 @@ import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
-import net.consensys.orion.http.handler.privacy.PrivacyGroupResponse;
+import net.consensys.orion.http.handler.privacy.PrivacyGroups;
 import net.consensys.orion.utils.Serializer;
 
 import java.nio.file.Path;
@@ -57,10 +57,10 @@ public class PrivacyGroupHandlerTest extends HandlerTest {
 
     assertEquals(200, resp.code());
 
-    PrivacyGroupResponse privacyGroupResponse =
-        Serializer.deserialize(JSON, PrivacyGroupResponse.class, resp.body().bytes());
 
-    assertEquals(privacyGroupResponse.privacyGroupId(), encodeBytes(enclave.generatePrivacyGroupId(addresses)));
+    PrivacyGroups[] privacyGroups = Serializer.deserialize(JSON, PrivacyGroups[].class, resp.body().bytes());
+
+    assertEquals(privacyGroups[0].getPrivacyGroupId(), encodeBytes(enclave.generatePrivacyGroupId(addresses)));
   }
 
   PrivacyGroupRequest buildPrivacyGroupRequest(String[] addresses) {
