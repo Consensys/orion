@@ -7,6 +7,13 @@
 
 Orion is a Apache 2.0 licensed, private transaction manager.
 
+## Issues 
+
+Orion issues are tracked in [Jira](https://pegasys1.atlassian.net/secure/Dashboard.jspa?selectPageId=10000) not GitHub. 
+See our [contribution guidelines](CONTRIBUTING.md) for more detail on searching and creating issues. 
+
+If you've commented on existing issue and have been waiting for a reply, feel free to ping us on [Gitter].  
+
 ## Orion Users 
 
 ### Install and Run Orion 
