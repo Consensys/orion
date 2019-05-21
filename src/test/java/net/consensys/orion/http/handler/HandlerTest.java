@@ -29,6 +29,7 @@ import net.consensys.orion.helpers.StubEnclave;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.storage.EncryptedPayloadStorage;
+import net.consensys.orion.storage.PrivacyGroupStorage;
 import net.consensys.orion.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.storage.StorageKeyBuilder;
@@ -73,6 +74,7 @@ abstract class HandlerTest {
 
   private KeyValueStore storage;
   protected Storage<EncryptedPayload> payloadStorage;
+  protected Storage<String[]> privacyGroupStorage;
 
   @BeforeEach
   void setUp(@TempDirectory Path tempDir) throws Exception {
@@ -95,9 +97,18 @@ abstract class HandlerTest {
     vertx = Vertx.vertx();
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
     payloadStorage = new EncryptedPayloadStorage(storage, keyBuilder);
+    privacyGroupStorage = new PrivacyGroupStorage(storage, enclave);
     Router publicRouter = Router.router(vertx);
     Router privateRouter = Router.router(vertx);
-    Orion.configureRoutes(vertx, networkNodes, enclave, payloadStorage, publicRouter, privateRouter, config);
+    Orion.configureRoutes(
+        vertx,
+        networkNodes,
+        enclave,
+        payloadStorage,
+        privacyGroupStorage,
+        publicRouter,
+        privateRouter,
+        config);
 
     setupNodeServer(publicRouter);
     setupClientServer(privateRouter);

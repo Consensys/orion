@@ -42,6 +42,7 @@ import net.consensys.orion.http.server.vertx.HttpErrorHandler;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.network.NetworkDiscovery;
 import net.consensys.orion.storage.EncryptedPayloadStorage;
+import net.consensys.orion.storage.PrivacyGroupStorage;
 import net.consensys.orion.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.storage.StorageKeyBuilder;
@@ -117,6 +118,7 @@ public class Orion {
       ConcurrentNetworkNodes networkNodes,
       Enclave enclave,
       Storage<EncryptedPayload> storage,
+      Storage<String[]> privacyGroupStorage,
       Router nodeRouter,
       Router clientRouter,
       Config config) {
@@ -150,12 +152,20 @@ public class Orion {
     clientRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
     clientRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
-        new SendHandler(vertx, enclave, storage, networkNodes, JSON, config));
+        new SendHandler(vertx, enclave, storage, privacyGroupStorage, networkNodes, JSON, config));
     clientRouter
         .post("/sendraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
-        .handler(new SendHandler(vertx, enclave, storage, networkNodes, APPLICATION_OCTET_STREAM, config));
+        .handler(
+            new SendHandler(
+                vertx,
+                enclave,
+                storage,
+                privacyGroupStorage,
+                networkNodes,
+                APPLICATION_OCTET_STREAM,
+                config));
 
     clientRouter.post("/receive").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
         new ReceiveHandler(enclave, storage, JSON));
@@ -167,7 +177,7 @@ public class Orion {
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .handler(new ReceiveHandler(enclave, storage, APPLICATION_OCTET_STREAM));
     clientRouter.post("/privacyGroupId").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
-        new PrivacyGroupHandler(enclave));
+        new PrivacyGroupHandler(privacyGroupStorage));
   }
 
   public Orion() {
@@ -341,7 +351,16 @@ public class Orion {
     // controller dependencies
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
     EncryptedPayloadStorage encryptedStorage = new EncryptedPayloadStorage(storage, keyBuilder);
-    configureRoutes(vertx, networkNodes, enclave, encryptedStorage, nodeRouter, clientRouter, config);
+    PrivacyGroupStorage privacyGroupStorage = new PrivacyGroupStorage(storage, enclave);
+    configureRoutes(
+        vertx,
+        networkNodes,
+        enclave,
+        encryptedStorage,
+        privacyGroupStorage,
+        nodeRouter,
+        clientRouter,
+        config);
 
     // asynchronously start the vertx http server for public API
     CompletableFuture<Boolean> nodeFuture = new CompletableFuture<>();

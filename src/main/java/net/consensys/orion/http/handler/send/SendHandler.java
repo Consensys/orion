@@ -47,6 +47,7 @@ public class SendHandler implements Handler<RoutingContext> {
 
   private final Enclave enclave;
   private final Storage<EncryptedPayload> storage;
+  private final Storage<String[]> privacyGroupStorage;
   private final List<Box.PublicKey> nodeKeys;
   private final ConcurrentNetworkNodes networkNodes;
   private final HttpContentType contentType;
@@ -57,11 +58,13 @@ public class SendHandler implements Handler<RoutingContext> {
       Vertx vertx,
       Enclave enclave,
       Storage<EncryptedPayload> storage,
+      Storage<String[]> privacyGroupStorage,
       ConcurrentNetworkNodes networkNodes,
       HttpContentType contentType,
       Config config) {
     this.enclave = enclave;
     this.storage = storage;
+    this.privacyGroupStorage = privacyGroupStorage;
     this.nodeKeys = Arrays.asList(enclave.nodeKeys());
     this.networkNodes = networkNodes;
     this.contentType = contentType;
@@ -154,16 +157,19 @@ public class SendHandler implements Handler<RoutingContext> {
         handleFailure(routingContext, ex);
         return;
       }
-      storage.put(encryptedPayload).thenAccept((result) -> {
+      storage
+          .put(encryptedPayload)
+          .thenAccept((result) -> privacyGroupStorage.put(sendRequest.to()).thenAccept((privacyResult) -> {
 
-        final Buffer responseData;
-        if (contentType == JSON) {
-          responseData = Buffer.buffer(Serializer.serialize(JSON, Collections.singletonMap("key", digest)));
-        } else {
-          responseData = Buffer.buffer(digest);
-        }
-        routingContext.response().end(responseData);
-      }).exceptionally(e -> handleFailure(routingContext, e));
+            final Buffer responseData;
+            if (contentType == JSON) {
+              responseData = Buffer.buffer(Serializer.serialize(JSON, Collections.singletonMap("key", digest)));
+            } else {
+              responseData = Buffer.buffer(digest);
+            }
+            routingContext.response().end(responseData);
+          }).exceptionally(privacyEx -> handleFailure(routingContext, privacyEx)))
+          .exceptionally(e -> handleFailure(routingContext, e));
     });
   }
 
