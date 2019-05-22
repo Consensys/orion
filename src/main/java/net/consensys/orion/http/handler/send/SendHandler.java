@@ -78,6 +78,9 @@ public class SendHandler implements Handler<RoutingContext> {
     }
     log.debug(sendRequest);
 
+    if (sendRequest.to().length == 0) {
+      sendRequest.setTo(new String[] {sendRequest.from().orElse(null)});
+    }
     if (!sendRequest.isValid()) {
       throw new OrionException(OrionErrorCode.INVALID_PAYLOAD);
     }
