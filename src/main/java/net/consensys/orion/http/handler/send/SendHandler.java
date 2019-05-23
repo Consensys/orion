@@ -179,19 +179,16 @@ public class SendHandler implements Handler<RoutingContext> {
         handleFailure(routingContext, ex);
         return;
       }
-      storage
-          .put(encryptedPayload)
-          .thenAccept((result) -> privacyGroupStorage.put(sendRequest.to()).thenAccept((privacyResult) -> {
+      storage.put(encryptedPayload).thenAccept((result) -> {
 
-            final Buffer responseData;
-            if (contentType == JSON) {
-              responseData = Buffer.buffer(Serializer.serialize(JSON, Collections.singletonMap("key", digest)));
-            } else {
-              responseData = Buffer.buffer(digest);
-            }
-            routingContext.response().end(responseData);
-          }).exceptionally(privacyEx -> handleFailure(routingContext, privacyEx)))
-          .exceptionally(e -> handleFailure(routingContext, e));
+        final Buffer responseData;
+        if (contentType == JSON) {
+          responseData = Buffer.buffer(Serializer.serialize(JSON, Collections.singletonMap("key", digest)));
+        } else {
+          responseData = Buffer.buffer(digest);
+        }
+        routingContext.response().end(responseData);
+      }).exceptionally(e -> handleFailure(routingContext, e));
     });
   }
 
