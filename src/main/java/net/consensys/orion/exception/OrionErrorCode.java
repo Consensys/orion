@@ -48,7 +48,8 @@ public enum OrionErrorCode {
   ENCLAVE_PRIVACY_GROUP_CREATION("EnclavePrivacyGroupIdCreation"),
 
   /** Storing privacy group issue */
-  ENCLAVE_UNABLE_STORE_PRIVACY_GROUP("PrivacyGroupNotStored");
+  ENCLAVE_UNABLE_STORE_PRIVACY_GROUP("PrivacyGroupNotStored"),
+  ENCLAVE_PRIVACY_GROUP_MISSING("PrivacyGroupNotFound");
 
   private final String code;
 

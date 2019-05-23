@@ -27,6 +27,7 @@ import net.consensys.orion.storage.Storage;
 import net.consensys.orion.utils.Serializer;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -97,9 +98,30 @@ public class SendHandler implements Handler<RoutingContext> {
       return nodeKeys.get(0);
     });
 
-    final List<Box.PublicKey> toKeys =
-        Arrays.stream(sendRequest.to()).map(enclave::readKey).collect(Collectors.toList());
+    if (!sendRequest.privacyGroupId().isPresent()) {
+      List<Box.PublicKey> toKeys = Arrays.stream(sendRequest.to()).map(enclave::readKey).collect(Collectors.toList());
+      ArrayList<String> keys = new ArrayList<>(Arrays.stream(sendRequest.to()).collect(Collectors.toList()));
+      if (sendRequest.from().isPresent()) {
+        keys.add(sendRequest.from().get());
+      }
+      privacyGroupStorage.put(keys.toArray(new String[0])).thenApply((result) -> {
+        send(routingContext, sendRequest, fromKey, toKeys);
+        return result;
+      });
+    } else if (sendRequest.privacyGroupId().isPresent()) {
+      privacyGroupStorage.get(sendRequest.privacyGroupId().get()).thenApply((result) -> {
+        List<Box.PublicKey> toKeys = Arrays.stream(result.get()).map(enclave::readKey).collect(Collectors.toList());
+        send(routingContext, sendRequest, fromKey, toKeys);
+        return result;
+      });
+    }
+  }
 
+  private void send(
+      RoutingContext routingContext,
+      SendRequest sendRequest,
+      Box.PublicKey fromKey,
+      List<Box.PublicKey> toKeys) {
     // toKeys = toKeys + [nodeAlwaysSendTo] --> default pub key to always send to
     toKeys.addAll(Arrays.asList(enclave.alwaysSendTo()));
     Box.PublicKey[] arrToKeys = toKeys.toArray(new Box.PublicKey[0]);
