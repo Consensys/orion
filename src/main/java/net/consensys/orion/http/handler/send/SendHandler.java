@@ -82,7 +82,7 @@ public class SendHandler implements Handler<RoutingContext> {
     }
     log.debug(sendRequest);
 
-    if (sendRequest.to().length == 0) {
+    if (sendRequest.to() == null && !sendRequest.privacyGroupId().isPresent()) {
       sendRequest.setTo(new String[] {sendRequest.from().orElse(null)});
     }
     if (!sendRequest.isValid()) {
