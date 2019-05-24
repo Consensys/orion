@@ -19,9 +19,12 @@ import net.consensys.orion.enclave.EncryptedPayload;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /*
  * A very simple test class that implements the enclave interface and does minimal encryption operations that do not do
@@ -75,9 +78,11 @@ public class StubEnclave implements Enclave {
 
     EncryptedKey[] encryptedKeys;
     Map<Box.PublicKey, Integer> encryptedKeyOwners = new HashMap<>();
+    ArrayList<Box.PublicKey> keys = new ArrayList<>();
 
     if (recipients != null && recipients.length > 0) {
       encryptedKeys = new EncryptedKey[recipients.length];
+      keys = new ArrayList<>(Arrays.stream(recipients).collect(Collectors.toList()));
       for (int i = 0; i < recipients.length; i++) {
         encryptedKeyOwners.put(recipients[i], i);
         encryptedKeys[i] = new EncryptedKey(recipients[i].bytesArray());
@@ -85,13 +90,17 @@ public class StubEnclave implements Enclave {
     } else {
       encryptedKeys = new EncryptedKey[0];
     }
+
+    if (senderKey != null) {
+      keys.add(senderKey);
+    }
     return new EncryptedPayload(
         senderKey,
         nonce,
         encryptedKeys,
         ciphterText,
         encryptedKeyOwners,
-        generatePrivacyGroupId(recipients));
+        generatePrivacyGroupId(keys.toArray(new Box.PublicKey[0])));
   }
 
   @Override
