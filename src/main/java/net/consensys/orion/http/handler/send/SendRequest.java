@@ -20,10 +20,10 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.base.Strings;
 
 public class SendRequest implements Serializable {
@@ -60,11 +60,9 @@ public class SendRequest implements Serializable {
     this(decodePayload(payload), from, to);
   }
 
-  @JsonAnySetter
-  void setDetail(String key, String value) {
-    if (key.equals("privacyGroupId")) {
-      privacyGroupId = value;
-    }
+  @JsonSetter("privacyGroupId")
+  void setPrivacyGroupId(String privacyGroupId) {
+    this.privacyGroupId = privacyGroupId;
   }
 
   private static byte[] decodePayload(String payload) {
