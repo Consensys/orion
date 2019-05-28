@@ -16,6 +16,7 @@ import static net.consensys.cava.io.Base64.decodeBytes;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
 import net.consensys.orion.http.handler.receive.ReceiveRequest;
+import net.consensys.orion.http.handler.receive.ReceiveResponse;
 import net.consensys.orion.utils.Serializer;
 
 import java.util.HashMap;
@@ -60,6 +61,20 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
+  Optional<String> send(byte[] payload, String from, String privacyGroupId) {
+    Map<String, Object> sendRequest = sendRequest(payload, from, privacyGroupId);
+    CompletableFuture<String> keyFuture = new CompletableFuture<>();
+    httpClient.post(clientPort, "localhost", "/send").handler(resp -> {
+      if (resp.statusCode() == 200) {
+        resp.bodyHandler(body -> keyFuture.complete(deserialize(body).get("key")));
+      } else {
+        keyFuture.complete(null);
+      }
+    }).exceptionHandler(keyFuture::completeExceptionally).putHeader("Content-Type", "application/json").end(
+        Buffer.buffer(Serializer.serialize(JSON, sendRequest)));
+    return Optional.ofNullable(keyFuture.join());
+  }
+
   public Optional<String> sendExpectingError(byte[] payload, String from, String[] to) {
     Map<String, Object> sendRequest = sendRequest(payload, from, to);
     CompletableFuture<String> keyFuture = new CompletableFuture<>();
@@ -88,9 +103,30 @@ public class EthClientStub {
     return Optional.ofNullable(payloadFuture.join());
   }
 
+  ReceiveResponse receivePrivacy(String digest, String publicKey) {
+    ReceiveRequest receiveRequest = new ReceiveRequest(digest, publicKey);
+    CompletableFuture<ReceiveResponse> payloadFuture = new CompletableFuture<>();
+    httpClient.post(clientPort, "localhost", "/receive").handler(resp -> {
+      if (resp.statusCode() == 200) {
+        resp.bodyHandler(body -> payloadFuture.complete(deserialize(body, ReceiveResponse.class)));
+      } else {
+        payloadFuture.complete(null);
+      }
+    })
+        .exceptionHandler(payloadFuture::completeExceptionally)
+        .putHeader("Content-Type", "application/vnd.orion.v1+json")
+        .end(Buffer.buffer(Serializer.serialize(JSON, receiveRequest)));
+    return payloadFuture.join();
+  }
+
   @SuppressWarnings("unchecked")
   private Map<String, String> deserialize(Buffer httpSendResponse) {
     return Serializer.deserialize(JSON, Map.class, httpSendResponse.getBytes());
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> T deserialize(Buffer httpSendResponse, Class<T> responseType) {
+    return Serializer.deserialize(JSON, responseType, httpSendResponse.getBytes());
   }
 
   private Map<String, Object> sendRequest(byte[] payload, String from, String[] to) {
@@ -98,6 +134,14 @@ public class EthClientStub {
     map.put("payload", payload);
     map.put("from", from);
     map.put("to", to);
+    return map;
+  }
+
+  private Map<String, Object> sendRequest(byte[] payload, String from, String privacyGroupId) {
+    Map<String, Object> map = new HashMap<>();
+    map.put("payload", payload);
+    map.put("from", from);
+    map.put("privacyGroupId", privacyGroupId);
     return map;
   }
 }
