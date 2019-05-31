@@ -19,6 +19,14 @@ import java.util.Optional;
 public interface Storage<T> {
 
   /**
+   * Deletes data in the store.
+   *
+   * @param key should be base64 encoded UTF-8 string
+   * @return The retrieved data.
+   */
+  AsyncResult<Optional<T>> delete(String key);
+
+  /**
    * Stores data in the store.
    *
    * @param data The data to store.
