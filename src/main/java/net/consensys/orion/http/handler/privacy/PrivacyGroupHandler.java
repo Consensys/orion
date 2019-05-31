@@ -14,11 +14,13 @@ package net.consensys.orion.http.handler.privacy;
 
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
+import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.utils.Serializer;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,9 +33,9 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class PrivacyGroupHandler implements Handler<RoutingContext> {
 
-  private final Storage<String[]> privacyGroupStorage;
+  private final Storage<PrivacyGroupPayload> privacyGroupStorage;
 
-  public PrivacyGroupHandler(Storage<String[]> privacyGroupStorage) {
+  public PrivacyGroupHandler(Storage<PrivacyGroupPayload> privacyGroupStorage) {
     this.privacyGroupStorage = privacyGroupStorage;
   }
 
@@ -43,9 +45,18 @@ public class PrivacyGroupHandler implements Handler<RoutingContext> {
     byte[] request = routingContext.getBody().getBytes();
     PrivacyGroupRequest addressList = Serializer.deserialize(JSON, PrivacyGroupRequest.class, request);
 
-    final String privacyGroupId = privacyGroupStorage.generateDigest(addressList.addresses());
+    SecureRandom random = new SecureRandom();
+    byte bytes[] = new byte[20];
+    random.nextBytes(bytes);
 
-    privacyGroupStorage.put(addressList.addresses()).thenAccept((result) -> {
+    PrivacyGroupPayload privacyGroupPayload = new PrivacyGroupPayload(
+        addressList.addresses(),
+        PrivacyGroupPayload.State.ACTIVE,
+        PrivacyGroupPayload.Type.PANTHEON,
+        bytes);
+    final String privacyGroupId = privacyGroupStorage.generateDigest(privacyGroupPayload);
+
+    privacyGroupStorage.put(privacyGroupPayload).thenAccept((result) -> {
 
       List<PrivacyGroups> groups = new ArrayList<>();
 

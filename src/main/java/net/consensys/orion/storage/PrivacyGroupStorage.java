@@ -20,6 +20,7 @@ import net.consensys.cava.concurrent.AsyncResult;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.orion.enclave.Enclave;
+import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
 
@@ -27,7 +28,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 
-public class PrivacyGroupStorage implements Storage<String[]> {
+public class PrivacyGroupStorage implements Storage<PrivacyGroupPayload> {
 
   private final KeyValueStore store;
   private final Enclave enclave;
@@ -38,7 +39,7 @@ public class PrivacyGroupStorage implements Storage<String[]> {
   }
 
   @Override
-  public AsyncResult<String> put(String[] data) {
+  public AsyncResult<String> put(PrivacyGroupPayload data) {
     String key = generateDigest(data);
     Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
     Bytes dataBytes = Bytes.wrap(Serializer.serialize(HttpContentType.CBOR, data));
@@ -46,17 +47,17 @@ public class PrivacyGroupStorage implements Storage<String[]> {
   }
 
   @Override
-  public String generateDigest(String[] data) {
-    Box.PublicKey[] addresses = Arrays.stream(data).map(enclave::readKey).toArray(Box.PublicKey[]::new);
+  public String generateDigest(PrivacyGroupPayload data) {
+    Box.PublicKey[] addresses = Arrays.stream(data.addresses()).map(enclave::readKey).toArray(Box.PublicKey[]::new);
     return encodeBytes(enclave.generatePrivacyGroupId(addresses));
   }
 
 
   @Override
-  public AsyncResult<Optional<String[]>> get(String key) {
+  public AsyncResult<Optional<PrivacyGroupPayload>> get(String key) {
     Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
     return store.getAsync(keyBytes).thenApply(
         maybeBytes -> Optional.ofNullable(maybeBytes).map(
-            bytes -> Serializer.deserialize(HttpContentType.CBOR, String[].class, bytes.toArrayUnsafe())));
+            bytes -> Serializer.deserialize(HttpContentType.CBOR, PrivacyGroupPayload.class, bytes.toArrayUnsafe())));
   }
 }

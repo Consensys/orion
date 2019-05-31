@@ -30,6 +30,7 @@ import net.consensys.orion.config.Config;
 import net.consensys.orion.config.ConfigException;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
+import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.sodium.FileKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.http.handler.partyinfo.PartyInfoHandler;
@@ -118,7 +119,7 @@ public class Orion {
       ConcurrentNetworkNodes networkNodes,
       Enclave enclave,
       Storage<EncryptedPayload> storage,
-      Storage<String[]> privacyGroupStorage,
+      Storage<PrivacyGroupPayload> privacyGroupStorage,
       Router nodeRouter,
       Router clientRouter,
       Config config) {

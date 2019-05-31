@@ -24,6 +24,7 @@ import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
+import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.helpers.StubEnclave;
 import net.consensys.orion.http.server.HttpContentType;
@@ -74,7 +75,7 @@ abstract class HandlerTest {
 
   private KeyValueStore storage;
   protected Storage<EncryptedPayload> payloadStorage;
-  protected Storage<String[]> privacyGroupStorage;
+  protected Storage<PrivacyGroupPayload> privacyGroupStorage;
 
   @BeforeEach
   void setUp(@TempDirectory Path tempDir) throws Exception {

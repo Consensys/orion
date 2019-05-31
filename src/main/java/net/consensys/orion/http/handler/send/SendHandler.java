@@ -18,6 +18,7 @@ import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
+import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.http.server.HttpContentType;
@@ -48,7 +49,7 @@ public class SendHandler implements Handler<RoutingContext> {
 
   private final Enclave enclave;
   private final Storage<EncryptedPayload> storage;
-  private final Storage<String[]> privacyGroupStorage;
+  private final Storage<PrivacyGroupPayload> privacyGroupStorage;
   private final List<Box.PublicKey> nodeKeys;
   private final ConcurrentNetworkNodes networkNodes;
   private final HttpContentType contentType;
@@ -59,7 +60,7 @@ public class SendHandler implements Handler<RoutingContext> {
       Vertx vertx,
       Enclave enclave,
       Storage<EncryptedPayload> storage,
-      Storage<String[]> privacyGroupStorage,
+      Storage<PrivacyGroupPayload> privacyGroupStorage,
       ConcurrentNetworkNodes networkNodes,
       HttpContentType contentType,
       Config config) {
@@ -104,13 +105,19 @@ public class SendHandler implements Handler<RoutingContext> {
       if (sendRequest.from().isPresent()) {
         keys.add(sendRequest.from().get());
       }
-      privacyGroupStorage.put(keys.toArray(new String[0])).thenApply((result) -> {
+      PrivacyGroupPayload privacyGroupPayload = new PrivacyGroupPayload(
+          keys.toArray(new String[0]),
+          PrivacyGroupPayload.State.ACTIVE,
+          PrivacyGroupPayload.Type.QUORUM,
+          new byte[1]);
+      privacyGroupStorage.put(privacyGroupPayload).thenApply((result) -> {
         send(routingContext, sendRequest, fromKey, toKeys);
         return result;
       });
     } else if (sendRequest.privacyGroupId().isPresent()) {
       privacyGroupStorage.get(sendRequest.privacyGroupId().get()).thenApply((result) -> {
-        List<Box.PublicKey> toKeys = Arrays.stream(result.get()).map(enclave::readKey).collect(Collectors.toList());
+        List<Box.PublicKey> toKeys =
+            Arrays.stream(result.get().addresses()).map(enclave::readKey).collect(Collectors.toList());
         toKeys.remove(fromKey);
         send(routingContext, sendRequest, fromKey, toKeys);
         return result;
