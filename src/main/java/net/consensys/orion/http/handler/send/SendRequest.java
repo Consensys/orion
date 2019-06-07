@@ -23,12 +23,19 @@ import java.util.Optional;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.base.Strings;
 
 public class SendRequest implements Serializable {
   private final String from; // b64 encoded
   private String[] to; // b64 encoded
   private final byte[] rawPayload;
+  private String privacyGroupId = null;
+
+  public Optional<String> privacyGroupId() {
+    return Optional.ofNullable(privacyGroupId);
+  }
+
 
   public Optional<String> from() {
     return Optional.ofNullable(from);
@@ -53,6 +60,11 @@ public class SendRequest implements Serializable {
     this(decodePayload(payload), from, to);
   }
 
+  @JsonSetter("privacyGroupId")
+  void setPrivacyGroupId(String privacyGroupId) {
+    this.privacyGroupId = privacyGroupId;
+  }
+
   private static byte[] decodePayload(String payload) {
     if (payload == null) {
       return new byte[0];
@@ -72,9 +84,8 @@ public class SendRequest implements Serializable {
 
   @JsonIgnore
   public boolean isValid() {
-    return to != null
-        && to.length > 0
-        && Arrays.stream(to).noneMatch(Strings::isNullOrEmpty)
+    return ((to != null && to.length > 0 && Arrays.stream(to).noneMatch(Strings::isNullOrEmpty))
+        || privacyGroupId != null)
         && rawPayload != null
         && rawPayload.length > 0
         && (from == null || from.length() > 0);
