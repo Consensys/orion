@@ -16,6 +16,7 @@ import static net.consensys.cava.io.Base64.encodeBytes;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import net.consensys.cava.bytes.Bytes;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
@@ -25,11 +26,15 @@ import net.consensys.orion.http.handler.privacy.PrivacyGroups;
 import net.consensys.orion.utils.Serializer;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
+import java.security.SecureRandom;
 import java.util.Arrays;
 
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.Test;
 
 public class PrivacyGroupHandlerTest extends HandlerTest {
@@ -50,8 +55,19 @@ public class PrivacyGroupHandlerTest extends HandlerTest {
 
     String[] toEncrypt = new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
     Box.PublicKey[] addresses = Arrays.stream(toEncrypt).map(enclave::readKey).toArray(Box.PublicKey[]::new);
-    PrivacyGroupRequest privacyGroupRequestExpected = buildPrivacyGroupRequest(toEncrypt);
+
+    PrivacyGroupRequest privacyGroupRequestExpected =
+        buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
     Request request = buildPrivateAPIRequest("/privacyGroupId", JSON, privacyGroupRequestExpected);
+
+    Bytes privacyGroupPayload = Bytes.concatenate(
+        Bytes.wrap(enclave.generatePrivacyGroupId(addresses)),
+        Bytes.wrap(privacyGroupRequestExpected.getSeed().get()));
+
+    // create fake peer
+    FakePeer fakePeer =
+        new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload.toArray())), recipientKey);
+    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
@@ -59,9 +75,9 @@ public class PrivacyGroupHandlerTest extends HandlerTest {
     assertEquals(200, resp.code());
 
 
-    PrivacyGroups[] privacyGroups = Serializer.deserialize(JSON, PrivacyGroups[].class, resp.body().bytes());
+    PrivacyGroups privacyGroup = Serializer.deserialize(JSON, PrivacyGroups.class, resp.body().bytes());
 
-    assertEquals(privacyGroups[0].getPrivacyGroupId(), encodeBytes(enclave.generatePrivacyGroupId(addresses)));
+    assertEquals(privacyGroup.getPrivacyGroupId(), encodeBytes(privacyGroupPayload.toArray()));
   }
 
   @Test
@@ -78,47 +94,105 @@ public class PrivacyGroupHandlerTest extends HandlerTest {
         encodeBytes(recipientKey3.bytesArray())};
 
     Box.PublicKey[] addresses = Arrays.stream(toEncrypt).map(enclave::readKey).toArray(Box.PublicKey[]::new);
-    PrivacyGroupRequest privacyGroupRequestExpected = buildPrivacyGroupRequest(toEncrypt);
+    PrivacyGroupRequest privacyGroupRequestExpected =
+        buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
     Request request = buildPrivateAPIRequest("/privacyGroupId", JSON, privacyGroupRequestExpected);
+
+
+    Bytes privacyGroupPayload = Bytes.concatenate(
+        Bytes.wrap(enclave.generatePrivacyGroupId(addresses)),
+        Bytes.wrap(privacyGroupRequestExpected.getSeed().get()));
+
+    // create fake peers
+    FakePeer fakePeer1 =
+        new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload.toArray())), recipientKey1);
+    networkNodes.addNode(fakePeer1.publicKey, fakePeer1.getURL());
+
+    FakePeer fakePeer2 =
+        new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload.toArray())), recipientKey2);
+    networkNodes.addNode(fakePeer2.publicKey, fakePeer2.getURL());
+
+    FakePeer fakePeer3 =
+        new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload.toArray())), recipientKey3);
+    networkNodes.addNode(fakePeer3.publicKey, fakePeer3.getURL());
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
 
     assertEquals(200, resp.code());
 
+    PrivacyGroups privacyGroup = Serializer.deserialize(JSON, PrivacyGroups.class, resp.body().bytes());
 
-    PrivacyGroups[] privacyGroups = Serializer.deserialize(JSON, PrivacyGroups[].class, resp.body().bytes());
-
-    assertEquals(privacyGroups[0].getPrivacyGroupId(), encodeBytes(enclave.generatePrivacyGroupId(addresses)));
+    assertEquals(privacyGroup.getPrivacyGroupId(), encodeBytes(privacyGroupPayload.toArray()));
   }
 
   @Test
   void RepeatedRecipientsPrivacyGroupId() throws IOException {
     Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    Box.PublicKey recipientKey1 = memoryKeyStore.generateKeyPair();
+    Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
 
     String[] toEncrypt = new String[] {
         encodeBytes(senderKey.bytesArray()),
-        encodeBytes(recipientKey1.bytesArray()),
-        encodeBytes(recipientKey1.bytesArray()),
+        encodeBytes(recipientKey.bytesArray()),
+        encodeBytes(recipientKey.bytesArray()),
         encodeBytes(senderKey.bytesArray())};
 
     Box.PublicKey[] addresses = Arrays.stream(toEncrypt).map(enclave::readKey).toArray(Box.PublicKey[]::new);
-    PrivacyGroupRequest privacyGroupRequestExpected = buildPrivacyGroupRequest(toEncrypt);
+
+    PrivacyGroupRequest privacyGroupRequestExpected =
+        buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
     Request request = buildPrivateAPIRequest("/privacyGroupId", JSON, privacyGroupRequestExpected);
+
+    Bytes privacyGroupPayload = Bytes.concatenate(
+        Bytes.wrap(enclave.generatePrivacyGroupId(addresses)),
+        Bytes.wrap(privacyGroupRequestExpected.getSeed().get()));
+
+    // create fake peer
+    FakePeer fakePeer =
+        new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload.toArray())), recipientKey);
+    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
 
     assertEquals(200, resp.code());
 
+    PrivacyGroups privacyGroup = Serializer.deserialize(JSON, PrivacyGroups.class, resp.body().bytes());
 
-    PrivacyGroups[] privacyGroups = Serializer.deserialize(JSON, PrivacyGroups[].class, resp.body().bytes());
-
-    assertEquals(privacyGroups[0].getPrivacyGroupId(), encodeBytes(enclave.generatePrivacyGroupId(addresses)));
+    assertEquals(privacyGroup.getPrivacyGroupId(), encodeBytes(privacyGroupPayload.toArray()));
   }
 
-  PrivacyGroupRequest buildPrivacyGroupRequest(String[] addresses) {
-    return new PrivacyGroupRequest(addresses);
+  PrivacyGroupRequest buildPrivacyGroupRequest(String[] addresses, String from, String name, String description) {
+    PrivacyGroupRequest privacyGroupRequest = new PrivacyGroupRequest(addresses, from, name, description);
+    // create a random seed
+    SecureRandom random = new SecureRandom();
+    byte[] bytes = new byte[20];
+    random.nextBytes(bytes);
+    privacyGroupRequest.setSeed(bytes);
+
+    return privacyGroupRequest;
+  }
+
+  class FakePeer {
+    final MockWebServer server;
+    final Box.PublicKey publicKey;
+
+    FakePeer(MockResponse response) throws IOException {
+      server = new MockWebServer();
+      publicKey = memoryKeyStore.generateKeyPair();
+      server.enqueue(response);
+      server.start();
+    }
+
+    FakePeer(MockResponse response, Box.PublicKey givenPublicKey) throws IOException {
+      server = new MockWebServer();
+      publicKey = givenPublicKey;
+      server.enqueue(response);
+      server.start();
+    }
+
+    URL getURL() {
+      return server.url("").url();
+    }
   }
 }

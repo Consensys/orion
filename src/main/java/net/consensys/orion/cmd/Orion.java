@@ -37,6 +37,7 @@ import net.consensys.orion.http.handler.partyinfo.PartyInfoHandler;
 import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupHandler;
 import net.consensys.orion.http.handler.privacy.PrivacyGroupHandler;
 import net.consensys.orion.http.handler.push.PushHandler;
+import net.consensys.orion.http.handler.push.PushPrivacyGroupHandler;
 import net.consensys.orion.http.handler.receive.ReceiveHandler;
 import net.consensys.orion.http.handler.send.SendHandler;
 import net.consensys.orion.http.handler.upcheck.UpcheckHandler;
@@ -143,6 +144,9 @@ public class Orion {
     nodeRouter.post("/push").produces(TEXT.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
         new PushHandler(storage));
 
+    nodeRouter.post("/pushPrivacyGroup").produces(TEXT.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
+        new PushPrivacyGroupHandler(privacyGroupStorage));
+
     //Setup client APIs
     clientRouter
         .route()
@@ -178,8 +182,10 @@ public class Orion {
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .handler(new ReceiveHandler(enclave, storage, APPLICATION_OCTET_STREAM));
+
     clientRouter.post("/privacyGroupId").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
-        new PrivacyGroupHandler(privacyGroupStorage));
+        new PrivacyGroupHandler(privacyGroupStorage, networkNodes, enclave, vertx, config));
+
     clientRouter.post("/deletePrivacyGroupId").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
         new DeletePrivacyGroupHandler(privacyGroupStorage));
   }

@@ -107,6 +107,8 @@ public class SendHandler implements Handler<RoutingContext> {
       }
       PrivacyGroupPayload privacyGroupPayload = new PrivacyGroupPayload(
           keys.toArray(new String[0]),
+          "quorum",
+          "NA",
           PrivacyGroupPayload.State.ACTIVE,
           PrivacyGroupPayload.Type.QUORUM,
           new byte[1]);
