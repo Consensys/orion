@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class PrivacyGroupPayload implements Serializable {
 
   private final String[] addresses;
-  private final State state;
+  private State state;
   private final Type type;
   private final byte[] randomSeed;
 
@@ -56,6 +56,10 @@ public class PrivacyGroupPayload implements Serializable {
   @JsonProperty("randomSeed")
   public byte[] randomSeed() {
     return randomSeed;
+  }
+
+  public void setState(State state) {
+    this.state = state;
   }
 
   @Override

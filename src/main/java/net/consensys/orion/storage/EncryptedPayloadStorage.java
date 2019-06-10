@@ -35,6 +35,12 @@ public class EncryptedPayloadStorage implements Storage<EncryptedPayload> {
   }
 
   @Override
+  public AsyncResult<Optional<EncryptedPayload>> delete(String key) {
+    // throw error if this is called, as we shouldn't delete encrypted payload.
+    return get("").thenApply((res) -> res);
+  }
+
+  @Override
   public AsyncResult<String> put(EncryptedPayload data) {
     String key = generateDigest(data);
     Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
