@@ -63,9 +63,13 @@ public class PrivacyGroupStorage implements Storage<PrivacyGroupPayload> {
   public String generateDigest(PrivacyGroupPayload data) {
     Box.PublicKey[] addresses = Arrays.stream(data.addresses()).map(enclave::readKey).toArray(Box.PublicKey[]::new);
     // concatenate the PrivacyGroupId with a random seed
-    Bytes bytes =
-        Bytes.concatenate(Bytes.wrap(enclave.generatePrivacyGroupId(addresses)), Bytes.wrap(data.randomSeed()));
-    return encodeBytes(bytes.toArray());
+    if (data.type().equals(PrivacyGroupPayload.Type.PANTHEON)) {
+      Bytes bytes =
+          Bytes.concatenate(Bytes.wrap(enclave.generatePrivacyGroupId(addresses)), Bytes.wrap(data.randomSeed()));
+      return encodeBytes(bytes.toArray());
+    } else {
+      return encodeBytes(enclave.generatePrivacyGroupId(addresses));
+    }
   }
 
 
