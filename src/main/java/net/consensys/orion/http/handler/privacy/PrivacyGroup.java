@@ -12,12 +12,16 @@
  */
 package net.consensys.orion.http.handler.privacy;
 
+import net.consensys.orion.enclave.PrivacyGroupPayload;
+
 import java.io.Serializable;
 
-public class PrivacyGroups implements Serializable {
+public class PrivacyGroup implements Serializable {
 
   private String privacyGroupId;
-  private boolean isDefault;
+  private String name;
+  private String description;
+  private PrivacyGroupPayload.Type type;
 
   public String getPrivacyGroupId() {
     return privacyGroupId;
@@ -27,18 +31,36 @@ public class PrivacyGroups implements Serializable {
     this.privacyGroupId = privacyGroupId;
   }
 
-  public boolean isDefault() {
-    return isDefault;
+  public String getName() {
+    return name;
   }
 
-  public void setDefault(boolean aDefault) {
-    isDefault = aDefault;
+  public void setName(String name) {
+    this.name = name;
   }
 
-  public PrivacyGroups() {}
+  public String getDescription() {
+    return description;
+  }
 
-  public PrivacyGroups(String privacyGroupId, boolean isDefault) {
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public PrivacyGroupPayload.Type getType() {
+    return type;
+  }
+
+  public void setType(PrivacyGroupPayload.Type type) {
+    this.type = type;
+  }
+
+  public PrivacyGroup() {}
+
+  public PrivacyGroup(String privacyGroupId, PrivacyGroupPayload.Type type, String name, String description) {
     this.privacyGroupId = privacyGroupId;
-    this.isDefault = isDefault;
+    this.type = type;
+    this.name = name;
+    this.description = description;
   }
 }

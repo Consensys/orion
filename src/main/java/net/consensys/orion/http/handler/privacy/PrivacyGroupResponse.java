@@ -21,15 +21,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PrivacyGroupResponse implements Serializable {
 
-  private List<PrivacyGroups> groups = new ArrayList<>();
+  private List<PrivacyGroup> groups = new ArrayList<>();
 
   @JsonCreator
-  public PrivacyGroupResponse(@JsonProperty("groups") List<PrivacyGroups> groups) {
+  public PrivacyGroupResponse(@JsonProperty("groups") List<PrivacyGroup> groups) {
     this.groups = groups;
   }
 
   @JsonProperty("groups")
-  public List<PrivacyGroups> privacyGroupId() {
+  public List<PrivacyGroup> privacyGroupId() {
     return groups;
   }
 }

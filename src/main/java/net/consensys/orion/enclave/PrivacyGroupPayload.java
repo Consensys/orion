@@ -22,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class PrivacyGroupPayload implements Serializable {
 
   private final String[] addresses;
+  private final String name;
+  private final String description;
   private State state;
   private final Type type;
   private final byte[] randomSeed;
@@ -29,10 +31,14 @@ public class PrivacyGroupPayload implements Serializable {
   @JsonCreator
   public PrivacyGroupPayload(
       @JsonProperty("addresses") String[] addresses,
+      @JsonProperty("name") String name,
+      @JsonProperty("description") String description,
       @JsonProperty("state") State state,
       @JsonProperty("type") Type type,
       @JsonProperty("randomSeed") byte[] randomSeed) {
     this.addresses = addresses;
+    this.name = name;
+    this.description = description;
     this.state = state;
     this.type = type;
     this.randomSeed = randomSeed;
@@ -41,6 +47,16 @@ public class PrivacyGroupPayload implements Serializable {
   @JsonProperty("addresses")
   public String[] addresses() {
     return addresses;
+  }
+
+  @JsonProperty("name")
+  public String name() {
+    return name;
+  }
+
+  @JsonProperty("description")
+  public String description() {
+    return description;
   }
 
   @JsonProperty("state")
@@ -72,6 +88,8 @@ public class PrivacyGroupPayload implements Serializable {
     }
     PrivacyGroupPayload that = (PrivacyGroupPayload) o;
     return Arrays.equals(addresses, that.addresses)
+        && Objects.equals(name, that.name)
+        && Objects.equals(description, that.description)
         && Objects.equals(state, that.state)
         && Objects.equals(type, that.type)
         && Arrays.equals(randomSeed, that.randomSeed);
@@ -80,6 +98,8 @@ public class PrivacyGroupPayload implements Serializable {
   @Override
   public int hashCode() {
     int result = Arrays.hashCode(addresses);
+    result = 31 * result + name.hashCode();
+    result = 31 * result + description.hashCode();
     result = 31 * result + state.hashCode();
     result = 31 * result + type.hashCode();
     result = 31 * result + Arrays.hashCode(randomSeed);
@@ -90,6 +110,6 @@ public class PrivacyGroupPayload implements Serializable {
     ACTIVE, DELETED
   }
   public enum Type {
-    QUORUM, PANTHEON
+    LEGACY, PANTHEON
   }
 }

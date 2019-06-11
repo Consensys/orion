@@ -107,8 +107,10 @@ public class SendHandler implements Handler<RoutingContext> {
       }
       PrivacyGroupPayload privacyGroupPayload = new PrivacyGroupPayload(
           keys.toArray(new String[0]),
+          "legacy",
+          "Privacy groups to support the creation of groups by privateFor and privateFrom",
           PrivacyGroupPayload.State.ACTIVE,
-          PrivacyGroupPayload.Type.QUORUM,
+          PrivacyGroupPayload.Type.LEGACY,
           new byte[1]);
       privacyGroupStorage.put(privacyGroupPayload).thenApply((result) -> {
         send(routingContext, sendRequest, fromKey, toKeys);
