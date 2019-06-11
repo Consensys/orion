@@ -110,6 +110,6 @@ public class PrivacyGroupPayload implements Serializable {
     ACTIVE, DELETED
   }
   public enum Type {
-    QUORUM, PANTHEON
+    LEGACY, PANTHEON
   }
 }
