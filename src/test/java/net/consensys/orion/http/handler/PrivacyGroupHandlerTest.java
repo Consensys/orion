@@ -21,8 +21,8 @@ import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
+import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
-import net.consensys.orion.http.handler.privacy.PrivacyGroups;
 import net.consensys.orion.utils.Serializer;
 
 import java.io.IOException;
@@ -75,7 +75,7 @@ public class PrivacyGroupHandlerTest extends HandlerTest {
     assertEquals(200, resp.code());
 
 
-    PrivacyGroups privacyGroup = Serializer.deserialize(JSON, PrivacyGroups.class, resp.body().bytes());
+    PrivacyGroup privacyGroup = Serializer.deserialize(JSON, PrivacyGroup.class, resp.body().bytes());
 
     assertEquals(privacyGroup.getPrivacyGroupId(), encodeBytes(privacyGroupPayload.toArray()));
   }
@@ -121,7 +121,7 @@ public class PrivacyGroupHandlerTest extends HandlerTest {
 
     assertEquals(200, resp.code());
 
-    PrivacyGroups privacyGroup = Serializer.deserialize(JSON, PrivacyGroups.class, resp.body().bytes());
+    PrivacyGroup privacyGroup = Serializer.deserialize(JSON, PrivacyGroup.class, resp.body().bytes());
 
     assertEquals(privacyGroup.getPrivacyGroupId(), encodeBytes(privacyGroupPayload.toArray()));
   }
@@ -157,7 +157,7 @@ public class PrivacyGroupHandlerTest extends HandlerTest {
 
     assertEquals(200, resp.code());
 
-    PrivacyGroups privacyGroup = Serializer.deserialize(JSON, PrivacyGroups.class, resp.body().bytes());
+    PrivacyGroup privacyGroup = Serializer.deserialize(JSON, PrivacyGroup.class, resp.body().bytes());
 
     assertEquals(privacyGroup.getPrivacyGroupId(), encodeBytes(privacyGroupPayload.toArray()));
   }

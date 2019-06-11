@@ -16,7 +16,7 @@ import net.consensys.orion.enclave.PrivacyGroupPayload;
 
 import java.io.Serializable;
 
-public class PrivacyGroups implements Serializable {
+public class PrivacyGroup implements Serializable {
 
   private String privacyGroupId;
   private String name;
@@ -55,9 +55,9 @@ public class PrivacyGroups implements Serializable {
     this.type = type;
   }
 
-  public PrivacyGroups() {}
+  public PrivacyGroup() {}
 
-  public PrivacyGroups(String privacyGroupId, PrivacyGroupPayload.Type type, String name, String description) {
+  public PrivacyGroup(String privacyGroupId, PrivacyGroupPayload.Type type, String name, String description) {
     this.privacyGroupId = privacyGroupId;
     this.type = type;
     this.name = name;

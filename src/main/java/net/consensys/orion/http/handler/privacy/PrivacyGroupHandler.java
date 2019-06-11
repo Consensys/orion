@@ -137,7 +137,7 @@ public class PrivacyGroupHandler implements Handler<RoutingContext> {
       }
       privacyGroupStorage.put(privacyGroupPayload).thenAccept((result) -> {
 
-        PrivacyGroups group = new PrivacyGroups(
+        PrivacyGroup group = new PrivacyGroup(
             privacyGroupId,
             PrivacyGroupPayload.Type.PANTHEON,
             privacyGroup.name(),
