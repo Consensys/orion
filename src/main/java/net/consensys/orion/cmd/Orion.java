@@ -187,7 +187,7 @@ public class Orion {
         new PrivacyGroupHandler(privacyGroupStorage, networkNodes, enclave, vertx, config));
 
     clientRouter.post("/deletePrivacyGroupId").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
-        new DeletePrivacyGroupHandler(privacyGroupStorage));
+        new DeletePrivacyGroupHandler(privacyGroupStorage, networkNodes, enclave, vertx, config));
   }
 
   public Orion() {

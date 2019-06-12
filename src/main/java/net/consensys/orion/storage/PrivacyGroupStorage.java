@@ -39,19 +39,6 @@ public class PrivacyGroupStorage implements Storage<PrivacyGroupPayload> {
   }
 
   @Override
-  public AsyncResult<Optional<PrivacyGroupPayload>> delete(String key) {
-    return get(key).thenApply((result) -> {
-      PrivacyGroupPayload privacyGroupPayload = null;
-      if (result.isPresent()) {
-        privacyGroupPayload = result.get();
-        privacyGroupPayload.setState(PrivacyGroupPayload.State.DELETED);
-        put(privacyGroupPayload);
-      }
-      return Optional.ofNullable(privacyGroupPayload);
-    });
-  }
-
-  @Override
   public AsyncResult<String> put(PrivacyGroupPayload data) {
     String key = generateDigest(data);
     Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
