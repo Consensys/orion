@@ -111,9 +111,9 @@ public class SendHandler implements Handler<RoutingContext> {
           "Privacy groups to support the creation of groups by privateFor and privateFrom",
           PrivacyGroupPayload.State.ACTIVE,
           PrivacyGroupPayload.Type.LEGACY,
-          new byte[1]);
+          null);
       privacyGroupStorage.put(privacyGroupPayload).thenApply((result) -> {
-        send(routingContext, sendRequest, fromKey, toKeys);
+        send(routingContext, sendRequest, fromKey, toKeys, privacyGroupPayload);
         return result;
       });
     } else if (sendRequest.privacyGroupId().isPresent()) {
@@ -122,7 +122,7 @@ public class SendHandler implements Handler<RoutingContext> {
           List<Box.PublicKey> toKeys =
               Arrays.stream(result.get().addresses()).map(enclave::readKey).collect(Collectors.toList());
           toKeys.remove(fromKey);
-          send(routingContext, sendRequest, fromKey, toKeys);
+          send(routingContext, sendRequest, fromKey, toKeys, result.get());
           return result;
         } else {
           routingContext
@@ -137,7 +137,8 @@ public class SendHandler implements Handler<RoutingContext> {
       RoutingContext routingContext,
       SendRequest sendRequest,
       Box.PublicKey fromKey,
-      List<Box.PublicKey> toKeys) {
+      List<Box.PublicKey> toKeys,
+      PrivacyGroupPayload privacyGroupPayload) {
     // toKeys = toKeys + [nodeAlwaysSendTo] --> default pub key to always send to
     toKeys.addAll(Arrays.asList(enclave.alwaysSendTo()));
     Box.PublicKey[] arrToKeys = toKeys.toArray(new Box.PublicKey[0]);
@@ -147,7 +148,8 @@ public class SendHandler implements Handler<RoutingContext> {
 
     // encrypting payload
     log.debug("encrypting payload from SendRequest object");
-    final EncryptedPayload encryptedPayload = enclave.encrypt(rawPayload, fromKey, arrToKeys);
+    final EncryptedPayload encryptedPayload =
+        enclave.encrypt(rawPayload, fromKey, arrToKeys, privacyGroupPayload.randomSeed());
 
     List<Box.PublicKey> keys = toKeys.stream().filter(pKey -> !nodeKeys.contains(pKey)).collect(Collectors.toList());
 

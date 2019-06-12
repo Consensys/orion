@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
+import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.exception.OrionErrorCode;
@@ -137,7 +138,7 @@ class ReceiveHandlerTest extends HandlerTest {
 
     // encrypt a payload
     Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys());
+    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys(), null);
 
     // store it
     String key = payloadStorage.put(originalPayload).get();
@@ -183,7 +184,7 @@ class ReceiveHandlerTest extends HandlerTest {
 
     // encrypt a payload
     Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys());
+    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys(), null);
 
     // store it
     String key = payloadStorage.put(originalPayload).get();
@@ -222,7 +223,7 @@ class ReceiveHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {senderKey});
+    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {senderKey}, null);
 
     String key = payloadStorage.put(originalPayload).get();
     RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
@@ -294,7 +295,7 @@ class ReceiveHandlerTest extends HandlerTest {
       Box.PublicKey senderKey,
       Box.PublicKey[] recipientKeys) throws Exception {
     // encrypt a payload
-    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, recipientKeys);
+    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, recipientKeys, null);
 
     // store it
     String key = storage.put(originalPayload).get();
@@ -307,6 +308,6 @@ class ReceiveHandlerTest extends HandlerTest {
     Box.PublicKey[] tempArray = new Box.PublicKey[recipient.length + 1];
     System.arraycopy(recipient, 0, tempArray, 0, recipient.length);
     tempArray[recipient.length] = sender;
-    return enclave.generatePrivacyGroupId(tempArray);
+    return enclave.generatePrivacyGroupId(tempArray, null, PrivacyGroupPayload.Type.LEGACY);
   }
 }

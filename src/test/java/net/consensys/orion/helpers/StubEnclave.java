@@ -16,6 +16,7 @@ import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedKey;
 import net.consensys.orion.enclave.EncryptedPayload;
+import net.consensys.orion.enclave.PrivacyGroupPayload;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -67,7 +68,7 @@ public class StubEnclave implements Enclave {
   }
 
   @Override
-  public EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients) {
+  public EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients, byte[] seed) {
     byte[] ciphterText = new byte[plaintext.length];
     for (int i = 0; i < plaintext.length; i++) {
       byte b = plaintext[i];
@@ -100,11 +101,14 @@ public class StubEnclave implements Enclave {
         encryptedKeys,
         ciphterText,
         encryptedKeyOwners,
-        generatePrivacyGroupId(keys.toArray(new Box.PublicKey[0])));
+        generatePrivacyGroupId(keys.toArray(new Box.PublicKey[0]), seed, PrivacyGroupPayload.Type.PANTHEON));
   }
 
   @Override
-  public byte[] generatePrivacyGroupId(Box.PublicKey[] recipientsAndSender) {
+  public byte[] generatePrivacyGroupId(
+      Box.PublicKey[] recipientsAndSender,
+      byte[] seed,
+      PrivacyGroupPayload.Type type) {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
     for (int i = 0; recipientsAndSender != null && i < recipientsAndSender.length; i++) {

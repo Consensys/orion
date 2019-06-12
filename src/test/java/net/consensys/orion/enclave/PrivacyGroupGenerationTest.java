@@ -68,7 +68,9 @@ public class PrivacyGroupGenerationTest {
       for (PrivacyGroupTest privacyGroup : privacyGroups) {
         Box.PublicKey[] addresses =
             Arrays.stream(privacyGroup.getPrivacyGroup()).map(enclave::readKey).toArray(Box.PublicKey[]::new);
-        assertEquals(privacyGroup.getPrivacyGroupId(), encodeBytes(enclave.generatePrivacyGroupId(addresses)));
+        assertEquals(
+            privacyGroup.getPrivacyGroupId(),
+            encodeBytes(enclave.generatePrivacyGroupId(addresses, null, PrivacyGroupPayload.Type.LEGACY)));
 
       }
     } catch (IOException e) {

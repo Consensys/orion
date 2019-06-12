@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import net.consensys.cava.bytes.Bytes;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.Enclave;
+import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.helpers.FakePeer;
@@ -28,6 +29,7 @@ import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
 import net.consensys.orion.utils.Serializer;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.security.SecureRandom;
 
@@ -62,12 +64,13 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
     Request request = buildPrivateAPIRequest("/privacyGroupId", JSON, privacyGroupRequestExpected);
 
-    Bytes privacyGroupPayload = Bytes.concatenate(
-        Bytes.wrap(enclave.generatePrivacyGroupId(new Box.PublicKey[] {senderKey, recipientKey})),
-        Bytes.wrap(privacyGroupRequestExpected.getSeed().get()));
+    byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
+        new Box.PublicKey[] {senderKey, recipientKey},
+        privacyGroupRequestExpected.getSeed().get(),
+        PrivacyGroupPayload.Type.PANTHEON);
 
     // create fake peer
-    fakePeer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload.toArray())), recipientKey);
+    fakePeer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey);
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // execute request

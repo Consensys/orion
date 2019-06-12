@@ -110,6 +110,6 @@ class PushHandlerTest extends HandlerTest {
     SodiumEnclave sEnclave = new SodiumEnclave(memoryKeyStore);
     Box.PublicKey k1 = memoryKeyStore.generateKeyPair();
     Box.PublicKey k2 = memoryKeyStore.generateKeyPair();
-    return sEnclave.encrypt("something important".getBytes(UTF_8), k1, new Box.PublicKey[] {k2});
+    return sEnclave.encrypt("something important".getBytes(UTF_8), k1, new Box.PublicKey[] {k2}, null);
   }
 }

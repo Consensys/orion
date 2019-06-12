@@ -66,6 +66,6 @@ public class PrivacyGroupRequest implements Serializable {
   }
 
   public Optional<byte[]> getSeed() {
-    return Optional.of(seed);
+    return Optional.ofNullable(seed);
   }
 }
