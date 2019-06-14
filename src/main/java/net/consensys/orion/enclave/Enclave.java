@@ -23,9 +23,10 @@ public interface Enclave {
    * @param plaintext Plaintext to encrypt
    * @param senderKey public key of the sender of the message.
    * @param recipients public keys of the recipients.
+   * @param seed random seed to generate privacy group Id
    * @return Returns a EncryptedPayload that encapsulates the ciphertext and related metadata.
    */
-  EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients);
+  EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients, byte[] seed);
 
   /**
    * Decrypt the cipher text in the encrypted payload, using the private key associated with the public key identity. It
@@ -44,5 +45,5 @@ public interface Enclave {
 
   Box.PublicKey readKey(String b64);
 
-  byte[] generatePrivacyGroupId(Box.PublicKey[] recipientsAndSender);
+  byte[] generatePrivacyGroupId(Box.PublicKey[] recipientsAndSender, byte[] seed, PrivacyGroupPayload.Type type);
 }

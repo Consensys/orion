@@ -168,6 +168,6 @@ class SodiumEnclaveTest {
   }
 
   private EncryptedPayload encrypt(String plaintext, Box.PublicKey senderKey, Box.PublicKey... recipientKey) {
-    return enclave.encrypt(plaintext.getBytes(UTF_8), senderKey, recipientKey);
+    return enclave.encrypt(plaintext.getBytes(UTF_8), senderKey, recipientKey, null);
   }
 }

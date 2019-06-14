@@ -27,7 +27,7 @@ class SodiumEnclaveStubTest {
   void roundTripEncryption() {
     byte[] message = "hello".getBytes(UTF_8);
     SodiumEnclaveStub enclave = new SodiumEnclaveStub();
-    EncryptedPayload encryptedPayload = enclave.encrypt(message, null, null);
+    EncryptedPayload encryptedPayload = enclave.encrypt(message, null, null, null);
     byte[] bytes = enclave.decrypt(encryptedPayload, null);
     assertArrayEquals(message, bytes);
   }
@@ -36,7 +36,7 @@ class SodiumEnclaveStubTest {
   void roundTripEncryptionWithFunkyBytes() {
     byte[] message = DatatypeConverter.parseHexBinary("0079FF00FF89");
     SodiumEnclaveStub enclave = new SodiumEnclaveStub();
-    EncryptedPayload encryptedPayload = enclave.encrypt(message, null, null);
+    EncryptedPayload encryptedPayload = enclave.encrypt(message, null, null, null);
     byte[] bytes = enclave.decrypt(encryptedPayload, null);
     assertArrayEquals(message, bytes);
   }

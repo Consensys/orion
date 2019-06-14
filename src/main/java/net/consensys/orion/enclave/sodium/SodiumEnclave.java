@@ -27,6 +27,7 @@ import net.consensys.orion.enclave.EnclaveException;
 import net.consensys.orion.enclave.EncryptedKey;
 import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.enclave.KeyStore;
+import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.exception.OrionErrorCode;
 
 import java.util.Arrays;
@@ -51,7 +52,7 @@ public class SodiumEnclave implements Enclave {
   }
 
   @Override
-  public EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients) {
+  public EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients, byte[] seed) {
     // encrypt plaintext with a random key
     SecretBox.Key payloadKey = SecretBox.Key.random();
     // use a zero nonce, as the key is random
@@ -64,7 +65,7 @@ public class SodiumEnclave implements Enclave {
     final EncryptedKey[] encryptedKeys =
         encryptPayloadKeyForRecipients(payloadKey, recipientsAndSender, senderSecretKey, nonce);
 
-    final byte[] privacyGroupId = generatePrivacyGroupId(recipientsAndSender);
+    final byte[] privacyGroupId = generatePrivacyGroupId(recipientsAndSender, seed, PrivacyGroupPayload.Type.PANTHEON);
 
     return new EncryptedPayload(
         senderKey,
@@ -76,7 +77,10 @@ public class SodiumEnclave implements Enclave {
   }
 
   @Override
-  public byte[] generatePrivacyGroupId(Box.PublicKey[] recipientsAndSender) {
+  public byte[] generatePrivacyGroupId(
+      Box.PublicKey[] recipientsAndSender,
+      byte[] seed,
+      PrivacyGroupPayload.Type type) {
     final List<byte[]> recipientsAndSenderList = Arrays
         .stream(recipientsAndSender)
         .distinct()
@@ -86,7 +90,14 @@ public class SodiumEnclave implements Enclave {
 
     Bytes rlpEncoded = RLP.encodeList(listWriter -> recipientsAndSenderList.forEach(listWriter::writeByteArray));
 
-    return Hash.keccak256(rlpEncoded).toArray();
+    byte[] groupId = Hash.keccak256(rlpEncoded).toArray();
+
+    // concatenate the PrivacyGroupId with a random seed
+    if (seed != null && type.equals(PrivacyGroupPayload.Type.PANTHEON)) {
+      return Bytes.concatenate(Bytes.wrap(groupId), Bytes.wrap(seed)).toArray();
+    } else {
+      return groupId;
+    }
   }
 
   @Override

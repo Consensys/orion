@@ -22,10 +22,10 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import net.consensys.cava.bytes.Bytes;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.orion.enclave.EncryptedPayload;
+import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
@@ -148,7 +148,7 @@ class SendHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
@@ -191,7 +191,7 @@ class SendHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
@@ -219,7 +219,7 @@ class SendHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peers
@@ -281,7 +281,7 @@ class SendHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peers
@@ -346,7 +346,7 @@ class SendHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peers
@@ -399,7 +399,7 @@ class SendHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
@@ -431,14 +431,15 @@ class SendHandlerTest extends HandlerTest {
     // generate keys and the privacy group
     Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
-    byte[] privacyGroupId = enclave.generatePrivacyGroupId(new Box.PublicKey[] {recipientKey, senderKey});
+    byte[] privacyGroupId = enclave
+        .generatePrivacyGroupId(new Box.PublicKey[] {recipientKey, senderKey}, null, PrivacyGroupPayload.Type.LEGACY);
 
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {recipientKey});
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {recipientKey}, null);
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
@@ -488,13 +489,12 @@ class SendHandlerTest extends HandlerTest {
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "test");
     Request request = buildPrivateAPIRequest("/privacyGroupId", JSON, privacyGroupRequestExpected);
 
-    Bytes privacyGroupPayload = Bytes.concatenate(
-        Bytes.wrap(enclave.generatePrivacyGroupId(addresses)),
-        Bytes.wrap(privacyGroupRequestExpected.getSeed().get()));
-
+    byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
+        addresses,
+        privacyGroupRequestExpected.getSeed().get(),
+        PrivacyGroupPayload.Type.PANTHEON);
     // create fake peer
-    FakePeer fakePeer =
-        new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload.toArray())), recipientKey);
+    FakePeer fakePeer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey);
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // execute /privacyGroupId request
@@ -516,15 +516,17 @@ class SendHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncryptSend);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncryptSend, senderKey, new Box.PublicKey[] {recipientKey});
+    EncryptedPayload encryptedPayload = enclave.encrypt(
+        toEncryptSend,
+        senderKey,
+        new Box.PublicKey[] {recipientKey},
+        privacyGroupRequestExpected.getSeed().get());
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     fakePeer.addResponse(new MockResponse().setBody(digest));
 
-    Map<String, Object> sendRequestPrivGrp = buildRequestPrivacyGroup(
-        encodeBytes(privacyGroupPayload.toArray()),
-        toEncryptSend,
-        encodeBytes(senderKey.bytesArray()));
+    Map<String, Object> sendRequestPrivGrp =
+        buildRequestPrivacyGroup(encodeBytes(privacyGroupPayload), toEncryptSend, encodeBytes(senderKey.bytesArray()));
 
     // configureRoutes our sendRequest
     request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequestPrivGrp);
