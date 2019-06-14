@@ -65,12 +65,7 @@ public class SodiumEnclave implements Enclave {
     final EncryptedKey[] encryptedKeys =
         encryptPayloadKeyForRecipients(payloadKey, recipientsAndSender, senderSecretKey, nonce);
 
-    final byte[] privacyGroupId;
-    if (seed == null) {
-      privacyGroupId = generatePrivacyGroupId(recipientsAndSender, null, PrivacyGroupPayload.Type.LEGACY);
-    } else {
-      privacyGroupId = generatePrivacyGroupId(recipientsAndSender, seed, PrivacyGroupPayload.Type.PANTHEON);
-    }
+    final byte[] privacyGroupId = generatePrivacyGroupId(recipientsAndSender, seed, PrivacyGroupPayload.Type.PANTHEON);
 
     return new EncryptedPayload(
         senderKey,
@@ -98,7 +93,7 @@ public class SodiumEnclave implements Enclave {
     byte[] groupId = Hash.keccak256(rlpEncoded).toArray();
 
     // concatenate the PrivacyGroupId with a random seed
-    if (type.equals(PrivacyGroupPayload.Type.PANTHEON)) {
+    if (seed != null && type.equals(PrivacyGroupPayload.Type.PANTHEON)) {
       return Bytes.concatenate(Bytes.wrap(groupId), Bytes.wrap(seed)).toArray();
     } else {
       return groupId;
