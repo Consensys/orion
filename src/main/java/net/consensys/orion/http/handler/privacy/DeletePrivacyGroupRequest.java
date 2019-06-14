@@ -20,14 +20,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class DeletePrivacyGroupRequest implements Serializable {
 
   private final String privacyGroupId;
+  private final String from;
 
   @JsonCreator
-  public DeletePrivacyGroupRequest(@JsonProperty("privacyGroupId") String privacyGroupId) {
+  public DeletePrivacyGroupRequest(
+      @JsonProperty("privacyGroupId") String privacyGroupId,
+      @JsonProperty("from") String from) {
     this.privacyGroupId = privacyGroupId;
+    this.from = from;
   }
 
   @JsonProperty("privacyGroupId")
   public String privacyGroupId() {
     return privacyGroupId;
+  }
+
+  @JsonProperty("from")
+  public String from() {
+    return from;
   }
 }

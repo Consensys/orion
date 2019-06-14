@@ -118,11 +118,17 @@ public class SendHandler implements Handler<RoutingContext> {
       });
     } else if (sendRequest.privacyGroupId().isPresent()) {
       privacyGroupStorage.get(sendRequest.privacyGroupId().get()).thenApply((result) -> {
-        List<Box.PublicKey> toKeys =
-            Arrays.stream(result.get().addresses()).map(enclave::readKey).collect(Collectors.toList());
-        toKeys.remove(fromKey);
-        send(routingContext, sendRequest, fromKey, toKeys);
-        return result;
+        if (result.get().state().equals(PrivacyGroupPayload.State.ACTIVE)) {
+          List<Box.PublicKey> toKeys =
+              Arrays.stream(result.get().addresses()).map(enclave::readKey).collect(Collectors.toList());
+          toKeys.remove(fromKey);
+          send(routingContext, sendRequest, fromKey, toKeys);
+          return result;
+        } else {
+          routingContext
+              .fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, "privacy group not found"));
+          return result;
+        }
       });
     }
   }

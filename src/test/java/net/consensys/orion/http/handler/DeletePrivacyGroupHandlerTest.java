@@ -21,26 +21,28 @@ import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
+import net.consensys.orion.helpers.FakePeer;
 import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupRequest;
 import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
 import net.consensys.orion.utils.Serializer;
 
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.security.SecureRandom;
 
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class DeletePrivacyGroupHandlerTest extends HandlerTest {
   private MemoryKeyStore memoryKeyStore;
   private String privacyGroupId;
+  private FakePeer fakePeer;
+  private Box.PublicKey senderKey;
 
   @Override
   protected Enclave buildEnclave(Path tempDir) {
@@ -51,8 +53,8 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
   }
 
   @BeforeEach
-  void setup() throws IOException {
-    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+  void setup() throws IOException, InterruptedException {
+    senderKey = memoryKeyStore.generateKeyPair();
     Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
 
     String[] toEncrypt = new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
@@ -65,14 +67,17 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
         Bytes.wrap(privacyGroupRequestExpected.getSeed().get()));
 
     // create fake peer
-    FakePeer fakePeer =
-        new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload.toArray())), recipientKey);
+    fakePeer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload.toArray())), recipientKey);
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
 
     assertEquals(200, resp.code());
+
+    RecordedRequest recordedRequest = fakePeer.server.takeRequest();
+    assertEquals("/pushPrivacyGroup", recordedRequest.getPath());
+    assertEquals("POST", recordedRequest.getMethod());
 
     PrivacyGroup privacyGroup = Serializer.deserialize(JSON, PrivacyGroup.class, resp.body().bytes());
     privacyGroupId = privacyGroup.getPrivacyGroupId();
@@ -81,10 +86,12 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
   @Test
   void expectedDeletePrivacyGroupId() throws Exception {
 
-    DeletePrivacyGroupRequest deletePrivacyGroupRequest = buildDeletePrivacyGroupRequest(privacyGroupId);
+    DeletePrivacyGroupRequest deletePrivacyGroupRequest =
+        buildDeletePrivacyGroupRequest(privacyGroupId, encodeBytes(senderKey.bytesArray()));
 
     Request request = buildPrivateAPIRequest("/deletePrivacyGroupId", JSON, deletePrivacyGroupRequest);
 
+    fakePeer.addResponse(new MockResponse().setBody(privacyGroupId));
     // execute request
     Response resp = httpClient.newCall(request).execute();
 
@@ -94,10 +101,12 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
   @Test
   void expectErrorDeletePrivacyGroupIdTwice() throws Exception {
 
-    DeletePrivacyGroupRequest deletePrivacyGroupRequest = buildDeletePrivacyGroupRequest(privacyGroupId);
+    DeletePrivacyGroupRequest deletePrivacyGroupRequest =
+        buildDeletePrivacyGroupRequest(privacyGroupId, encodeBytes(senderKey.bytesArray()));
 
     Request request = buildPrivateAPIRequest("/deletePrivacyGroupId", JSON, deletePrivacyGroupRequest);
 
+    fakePeer.addResponse(new MockResponse().setBody(privacyGroupId));
     // execute request
     Response resp = httpClient.newCall(request).execute();
 
@@ -112,7 +121,8 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
   @Test
   void expectErrorDeleteIncorrectPrivacyGroupId() throws Exception {
 
-    DeletePrivacyGroupRequest deletePrivacyGroupRequest = buildDeletePrivacyGroupRequest("test");
+    DeletePrivacyGroupRequest deletePrivacyGroupRequest =
+        buildDeletePrivacyGroupRequest("test", encodeBytes(senderKey.bytesArray()));
 
     Request request = buildPrivateAPIRequest("/deletePrivacyGroupId", JSON, deletePrivacyGroupRequest);
 
@@ -134,30 +144,7 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
     return privacyGroupRequest;
   }
 
-  DeletePrivacyGroupRequest buildDeletePrivacyGroupRequest(String key) {
-    return new DeletePrivacyGroupRequest(key);
-  }
-
-  class FakePeer {
-    final MockWebServer server;
-    final Box.PublicKey publicKey;
-
-    FakePeer(MockResponse response) throws IOException {
-      server = new MockWebServer();
-      publicKey = memoryKeyStore.generateKeyPair();
-      server.enqueue(response);
-      server.start();
-    }
-
-    FakePeer(MockResponse response, Box.PublicKey givenPublicKey) throws IOException {
-      server = new MockWebServer();
-      publicKey = givenPublicKey;
-      server.enqueue(response);
-      server.start();
-    }
-
-    URL getURL() {
-      return server.url("").url();
-    }
+  DeletePrivacyGroupRequest buildDeletePrivacyGroupRequest(String key, String from) {
+    return new DeletePrivacyGroupRequest(key, from);
   }
 }

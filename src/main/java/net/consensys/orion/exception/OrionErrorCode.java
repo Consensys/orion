@@ -50,6 +50,7 @@ public enum OrionErrorCode {
   /** Storing privacy group issue */
   ENCLAVE_UNABLE_STORE_PRIVACY_GROUP("PrivacyGroupNotStored"),
   ENCLAVE_UNABLE_DELETE_PRIVACY_GROUP("PrivacyGroupNotDeleted"),
+  ENCLAVE_UNABLE_PUSH_DELETE_PRIVACY_GROUP("PrivacyGroupNotPushed"),
   ENCLAVE_PRIVACY_GROUP_MISSING("PrivacyGroupNotFound");
 
   private final String code;
