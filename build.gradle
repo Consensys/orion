@@ -16,7 +16,7 @@ import net.ltgt.gradle.errorprone.CheckSeverity
 plugins {
   id "com.diffplug.gradle.spotless" version "3.10.0"
   id "com.github.hierynomus.license" version "0.14.0"
-  id "com.jfrog.bintray" version "1.8.0"
+  id "com.jfrog.bintray" version "1.8.4"
   id 'net.ltgt.errorprone' version '0.8'
 }
 
