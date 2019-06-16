@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 ConsenSys AG.
+ * Copyright 2019 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -107,6 +107,10 @@ tasks.withType(JavaCompile) {
     check('FieldCanBeFinal', CheckSeverity.WARN)
     check('WildcardImport', CheckSeverity.WARN)
     check('TestExceptionChecker', CheckSeverity.WARN)
+    // This check is broken in Java 12.  See https://github.com/google/error-prone/issues/1257
+    if ((JavaVersion.current().majorVersion as Integer) > 11) {
+      check('Finally', CheckSeverity.OFF)
+    }
   }
 }
 
@@ -266,6 +270,9 @@ dependencies {
   performanceCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.3.1'
 
   errorprone 'com.google.errorprone:error_prone_core:2.3.3'
+  if (JavaVersion.current().isJava8()) {
+    errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
+  }
 }
 
 
