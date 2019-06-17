@@ -360,8 +360,8 @@ publishing {
   publications {
     mavenArtifact(MavenPublication) {
       from components.java
-	  artifact sourcesJar
-	  artifact javadocJar
+      artifact sourcesJar
+      artifact javadocJar
       pom.withXml {
         asNode().children().last() + {
           resolveStrategy = Closure.DELEGATE_FIRST
