@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -129,6 +130,9 @@ public class SendHandler implements Handler<RoutingContext> {
               .fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, "privacy group not found"));
           return result;
         }
+      }).exceptionally(e -> {
+        handleFailure(routingContext, e);
+        return Optional.empty();
       });
     }
   }
