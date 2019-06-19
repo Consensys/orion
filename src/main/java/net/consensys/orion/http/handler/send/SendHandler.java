@@ -116,6 +116,9 @@ public class SendHandler implements Handler<RoutingContext> {
       privacyGroupStorage.put(privacyGroupPayload).thenApply((result) -> {
         send(routingContext, sendRequest, fromKey, toKeys, privacyGroupPayload);
         return result;
+      }).exceptionally(e -> {
+        handleFailure(routingContext, e);
+        return null;
       });
     } else if (sendRequest.privacyGroupId().isPresent()) {
       privacyGroupStorage.get(sendRequest.privacyGroupId().get()).thenApply((result) -> {
