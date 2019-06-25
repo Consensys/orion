@@ -19,6 +19,7 @@ import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
+import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.http.server.HttpContentType;
@@ -51,6 +52,7 @@ public class SendHandler implements Handler<RoutingContext> {
   private final Enclave enclave;
   private final Storage<EncryptedPayload> storage;
   private final Storage<PrivacyGroupPayload> privacyGroupStorage;
+  private final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
   private final List<Box.PublicKey> nodeKeys;
   private final ConcurrentNetworkNodes networkNodes;
   private final HttpContentType contentType;
@@ -62,12 +64,14 @@ public class SendHandler implements Handler<RoutingContext> {
       Enclave enclave,
       Storage<EncryptedPayload> storage,
       Storage<PrivacyGroupPayload> privacyGroupStorage,
+      Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
       ConcurrentNetworkNodes networkNodes,
       HttpContentType contentType,
       Config config) {
     this.enclave = enclave;
     this.storage = storage;
     this.privacyGroupStorage = privacyGroupStorage;
+    this.queryPrivacyGroupStorage = queryPrivacyGroupStorage;
     this.nodeKeys = Arrays.asList(enclave.nodeKeys());
     this.networkNodes = networkNodes;
     this.contentType = contentType;
@@ -114,8 +118,17 @@ public class SendHandler implements Handler<RoutingContext> {
           PrivacyGroupPayload.Type.LEGACY,
           null);
       privacyGroupStorage.put(privacyGroupPayload).thenApply((result) -> {
-        send(routingContext, sendRequest, fromKey, toKeys, privacyGroupPayload);
-        return result;
+        QueryPrivacyGroupPayload queryPrivacyGroupPayload =
+            new QueryPrivacyGroupPayload(keys.toArray(new String[0]), null);
+        queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupStorage.generateDigest(privacyGroupPayload));
+        String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
+        return queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenApply((res) -> {
+          send(routingContext, sendRequest, fromKey, toKeys, privacyGroupPayload);
+          return result;
+        }).exceptionally(e -> {
+          handleFailure(routingContext, e);
+          return null;
+        });
       }).exceptionally(e -> {
         routingContext
             .fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, "privacy group not stored"));

@@ -476,7 +476,7 @@ class SendHandlerTest extends HandlerTest {
     Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
     byte[] privacyGroupId = enclave
-        .generatePrivacyGroupId(new Box.PublicKey[] {recipientKey, senderKey}, null, PrivacyGroupPayload.Type.LEGACY);
+        .generatePrivacyGroupId(new Box.PublicKey[] {recipientKey, senderKey}, null, PrivacyGroupPayload.Type.PANTHEON);
 
     // generate random byte content
     byte[] toEncrypt = new byte[342];

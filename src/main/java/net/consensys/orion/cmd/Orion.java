@@ -31,10 +31,12 @@ import net.consensys.orion.config.ConfigException;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
+import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
 import net.consensys.orion.enclave.sodium.FileKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.http.handler.partyinfo.PartyInfoHandler;
 import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupHandler;
+import net.consensys.orion.http.handler.privacy.FindPrivacyGroupHandler;
 import net.consensys.orion.http.handler.privacy.PrivacyGroupHandler;
 import net.consensys.orion.http.handler.push.PushHandler;
 import net.consensys.orion.http.handler.push.PushPrivacyGroupHandler;
@@ -46,6 +48,7 @@ import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.network.NetworkDiscovery;
 import net.consensys.orion.storage.EncryptedPayloadStorage;
 import net.consensys.orion.storage.PrivacyGroupStorage;
+import net.consensys.orion.storage.QueryPrivacyGroupStorage;
 import net.consensys.orion.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.storage.StorageKeyBuilder;
@@ -122,6 +125,7 @@ public class Orion {
       Enclave enclave,
       Storage<EncryptedPayload> storage,
       Storage<PrivacyGroupPayload> privacyGroupStorage,
+      Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
       Router nodeRouter,
       Router clientRouter,
       Config config) {
@@ -158,7 +162,15 @@ public class Orion {
     clientRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
     clientRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
-        new SendHandler(vertx, enclave, storage, privacyGroupStorage, networkNodes, JSON, config));
+        new SendHandler(
+            vertx,
+            enclave,
+            storage,
+            privacyGroupStorage,
+            queryPrivacyGroupStorage,
+            networkNodes,
+            JSON,
+            config));
     clientRouter
         .post("/sendraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
@@ -169,6 +181,7 @@ public class Orion {
                 enclave,
                 storage,
                 privacyGroupStorage,
+                queryPrivacyGroupStorage,
                 networkNodes,
                 APPLICATION_OCTET_STREAM,
                 config));
@@ -184,10 +197,19 @@ public class Orion {
         .handler(new ReceiveHandler(enclave, storage, APPLICATION_OCTET_STREAM));
 
     clientRouter.post("/privacyGroupId").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
-        new PrivacyGroupHandler(privacyGroupStorage, networkNodes, enclave, vertx, config));
+        new PrivacyGroupHandler(privacyGroupStorage, queryPrivacyGroupStorage, networkNodes, enclave, vertx, config));
 
     clientRouter.post("/deletePrivacyGroupId").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
-        new DeletePrivacyGroupHandler(privacyGroupStorage, networkNodes, enclave, vertx, config));
+        new DeletePrivacyGroupHandler(
+            privacyGroupStorage,
+            queryPrivacyGroupStorage,
+            networkNodes,
+            enclave,
+            vertx,
+            config));
+
+    clientRouter.post("/findPrivacyGroupId").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
+        new FindPrivacyGroupHandler(queryPrivacyGroupStorage, enclave));
   }
 
   public Orion() {
@@ -361,6 +383,7 @@ public class Orion {
     // controller dependencies
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
     EncryptedPayloadStorage encryptedStorage = new EncryptedPayloadStorage(storage, keyBuilder);
+    QueryPrivacyGroupStorage queryPrivacyGroupStorage = new QueryPrivacyGroupStorage(storage, enclave);
     PrivacyGroupStorage privacyGroupStorage = new PrivacyGroupStorage(storage, enclave);
     configureRoutes(
         vertx,
@@ -368,6 +391,7 @@ public class Orion {
         enclave,
         encryptedStorage,
         privacyGroupStorage,
+        queryPrivacyGroupStorage,
         nodeRouter,
         clientRouter,
         config);
