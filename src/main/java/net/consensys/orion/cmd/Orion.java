@@ -149,7 +149,7 @@ public class Orion {
         new PushHandler(storage));
 
     nodeRouter.post("/pushPrivacyGroup").produces(TEXT.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
-        new PushPrivacyGroupHandler(privacyGroupStorage));
+        new PushPrivacyGroupHandler(privacyGroupStorage, queryPrivacyGroupStorage));
 
     //Setup client APIs
     clientRouter

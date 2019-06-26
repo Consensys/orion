@@ -13,6 +13,7 @@
 package net.consensys.orion.http.handler.push;
 
 import net.consensys.orion.enclave.PrivacyGroupPayload;
+import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.utils.Serializer;
@@ -26,9 +27,13 @@ import org.apache.logging.log4j.Logger;
 public class PushPrivacyGroupHandler implements Handler<RoutingContext> {
   private static final Logger log = LogManager.getLogger();
   private final Storage<PrivacyGroupPayload> storage;
+  private final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
 
-  public PushPrivacyGroupHandler(Storage<PrivacyGroupPayload> storage) {
+  public PushPrivacyGroupHandler(
+      Storage<PrivacyGroupPayload> storage,
+      Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage) {
     this.storage = storage;
+    this.queryPrivacyGroupStorage = queryPrivacyGroupStorage;
   }
 
   @Override
@@ -37,8 +42,18 @@ public class PushPrivacyGroupHandler implements Handler<RoutingContext> {
         Serializer.deserialize(HttpContentType.CBOR, PrivacyGroupPayload.class, routingContext.getBody().getBytes());
 
     storage.put(pushRequest).thenAccept((digest) -> {
-      log.debug("stored privacy group. resulting digest: {}", digest);
-      routingContext.response().end(digest);
+      QueryPrivacyGroupPayload queryPrivacyGroupPayload = new QueryPrivacyGroupPayload(pushRequest.addresses(), null);
+      queryPrivacyGroupPayload.setPrivacyGroupToAppend(storage.generateDigest(pushRequest));
+      String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
+      queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenApply((res) -> {
+        log.debug("stored privacy group. resulting digest: {}", digest);
+        routingContext.response().end(digest);
+        return null;
+      }).exceptionally(e -> {
+        routingContext.fail(e);
+        return null;
+      });
+
     }).exceptionally(e -> routingContext.fail(e));
 
   }
