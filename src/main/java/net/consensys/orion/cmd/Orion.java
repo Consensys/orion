@@ -209,7 +209,7 @@ public class Orion {
             config));
 
     clientRouter.post("/findPrivacyGroupId").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
-        new FindPrivacyGroupHandler(queryPrivacyGroupStorage, enclave));
+        new FindPrivacyGroupHandler(queryPrivacyGroupStorage, privacyGroupStorage, enclave));
   }
 
   public Orion() {

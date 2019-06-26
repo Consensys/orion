@@ -24,8 +24,11 @@ import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.utils.Serializer;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -37,14 +40,20 @@ import io.vertx.ext.web.RoutingContext;
 public class FindPrivacyGroupHandler implements Handler<RoutingContext> {
 
   private final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
+  private final Storage<PrivacyGroupPayload> privacyGroupStorage;
   private final Enclave enclave;
 
-  public FindPrivacyGroupHandler(Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage, Enclave enclave) {
+  public FindPrivacyGroupHandler(
+      Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
+      Storage<PrivacyGroupPayload> privacyGroupStorage,
+      Enclave enclave) {
     this.queryPrivacyGroupStorage = queryPrivacyGroupStorage;
+    this.privacyGroupStorage = privacyGroupStorage;
     this.enclave = enclave;
   }
 
   @Override
+  @SuppressWarnings("rawtypes")
   public void handle(RoutingContext routingContext) {
 
     byte[] request = routingContext.getBody().getBytes();
@@ -62,9 +71,54 @@ public class FindPrivacyGroupHandler implements Handler<RoutingContext> {
 
     queryPrivacyGroupStorage.get(key).thenAccept((result) -> {
       if (result.isPresent()) {
-        final Buffer responseData = Buffer.buffer(
-            Serializer.serialize(JSON, Collections.singletonMap("privacyGroupIds", result.get().privacyGroupId())));
-        routingContext.response().end(responseData);
+        List<String> privacyGroupIds = result.get().privacyGroupId();
+
+        CompletableFuture[] cfs = privacyGroupIds.stream().map(pKey -> {
+
+          CompletableFuture<FindPrivacyGroupResponse> responseFuture = new CompletableFuture<>();
+          privacyGroupStorage.get(pKey).thenAccept((res) -> {
+            if (res.isPresent()) {
+              PrivacyGroupPayload privacyGroupPayload = res.get();
+              if (privacyGroupPayload.state().equals(PrivacyGroupPayload.State.ACTIVE)) {
+                FindPrivacyGroupResponse response = new FindPrivacyGroupResponse(
+                    pKey,
+                    privacyGroupPayload.name(),
+                    privacyGroupPayload.description(),
+                    privacyGroupPayload.addresses());
+                responseFuture.complete(response);
+              } else {
+                responseFuture.complete(new FindPrivacyGroupResponse());
+              }
+            } else {
+              responseFuture.completeExceptionally(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING));
+            }
+          });
+          return responseFuture;
+        }).toArray(CompletableFuture[]::new);
+
+        CompletableFuture.allOf(cfs).whenComplete((all, ex) -> {
+          if (ex != null) {
+            routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING));
+            return;
+          }
+
+          List<FindPrivacyGroupResponse> listPrivacyGroups = new ArrayList<>();
+          for (CompletableFuture c : cfs) {
+            try {
+              FindPrivacyGroupResponse privacyGroup = (FindPrivacyGroupResponse) c.get();
+              if (privacyGroup.privacyGroupId() != null) {
+                listPrivacyGroups.add(privacyGroup);
+              }
+            } catch (InterruptedException | ExecutionException e) {
+              routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING));
+            }
+          }
+
+          final Buffer responseData = Buffer.buffer(Serializer.serialize(JSON, listPrivacyGroups));
+          routingContext.response().end(responseData);
+
+        });
+
       } else {
         routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING));
       }
