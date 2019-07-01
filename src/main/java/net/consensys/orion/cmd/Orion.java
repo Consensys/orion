@@ -24,7 +24,6 @@ import net.consensys.cava.crypto.sodium.Sodium;
 import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.cava.kv.LevelDBKeyValueStore;
 import net.consensys.cava.kv.MapDBKeyValueStore;
-import net.consensys.cava.kv.SQLKeyValueStore;
 import net.consensys.cava.net.tls.VertxTrustOptions;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.config.ConfigException;
@@ -47,6 +46,7 @@ import net.consensys.orion.http.server.vertx.HttpErrorHandler;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.network.NetworkDiscovery;
 import net.consensys.orion.storage.EncryptedPayloadStorage;
+import net.consensys.orion.storage.OrionSQLKeyValueStore;
 import net.consensys.orion.storage.PrivacyGroupStorage;
 import net.consensys.orion.storage.QueryPrivacyGroupStorage;
 import net.consensys.orion.storage.Sha512_256StorageKeyBuilder;
@@ -62,6 +62,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Security;
+import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -520,8 +521,10 @@ public class Orion {
       }
     } else if (storage.toLowerCase().startsWith("sql")) {
       try {
-        return SQLKeyValueStore.open(db);
-      } catch (IOException e) {
+        // FIXME: Hack to enable update in SQL.
+        // TODO: Update net.consensys.cava.kv.SQLKeyValueStore to enable updates
+        return new OrionSQLKeyValueStore(db);
+      } catch (IOException | SQLException e) {
         throw new OrionStartException("Couldn't create SQL-backed store: " + db, e);
       }
     } else {

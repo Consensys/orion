@@ -43,6 +43,9 @@ public class PushPrivacyGroupHandler implements Handler<RoutingContext> {
 
     storage.put(pushRequest).thenAccept((digest) -> {
       QueryPrivacyGroupPayload queryPrivacyGroupPayload = new QueryPrivacyGroupPayload(pushRequest.addresses(), null);
+      if (pushRequest.state().equals(PrivacyGroupPayload.State.DELETED)) {
+        queryPrivacyGroupPayload.setToDelete(true);
+      }
       queryPrivacyGroupPayload.setPrivacyGroupToAppend(storage.generateDigest(pushRequest));
       String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
       queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenApply((res) -> {
