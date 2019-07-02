@@ -126,7 +126,8 @@ public class SendHandler implements Handler<RoutingContext> {
           send(routingContext, sendRequest, fromKey, toKeys, privacyGroupPayload);
           return result;
         }).exceptionally(e -> {
-          handleFailure(routingContext, e);
+          routingContext
+              .fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, "privacy group not stored"));
           return null;
         });
       }).exceptionally(e -> {

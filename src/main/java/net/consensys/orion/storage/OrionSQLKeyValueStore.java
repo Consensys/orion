@@ -110,11 +110,11 @@ public class OrionSQLKeyValueStore implements KeyValueStore {
       if (successful) {
         return AsyncCompletion.completed();
       } else {
-        return AsyncCompletion.exceptional(new OrionException(OrionErrorCode.ENCLAVE_NO_MATCHING_PRIVATE_KEY));
+        return AsyncCompletion.exceptional(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP));
       }
     } catch (InterruptedException | ExecutionException e) {
       e.printStackTrace();
-      return AsyncCompletion.exceptional(new OrionException(OrionErrorCode.ENCLAVE_NO_MATCHING_PRIVATE_KEY));
+      return AsyncCompletion.exceptional(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP));
     }
   }
 
