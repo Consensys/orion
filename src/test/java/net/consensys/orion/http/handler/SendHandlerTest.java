@@ -182,6 +182,50 @@ class SendHandlerTest extends HandlerTest {
   }
 
   @Test
+  void sendEmptyTo() throws Exception {
+    // note: we need to do this as the fakePeers need to know in advance the digest to return.
+    // not possible with libSodium due to random nonce
+
+    // generate random byte content
+    byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    // encrypt it here to compute digest
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
+    String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
+
+    // create fake peer
+    Box.PublicKey sender = memoryKeyStore.generateKeyPair();
+    FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), sender);
+    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+
+    // configureRoutes our sendRequest
+    Map<String, Object> sendRequest = buildRequest(new String[0], toEncrypt, encodeBytes(sender.bytesArray()));
+    Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
+
+    // execute request
+    Response resp = httpClient.newCall(request).execute();
+
+    // ensure we got a 200 OK
+    assertEquals(200, resp.code());
+
+    // ensure peer actually got the EncryptedPayload
+    RecordedRequest recordedRequest = fakePeer.server.takeRequest();
+
+    // check method and path
+    assertEquals("/push", recordedRequest.getPath());
+    assertEquals("POST", recordedRequest.getMethod());
+
+    // check header
+    assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
+
+    // ensure cipher text is same.
+    EncryptedPayload receivedPayload =
+        Serializer.deserialize(CBOR, EncryptedPayload.class, recordedRequest.getBody().readByteArray());
+    assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
+  }
+
+  @Test
   void sendApiOnlyWorksOnPrivatePort() throws Exception {
     // note: we need to do this as the fakePeers need to know in advance the digest to return.
     // not possible with libSodium due to random nonce
