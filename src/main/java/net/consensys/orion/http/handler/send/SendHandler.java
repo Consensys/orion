@@ -126,13 +126,11 @@ public class SendHandler implements Handler<RoutingContext> {
           send(routingContext, sendRequest, fromKey, toKeys, privacyGroupPayload);
           return result;
         }).exceptionally(e -> {
-          routingContext
-              .fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, "privacy group not stored"));
+          handleFailure(routingContext, e, ErrorType.FIND_GROUP);
           return null;
         });
       }).exceptionally(e -> {
-        routingContext
-            .fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, "privacy group not stored"));
+        handleFailure(routingContext, e, ErrorType.FIND_GROUP);
         return null;
       });
     } else if (sendRequest.privacyGroupId().isPresent()) {
@@ -144,13 +142,14 @@ public class SendHandler implements Handler<RoutingContext> {
           send(routingContext, sendRequest, fromKey, toKeys, result.get());
           return result;
         } else {
-          routingContext
-              .fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, "privacy group not found"));
+          handleFailure(
+              routingContext,
+              new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, "privacy group not found"),
+              ErrorType.FIND_GROUP);
           return result;
         }
       }).exceptionally(e -> {
-        routingContext
-            .fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, "privacy group not found"));
+        handleFailure(routingContext, e, ErrorType.FIND_GROUP);
         return Optional.empty();
       });
     }
@@ -217,7 +216,7 @@ public class SendHandler implements Handler<RoutingContext> {
 
     CompletableFuture.allOf(cfs).whenComplete((all, ex) -> {
       if (ex != null) {
-        handleFailure(routingContext, ex);
+        handleFailure(routingContext, ex, ErrorType.PROPAGATE_ALL_PEERS);
         return;
       }
       storage.put(encryptedPayload).thenAccept((result) -> {
@@ -229,18 +228,33 @@ public class SendHandler implements Handler<RoutingContext> {
           responseData = Buffer.buffer(digest);
         }
         routingContext.response().end(responseData);
-      }).exceptionally(e -> handleFailure(routingContext, e));
+      }).exceptionally(e -> handleFailure(routingContext, e, ErrorType.PROPAGATE_ALL_PEERS));
     });
   }
 
-  private void handleFailure(RoutingContext routingContext, Throwable ex) {
-    log.warn("propagating the payload failed");
+  enum ErrorType {
+    STORE_GROUP, FIND_GROUP, PROPAGATE_ALL_PEERS
+  }
+
+  private void handleFailure(RoutingContext routingContext, Throwable ex, ErrorType errorType) {
 
     Throwable cause = ex.getCause();
     if (cause instanceof OrionException) {
       routingContext.fail(cause);
     } else {
-      routingContext.fail(new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS, ex));
+      switch (errorType) {
+        case STORE_GROUP:
+          log.warn("storing the privacy group failed");
+          routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, ex));
+          break;
+        case FIND_GROUP:
+          log.warn("finding the privacy group failed");
+          routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, ex));
+          break;
+        case PROPAGATE_ALL_PEERS:
+          log.warn("propagating the payload failed");
+          routingContext.fail(new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS, ex));
+      }
     }
   }
 
