@@ -24,6 +24,7 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.junit.TempDirectory;
@@ -49,6 +50,7 @@ import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
+import junit.framework.AssertionFailedError;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -248,7 +250,7 @@ class DualNodesPrivacyGroupsTest {
     assertEquals(firstPrivacyGroup.getName(), name);
     assertEquals(firstPrivacyGroup.getDescription(), description);
 
-    // find the created privacy group in first node
+    // find the created privacy group in second node
     FindPrivacyGroupResponse[] updatedPrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
     assertEquals(updatedPrivacyGroups.length, 2);
     assertEquals(updatedPrivacyGroups[0].privacyGroupId(), firstPrivacyGroupId);
@@ -269,6 +271,28 @@ class DualNodesPrivacyGroupsTest {
 
   @Test
   void createAndDeleteTwice() {
+    final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
 
+    String name = "testName";
+    String description = "testDescription";
+    String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
+
+    // create a privacy group
+    PrivacyGroup privacyGroup = createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, name, description);
+
+    String privacyGroupId = privacyGroup.getPrivacyGroupId();
+    assertEquals(privacyGroup.getName(), name);
+    assertEquals(privacyGroup.getDescription(), description);
+
+    // find the created privacy group in first node
+    FindPrivacyGroupResponse[] initialPrivacyGroups = findPrivacyGroupTransaction(firstNode, addresses);
+    assertEquals(initialPrivacyGroups.length, 1);
+    assertEquals(initialPrivacyGroups[0].privacyGroupId(), privacyGroupId);
+
+    // delete the privacy group
+    deletePrivacyGroupTransaction(firstNode, privacyGroupId, PK_1_B_64);
+
+    // try to delete the group again
+    assertThrows(AssertionFailedError.class, () -> deletePrivacyGroupTransaction(firstNode, privacyGroupId, PK_1_B_64));
   }
 }
