@@ -84,7 +84,7 @@ public class SendHandler implements Handler<RoutingContext> {
     }
     log.debug(sendRequest);
 
-    if (sendRequest.to() == null && !sendRequest.privacyGroupId().isPresent()) {
+    if ((sendRequest.to() == null || sendRequest.to().length == 0) && !sendRequest.privacyGroupId().isPresent()) {
       sendRequest.setTo(new String[] {sendRequest.from().orElse(null)});
     }
     if (!sendRequest.isValid()) {
@@ -117,7 +117,8 @@ public class SendHandler implements Handler<RoutingContext> {
         send(routingContext, sendRequest, fromKey, toKeys, privacyGroupPayload);
         return result;
       }).exceptionally(e -> {
-        handleFailure(routingContext, e);
+        routingContext
+            .fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, "privacy group not stored"));
         return null;
       });
     } else if (sendRequest.privacyGroupId().isPresent()) {
@@ -134,7 +135,8 @@ public class SendHandler implements Handler<RoutingContext> {
           return result;
         }
       }).exceptionally(e -> {
-        handleFailure(routingContext, e);
+        routingContext
+            .fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, "privacy group not found"));
         return Optional.empty();
       });
     }
