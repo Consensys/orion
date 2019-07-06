@@ -1,15 +1,17 @@
 # Privacy Groups 
 
-For each transaction, the transaction payload is distributed to each participant in the privacy group. 
+When [transactions are sent](../Reference/API-Methods.md#send) to: 
 
-Either the privacy group either already exists with a defined list of members -> payload submitted to all members. 
+* List of recipients, Orion creates a privacy group containing the recipients 
+* Privacy group, the transaction is distributed to all members of the privacy group. 
 
-Or doesn't exist -> privacy group is created with privateFrom and privateFor as members and and payload
-sent to all members. 
+Pantheon maintains a [private state per privacy group](https://docs.pantheon.pegasys.tech/en/stable/Privacy/Privacy-Overview/#privacy-groups). 
 
-Pantheon maintains a private state per privacy group. 
+Endpoints are provided to create and manage privacy groups: 
 
-Privacy groups/methods -> explain 
+* [privacyGroupId](../Reference/API-Methods.md#privacygroupid) 
+* [findPrivacyGroupId](../Reference/API-Methods.md#findprivacygroupid) 
+* [deletePrivacyGroupId](../Reference/API-Methods.md#deleteprivacygroupid) 
 
 
-Raise JI to create images 
+

@@ -9,9 +9,6 @@ The default port is `8888`.
 
 Deletes a privacy group.
 
-QUESTION: do you have to be a participant in a privacy group to delete it? If yes, what error 
-message is returned if you're not? 
-
 **HTTP Verb**
 POST 
 
@@ -26,28 +23,25 @@ Content-Type: application/json
 
 **Returns**
 
-`payload` : *string* - Base64 encoded payload QUESTION: what does it return? 
+`privacyGroupId` : *string* - ID of the deleted privacy group 
 
 !!! example
     ```bash tab="curl HTTP request"
     curl -X POST http://127.0.0.1:8888/deletePrivacyGroupId \
       -H 'Content-Type: application/json' \
       -d '{
-        "privacyGroupId": "DyAOiF/ynpc+JXa2YAGB0bCitSlOMNm+ShmB/7M6C4zKjP39ut+Z7lyQ7YUGRje++UBkaA==",
-        "from": "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs="
+        "privacyGroupId": "68/Cq0mVjB8FbXDLE1tbDRAvD/srluIok137uFOaClOIn4m3Nn0P4jDuRGhWK3AAVdvkqQ==",
+        "from": "negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk="
       }'
     ```
    
     ```json tab="Result"
-    ADD THIS 
+    "68/Cq0mVjB8FbXDLE1tbDRAvD/srluIok137uFOaClOIn4m3Nn0P4jDuRGhWK3AAVdvkqQ==" 
     ```
 
 ## findPrivacyGroupId
 
-Finds all privacy group for the specified members.
-
-QUESTION: if you specify A & B, does it return privacy groups that contain either, or both? If no
-privacy groups, what error message is returned?  
+Finds all privacy groups for the specified members.
 
 **HTTP Verb**
 POST 
@@ -59,10 +53,6 @@ Content-Type: application/json
 
 `addresses` : *array of strings* - Public keys of Orion nodes for which to return privacy groups
 
-**Returns**
-
-`payload` : *string* - Base64 encoded payload QUESTION: what does it return? 
-
 !!! example
     ```bash tab="curl HTTP request"
     curl -X POST http://127.0.0.1:8888/findPrivacyGroupId \
@@ -73,11 +63,7 @@ Content-Type: application/json
           "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs="
       ]
     }'
-    ```
-   
-    ```json tab="Result"
-    ADD THIS 
-    ```
+    ``` 
 
 ## privacyGroupId
 
@@ -95,31 +81,36 @@ Content-Type: application/json
 
 `from` : *string* - Public key of the Orion node creating the privacy group
 
-`name` : *string* - Name of the privacy group QUESTION: is this optional? 
+`name` : *string* - Name of the privacy group. Optional. 
 
-`description` : *string* - Description for the privacy group QUESTION: is this optional?
+`description` : *string* - Description for the privacy group. Optional. 
 
 **Returns**
 
-`payload` : *string* - Base64 encoded payload QUESTION: what does it return? 
+`privacy group` : *object* - Privacy group object 
 
 !!! example
     ```bash tab="curl HTTP request"
     curl -X POST http://127.0.0.1:8888/privacyGroupId \
       -H 'Content-Type: application/json' \
-      -d '{
-       "addresses": [
-         "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=",
-         "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs="
-       ],
-       "from": "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=",
-       "name": "Organisation A",
-       "description": "Contains members of Organisation A"
+      -d '{ 
+        "addresses": [ 
+          "g59BmTeJIn7HIcnq8VQWgyh/pDbvbt2eyP0Ii60aDDw=", 
+          "negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk=" 
+        ], 
+        "from": "negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk=", 
+       "name": "Organisation A", 
+       "description": "Contains members of Organisation A" 
      }'
     ```
    
     ```json tab="Result"
-    ADD THIS 
+    {
+        "privacyGroupId": "68/Cq0mVjB8FbXDLE1tbDRAvD/srluIok137uFOaClOIn4m3Nn0P4jDuRGhWK3AAVdvkqQ==",
+        "name": "Organisation A",
+        "description": "Contains members of Organisation A",
+        "type": "PANTHEON"
+    } 
     ```
 
 ## receive
