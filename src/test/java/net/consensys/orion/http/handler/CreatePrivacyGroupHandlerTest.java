@@ -37,7 +37,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.Test;
 
-public class PrivacyGroupHandlerTest extends HandlerTest {
+public class CreatePrivacyGroupHandlerTest extends HandlerTest {
   private MemoryKeyStore memoryKeyStore;
 
   @Override
@@ -58,7 +58,7 @@ public class PrivacyGroupHandlerTest extends HandlerTest {
 
     PrivacyGroupRequest privacyGroupRequestExpected =
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
-    Request request = buildPrivateAPIRequest("/privacyGroupId", JSON, privacyGroupRequestExpected);
+    Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
 
     byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
         addresses,
@@ -96,7 +96,7 @@ public class PrivacyGroupHandlerTest extends HandlerTest {
     Box.PublicKey[] addresses = Arrays.stream(toEncrypt).map(enclave::readKey).toArray(Box.PublicKey[]::new);
     PrivacyGroupRequest privacyGroupRequestExpected =
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
-    Request request = buildPrivateAPIRequest("/privacyGroupId", JSON, privacyGroupRequestExpected);
+    Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
 
     byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
         addresses,
@@ -138,7 +138,7 @@ public class PrivacyGroupHandlerTest extends HandlerTest {
 
     PrivacyGroupRequest privacyGroupRequestExpected =
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
-    Request request = buildPrivateAPIRequest("/privacyGroupId", JSON, privacyGroupRequestExpected);
+    Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
 
     byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
         addresses,
@@ -157,6 +157,23 @@ public class PrivacyGroupHandlerTest extends HandlerTest {
     PrivacyGroup privacyGroup = Serializer.deserialize(JSON, PrivacyGroup.class, resp.body().bytes());
 
     assertEquals(privacyGroup.getPrivacyGroupId(), encodeBytes(privacyGroupPayload));
+  }
+
+  @Test
+  void ErrorIfCreateDoesntContainSelf() throws IOException {
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+
+    String[] toEncrypt = new String[] {encodeBytes(recipientKey.bytesArray())};
+
+    PrivacyGroupRequest privacyGroupRequestExpected =
+        buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
+    Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
+
+    // execute request
+    Response resp = httpClient.newCall(request).execute();
+
+    assertEquals(500, resp.code());
   }
 
   PrivacyGroupRequest buildPrivacyGroupRequest(String[] addresses, String from, String name, String description) {

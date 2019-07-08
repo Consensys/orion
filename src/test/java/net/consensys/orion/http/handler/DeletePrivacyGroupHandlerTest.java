@@ -60,7 +60,7 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
     String[] toEncrypt = new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
     PrivacyGroupRequest privacyGroupRequestExpected =
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
-    Request request = buildPrivateAPIRequest("/privacyGroupId", JSON, privacyGroupRequestExpected);
+    Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
 
     byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
         new Box.PublicKey[] {senderKey, recipientKey},
@@ -90,7 +90,7 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
     DeletePrivacyGroupRequest deletePrivacyGroupRequest =
         buildDeletePrivacyGroupRequest(privacyGroupId, encodeBytes(senderKey.bytesArray()));
 
-    Request request = buildPrivateAPIRequest("/deletePrivacyGroupId", JSON, deletePrivacyGroupRequest);
+    Request request = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
 
     fakePeer.addResponse(new MockResponse().setBody(privacyGroupId));
     // execute request
@@ -105,7 +105,7 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
     DeletePrivacyGroupRequest deletePrivacyGroupRequest =
         buildDeletePrivacyGroupRequest(privacyGroupId, encodeBytes(senderKey.bytesArray()));
 
-    Request request = buildPrivateAPIRequest("/deletePrivacyGroupId", JSON, deletePrivacyGroupRequest);
+    Request request = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
 
     fakePeer.addResponse(new MockResponse().setBody(privacyGroupId));
     // execute request
@@ -125,7 +125,7 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
     DeletePrivacyGroupRequest deletePrivacyGroupRequest =
         buildDeletePrivacyGroupRequest("test", encodeBytes(senderKey.bytesArray()));
 
-    Request request = buildPrivateAPIRequest("/deletePrivacyGroupId", JSON, deletePrivacyGroupRequest);
+    Request request = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();

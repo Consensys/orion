@@ -141,7 +141,7 @@ public class EthClientStub {
   public Optional<PrivacyGroup> createPrivacyGroup(String[] addresses, String from, String name, String description) {
     PrivacyGroupRequest createGroupRequest = new PrivacyGroupRequest(addresses, from, name, description);
     CompletableFuture<PrivacyGroup> keyFuture = new CompletableFuture<>();
-    httpClient.post(clientPort, "localhost", "/privacyGroupId").handler(resp -> {
+    httpClient.post(clientPort, "localhost", "/createPrivacyGroup").handler(resp -> {
       if (resp.statusCode() == 200) {
         resp.bodyHandler(body -> keyFuture.complete(deserialize(body, PrivacyGroup.class)));
       } else {
@@ -155,7 +155,7 @@ public class EthClientStub {
   public Optional<FindPrivacyGroupResponse[]> findPrivacyGroup(String[] addresses) {
     FindPrivacyGroupRequest findGroupRequest = new FindPrivacyGroupRequest(addresses);
     CompletableFuture<FindPrivacyGroupResponse[]> keyFuture = new CompletableFuture<>();
-    httpClient.post(clientPort, "localhost", "/findPrivacyGroupId").handler(resp -> {
+    httpClient.post(clientPort, "localhost", "/findPrivacyGroup").handler(resp -> {
       if (resp.statusCode() == 200) {
         resp.bodyHandler(body -> keyFuture.complete(deserialize(body, FindPrivacyGroupResponse[].class)));
       } else {
@@ -169,7 +169,7 @@ public class EthClientStub {
   public Optional<String> deletePrivacyGroup(String privacyGroupId, String from) {
     DeletePrivacyGroupRequest deleteGroupRequest = new DeletePrivacyGroupRequest(privacyGroupId, from);
     CompletableFuture<String> keyFuture = new CompletableFuture<>();
-    httpClient.post(clientPort, "localhost", "/deletePrivacyGroupId").handler(resp -> {
+    httpClient.post(clientPort, "localhost", "/deletePrivacyGroup").handler(resp -> {
       if (resp.statusCode() == 200) {
         resp.bodyHandler((body) -> {
           String res = deserialize(body, String.class);

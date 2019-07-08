@@ -43,9 +43,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Get the privacyGroup id given the list of addresses.
+ * Create a privacyGroup given the list of addresses.
  */
-public class PrivacyGroupHandler implements Handler<RoutingContext> {
+public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
 
 
   private static final Logger log = LogManager.getLogger();
@@ -56,7 +56,7 @@ public class PrivacyGroupHandler implements Handler<RoutingContext> {
   private final Enclave enclave;
   private final HttpClient httpClient;
 
-  public PrivacyGroupHandler(
+  public CreatePrivacyGroupHandler(
       Storage<PrivacyGroupPayload> privacyGroupStorage,
       Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
       ConcurrentNetworkNodes networkNodes,
@@ -75,6 +75,12 @@ public class PrivacyGroupHandler implements Handler<RoutingContext> {
 
     byte[] request = routingContext.getBody().getBytes();
     PrivacyGroupRequest privacyGroup = Serializer.deserialize(JSON, PrivacyGroupRequest.class, request);
+
+    if (!Arrays.asList(privacyGroup.addresses()).contains(privacyGroup.from())) {
+      routingContext.fail(
+          new OrionException(OrionErrorCode.CREATE_GROUP_INCLUDE_SELF, "the list of addresses should include self "));
+      return;
+    }
 
     byte[] bytes = new byte[20];
     if (privacyGroup.getSeed().isPresent()) {
