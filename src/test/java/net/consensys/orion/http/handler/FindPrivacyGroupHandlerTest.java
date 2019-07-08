@@ -67,7 +67,7 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
     toEncrypt = new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
     PrivacyGroupRequest privacyGroupRequestExpected =
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), name, description);
-    Request request = buildPrivateAPIRequest("/createPrivacyGroupId", JSON, privacyGroupRequestExpected);
+    Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
 
     byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
         new Box.PublicKey[] {senderKey, recipientKey},
@@ -94,7 +94,7 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
   @Test
   void findPrivacyGroupIdAfterCreation() throws Exception {
     FindPrivacyGroupRequest findPrivacyGroupRequest = new FindPrivacyGroupRequest(toEncrypt);
-    Request request = buildPrivateAPIRequest("/findPrivacyGroupId", JSON, findPrivacyGroupRequest);
+    Request request = buildPrivateAPIRequest("/findPrivacyGroup", JSON, findPrivacyGroupRequest);
 
     Response resp = httpClient.newCall(request).execute();
 
@@ -114,7 +114,7 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
   void findPrivacyAfterDelete() throws IOException {
     // find the created privacy group
     FindPrivacyGroupRequest findPrivacyGroupRequest = new FindPrivacyGroupRequest(toEncrypt);
-    Request request = buildPrivateAPIRequest("/findPrivacyGroupId", JSON, findPrivacyGroupRequest);
+    Request request = buildPrivateAPIRequest("/findPrivacyGroup", JSON, findPrivacyGroupRequest);
 
     Response resp = httpClient.newCall(request).execute();
 
@@ -132,7 +132,7 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
     DeletePrivacyGroupRequest deletePrivacyGroupRequest =
         new DeletePrivacyGroupRequest(privacyGroupId, encodeBytes(senderKey.bytesArray()));
 
-    request = buildPrivateAPIRequest("/deletePrivacyGroupId", JSON, deletePrivacyGroupRequest);
+    request = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
 
     fakePeer.addResponse(new MockResponse().setBody(privacyGroupId));
     // execute request
@@ -142,7 +142,7 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
 
     // find the same privacy group again
     findPrivacyGroupRequest = new FindPrivacyGroupRequest(toEncrypt);
-    request = buildPrivateAPIRequest("/findPrivacyGroupId", JSON, findPrivacyGroupRequest);
+    request = buildPrivateAPIRequest("/findPrivacyGroup", JSON, findPrivacyGroupRequest);
 
     resp = httpClient.newCall(request).execute();
 

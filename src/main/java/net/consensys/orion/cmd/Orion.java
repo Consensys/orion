@@ -197,7 +197,7 @@ public class Orion {
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .handler(new ReceiveHandler(enclave, storage, APPLICATION_OCTET_STREAM));
 
-    clientRouter.post("/createPrivacyGroupId").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
+    clientRouter.post("/createPrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
         new CreatePrivacyGroupHandler(
             privacyGroupStorage,
             queryPrivacyGroupStorage,
@@ -206,7 +206,7 @@ public class Orion {
             vertx,
             config));
 
-    clientRouter.post("/deletePrivacyGroupId").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
+    clientRouter.post("/deletePrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
         new DeletePrivacyGroupHandler(
             privacyGroupStorage,
             queryPrivacyGroupStorage,
@@ -215,7 +215,7 @@ public class Orion {
             vertx,
             config));
 
-    clientRouter.post("/findPrivacyGroupId").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
+    clientRouter.post("/findPrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
         new FindPrivacyGroupHandler(queryPrivacyGroupStorage, privacyGroupStorage, enclave));
   }
 
