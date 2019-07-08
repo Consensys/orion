@@ -115,6 +115,10 @@ public class StubEnclave implements Enclave {
       outputStream.write(i);
     }
 
-    return outputStream.toByteArray();
+    if (type.equals(PrivacyGroupPayload.Type.PANTHEON)) {
+      return seed;
+    } else {
+      return outputStream.toByteArray();
+    }
   }
 }

@@ -19,6 +19,8 @@ import net.consensys.cava.bytes.Bytes;
 import net.consensys.cava.concurrent.AsyncResult;
 import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.orion.enclave.EncryptedPayload;
+import net.consensys.orion.exception.OrionErrorCode;
+import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
 
@@ -54,5 +56,10 @@ public class EncryptedPayloadStorage implements Storage<EncryptedPayload> {
     return store.getAsync(keyBytes).thenApply(
         maybeBytes -> Optional.ofNullable(maybeBytes).map(
             bytes -> Serializer.deserialize(HttpContentType.CBOR, EncryptedPayload.class, bytes.toArrayUnsafe())));
+  }
+
+  @Override
+  public AsyncResult<Optional<EncryptedPayload>> update(String key, EncryptedPayload data) {
+    throw new OrionException(OrionErrorCode.METHOD_UNIMPLEMENTED);
   }
 }

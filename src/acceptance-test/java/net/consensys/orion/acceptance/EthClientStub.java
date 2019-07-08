@@ -15,6 +15,11 @@ package net.consensys.orion.acceptance;
 import static net.consensys.cava.io.Base64.decodeBytes;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
+import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupRequest;
+import net.consensys.orion.http.handler.privacy.FindPrivacyGroupRequest;
+import net.consensys.orion.http.handler.privacy.FindPrivacyGroupResponse;
+import net.consensys.orion.http.handler.privacy.PrivacyGroup;
+import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
 import net.consensys.orion.http.handler.receive.ReceiveRequest;
 import net.consensys.orion.http.handler.receive.ReceiveResponse;
 import net.consensys.orion.utils.Serializer;
@@ -61,6 +66,20 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
+  public Optional<String> sendExpectingError(byte[] payload, String from, String[] to) {
+    Map<String, Object> sendRequest = sendRequest(payload, from, to);
+    CompletableFuture<String> keyFuture = new CompletableFuture<>();
+    httpClient.post(clientPort, "localhost", "/send").handler(resp -> {
+      if (resp.statusCode() != 200) {
+        resp.bodyHandler(body -> keyFuture.complete(body.toString()));
+      } else {
+        keyFuture.complete(null);
+      }
+    }).exceptionHandler(keyFuture::completeExceptionally).putHeader("Content-Type", "application/json").end(
+        Buffer.buffer(Serializer.serialize(JSON, sendRequest)));
+    return Optional.ofNullable(keyFuture.join());
+  }
+
   Optional<String> send(byte[] payload, String from, String privacyGroupId) {
     Map<String, Object> sendRequest = sendRequest(payload, from, privacyGroupId);
     CompletableFuture<String> keyFuture = new CompletableFuture<>();
@@ -75,8 +94,8 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
-  public Optional<String> sendExpectingError(byte[] payload, String from, String[] to) {
-    Map<String, Object> sendRequest = sendRequest(payload, from, to);
+  public Optional<String> sendPrivacyExpectingError(byte[] payload, String from, String privacyGroupId) {
+    Map<String, Object> sendRequest = sendRequest(payload, from, privacyGroupId);
     CompletableFuture<String> keyFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/send").handler(resp -> {
       if (resp.statusCode() != 200) {
@@ -117,6 +136,51 @@ public class EthClientStub {
         .putHeader("Content-Type", "application/vnd.orion.v1+json")
         .end(Buffer.buffer(Serializer.serialize(JSON, receiveRequest)));
     return payloadFuture.join();
+  }
+
+  public Optional<PrivacyGroup> createPrivacyGroup(String[] addresses, String from, String name, String description) {
+    PrivacyGroupRequest createGroupRequest = new PrivacyGroupRequest(addresses, from, name, description);
+    CompletableFuture<PrivacyGroup> keyFuture = new CompletableFuture<>();
+    httpClient.post(clientPort, "localhost", "/privacyGroupId").handler(resp -> {
+      if (resp.statusCode() == 200) {
+        resp.bodyHandler(body -> keyFuture.complete(deserialize(body, PrivacyGroup.class)));
+      } else {
+        keyFuture.complete(null);
+      }
+    }).exceptionHandler(keyFuture::completeExceptionally).putHeader("Content-Type", "application/json").end(
+        Buffer.buffer(Serializer.serialize(JSON, createGroupRequest)));
+    return Optional.ofNullable(keyFuture.join());
+  }
+
+  public Optional<FindPrivacyGroupResponse[]> findPrivacyGroup(String[] addresses) {
+    FindPrivacyGroupRequest findGroupRequest = new FindPrivacyGroupRequest(addresses);
+    CompletableFuture<FindPrivacyGroupResponse[]> keyFuture = new CompletableFuture<>();
+    httpClient.post(clientPort, "localhost", "/findPrivacyGroupId").handler(resp -> {
+      if (resp.statusCode() == 200) {
+        resp.bodyHandler(body -> keyFuture.complete(deserialize(body, FindPrivacyGroupResponse[].class)));
+      } else {
+        keyFuture.complete(null);
+      }
+    }).exceptionHandler(keyFuture::completeExceptionally).putHeader("Content-Type", "application/json").end(
+        Buffer.buffer(Serializer.serialize(JSON, findGroupRequest)));
+    return Optional.ofNullable(keyFuture.join());
+  }
+
+  public Optional<String> deletePrivacyGroup(String privacyGroupId, String from) {
+    DeletePrivacyGroupRequest deleteGroupRequest = new DeletePrivacyGroupRequest(privacyGroupId, from);
+    CompletableFuture<String> keyFuture = new CompletableFuture<>();
+    httpClient.post(clientPort, "localhost", "/deletePrivacyGroupId").handler(resp -> {
+      if (resp.statusCode() == 200) {
+        resp.bodyHandler((body) -> {
+          String res = deserialize(body, String.class);
+          keyFuture.complete(res);
+        });
+      } else {
+        keyFuture.complete(null);
+      }
+    }).exceptionHandler(keyFuture::completeExceptionally).putHeader("Content-Type", "application/json").end(
+        Buffer.buffer(Serializer.serialize(JSON, deleteGroupRequest)));
+    return Optional.ofNullable(keyFuture.join());
   }
 
   @SuppressWarnings("unchecked")

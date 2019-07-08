@@ -41,4 +41,13 @@ public interface Storage<T> {
    * @return The retrieved data.
    */
   AsyncResult<Optional<T>> get(String key);
+
+  /**
+   * Updates the data in the store.
+   *
+   * @param key should be base64 encoded UTF-8 string
+   * @param data the data to update key with
+   * @return The updated data.
+   */
+  AsyncResult<Optional<T>> update(String key, T data);
 }
