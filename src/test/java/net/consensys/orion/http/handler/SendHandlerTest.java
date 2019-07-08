@@ -531,7 +531,7 @@ class SendHandlerTest extends HandlerTest {
     // build the store privacy group request
     PrivacyGroupRequest privacyGroupRequestExpected =
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "test");
-    Request request = buildPrivateAPIRequest("/createPrivacyGroupId", JSON, privacyGroupRequestExpected);
+    Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
 
     byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
         addresses,

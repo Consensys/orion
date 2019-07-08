@@ -58,7 +58,7 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
 
     PrivacyGroupRequest privacyGroupRequestExpected =
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
-    Request request = buildPrivateAPIRequest("/createPrivacyGroupId", JSON, privacyGroupRequestExpected);
+    Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
 
     byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
         addresses,
@@ -96,7 +96,7 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
     Box.PublicKey[] addresses = Arrays.stream(toEncrypt).map(enclave::readKey).toArray(Box.PublicKey[]::new);
     PrivacyGroupRequest privacyGroupRequestExpected =
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
-    Request request = buildPrivateAPIRequest("/createPrivacyGroupId", JSON, privacyGroupRequestExpected);
+    Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
 
     byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
         addresses,
@@ -138,7 +138,7 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
 
     PrivacyGroupRequest privacyGroupRequestExpected =
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
-    Request request = buildPrivateAPIRequest("/createPrivacyGroupId", JSON, privacyGroupRequestExpected);
+    Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
 
     byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
         addresses,
@@ -168,7 +168,7 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
 
     PrivacyGroupRequest privacyGroupRequestExpected =
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
-    Request request = buildPrivateAPIRequest("/createPrivacyGroupId", JSON, privacyGroupRequestExpected);
+    Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
 
     // execute request
     Response resp = httpClient.newCall(request).execute();
