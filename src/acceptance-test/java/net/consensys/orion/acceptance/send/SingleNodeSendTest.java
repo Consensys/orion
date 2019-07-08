@@ -46,6 +46,7 @@ class SingleNodeSendTest {
   private static final byte[] originalPayload = "another wonderful transaction".getBytes(UTF_8);
 
   private static final String PK_1_B_64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
+  private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String PK_CORRUPTED = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGoAAA=";
   private static final String PK_MISSING_PEER = "A1aVtMxLCUlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String HOST_NAME = "127.0.0.1";
@@ -113,6 +114,36 @@ class SingleNodeSendTest {
     assertError(OrionErrorCode.ENCLAVE_DECODE_PUBLIC_KEY, response);
   }
 
+  /** Try sending using a corrupted public key (wrong `from` key). */
+  @Test
+  void incorrectFromAddress() {
+    final EthClientStub orionNode = client();
+
+    final String response = sendTransactionExpectingError(orionNode, PK_MISSING_PEER, PK_2_B_64);
+
+    assertError(OrionErrorCode.ENCLAVE_NO_MATCHING_PRIVATE_KEY, response);
+  }
+
+  /** Try sending to empty privacy group. */
+  @Test
+  void emptyPrivacyGroup() {
+    final EthClientStub orionNode = client();
+
+    final String response = sendPrivacyGroupTransactionExpectingError(orionNode, PK_1_B_64, "");
+
+    assertError(OrionErrorCode.INVALID_PAYLOAD, response);
+  }
+
+  /** Try sending to invalid privacy group. */
+  @Test
+  void invalidPrivacyGroup() {
+    final EthClientStub orionNode = client();
+
+    final String response = sendPrivacyGroupTransactionExpectingError(orionNode, PK_1_B_64, PK_CORRUPTED);
+
+    assertError(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, response);
+  }
+
   private EthClientStub client() {
     return NodeUtils.client(orionLauncher.clientPort(), httpClient);
   }
@@ -124,5 +155,13 @@ class SingleNodeSendTest {
 
   private String sendTransactionExpectingError(EthClientStub sender, String senderKey, String... recipientsKey) {
     return sender.sendExpectingError(originalPayload, senderKey, recipientsKey).orElseThrow(AssertionFailedError::new);
+  }
+
+  private String sendPrivacyGroupTransactionExpectingError(
+      EthClientStub sender,
+      String senderKey,
+      String privacyGroupId) {
+    return sender.sendPrivacyExpectingError(originalPayload, senderKey, privacyGroupId).orElseThrow(
+        AssertionFailedError::new);
   }
 }

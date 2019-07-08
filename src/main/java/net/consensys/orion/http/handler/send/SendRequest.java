@@ -85,7 +85,7 @@ public class SendRequest implements Serializable {
   @JsonIgnore
   public boolean isValid() {
     return ((to != null && to.length > 0 && Arrays.stream(to).noneMatch(Strings::isNullOrEmpty))
-        || privacyGroupId != null)
+        || (privacyGroupId != null && privacyGroupId.length() > 0))
         && rawPayload != null
         && rawPayload.length > 0
         && (from == null || from.length() > 0);

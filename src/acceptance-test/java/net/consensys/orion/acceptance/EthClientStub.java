@@ -66,6 +66,20 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
+  public Optional<String> sendExpectingError(byte[] payload, String from, String[] to) {
+    Map<String, Object> sendRequest = sendRequest(payload, from, to);
+    CompletableFuture<String> keyFuture = new CompletableFuture<>();
+    httpClient.post(clientPort, "localhost", "/send").handler(resp -> {
+      if (resp.statusCode() != 200) {
+        resp.bodyHandler(body -> keyFuture.complete(body.toString()));
+      } else {
+        keyFuture.complete(null);
+      }
+    }).exceptionHandler(keyFuture::completeExceptionally).putHeader("Content-Type", "application/json").end(
+        Buffer.buffer(Serializer.serialize(JSON, sendRequest)));
+    return Optional.ofNullable(keyFuture.join());
+  }
+
   Optional<String> send(byte[] payload, String from, String privacyGroupId) {
     Map<String, Object> sendRequest = sendRequest(payload, from, privacyGroupId);
     CompletableFuture<String> keyFuture = new CompletableFuture<>();
@@ -80,8 +94,8 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
-  public Optional<String> sendExpectingError(byte[] payload, String from, String[] to) {
-    Map<String, Object> sendRequest = sendRequest(payload, from, to);
+  public Optional<String> sendPrivacyExpectingError(byte[] payload, String from, String privacyGroupId) {
+    Map<String, Object> sendRequest = sendRequest(payload, from, privacyGroupId);
     CompletableFuture<String> keyFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/send").handler(resp -> {
       if (resp.statusCode() != 200) {
