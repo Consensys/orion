@@ -141,7 +141,7 @@ public class EthClientStub {
   public Optional<PrivacyGroup> createPrivacyGroup(String[] addresses, String from, String name, String description) {
     PrivacyGroupRequest createGroupRequest = new PrivacyGroupRequest(addresses, from, name, description);
     CompletableFuture<PrivacyGroup> keyFuture = new CompletableFuture<>();
-    httpClient.post(clientPort, "localhost", "/privacyGroupId").handler(resp -> {
+    httpClient.post(clientPort, "localhost", "/createPrivacyGroupId").handler(resp -> {
       if (resp.statusCode() == 200) {
         resp.bodyHandler(body -> keyFuture.complete(deserialize(body, PrivacyGroup.class)));
       } else {
