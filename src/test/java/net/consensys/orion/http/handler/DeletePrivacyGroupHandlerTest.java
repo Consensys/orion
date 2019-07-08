@@ -60,7 +60,7 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
     String[] toEncrypt = new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
     PrivacyGroupRequest privacyGroupRequestExpected =
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
-    Request request = buildPrivateAPIRequest("/privacyGroupId", JSON, privacyGroupRequestExpected);
+    Request request = buildPrivateAPIRequest("/createPrivacyGroupId", JSON, privacyGroupRequestExpected);
 
     byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
         new Box.PublicKey[] {senderKey, recipientKey},

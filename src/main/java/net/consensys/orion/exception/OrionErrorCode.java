@@ -53,7 +53,8 @@ public enum OrionErrorCode {
   ENCLAVE_UNABLE_PUSH_DELETE_PRIVACY_GROUP("PrivacyGroupNotPushed"),
   ENCLAVE_PRIVACY_GROUP_MISSING("PrivacyGroupNotFound"),
   ENCLAVE_PRIVACY_QUERY_ERROR("PrivacyGroupQueryError"),
-  METHOD_UNIMPLEMENTED("MethodUnimplemented");
+  METHOD_UNIMPLEMENTED("MethodUnimplemented"),
+  CREATE_GROUP_INCLUDE_SELF("CreatePrivacyGroupShouldIncludeSelf");
 
   private final String code;
 
