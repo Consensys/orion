@@ -33,7 +33,6 @@ import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
-import net.consensys.orion.http.handler.privacy.FindPrivacyGroupResponse;
 import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
@@ -208,16 +207,14 @@ class DualNodesPrivacyGroupsTest {
     final PrivacyGroup[] deleteNodeFirstPrivacyGroups = findPrivacyGroupTransaction(firstNode, addresses);
 
     List<String> listFirst =
-        Arrays.stream(deleteNodeFirstPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(
-            Collectors.toList());
+        Arrays.stream(deleteNodeFirstPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(Collectors.toList());
     assertFalse(listFirst.contains(privacyGroupDeleted));
 
     // find the deleted privacy group in second node
     final PrivacyGroup[] deleteNodeSecondPrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
 
     List<String> listSecond =
-        Arrays.stream(deleteNodeSecondPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(
-            Collectors.toList());
+        Arrays.stream(deleteNodeSecondPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(Collectors.toList());
     assertFalse(listSecond.contains(privacyGroupDeleted));
   }
 
@@ -263,8 +260,7 @@ class DualNodesPrivacyGroupsTest {
     final PrivacyGroup[] deleteNodeSecondPrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
 
     List<String> listSecond =
-        Arrays.stream(deleteNodeSecondPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(
-            Collectors.toList());
+        Arrays.stream(deleteNodeSecondPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(Collectors.toList());
     assertFalse(listSecond.contains(firstPrivacyGroupId));
     assertTrue(listSecond.contains(secondPrivacyGroupId));
   }

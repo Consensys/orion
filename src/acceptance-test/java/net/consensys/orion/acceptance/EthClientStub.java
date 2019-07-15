@@ -17,7 +17,6 @@ import static net.consensys.orion.http.server.HttpContentType.JSON;
 
 import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupRequest;
 import net.consensys.orion.http.handler.privacy.FindPrivacyGroupRequest;
-import net.consensys.orion.http.handler.privacy.FindPrivacyGroupResponse;
 import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
 import net.consensys.orion.http.handler.receive.ReceiveRequest;
