@@ -88,16 +88,14 @@ public class SodiumEnclave implements Enclave {
         .map(Box.PublicKey::bytesArray)
         .collect(Collectors.toList());
 
+
+    if (seed != null && type.equals(PrivacyGroupPayload.Type.PANTHEON)) {
+      recipientsAndSenderList.add(seed);
+    }
+
     Bytes rlpEncoded = RLP.encodeList(listWriter -> recipientsAndSenderList.forEach(listWriter::writeByteArray));
 
-    byte[] groupId = Hash.keccak256(rlpEncoded).toArray();
-
-    // concatenate the PrivacyGroupId with a random seed
-    if (seed != null && type.equals(PrivacyGroupPayload.Type.PANTHEON)) {
-      return Bytes.concatenate(Bytes.wrap(groupId), Bytes.wrap(seed)).toArray();
-    } else {
-      return groupId;
-    }
+    return Hash.keccak256(rlpEncoded).toArray();
   }
 
   @Override
