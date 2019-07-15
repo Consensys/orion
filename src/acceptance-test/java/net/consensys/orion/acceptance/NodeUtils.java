@@ -140,7 +140,7 @@ public class NodeUtils {
     return sender.createPrivacyGroup(addresses, from, name, description).orElseThrow(AssertionFailedError::new);
   }
 
-  public static FindPrivacyGroupResponse[] findPrivacyGroupTransaction(EthClientStub sender, String[] addresses) {
+  public static PrivacyGroup[] findPrivacyGroupTransaction(EthClientStub sender, String[] addresses) {
     return sender.findPrivacyGroup(addresses).orElseThrow(AssertionFailedError::new);
   }
 

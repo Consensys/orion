@@ -152,12 +152,12 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
-  public Optional<FindPrivacyGroupResponse[]> findPrivacyGroup(String[] addresses) {
+  public Optional<PrivacyGroup[]> findPrivacyGroup(String[] addresses) {
     FindPrivacyGroupRequest findGroupRequest = new FindPrivacyGroupRequest(addresses);
-    CompletableFuture<FindPrivacyGroupResponse[]> keyFuture = new CompletableFuture<>();
+    CompletableFuture<PrivacyGroup[]> keyFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/findPrivacyGroup").handler(resp -> {
       if (resp.statusCode() == 200) {
-        resp.bodyHandler(body -> keyFuture.complete(deserialize(body, FindPrivacyGroupResponse[].class)));
+        resp.bodyHandler(body -> keyFuture.complete(deserialize(body, PrivacyGroup[].class)));
       } else {
         keyFuture.complete(null);
       }

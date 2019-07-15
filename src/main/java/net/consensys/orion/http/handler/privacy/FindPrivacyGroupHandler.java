@@ -75,19 +75,21 @@ public class FindPrivacyGroupHandler implements Handler<RoutingContext> {
 
         CompletableFuture[] cfs = privacyGroupIds.stream().map(pKey -> {
 
-          CompletableFuture<FindPrivacyGroupResponse> responseFuture = new CompletableFuture<>();
+          CompletableFuture<PrivacyGroup> responseFuture = new CompletableFuture<>();
           privacyGroupStorage.get(pKey).thenAccept((res) -> {
             if (res.isPresent()) {
               PrivacyGroupPayload privacyGroupPayload = res.get();
               if (privacyGroupPayload.state().equals(PrivacyGroupPayload.State.ACTIVE)) {
-                FindPrivacyGroupResponse response = new FindPrivacyGroupResponse(
+                PrivacyGroup response = new PrivacyGroup(
                     pKey,
+                    privacyGroupPayload.type(),
                     privacyGroupPayload.name(),
                     privacyGroupPayload.description(),
                     privacyGroupPayload.addresses());
+
                 responseFuture.complete(response);
               } else {
-                responseFuture.complete(new FindPrivacyGroupResponse());
+                responseFuture.complete(new PrivacyGroup());
               }
             } else {
               responseFuture.completeExceptionally(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING));
@@ -102,11 +104,11 @@ public class FindPrivacyGroupHandler implements Handler<RoutingContext> {
             return;
           }
 
-          List<FindPrivacyGroupResponse> listPrivacyGroups = new ArrayList<>();
+          List<PrivacyGroup> listPrivacyGroups = new ArrayList<>();
           for (CompletableFuture c : cfs) {
             try {
-              FindPrivacyGroupResponse privacyGroup = (FindPrivacyGroupResponse) c.get();
-              if (privacyGroup.privacyGroupId() != null) {
+              PrivacyGroup privacyGroup = (PrivacyGroup) c.get();
+              if (privacyGroup.getPrivacyGroupId() != null) {
                 listPrivacyGroups.add(privacyGroup);
               }
             } catch (InterruptedException | ExecutionException e) {

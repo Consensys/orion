@@ -74,34 +74,34 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
   public void handle(RoutingContext routingContext) {
 
     byte[] request = routingContext.getBody().getBytes();
-    PrivacyGroupRequest privacyGroup = Serializer.deserialize(JSON, PrivacyGroupRequest.class, request);
+    PrivacyGroupRequest privacyGroupRequest = Serializer.deserialize(JSON, PrivacyGroupRequest.class, request);
 
-    if (!Arrays.asList(privacyGroup.addresses()).contains(privacyGroup.from())) {
+    if (!Arrays.asList(privacyGroupRequest.addresses()).contains(privacyGroupRequest.from())) {
       routingContext.fail(
           new OrionException(OrionErrorCode.CREATE_GROUP_INCLUDE_SELF, "the list of addresses should include self "));
       return;
     }
 
     byte[] bytes = new byte[20];
-    if (privacyGroup.getSeed().isPresent()) {
-      bytes = privacyGroup.getSeed().get();
+    if (privacyGroupRequest.getSeed().isPresent()) {
+      bytes = privacyGroupRequest.getSeed().get();
     } else {
       SecureRandom random = new SecureRandom();
       random.nextBytes(bytes);
     }
 
     PrivacyGroupPayload privacyGroupPayload = new PrivacyGroupPayload(
-        privacyGroup.addresses(),
-        privacyGroup.name(),
-        privacyGroup.description(),
+        privacyGroupRequest.addresses(),
+        privacyGroupRequest.name(),
+        privacyGroupRequest.description(),
         PrivacyGroupPayload.State.ACTIVE,
         PrivacyGroupPayload.Type.PANTHEON,
         bytes);
     final String privacyGroupId = privacyGroupStorage.generateDigest(privacyGroupPayload);
 
     List<Box.PublicKey> addressListToForward = Arrays
-        .stream(privacyGroup.addresses())
-        .filter(key -> !key.equals(privacyGroup.from())) // don't forward to self
+        .stream(privacyGroupRequest.addresses())
+        .filter(key -> !key.equals(privacyGroupRequest.from())) // don't forward to self
         .distinct()
         .map(enclave::readKey)
         .collect(Collectors.toList());
@@ -157,8 +157,9 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
           PrivacyGroup group = new PrivacyGroup(
               privacyGroupId,
               PrivacyGroupPayload.Type.PANTHEON,
-              privacyGroup.name(),
-              privacyGroup.description());
+              privacyGroupRequest.name(),
+              privacyGroupRequest.description(),
+              privacyGroupRequest.addresses());
 
           Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, group));
           routingContext.response().end(toReturn);
