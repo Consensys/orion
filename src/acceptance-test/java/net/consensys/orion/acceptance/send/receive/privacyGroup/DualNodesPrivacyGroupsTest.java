@@ -33,7 +33,6 @@ import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
-import net.consensys.orion.http.handler.privacy.FindPrivacyGroupResponse;
 import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
@@ -174,16 +173,16 @@ class DualNodesPrivacyGroupsTest {
     assertEquals(privacyGroup.getDescription(), description);
 
     // find the created privacy group in first node
-    final FindPrivacyGroupResponse[] firstNodePrivacyGroups = findPrivacyGroupTransaction(firstNode, addresses);
+    final PrivacyGroup[] firstNodePrivacyGroups = findPrivacyGroupTransaction(firstNode, addresses);
 
     assertEquals(firstNodePrivacyGroups.length, 1);
-    assertEquals(firstNodePrivacyGroups[0].privacyGroupId(), privacyGroupId);
+    assertEquals(firstNodePrivacyGroups[0].getPrivacyGroupId(), privacyGroupId);
 
     // find the created privacy group in second node
-    final FindPrivacyGroupResponse[] secondNodePrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
+    final PrivacyGroup[] secondNodePrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
 
     assertEquals(secondNodePrivacyGroups.length, firstNodePrivacyGroups.length);
-    assertEquals(secondNodePrivacyGroups[0].privacyGroupId(), firstNodePrivacyGroups[0].privacyGroupId());
+    assertEquals(secondNodePrivacyGroups[0].getPrivacyGroupId(), firstNodePrivacyGroups[0].getPrivacyGroupId());
   }
 
   @Test
@@ -205,19 +204,17 @@ class DualNodesPrivacyGroupsTest {
     String privacyGroupDeleted = deletePrivacyGroupTransaction(firstNode, privacyGroupId, PK_1_B_64);
 
     // find the created privacy group deleted in first node
-    final FindPrivacyGroupResponse[] deleteNodeFirstPrivacyGroups = findPrivacyGroupTransaction(firstNode, addresses);
+    final PrivacyGroup[] deleteNodeFirstPrivacyGroups = findPrivacyGroupTransaction(firstNode, addresses);
 
     List<String> listFirst =
-        Arrays.stream(deleteNodeFirstPrivacyGroups).map(FindPrivacyGroupResponse::privacyGroupId).collect(
-            Collectors.toList());
+        Arrays.stream(deleteNodeFirstPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(Collectors.toList());
     assertFalse(listFirst.contains(privacyGroupDeleted));
 
     // find the deleted privacy group in second node
-    final FindPrivacyGroupResponse[] deleteNodeSecondPrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
+    final PrivacyGroup[] deleteNodeSecondPrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
 
     List<String> listSecond =
-        Arrays.stream(deleteNodeSecondPrivacyGroups).map(FindPrivacyGroupResponse::privacyGroupId).collect(
-            Collectors.toList());
+        Arrays.stream(deleteNodeSecondPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(Collectors.toList());
     assertFalse(listSecond.contains(privacyGroupDeleted));
   }
 
@@ -239,9 +236,9 @@ class DualNodesPrivacyGroupsTest {
     assertEquals(firstPrivacyGroup.getDescription(), description);
 
     // find the created privacy group in first node
-    FindPrivacyGroupResponse[] initialPrivacyGroups = findPrivacyGroupTransaction(firstNode, addresses);
+    PrivacyGroup[] initialPrivacyGroups = findPrivacyGroupTransaction(firstNode, addresses);
     assertEquals(initialPrivacyGroups.length, 1);
-    assertEquals(initialPrivacyGroups[0].privacyGroupId(), firstPrivacyGroupId);
+    assertEquals(initialPrivacyGroups[0].getPrivacyGroupId(), firstPrivacyGroupId);
 
     //create another privacy group
     PrivacyGroup secondPrivacyGroup = createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, name, description);
@@ -251,20 +248,19 @@ class DualNodesPrivacyGroupsTest {
     assertEquals(firstPrivacyGroup.getDescription(), description);
 
     // find the created privacy group in second node
-    FindPrivacyGroupResponse[] updatedPrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
+    PrivacyGroup[] updatedPrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
     assertEquals(updatedPrivacyGroups.length, 2);
-    assertEquals(updatedPrivacyGroups[0].privacyGroupId(), firstPrivacyGroupId);
-    assertEquals(updatedPrivacyGroups[1].privacyGroupId(), secondPrivacyGroupId);
+    assertEquals(updatedPrivacyGroups[0].getPrivacyGroupId(), firstPrivacyGroupId);
+    assertEquals(updatedPrivacyGroups[1].getPrivacyGroupId(), secondPrivacyGroupId);
 
     // delete the first privacy group
     deletePrivacyGroupTransaction(firstNode, firstPrivacyGroupId, PK_1_B_64);
 
     // find the deleted privacy group in second node
-    final FindPrivacyGroupResponse[] deleteNodeSecondPrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
+    final PrivacyGroup[] deleteNodeSecondPrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
 
     List<String> listSecond =
-        Arrays.stream(deleteNodeSecondPrivacyGroups).map(FindPrivacyGroupResponse::privacyGroupId).collect(
-            Collectors.toList());
+        Arrays.stream(deleteNodeSecondPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(Collectors.toList());
     assertFalse(listSecond.contains(firstPrivacyGroupId));
     assertTrue(listSecond.contains(secondPrivacyGroupId));
   }
@@ -285,9 +281,9 @@ class DualNodesPrivacyGroupsTest {
     assertEquals(privacyGroup.getDescription(), description);
 
     // find the created privacy group in first node
-    FindPrivacyGroupResponse[] initialPrivacyGroups = findPrivacyGroupTransaction(firstNode, addresses);
+    PrivacyGroup[] initialPrivacyGroups = findPrivacyGroupTransaction(firstNode, addresses);
     assertEquals(initialPrivacyGroups.length, 1);
-    assertEquals(initialPrivacyGroups[0].privacyGroupId(), privacyGroupId);
+    assertEquals(initialPrivacyGroups[0].getPrivacyGroupId(), privacyGroupId);
 
     // delete the privacy group
     deletePrivacyGroupTransaction(firstNode, privacyGroupId, PK_1_B_64);
