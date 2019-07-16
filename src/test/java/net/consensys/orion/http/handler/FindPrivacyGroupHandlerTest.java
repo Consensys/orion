@@ -25,7 +25,6 @@ import net.consensys.orion.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.helpers.FakePeer;
 import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupRequest;
 import net.consensys.orion.http.handler.privacy.FindPrivacyGroupRequest;
-import net.consensys.orion.http.handler.privacy.FindPrivacyGroupResponse;
 import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
 import net.consensys.orion.utils.Serializer;
@@ -100,13 +99,12 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
 
     assertEquals(200, resp.code());
 
-    FindPrivacyGroupResponse[] privacyGroupList =
-        Serializer.deserialize(JSON, FindPrivacyGroupResponse[].class, resp.body().bytes());
+    PrivacyGroup[] privacyGroupList = Serializer.deserialize(JSON, PrivacyGroup[].class, resp.body().bytes());
     assertEquals(privacyGroupList.length, 1);
-    assertEquals(privacyGroupList[0].privacyGroupId(), privacyGroupId);
-    assertArrayEquals(privacyGroupList[0].members(), toEncrypt);
-    assertEquals(privacyGroupList[0].name(), name);
-    assertEquals(privacyGroupList[0].description(), description);
+    assertEquals(privacyGroupList[0].getPrivacyGroupId(), privacyGroupId);
+    assertArrayEquals(privacyGroupList[0].getMembers(), toEncrypt);
+    assertEquals(privacyGroupList[0].getName(), name);
+    assertEquals(privacyGroupList[0].getDescription(), description);
   }
 
   @Test
@@ -120,13 +118,12 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
 
     assertEquals(200, resp.code());
 
-    FindPrivacyGroupResponse[] privacyGroupList =
-        Serializer.deserialize(JSON, FindPrivacyGroupResponse[].class, resp.body().bytes());
+    PrivacyGroup[] privacyGroupList = Serializer.deserialize(JSON, PrivacyGroup[].class, resp.body().bytes());
     assertEquals(privacyGroupList.length, 1);
-    assertEquals(privacyGroupList[0].privacyGroupId(), privacyGroupId);
-    assertArrayEquals(privacyGroupList[0].members(), toEncrypt);
-    assertEquals(privacyGroupList[0].name(), name);
-    assertEquals(privacyGroupList[0].description(), description);
+    assertEquals(privacyGroupList[0].getPrivacyGroupId(), privacyGroupId);
+    assertArrayEquals(privacyGroupList[0].getMembers(), toEncrypt);
+    assertEquals(privacyGroupList[0].getName(), name);
+    assertEquals(privacyGroupList[0].getDescription(), description);
 
     //delete the privacy group
     DeletePrivacyGroupRequest deletePrivacyGroupRequest =
@@ -148,7 +145,7 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
 
     assertEquals(200, resp.code());
 
-    privacyGroupList = Serializer.deserialize(JSON, FindPrivacyGroupResponse[].class, resp.body().bytes());
+    privacyGroupList = Serializer.deserialize(JSON, PrivacyGroup[].class, resp.body().bytes());
     assertEquals(privacyGroupList.length, 0);
   }
 

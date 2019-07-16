@@ -29,7 +29,7 @@ apply plugin: 'maven-publish'
 apply from: "gradle/check-licenses.gradle"
 apply plugin: 'com.jfrog.bintray'
 
-version = '1.3.0-SNAPSHOT'
+version = '1.3.0'
 
 //////
 // Default tasks and build aliases
@@ -249,9 +249,9 @@ dependencies {
 
   // serialization
   compile 'com.moandjiezana.toml:toml4j:0.7.2'
-  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
-  compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.8'
-  compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.8'
+  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.9.1'
+  compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.9'
+  compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.9'
 
   // logging
   compile 'org.apache.logging.log4j:log4j-api:2.11.2'
