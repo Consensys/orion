@@ -111,7 +111,7 @@ public class NetworkDiscovery extends AbstractVerticle {
     Instant lastUpdate = Instant.MIN;
     long attempts = 0;
     private long timerId;
-    private boolean self;
+    private final boolean self;
 
     Discoverer(URL nodeUrl, long refreshDelayMs, boolean self) {
       this.nodeUrl = nodeUrl;
