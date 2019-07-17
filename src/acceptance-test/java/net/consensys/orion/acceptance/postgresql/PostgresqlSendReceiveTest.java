@@ -28,7 +28,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @ExtendWith(TempDirectoryExtension.class)
 class PostgresqlSendReceiveTest {
 
-  private static final String PK_1_B_64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String HOST_NAME = "127.0.0.1";
 
