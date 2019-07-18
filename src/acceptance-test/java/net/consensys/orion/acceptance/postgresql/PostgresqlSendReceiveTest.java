@@ -28,6 +28,9 @@ import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
 
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
@@ -36,11 +39,17 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
 @ExtendWith(TempDirectoryExtension.class)
 class PostgresqlSendReceiveTest {
+
+  @Container
+  private static final PostgreSQLContainer<?> postgreSQLContainer =
+      new PostgreSQLContainer<>("postgres:11.4").withUsername("test").withPassword("test");
 
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String HOST_NAME = "127.0.0.1";
@@ -62,8 +71,16 @@ class PostgresqlSendReceiveTest {
     Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
     Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
 
-    final String jdbc =
-        "jdbc:tc:postgresql:11.4://hostname/database?TC_INITSCRIPT=file:docs/Configuring-Orion/database/postgres_storage.sql";
+    final String jdbcUrl = postgreSQLContainer.getJdbcUrl()
+        + "?user="
+        + postgreSQLContainer.getUsername()
+        + "&password="
+        + postgreSQLContainer.getPassword();
+
+    try (Connection conn = DriverManager.getConnection(jdbcUrl)) {
+      Statement st = conn.createStatement();
+      st.executeUpdate("create table store(key bytea, value bytea, primary key(key))");
+    }
 
     config = NodeUtils.nodeConfig(
         tempDir,
@@ -77,7 +94,7 @@ class PostgresqlSendReceiveTest {
         "off",
         "tofu",
         "tofu",
-        "sql:" + jdbc);
+        "sql:" + jdbcUrl);
   }
 
   @BeforeEach
