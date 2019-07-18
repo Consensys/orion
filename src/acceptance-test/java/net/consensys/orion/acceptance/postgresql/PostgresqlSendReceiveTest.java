@@ -34,22 +34,19 @@ import java.sql.Statement;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
-@Testcontainers
 @ExtendWith(TempDirectoryExtension.class)
 class PostgresqlSendReceiveTest {
-
-  @Container
-  private static final PostgreSQLContainer<?> postgreSQLContainer =
-      new PostgreSQLContainer<>("postgres:11.4").withUsername("test").withPassword("test");
+  private static PostgreSQLContainer<?> postgreSQLContainer;
 
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String HOST_NAME = "127.0.0.1";
@@ -63,6 +60,10 @@ class PostgresqlSendReceiveTest {
 
   @BeforeAll
   static void setUpSingleNode(@TempDirectory Path tempDir) throws Exception {
+    Assumptions.assumeTrue(checkDockerExists(), "Docker not installed");
+    postgreSQLContainer = new PostgreSQLContainer<>("postgres:11.4").withUsername("test").withPassword("test");
+    postgreSQLContainer.start();
+
     final int nodePort = freePort();
     clientPort = freePort();
 
@@ -78,7 +79,7 @@ class PostgresqlSendReceiveTest {
         + postgreSQLContainer.getPassword();
 
     try (Connection conn = DriverManager.getConnection(jdbcUrl)) {
-      Statement st = conn.createStatement();
+      final Statement st = conn.createStatement();
       st.executeUpdate("create table store(key bytea, value bytea, primary key(key))");
     }
 
@@ -97,6 +98,11 @@ class PostgresqlSendReceiveTest {
         "sql:" + jdbcUrl);
   }
 
+  @AfterAll
+  static void shutdown() {
+    postgreSQLContainer.stop();
+  }
+
   @BeforeEach
   void setUp() {
     vertx = vertx();
@@ -108,7 +114,14 @@ class PostgresqlSendReceiveTest {
   void tearDown() {
     orionLauncher.stop();
     vertx.close();
+  }
 
+  private static boolean checkDockerExists() {
+    try {
+      return DockerClientFactory.instance().client() != null;
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   @Test
