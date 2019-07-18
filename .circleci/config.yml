@@ -18,7 +18,7 @@ jobs:
       - run:
           name: Install Sodium Dependencies
           command: |
-            sudo apt-get install -y libsodium18
+            apt-get install -y libsodium23
 
       - restore_cache:
           name: Restoring cached gradle dependencies
