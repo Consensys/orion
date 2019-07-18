@@ -15,7 +15,6 @@ package net.consensys.orion.acceptance.postgresql;
 import static io.vertx.core.Vertx.vertx;
 import static net.consensys.cava.io.file.Files.copyResource;
 import static net.consensys.orion.acceptance.NodeUtils.assertTransaction;
-import static net.consensys.orion.acceptance.NodeUtils.freePort;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
 import static net.consensys.orion.acceptance.NodeUtils.sendTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.viewTransaction;
@@ -34,10 +33,8 @@ import java.sql.Statement;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,31 +43,20 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 @ExtendWith(TempDirectoryExtension.class)
 class PostgresqlSendReceiveTest {
-  private static PostgreSQLContainer<?> postgreSQLContainer;
 
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String HOST_NAME = "127.0.0.1";
 
-  private static Config config;
-  private static int clientPort;
-
+  private PostgreSQLContainer<?> postgreSQLContainer;
   private Orion orionLauncher;
   private Vertx vertx;
   private HttpClient httpClient;
 
-  @BeforeAll
-  static void setUpSingleNode(@TempDirectory Path tempDir) throws Exception {
+  @BeforeEach
+  void setUp(@TempDirectory Path tempDir) throws Exception {
     Assumptions.assumeTrue(checkDockerExists(), "Docker not installed");
-    postgreSQLContainer = new PostgreSQLContainer<>("postgres:11.4").withUsername("test").withPassword("test");
+    postgreSQLContainer = new PostgreSQLContainer<>("postgres:11.4");
     postgreSQLContainer.start();
-
-    final int nodePort = freePort();
-    clientPort = freePort();
-
-    Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
-    Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
-    Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
-    Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
 
     final String jdbcUrl = postgreSQLContainer.getJdbcUrl()
         + "?user="
@@ -83,11 +69,16 @@ class PostgresqlSendReceiveTest {
       st.executeUpdate("create table store(key bytea, value bytea, primary key(key))");
     }
 
-    config = NodeUtils.nodeConfig(
+    Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
+    Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
+    Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
+    Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
+
+    final Config config = NodeUtils.nodeConfig(
         tempDir,
-        nodePort,
+        0,
         HOST_NAME,
-        clientPort,
+        0,
         HOST_NAME,
         "node1",
         joinPathsAsTomlListEntry(key1pub, key2pub),
@@ -96,15 +87,7 @@ class PostgresqlSendReceiveTest {
         "tofu",
         "tofu",
         "sql:" + jdbcUrl);
-  }
 
-  @AfterAll
-  static void shutdown() {
-    postgreSQLContainer.stop();
-  }
-
-  @BeforeEach
-  void setUp() {
     vertx = vertx();
     orionLauncher = NodeUtils.startOrion(config);
     httpClient = vertx.createHttpClient();
@@ -114,9 +97,10 @@ class PostgresqlSendReceiveTest {
   void tearDown() {
     orionLauncher.stop();
     vertx.close();
+    postgreSQLContainer.stop();
   }
 
-  private static boolean checkDockerExists() {
+  private boolean checkDockerExists() {
     try {
       return DockerClientFactory.instance().client() != null;
     } catch (Exception e) {
@@ -126,7 +110,7 @@ class PostgresqlSendReceiveTest {
 
   @Test
   void sendAndReceive() {
-    final EthClientStub ethClientStub = NodeUtils.client(clientPort, httpClient);
+    final EthClientStub ethClientStub = NodeUtils.client(orionLauncher.clientPort(), httpClient);
 
     final String digest = sendTransaction(ethClientStub, PK_2_B_64, PK_2_B_64);
     final byte[] receivedPayload = viewTransaction(ethClientStub, PK_2_B_64, digest);
