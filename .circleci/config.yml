@@ -68,10 +68,15 @@ jobs:
           command: |
             mkdir -p ~/reports/license
             (cd ./build/reports/license && tar c .) | (cd ~/reports/license && tar x)
-            find . -type d -regex ".*/build/reports/tests/test" | while read dir; do
+              find . -type d -regex ".*/build/reports/tests/test" | while read dir; do
                   module=`echo $dir | sed -e 's/build\/reports\/tests\/test//'`
                   mkdir -p ~/reports/test/"$module"
                   (cd "$dir" && tar c .) | (cd ~/reports/test/"$module" && tar x)
+              done
+              find . -type d -regex ".*/build/reports/acceptance" | while read dir; do
+                  module=`echo $dir | sed -e 's/build\/reports\/acceptance//'`
+                  mkdir -p ~/reports/acceptance/"$module"
+                  (cd "$dir" && tar c .) | (cd ~/reports/acceptance/"$module" && tar x)
               done
               find . -type d -regex ".*/build/reports/jacoco/test/html" | while read dir; do
                   module=`echo $dir | sed -e 's/build\/reports\/jacoco\/test\/html//'`
