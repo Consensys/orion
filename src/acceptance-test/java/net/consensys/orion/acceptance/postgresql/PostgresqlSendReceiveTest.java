@@ -62,7 +62,8 @@ class PostgresqlSendReceiveTest {
     Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
     Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
 
-    final String jdbc = "jdbc:tc:postgresql:11.4://hostname/database?TC_INITSCRIPT=file:docs/Configuring-Orion/database/postgres_storage.sql";
+    final String jdbc =
+        "jdbc:tc:postgresql:11.4://hostname/database?TC_INITSCRIPT=file:docs/Configuring-Orion/database/postgres_storage.sql";
 
     config = NodeUtils.nodeConfig(
         tempDir,
