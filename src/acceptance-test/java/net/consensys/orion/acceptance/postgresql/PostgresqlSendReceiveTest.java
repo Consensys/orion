@@ -49,9 +49,9 @@ class PostgresqlSendReceiveTest {
   private Orion orionLauncher;
   private Vertx vertx;
   private HttpClient httpClient;
-  private String databaseUser = System.getenv("POSTGRES_USER");
-  private String databasePassword = System.getenv("POSTGRES_PASSWORD");
-  private String databaseName = System.getenv("POSTGRES_DB");
+  private final String databaseUser = System.getenv("POSTGRES_USER");
+  private final String databasePassword = System.getenv("POSTGRES_PASSWORD");
+  private final String databaseName = System.getenv("POSTGRES_DB");
 
   @BeforeEach
   void setUp(@TempDirectory Path tempDir) throws Exception {
