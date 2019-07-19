@@ -2,7 +2,13 @@ version: 2
 jobs:
   build:
     docker:
-      - image: pegasyseng/pantheon-build:0.0.5-jdk8
+      - image: circleci/openjdk:8-jdk
+
+      - image: circleci/postgres:11.4-alpine
+          environment:
+            POSTGRES_USER: test
+            POSTGRES_PASSWORD: test
+            POSTGRES_DB: orion
 
     working_directory: ~/repo
 
@@ -11,6 +17,9 @@ jobs:
       JAVA_TOOL_OPTIONS: -Xmx2048m
       GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2
       GRADLE_MAX_TEST_FORKS: 2
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: orion
 
     steps:
       - checkout
@@ -18,7 +27,7 @@ jobs:
       - run:
           name: Install Sodium Dependencies
           command: |
-            apt-get install -y libsodium23
+            sudo apt-get install -y libsodium18
 
       - restore_cache:
           name: Restoring cached gradle dependencies
@@ -43,6 +52,17 @@ jobs:
       - run:
           name: Running unit tests
           command: ./gradlew --stacktrace test
+
+      - run:
+          name: Waiting for Postgres to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z localhost 5432 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for Postgres && exit 1
 
       - run:
           name: Running acceptance tests

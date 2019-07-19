@@ -38,35 +38,32 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 @ExtendWith(TempDirectoryExtension.class)
 class PostgresqlSendReceiveTest {
 
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String HOST_NAME = "127.0.0.1";
+  private static final String JDBC_URL = "jdbc:postgresql://localhost:5432/%s?user=%s&password=%s";
 
-  private PostgreSQLContainer<?> postgreSQLContainer;
   private Orion orionLauncher;
   private Vertx vertx;
   private HttpClient httpClient;
+  private String databaseUser = System.getenv("POSTGRES_USER");
+  private String databasePassword = System.getenv("POSTGRES_PASSWORD");
+  private String databaseName = System.getenv("POSTGRES_DB");
 
   @BeforeEach
   void setUp(@TempDirectory Path tempDir) throws Exception {
-    Assumptions.assumeTrue(checkDockerExists(), "Docker not installed");
-    postgreSQLContainer = new PostgreSQLContainer<>("postgres:11.4");
-    postgreSQLContainer.start();
+    Assumptions.assumeTrue(
+        databaseUser != null && databasePassword != null && databaseName != null,
+        "PostgreSQL not configured");
 
-    final String jdbcUrl = postgreSQLContainer.getJdbcUrl()
-        + "?user="
-        + postgreSQLContainer.getUsername()
-        + "&password="
-        + postgreSQLContainer.getPassword();
+    final String jdbcUrl = String.format(JDBC_URL, databaseName, databaseUser, databasePassword);
 
     try (Connection conn = DriverManager.getConnection(jdbcUrl)) {
       final Statement st = conn.createStatement();
-      st.executeUpdate("create table store(key bytea, value bytea, primary key(key))");
+      st.executeUpdate("create table if not exists store(key bytea, value bytea, primary key(key))");
     }
 
     Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
@@ -97,15 +94,6 @@ class PostgresqlSendReceiveTest {
   void tearDown() {
     orionLauncher.stop();
     vertx.close();
-    postgreSQLContainer.stop();
-  }
-
-  private boolean checkDockerExists() {
-    try {
-      return DockerClientFactory.instance().client() != null;
-    } catch (Exception e) {
-      return false;
-    }
   }
 
   @Test
