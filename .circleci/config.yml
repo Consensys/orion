@@ -28,11 +28,11 @@ jobs:
           command: |
             sudo apt-get install -y libsodium18
 
-#      - restore_cache:
-#          name: Restoring cached gradle dependencies
-#          keys:
-#          - v1-dependencies-{{ checksum "build.gradle" }}
-#          - v1-dependencies-
+      - restore_cache:
+          name: Restoring cached gradle dependencies
+          keys:
+          - v1-dependencies-{{ checksum "build.gradle" }}
+          - v1-dependencies-
 
       - run:
           name: Downloading dependencies
