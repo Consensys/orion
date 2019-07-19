@@ -3,12 +3,11 @@ jobs:
   build:
     docker:
       - image: circleci/openjdk:8-jdk
-
       - image: circleci/postgres:11.4-alpine
-          environment:
-            POSTGRES_USER: test
-            POSTGRES_PASSWORD: test
-            POSTGRES_DB: orion
+        environment:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: orion
 
     working_directory: ~/repo
 
