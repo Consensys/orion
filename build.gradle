@@ -261,6 +261,9 @@ dependencies {
   // XML
   compile 'javax.xml.bind:jaxb-api:2.3.0'
 
+  // database drivers
+  compile 'org.postgresql:postgresql:42.2.6'
+
   // testing
   testCompile 'com.h2database:h2:1.4.197'
   testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0'
