@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 ConsenSys AG.
+ * Copyright 2019 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -10,11 +10,14 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
+import net.ltgt.gradle.errorprone.CheckSeverity
+
 plugins {
   id "com.diffplug.gradle.spotless" version "3.10.0"
   id "com.github.hierynomus.license" version "0.14.0"
-  id "com.jfrog.bintray" version "1.8.0"
-  id 'net.ltgt.errorprone' version '0.0.14'
+  id "com.jfrog.bintray" version "1.8.4"
+  id 'net.ltgt.errorprone' version '0.8'
 }
 
 apply plugin: 'java-library'
@@ -26,7 +29,7 @@ apply plugin: 'maven-publish'
 apply from: "gradle/check-licenses.gradle"
 apply plugin: 'com.jfrog.bintray'
 
-version = '1.1.0-SNAPSHOT'
+version = '1.4.0-SNAPSHOT'
 
 //////
 // Default tasks and build aliases
@@ -94,13 +97,21 @@ tasks.withType(JavaCompile) {
     '-Xlint:finally',
     '-Xlint:static',
     '-Werror',
-    '-Xep:FutureReturnValueIgnored:OFF',
-    '-Xep:EqualsGetClass:OFF',
-    '-Xep:InsecureCryptoUsage:WARN',
-    '-Xep:FieldCanBeFinal:WARN',
-    '-Xep:WildcardImport:WARN',
-    '-Xep:TestExceptionChecker:WARN'
   ]
+
+  options.errorprone {
+    check('FutureReturnValueIgnored', CheckSeverity.OFF)
+    check('FutureReturnValueIgnored', CheckSeverity.OFF)
+    check('EqualsGetClass', CheckSeverity.OFF)
+    check('InsecureCryptoUsage', CheckSeverity.WARN)
+    check('FieldCanBeFinal', CheckSeverity.WARN)
+    check('WildcardImport', CheckSeverity.WARN)
+    check('TestExceptionChecker', CheckSeverity.WARN)
+    // This check is broken in Java 12.  See https://github.com/google/error-prone/issues/1257
+    if ((JavaVersion.current().majorVersion as Integer) > 11) {
+      check('Finally', CheckSeverity.OFF)
+    }
+  }
 }
 
 
@@ -122,6 +133,16 @@ sourceSets {
     compileClasspath += main.runtimeClasspath
     runtimeClasspath += main.runtimeClasspath
   }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = 'javadoc'
+  from javadoc.destinationDir
 }
 
 task acceptanceTest(type: Test) {
@@ -210,8 +231,8 @@ dependencies {
   compile 'net.consensys.cava:cava:0.5.0'
 
   // vertx
-  compile 'io.vertx:vertx-core:3.6.2'
-  compile 'io.vertx:vertx-web:3.6.2'
+  compile 'io.vertx:vertx-core:3.7.0'
+  compile 'io.vertx:vertx-web:3.7.0'
 
   // crypto
   compile 'org.bouncycastle:bcprov-jdk15on:1.60'
@@ -228,14 +249,17 @@ dependencies {
 
   // serialization
   compile 'com.moandjiezana.toml:toml4j:0.7.2'
-  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
-  compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.7'
-  compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.7'
+  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.9.1'
+  compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.9'
+  compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.9'
 
   // logging
   compile 'org.apache.logging.log4j:log4j-api:2.11.2'
   compile 'org.apache.logging.log4j:log4j-core:2.11.2'
   compile 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.2'
+
+  // XML
+  compile 'javax.xml.bind:jaxb-api:2.3.0'
 
   // database drivers
   compile 'org.postgresql:postgresql:42.2.6'
@@ -260,6 +284,11 @@ dependencies {
   performanceCompile 'io.gatling:gatling-http:2.3.1'
   performanceCompile 'io.gatling:gatling-app:2.3.1'
   performanceCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.3.1'
+
+  errorprone 'com.google.errorprone:error_prone_core:2.3.3'
+  if (JavaVersion.current().isJava8()) {
+    errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
+  }
 }
 
 
@@ -337,6 +366,8 @@ publishing {
   publications {
     mavenArtifact(MavenPublication) {
       from components.java
+      artifact sourcesJar
+      artifact javadocJar
       pom.withXml {
         asNode().children().last() + {
           resolveStrategy = Closure.DELEGATE_FIRST

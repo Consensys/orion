@@ -7,21 +7,16 @@
 
 Orion is a Apache 2.0 licensed, private transaction manager.
 
+## Issues 
+
+Orion issues are tracked in [Jira](https://pegasys1.atlassian.net/secure/Dashboard.jspa?selectPageId=10116) not GitHub. 
+See our [contribution guidelines](CONTRIBUTING.md) for more detail on searching and creating issues. 
+
+If you've commented on existing issue and have been waiting for a reply, feel free to ping us on [Gitter].  
+
 ## Orion Users 
 
-### Install and Run Orion 
-
-Installing and running Orion:
-* [Installation]
-* [Getting Started]
-
-### Documentation 
-
-User and reference documentation includes:
-* [Configuration File properties]
-* [Client API Methods]
-* [Command Line Options]
-* [Disaster Recovery examples]
+See our [User Documentation]. 
 
 ## Orion Developers
 
@@ -42,10 +37,4 @@ Instructions for how to get started with developing on the Orion codebase. Pleas
 
 * [Running on Docker](docs/development/docker.md)
 
-[Installation]: https://docs.orion.pegasys.tech/en/latest/Installation/Install-Binaries/
-[Getting Started]: https://docs.orion.pegasys.tech/en/latest/Getting-Started/Quickstart/
-[Configuration File properties]: https://docs.orion.pegasys.tech/en/latest/Configuring-Orion/Configuration-File/
-[Client API Methods]: https://docs.orion.pegasys.tech/en/latest/Reference/API-Methods/
-[Command Line Options]: https://docs.orion.pegasys.tech/en/latest/Reference/Orion-CLI-Syntax/
-[Disaster Recovery examples]: https://docs.orion.pegasys.tech/en/latest/Configuring-Orion/Disaster-Recovery.md
-[User Documentation]: https://docs.orion.pegasys.tech/en/latest/
+[User Documentation]: https://docs.orion.pegasys.tech/en/stable/

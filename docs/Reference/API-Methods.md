@@ -21,8 +21,13 @@ Content-Type: application/json
 
 `from` : *string*  - Public key of sender
 
-`to` : *array of strings* - List of public keys to receive this payload
+`to` or `privacyGroupId` to receive this payload
 
+Where: 
+
+`to` : *array of strings* - List of public keys 
+
+`privacyGroupId` : *string* - Privacy group ID of existing privacy group
 
 **Returns**
 
@@ -37,6 +42,16 @@ Content-Type: application/json
     	"from": "4xanJzyaDPcBVMUSwl/tLp+DbXzd3jF9MKk1yJuyewE=",
     	"to": ["YE5cJRJYTRO4XFo7yuAi/0K9DwjySGjsHB2YrFPnJXo="]
     }'
+    ```
+    
+    ```bash tab="With Privacy Group ID"
+        curl -X POST http://127.0.0.1:8888/send \
+          -H 'Content-Type: application/json' \
+          -d '{
+        	"payload": "SGVsbG8sIFdvcmxkIQ==",
+        	"from": "4xanJzyaDPcBVMUSwl/tLp+DbXzd3jF9MKk1yJuyewE=",
+        	"privacyGroupId": "kAbelwaVW7okoEn1+okO+AbA4Hhz/7DaCOWVQz9nx5M="
+        }'
     ```
    
     ```json tab="Result"

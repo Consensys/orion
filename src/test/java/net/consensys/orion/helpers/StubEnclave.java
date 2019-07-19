@@ -16,12 +16,16 @@ import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedKey;
 import net.consensys.orion.enclave.EncryptedPayload;
+import net.consensys.orion.enclave.PrivacyGroupPayload;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /*
  * A very simple test class that implements the enclave interface and does minimal encryption operations that do not do
@@ -64,7 +68,7 @@ public class StubEnclave implements Enclave {
   }
 
   @Override
-  public EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients) {
+  public EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients, byte[] seed) {
     byte[] ciphterText = new byte[plaintext.length];
     for (int i = 0; i < plaintext.length; i++) {
       byte b = plaintext[i];
@@ -75,9 +79,11 @@ public class StubEnclave implements Enclave {
 
     EncryptedKey[] encryptedKeys;
     Map<Box.PublicKey, Integer> encryptedKeyOwners = new HashMap<>();
+    ArrayList<Box.PublicKey> keys = new ArrayList<>();
 
     if (recipients != null && recipients.length > 0) {
       encryptedKeys = new EncryptedKey[recipients.length];
+      keys = new ArrayList<>(Arrays.stream(recipients).collect(Collectors.toList()));
       for (int i = 0; i < recipients.length; i++) {
         encryptedKeyOwners.put(recipients[i], i);
         encryptedKeys[i] = new EncryptedKey(recipients[i].bytesArray());
@@ -85,23 +91,34 @@ public class StubEnclave implements Enclave {
     } else {
       encryptedKeys = new EncryptedKey[0];
     }
+
+    if (senderKey != null) {
+      keys.add(senderKey);
+    }
     return new EncryptedPayload(
         senderKey,
         nonce,
         encryptedKeys,
         ciphterText,
         encryptedKeyOwners,
-        generatePrivacyGroupId(recipients));
+        generatePrivacyGroupId(keys.toArray(new Box.PublicKey[0]), seed, PrivacyGroupPayload.Type.PANTHEON));
   }
 
   @Override
-  public byte[] generatePrivacyGroupId(Box.PublicKey[] recipientsAndSender) {
+  public byte[] generatePrivacyGroupId(
+      Box.PublicKey[] recipientsAndSender,
+      byte[] seed,
+      PrivacyGroupPayload.Type type) {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
     for (int i = 0; recipientsAndSender != null && i < recipientsAndSender.length; i++) {
       outputStream.write(i);
     }
 
-    return outputStream.toByteArray();
+    if (type.equals(PrivacyGroupPayload.Type.PANTHEON)) {
+      return seed;
+    } else {
+      return outputStream.toByteArray();
+    }
   }
 }

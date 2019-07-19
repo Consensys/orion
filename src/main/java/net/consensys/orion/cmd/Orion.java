@@ -24,16 +24,21 @@ import net.consensys.cava.crypto.sodium.Sodium;
 import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.cava.kv.LevelDBKeyValueStore;
 import net.consensys.cava.kv.MapDBKeyValueStore;
-import net.consensys.cava.kv.SQLKeyValueStore;
 import net.consensys.cava.net.tls.VertxTrustOptions;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.config.ConfigException;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
+import net.consensys.orion.enclave.PrivacyGroupPayload;
+import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
 import net.consensys.orion.enclave.sodium.FileKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.http.handler.partyinfo.PartyInfoHandler;
+import net.consensys.orion.http.handler.privacy.CreatePrivacyGroupHandler;
+import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupHandler;
+import net.consensys.orion.http.handler.privacy.FindPrivacyGroupHandler;
 import net.consensys.orion.http.handler.push.PushHandler;
+import net.consensys.orion.http.handler.push.PushPrivacyGroupHandler;
 import net.consensys.orion.http.handler.receive.ReceiveHandler;
 import net.consensys.orion.http.handler.send.SendHandler;
 import net.consensys.orion.http.handler.upcheck.UpcheckHandler;
@@ -41,6 +46,9 @@ import net.consensys.orion.http.server.vertx.HttpErrorHandler;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.network.NetworkDiscovery;
 import net.consensys.orion.storage.EncryptedPayloadStorage;
+import net.consensys.orion.storage.OrionSQLKeyValueStore;
+import net.consensys.orion.storage.PrivacyGroupStorage;
+import net.consensys.orion.storage.QueryPrivacyGroupStorage;
 import net.consensys.orion.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.storage.StorageKeyBuilder;
@@ -54,6 +62,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Security;
+import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -116,6 +125,8 @@ public class Orion {
       ConcurrentNetworkNodes networkNodes,
       Enclave enclave,
       Storage<EncryptedPayload> storage,
+      Storage<PrivacyGroupPayload> privacyGroupStorage,
+      Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
       Router nodeRouter,
       Router clientRouter,
       Config config) {
@@ -138,6 +149,9 @@ public class Orion {
     nodeRouter.post("/push").produces(TEXT.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
         new PushHandler(storage));
 
+    nodeRouter.post("/pushPrivacyGroup").produces(TEXT.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
+        new PushPrivacyGroupHandler(privacyGroupStorage, queryPrivacyGroupStorage));
+
     //Setup client APIs
     clientRouter
         .route()
@@ -149,12 +163,29 @@ public class Orion {
     clientRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
 
     clientRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
-        new SendHandler(vertx, enclave, storage, networkNodes, JSON, config));
+        new SendHandler(
+            vertx,
+            enclave,
+            storage,
+            privacyGroupStorage,
+            queryPrivacyGroupStorage,
+            networkNodes,
+            JSON,
+            config));
     clientRouter
         .post("/sendraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
-        .handler(new SendHandler(vertx, enclave, storage, networkNodes, APPLICATION_OCTET_STREAM, config));
+        .handler(
+            new SendHandler(
+                vertx,
+                enclave,
+                storage,
+                privacyGroupStorage,
+                queryPrivacyGroupStorage,
+                networkNodes,
+                APPLICATION_OCTET_STREAM,
+                config));
 
     clientRouter.post("/receive").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
         new ReceiveHandler(enclave, storage, JSON));
@@ -165,6 +196,27 @@ public class Orion {
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .handler(new ReceiveHandler(enclave, storage, APPLICATION_OCTET_STREAM));
+
+    clientRouter.post("/createPrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
+        new CreatePrivacyGroupHandler(
+            privacyGroupStorage,
+            queryPrivacyGroupStorage,
+            networkNodes,
+            enclave,
+            vertx,
+            config));
+
+    clientRouter.post("/deletePrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
+        new DeletePrivacyGroupHandler(
+            privacyGroupStorage,
+            queryPrivacyGroupStorage,
+            networkNodes,
+            enclave,
+            vertx,
+            config));
+
+    clientRouter.post("/findPrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
+        new FindPrivacyGroupHandler(queryPrivacyGroupStorage, privacyGroupStorage, enclave));
   }
 
   public Orion() {
@@ -338,7 +390,18 @@ public class Orion {
     // controller dependencies
     StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
     EncryptedPayloadStorage encryptedStorage = new EncryptedPayloadStorage(storage, keyBuilder);
-    configureRoutes(vertx, networkNodes, enclave, encryptedStorage, nodeRouter, clientRouter, config);
+    QueryPrivacyGroupStorage queryPrivacyGroupStorage = new QueryPrivacyGroupStorage(storage, enclave);
+    PrivacyGroupStorage privacyGroupStorage = new PrivacyGroupStorage(storage, enclave);
+    configureRoutes(
+        vertx,
+        networkNodes,
+        enclave,
+        encryptedStorage,
+        privacyGroupStorage,
+        queryPrivacyGroupStorage,
+        nodeRouter,
+        clientRouter,
+        config);
 
     // asynchronously start the vertx http server for public API
     CompletableFuture<Boolean> nodeFuture = new CompletableFuture<>();
@@ -464,8 +527,10 @@ public class Orion {
       }
     } else if (storage.toLowerCase().startsWith("sql")) {
       try {
-        return SQLKeyValueStore.open(db);
-      } catch (IOException e) {
+        // FIXME: Hack to enable update in SQL.
+        // TODO: Update net.consensys.cava.kv.SQLKeyValueStore to enable updates
+        return new OrionSQLKeyValueStore(db);
+      } catch (IOException | SQLException e) {
         throw new OrionStartException("Couldn't create SQL-backed store: " + db, e);
       }
     } else {

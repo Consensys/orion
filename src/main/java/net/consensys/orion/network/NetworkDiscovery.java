@@ -83,7 +83,7 @@ public class NetworkDiscovery extends AbstractVerticle {
     for (URL nodeUrl : nodes.nodeURLs()) {
       String urlString = nodeUrl.toString();
       if (!discoverers.containsKey(urlString)) {
-        Discoverer d = new Discoverer(nodeUrl, refreshDelayMs);
+        Discoverer d = new Discoverer(nodeUrl, refreshDelayMs, nodes.url().equals(nodeUrl));
         discoverers.put(urlString, d);
         d.engageNextTimerTick();
       }
@@ -111,10 +111,12 @@ public class NetworkDiscovery extends AbstractVerticle {
     Instant lastUpdate = Instant.MIN;
     long attempts = 0;
     private long timerId;
+    private final boolean self;
 
-    Discoverer(URL nodeUrl, long refreshDelayMs) {
+    Discoverer(URL nodeUrl, long refreshDelayMs, boolean self) {
       this.nodeUrl = nodeUrl;
       this.currentRefreshDelay = refreshDelayMs;
+      this.self = self;
     }
 
     @Override
@@ -122,36 +124,42 @@ public class NetworkDiscovery extends AbstractVerticle {
       // This is called on timer event, in the event loop of the Verticle (NetworkDiscovery)
       // we call /partyInfo API on the peer and update NetworkDiscovery state if needed
 
-      log.trace("calling /partyinfo on {}", nodeUrl);
-      attempts++;
+      if (self) {
+        log.trace("updating discoverers (local discovery)");
+        updateDiscoverers();
+        engageNextTimerTick();
+      } else {
+        log.trace("calling /partyinfo on {}", nodeUrl);
+        attempts++;
 
-      httpClient
-          .orElseThrow(IllegalStateException::new)
-          .post(nodeUrl.getPort(), nodeUrl.getHost(), "/partyinfo", resp -> {
-            if (resp.statusCode() == 200) {
-              lastUpdate = Instant.now();
+        httpClient
+            .orElseThrow(IllegalStateException::new)
+            .post(nodeUrl.getPort(), nodeUrl.getHost(), "/partyinfo", resp -> {
+              if (resp.statusCode() == 200) {
+                lastUpdate = Instant.now();
 
-              resp.bodyHandler(respBody -> {
-                // deserialize response
-                ConcurrentNetworkNodes partyInfoResponse =
-                    Serializer.deserialize(CBOR, ConcurrentNetworkNodes.class, respBody.getBytes());
-                if (nodes.merge(partyInfoResponse)) {
-                  log.info("merged new nodes from {} discoverer", nodeUrl);
-                }
-                NetworkDiscovery.this.updateDiscoverers();
-              });
-            } else {
-              log.debug("Response code: {}", resp.statusCode());
-            }
-            engageNextTimerTick();
-          })
-          .exceptionHandler(ex -> {
-            log.error("calling partyInfo on {} failed {}", nodeUrl, ex.getMessage());
-            engageNextTimerTick();
-          })
-          .putHeader("Content-Type", "application/cbor")
-          .setTimeout(clientTimeoutMs)
-          .end(Buffer.buffer(Serializer.serialize(CBOR, nodes)));
+                resp.bodyHandler(respBody -> {
+                  // deserialize response
+                  ConcurrentNetworkNodes partyInfoResponse =
+                      Serializer.deserialize(CBOR, ConcurrentNetworkNodes.class, respBody.getBytes());
+                  if (nodes.merge(partyInfoResponse)) {
+                    log.info("merged new nodes from {} discoverer", nodeUrl);
+                  }
+                  NetworkDiscovery.this.updateDiscoverers();
+                });
+              } else {
+                log.debug("Response code: {}", resp.statusCode());
+              }
+              engageNextTimerTick();
+            })
+            .exceptionHandler(ex -> {
+              log.error("calling partyInfo on {} failed {}", nodeUrl, ex.getMessage());
+              engageNextTimerTick();
+            })
+            .putHeader("Content-Type", "application/cbor")
+            .setTimeout(clientTimeoutMs)
+            .end(Buffer.buffer(Serializer.serialize(CBOR, nodes)));
+      }
     }
 
     public void engageNextTimerTick() {

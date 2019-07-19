@@ -18,6 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
+import net.consensys.orion.http.handler.privacy.PrivacyGroup;
+import net.consensys.orion.http.handler.receive.ReceiveResponse;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -116,8 +118,33 @@ public class NodeUtils {
     return viewer.receive(digest, viewerKey).orElseThrow(AssertionFailedError::new);
   }
 
+  public static ReceiveResponse viewTransactionPrivacyGroupId(EthClientStub viewer, String viewerKey, String digest) {
+    return viewer.receivePrivacy(digest, viewerKey);
+  }
+
   public static String sendTransaction(EthClientStub sender, String senderKey, String... recipientsKey) {
     return sender.send(originalPayload, senderKey, recipientsKey).orElseThrow(AssertionFailedError::new);
+  }
+
+  public static String sendTransactionPrivacyGroupId(EthClientStub sender, String senderKey, String privacyGroupId) {
+    return sender.send(originalPayload, senderKey, privacyGroupId).orElseThrow(AssertionFailedError::new);
+  }
+
+  public static PrivacyGroup createPrivacyGroupTransaction(
+      EthClientStub sender,
+      String[] addresses,
+      String from,
+      String name,
+      String description) {
+    return sender.createPrivacyGroup(addresses, from, name, description).orElseThrow(AssertionFailedError::new);
+  }
+
+  public static PrivacyGroup[] findPrivacyGroupTransaction(EthClientStub sender, String[] addresses) {
+    return sender.findPrivacyGroup(addresses).orElseThrow(AssertionFailedError::new);
+  }
+
+  public static String deletePrivacyGroupTransaction(EthClientStub sender, String privacyGroupId, String from) {
+    return sender.deletePrivacyGroup(privacyGroupId, from).orElseThrow(AssertionFailedError::new);
   }
 
   /** Asserts the received payload matches that sent. */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 ConsenSys AG.
+ * Copyright 2019 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -17,27 +17,31 @@ import static net.consensys.cava.io.Base64.encodeBytes;
 
 import net.consensys.cava.bytes.Bytes;
 import net.consensys.cava.concurrent.AsyncResult;
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.kv.KeyValueStore;
-import net.consensys.orion.enclave.EncryptedPayload;
+import net.consensys.orion.enclave.Enclave;
+import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
 
+import java.util.Arrays;
 import java.util.Optional;
 
-public class EncryptedPayloadStorage implements Storage<EncryptedPayload> {
+
+public class PrivacyGroupStorage implements Storage<PrivacyGroupPayload> {
 
   private final KeyValueStore store;
-  private final StorageKeyBuilder keyBuilder;
+  private final Enclave enclave;
 
-  public EncryptedPayloadStorage(KeyValueStore store, StorageKeyBuilder keyBuilder) {
+  public PrivacyGroupStorage(KeyValueStore store, Enclave enclave) {
     this.store = store;
-    this.keyBuilder = keyBuilder;
+    this.enclave = enclave;
   }
 
   @Override
-  public AsyncResult<String> put(EncryptedPayload data) {
+  public AsyncResult<String> put(PrivacyGroupPayload data) {
     String key = generateDigest(data);
     Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
     Bytes dataBytes = Bytes.wrap(Serializer.serialize(HttpContentType.CBOR, data));
@@ -45,21 +49,22 @@ public class EncryptedPayloadStorage implements Storage<EncryptedPayload> {
   }
 
   @Override
-  public String generateDigest(EncryptedPayload data) {
-    return encodeBytes(keyBuilder.build(data.cipherText()));
+  public String generateDigest(PrivacyGroupPayload data) {
+    Box.PublicKey[] addresses = Arrays.stream(data.addresses()).map(enclave::readKey).toArray(Box.PublicKey[]::new);
+    return encodeBytes(enclave.generatePrivacyGroupId(addresses, data.randomSeed(), data.type()));
   }
 
 
   @Override
-  public AsyncResult<Optional<EncryptedPayload>> get(String key) {
+  public AsyncResult<Optional<PrivacyGroupPayload>> get(String key) {
     Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
     return store.getAsync(keyBytes).thenApply(
         maybeBytes -> Optional.ofNullable(maybeBytes).map(
-            bytes -> Serializer.deserialize(HttpContentType.CBOR, EncryptedPayload.class, bytes.toArrayUnsafe())));
+            bytes -> Serializer.deserialize(HttpContentType.CBOR, PrivacyGroupPayload.class, bytes.toArrayUnsafe())));
   }
 
   @Override
-  public AsyncResult<Optional<EncryptedPayload>> update(String key, EncryptedPayload data) {
+  public AsyncResult<Optional<PrivacyGroupPayload>> update(String key, PrivacyGroupPayload data) {
     throw new OrionException(OrionErrorCode.METHOD_UNIMPLEMENTED);
   }
 }

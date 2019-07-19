@@ -45,7 +45,16 @@ public enum OrionErrorCode {
   ENCLAVE_NOT_PAYLOAD_OWNER("EnclaveNotPayloadOwner"),
   ENCLAVE_UNSUPPORTED_PRIVATE_KEY_TYPE("EnclaveUnsupportedPrivateKeyType"),
   ENCLAVE_STORAGE_DECRYPT("EnclaveStorageDecrypt"),
-  ENCLAVE_PRIVACY_GROUP_CREATION("EnclavePrivacyGroupIdCreation");
+  ENCLAVE_PRIVACY_GROUP_CREATION("EnclavePrivacyGroupIdCreation"),
+
+  /** Storing privacy group issue */
+  ENCLAVE_UNABLE_STORE_PRIVACY_GROUP("PrivacyGroupNotStored"),
+  ENCLAVE_UNABLE_DELETE_PRIVACY_GROUP("PrivacyGroupNotDeleted"),
+  ENCLAVE_UNABLE_PUSH_DELETE_PRIVACY_GROUP("PrivacyGroupNotPushed"),
+  ENCLAVE_PRIVACY_GROUP_MISSING("PrivacyGroupNotFound"),
+  ENCLAVE_PRIVACY_QUERY_ERROR("PrivacyGroupQueryError"),
+  METHOD_UNIMPLEMENTED("MethodUnimplemented"),
+  CREATE_GROUP_INCLUDE_SELF("CreatePrivacyGroupShouldIncludeSelf");
 
   private final String code;
 

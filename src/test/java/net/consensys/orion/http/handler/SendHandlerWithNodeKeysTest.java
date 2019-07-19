@@ -61,7 +61,7 @@ class SendHandlerWithNodeKeysTest extends SendHandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer

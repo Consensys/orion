@@ -17,6 +17,7 @@ import static net.consensys.cava.crypto.Hash.sha2_512_256;
 import static net.consensys.cava.io.Base64.encodeBytes;
 import static net.consensys.orion.http.server.HttpContentType.APPLICATION_OCTET_STREAM;
 import static net.consensys.orion.http.server.HttpContentType.CBOR;
+import static net.consensys.orion.http.server.HttpContentType.JSON;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,16 +25,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.junit.TempDirectory;
 import net.consensys.orion.enclave.EncryptedPayload;
+import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.exception.OrionErrorCode;
+import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
 
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.security.SecureRandom;
 import java.security.Security;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -143,7 +148,7 @@ class SendHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
@@ -152,6 +157,50 @@ class SendHandlerTest extends HandlerTest {
 
     // configureRoutes our sendRequest
     Map<String, Object> sendRequest = buildRequest(Collections.singletonList(fakePeer), toEncrypt);
+    Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
+
+    // execute request
+    Response resp = httpClient.newCall(request).execute();
+
+    // ensure we got a 200 OK
+    assertEquals(200, resp.code());
+
+    // ensure peer actually got the EncryptedPayload
+    RecordedRequest recordedRequest = fakePeer.server.takeRequest();
+
+    // check method and path
+    assertEquals("/push", recordedRequest.getPath());
+    assertEquals("POST", recordedRequest.getMethod());
+
+    // check header
+    assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
+
+    // ensure cipher text is same.
+    EncryptedPayload receivedPayload =
+        Serializer.deserialize(CBOR, EncryptedPayload.class, recordedRequest.getBody().readByteArray());
+    assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
+  }
+
+  @Test
+  void sendEmptyTo() throws Exception {
+    // note: we need to do this as the fakePeers need to know in advance the digest to return.
+    // not possible with libSodium due to random nonce
+
+    // generate random byte content
+    byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    // encrypt it here to compute digest
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
+    String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
+
+    // create fake peer
+    Box.PublicKey sender = memoryKeyStore.generateKeyPair();
+    FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), sender);
+    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+
+    // configureRoutes our sendRequest
+    Map<String, Object> sendRequest = buildRequest(new String[0], toEncrypt, encodeBytes(sender.bytesArray()));
     Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
@@ -186,7 +235,7 @@ class SendHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
@@ -214,7 +263,7 @@ class SendHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peers
@@ -276,7 +325,7 @@ class SendHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peers
@@ -341,7 +390,7 @@ class SendHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peers
@@ -394,7 +443,7 @@ class SendHandlerTest extends HandlerTest {
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null);
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
@@ -426,14 +475,15 @@ class SendHandlerTest extends HandlerTest {
     // generate keys and the privacy group
     Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
-    byte[] privacyGroupId = enclave.generatePrivacyGroupId(new Box.PublicKey[] {recipientKey});
+    byte[] privacyGroupId = enclave
+        .generatePrivacyGroupId(new Box.PublicKey[] {recipientKey, senderKey}, null, PrivacyGroupPayload.Type.PANTHEON);
 
     // generate random byte content
     byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {recipientKey});
+    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {recipientKey}, null);
     String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
@@ -467,6 +517,87 @@ class SendHandlerTest extends HandlerTest {
     assertArrayEquals(receivedPayload.privacyGroupId(), encryptedPayload.privacyGroupId());
   }
 
+  @Test
+  void sendToPrivacyGroupId() throws Exception {
+    // create a privacy group
+
+    // generate keys
+    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+
+    String[] toEncrypt = new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
+    Box.PublicKey[] addresses = Arrays.stream(toEncrypt).map(enclave::readKey).toArray(Box.PublicKey[]::new);
+
+    // build the store privacy group request
+    PrivacyGroupRequest privacyGroupRequestExpected =
+        buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "test");
+    Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
+
+    byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
+        addresses,
+        privacyGroupRequestExpected.getSeed().get(),
+        PrivacyGroupPayload.Type.PANTHEON);
+    // create fake peer
+    FakePeer fakePeer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey);
+    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+
+    // execute /createPrivacyGroupId request
+    Response resp = httpClient.newCall(request).execute();
+
+    assertEquals(resp.code(), 200);
+
+    // ensure peer actually got the PrivacyGroupPayload
+    RecordedRequest recordedRequest = fakePeer.server.takeRequest();
+
+    // check method and path
+    assertEquals("/pushPrivacyGroup", recordedRequest.getPath());
+    assertEquals("POST", recordedRequest.getMethod());
+
+    // send to privacy group
+
+    // generate random byte content
+    byte[] toEncryptSend = new byte[342];
+    new Random().nextBytes(toEncryptSend);
+
+    // encrypt it here to compute digest
+    EncryptedPayload encryptedPayload = enclave.encrypt(
+        toEncryptSend,
+        senderKey,
+        new Box.PublicKey[] {recipientKey},
+        privacyGroupRequestExpected.getSeed().get());
+    String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
+
+    fakePeer.addResponse(new MockResponse().setBody(digest));
+
+    Map<String, Object> sendRequestPrivGrp =
+        buildRequestPrivacyGroup(encodeBytes(privacyGroupPayload), toEncryptSend, encodeBytes(senderKey.bytesArray()));
+
+    // configureRoutes our sendRequest
+    request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequestPrivGrp);
+
+    // execute request
+    resp = httpClient.newCall(request).execute();
+
+    // ensure we got a 200 OK
+    assertEquals(200, resp.code());
+
+    // ensure peer actually got the EncryptedPayload
+    recordedRequest = fakePeer.server.takeRequest();
+
+    // check method and path
+    assertEquals("/push", recordedRequest.getPath());
+    assertEquals("POST", recordedRequest.getMethod());
+
+    // check header
+    assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
+
+    // ensure cipher text is same.
+    EncryptedPayload receivedPayload =
+        Serializer.deserialize(CBOR, EncryptedPayload.class, recordedRequest.getBody().readByteArray());
+    assertEquals(receivedPayload, encryptedPayload);
+    assertArrayEquals(receivedPayload.privacyGroupId(), encryptedPayload.privacyGroupId());
+  }
+
   private Map<String, Object> buildRequest(List<FakePeer> forPeers, byte[] toEncrypt) {
     Box.PublicKey sender = memoryKeyStore.generateKeyPair();
     String from = encodeBytes(sender.bytesArray());
@@ -490,6 +621,29 @@ class SendHandlerTest extends HandlerTest {
     return result;
   }
 
+  Map<String, Object> buildRequestPrivacyGroup(String privacyGrp, byte[] toEncrypt, String from) {
+    String payload = encodeBytes(toEncrypt);
+
+    Map<String, Object> result = new HashMap<>();
+    result.put("privacyGroupId", privacyGrp);
+    result.put("payload", payload);
+    if (from != null) {
+      result.put("from", from);
+    }
+    return result;
+  }
+
+  PrivacyGroupRequest buildPrivacyGroupRequest(String[] addresses, String from, String name, String description) {
+    PrivacyGroupRequest privacyGroupRequest = new PrivacyGroupRequest(addresses, from, name, description);
+    // create a random seed
+    SecureRandom random = new SecureRandom();
+    byte[] bytes = new byte[20];
+    random.nextBytes(bytes);
+    privacyGroupRequest.setSeed(bytes);
+
+    return privacyGroupRequest;
+  }
+
   class FakePeer {
     final MockWebServer server;
     final Box.PublicKey publicKey;
@@ -499,6 +653,17 @@ class SendHandlerTest extends HandlerTest {
       publicKey = memoryKeyStore.generateKeyPair();
       server.enqueue(response);
       server.start();
+    }
+
+    FakePeer(MockResponse response, Box.PublicKey givenPublicKey) throws IOException {
+      server = new MockWebServer();
+      publicKey = givenPublicKey;
+      server.enqueue(response);
+      server.start();
+    }
+
+    void addResponse(MockResponse response) {
+      server.enqueue(response);
     }
 
     URL getURL() {
