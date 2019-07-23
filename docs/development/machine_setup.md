@@ -25,7 +25,7 @@ brew install gradle
 
 You'll also want to setup a JAVA_HOME so Gradle will play nicely and compile using Java 11.
 ```
-export JAVA_HOME="$(/usr/libexec/java_home -v 1.11)"
+export JAVA_HOME="$(/usr/libexec/java_home -v 11)"
 ```
 
 ## Install IntelliJ community edition
