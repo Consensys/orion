@@ -46,6 +46,8 @@ public enum OrionErrorCode {
   ENCLAVE_UNSUPPORTED_PRIVATE_KEY_TYPE("EnclaveUnsupportedPrivateKeyType"),
   ENCLAVE_STORAGE_DECRYPT("EnclaveStorageDecrypt"),
   ENCLAVE_PRIVACY_GROUP_CREATION("EnclavePrivacyGroupIdCreation"),
+  ENCLAVE_PAYLOAD_NOT_FOUND("EnclavePayloadNotFound"),
+  ENCLAVE_KEY_CANNOT_DECRYPT_PAYLOAD("EnclaveKeyCannotDecryptPayload"),
 
   /** Storing privacy group issue */
   ENCLAVE_UNABLE_STORE_PRIVACY_GROUP("PrivacyGroupNotStored"),
