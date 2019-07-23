@@ -5,67 +5,7 @@ The Client API is used by Ethereum clients (for example, Pantheon) to interact w
 The port used by the Client API is defined by the `clientport ` property in the [configuration file](../Configuring-Orion/Configuration-File.md). 
 The default port is `8888`.
 
-## deletePrivacyGroupId
-
-Deletes a privacy group.
-
-**HTTP Verb**
-POST 
-
-**Headers:**
-Content-Type: application/json
-
-**Request Body**
-
-`privacyGroupId` : *string* - ID of the privacy group to delete
-
-`from` : *string* - Public key of the Orion node deleting the privacy group
-
-**Returns**
-
-`privacyGroupId` : *string* - ID of the deleted privacy group 
-
-!!! example
-    ```bash tab="curl HTTP request"
-    curl -X POST http://127.0.0.1:8888/deletePrivacyGroupId \
-      -H 'Content-Type: application/json' \
-      -d '{
-        "privacyGroupId": "68/Cq0mVjB8FbXDLE1tbDRAvD/srluIok137uFOaClOIn4m3Nn0P4jDuRGhWK3AAVdvkqQ==",
-        "from": "negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk="
-      }'
-    ```
-   
-    ```json tab="Result"
-    "68/Cq0mVjB8FbXDLE1tbDRAvD/srluIok137uFOaClOIn4m3Nn0P4jDuRGhWK3AAVdvkqQ==" 
-    ```
-
-## findPrivacyGroupId
-
-Finds all privacy groups for the specified members.
-
-**HTTP Verb**
-POST 
-
-**Headers:**
-Content-Type: application/json
-
-**Request Body**
-
-`addresses` : *array of strings* - Public keys of Orion nodes for which to return privacy groups
-
-!!! example
-    ```bash tab="curl HTTP request"
-    curl -X POST http://127.0.0.1:8888/findPrivacyGroupId \
-      -H 'Content-Type: application/json' \
-      -d '{
-      "addresses" : [
-          "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=",
-          "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs="
-      ]
-    }'
-    ``` 
-
-## privacyGroupId
+## createPrivacyGroup
 
 Creates a privacy group with the specified members.
 
@@ -77,13 +17,13 @@ Content-Type: application/json
 
 **Request Body**
 
-`addresses` : *array of strings* - Public keys of Orion nodes to include in the privacy group
+`addresses` : *array of strings* - Orion node keys to include in the privacy group
 
-`from` : *string* - Public key of the Orion node creating the privacy group
+`from` : *string* - Orion node key of node creating the privacy group
 
-`name` : *string* - Name of the privacy group. Optional. 
+`name` : *string* - Name of the privacy group  
 
-`description` : *string* - Description for the privacy group. Optional. 
+`description` : *string* - Description for the privacy group
 
 **Returns**
 
@@ -91,7 +31,7 @@ Content-Type: application/json
 
 !!! example
     ```bash tab="curl HTTP request"
-    curl -X POST http://127.0.0.1:8888/privacyGroupId \
+    curl -X POST http://127.0.0.1:8888/createPrivacyGroup \
       -H 'Content-Type: application/json' \
       -d '{ 
         "addresses": [ 
@@ -113,6 +53,83 @@ Content-Type: application/json
     } 
     ```
 
+## deletePrivacyGroup
+
+Deletes a privacy group.
+
+**HTTP Verb**
+POST 
+
+**Headers:**
+Content-Type: application/json
+
+**Request Body**
+
+`privacyGroupId` : *string* - ID of the privacy group to delete
+
+`from` : *string* - Orion node key of node deleting the privacy group
+
+**Returns**
+
+`privacyGroupId` : *string* - ID of the deleted privacy group 
+
+!!! example
+    ```bash tab="curl HTTP request"
+    curl -X POST http://127.0.0.1:8888/deletePrivacyGroup \
+      -H 'Content-Type: application/json' \
+      -d '{
+        "privacyGroupId": "68/Cq0mVjB8FbXDLE1tbDRAvD/srluIok137uFOaClOIn4m3Nn0P4jDuRGhWK3AAVdvkqQ==",
+        "from": "negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk="
+      }'
+    ```
+   
+    ```json tab="Result"
+    "68/Cq0mVjB8FbXDLE1tbDRAvD/srluIok137uFOaClOIn4m3Nn0P4jDuRGhWK3AAVdvkqQ==" 
+    ```
+
+## findPrivacyGroup
+
+Finds all privacy groups containing only the specified members.
+
+**HTTP Verb**
+POST 
+
+**Headers:**
+Content-Type: application/json
+
+**Request Body**
+
+`addresses` : *array of strings* - Orion node keys for which to return privacy groups
+
+**Returns**
+
+`array of objects` - Privacy group objects for all privacy groups containing only the specified members
+
+!!! example
+    ```bash tab="curl HTTP request"
+    curl -X POST http://127.0.0.1:8888/findPrivacyGroup \
+      -H 'Content-Type: application/json' \
+      -d '{
+      "addresses" : [
+          "g59BmTeJIn7HIcnq8VQWgyh/pDbvbt2eyP0Ii60aDDw=",
+          "negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk="
+      ]
+    }'
+    ``` 
+    
+    ```json tab="Result"
+    [
+      {
+        "privacyGroupId": "DVMXn3N6VIerZOJjixFFoGQBu8AleyonJ1sK33aYdtg=",
+        "type": "PANTHEON",
+        "members": [
+          "g59BmTeJIn7HIcnq8VQWgyh/pDbvbt2eyP0Ii60aDDw=",
+          "negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk="
+        ]
+      }
+    ]
+    ``` 
+
 ## receive
 
 Receives a payload from Orion using the payload key. The payload key is returned by the [send](#send) method.
@@ -127,7 +144,7 @@ Content-Type: application/json
 
 `key` : *string* - Key used to receive the payload
 
-`to` : *string* - Public key of the receiver
+`to` : *string* - Orion key of the receiver
 
 **Returns**
 
@@ -178,6 +195,7 @@ POST
 
 **Headers:**
 Content-Type: application/octet-stream
+
 c11n-key: Key used to receive the payload
 
 **Request Body**
@@ -214,23 +232,36 @@ Content-Type: application/json
 
 `payload` : *string* - Base64 encoded payload
 
-`from` : *string*  - Public key of sender
+`from` : *string*  - Orion node key of sender
 
-`to` : *array of strings* - List of public keys to receive this payload
+`to` : *array of strings* - Orion node keys to receive this payload 
 
+or
+ 
+ `privacyGroupId` : *data, 32 bytes* - Privacy group to receive this payload
 
 **Returns**
 
 `key` : *string* - Key used to receive the payload
 
-!!! example
-    ```bash tab="curl HTTP request"
+!!! example 
+    ```bash tab="curl HTTP request with to"
     curl -X POST http://127.0.0.1:8888/send \
       -H 'Content-Type: application/json' \
       -d '{
     	"payload": "SGVsbG8sIFdvcmxkIQ==",
     	"from": "4xanJzyaDPcBVMUSwl/tLp+DbXzd3jF9MKk1yJuyewE=",
     	"to": ["YE5cJRJYTRO4XFo7yuAi/0K9DwjySGjsHB2YrFPnJXo="]
+    }'
+    ```
+    
+    ```bash tab="curl HTTP request with privacyGroupId"
+    curl -X POST http://127.0.0.1:8888/send \
+       -H 'Content-Type: application/json' \
+       -d '{
+         "payload": "SGVsbG8sIFdvcmxkIQ==",
+         "from": "negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk=",
+         "privacyGroupId": "DVMXn3N6VIerZOJjixFFoGQBu8AleyonJ1sK33aYdtg="
     }'
     ```
    
@@ -248,8 +279,8 @@ POST
 
 **Headers:**
 Content-Type: application/octet-stream
-c11n-from: Public key of the sender
-c11n-to: List of public keys to receive this payload
+c11n-from: Orion node key of the sender
+c11n-to: List of Orion node keys to receive this payload
 
 **Request Body**
 
