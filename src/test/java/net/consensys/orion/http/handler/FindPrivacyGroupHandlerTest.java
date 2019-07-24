@@ -91,6 +91,24 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
   }
 
   @Test
+  void findPrivacyGroupIdBeforeCreationShouldReturnEmptyList() throws Exception {
+    Box.PublicKey newSender = memoryKeyStore.generateKeyPair();
+    Box.PublicKey newRecipient = memoryKeyStore.generateKeyPair();
+
+    String[] to = new String[] {encodeBytes(newSender.bytesArray()), encodeBytes(newRecipient.bytesArray())};
+
+    FindPrivacyGroupRequest findPrivacyGroupRequest = new FindPrivacyGroupRequest(to);
+    Request request = buildPrivateAPIRequest("/findPrivacyGroup", JSON, findPrivacyGroupRequest);
+
+    Response resp = httpClient.newCall(request).execute();
+
+    assertEquals(200, resp.code());
+
+    PrivacyGroup[] privacyGroupList = Serializer.deserialize(JSON, PrivacyGroup[].class, resp.body().bytes());
+    assertEquals(privacyGroupList.length, 0);
+  }
+
+  @Test
   void findPrivacyGroupIdAfterCreation() throws Exception {
     FindPrivacyGroupRequest findPrivacyGroupRequest = new FindPrivacyGroupRequest(toEncrypt);
     Request request = buildPrivateAPIRequest("/findPrivacyGroup", JSON, findPrivacyGroupRequest);
