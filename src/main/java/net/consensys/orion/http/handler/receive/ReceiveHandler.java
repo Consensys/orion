@@ -21,6 +21,8 @@ import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EnclaveException;
 import net.consensys.orion.enclave.EncryptedPayload;
+import net.consensys.orion.exception.OrionErrorCode;
+import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.utils.Serializer;
@@ -70,7 +72,7 @@ public class ReceiveHandler implements Handler<RoutingContext> {
     storage.get(key).thenAccept(encryptedPayload -> {
       if (!encryptedPayload.isPresent()) {
         log.info("unable to find payload with key {}", key);
-        routingContext.fail(404);
+        routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_PAYLOAD_NOT_FOUND));
         return;
       }
 
@@ -79,7 +81,7 @@ public class ReceiveHandler implements Handler<RoutingContext> {
         decryptedPayload = enclave.decrypt(encryptedPayload.get(), recipient);
       } catch (EnclaveException e) {
         log.info("unable to decrypt payload with key {}", key);
-        routingContext.fail(404);
+        routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_KEY_CANNOT_DECRYPT_PAYLOAD, e));
         return;
       }
 
