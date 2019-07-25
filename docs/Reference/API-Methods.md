@@ -45,11 +45,12 @@ Content-Type: application/json
     ```
    
     ```json tab="Result"
-    {
-        "privacyGroupId": "68/Cq0mVjB8FbXDLE1tbDRAvD/srluIok137uFOaClOIn4m3Nn0P4jDuRGhWK3AAVdvkqQ==",
-        "name": "Organisation A",
-        "description": "Contains members of Organisation A",
-        "type": "PANTHEON"
+    {"privacyGroupId":
+      "C68ZfeG6wHeXb+CyfwS6NjmmaMWwRaj8ZkrPq/o+S8Q=",
+      "name":"Organisation A",
+      "description":"Contains members of Organisation A",
+      "type":"PANTHEON",
+      "members":["g59BmTeJIn7HIcnq8VQWgyh/pDbvbt2eyP0Ii60aDDw=","negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk="]
     } 
     ```
 
@@ -78,13 +79,13 @@ Content-Type: application/json
     curl -X POST http://127.0.0.1:8888/deletePrivacyGroup \
       -H 'Content-Type: application/json' \
       -d '{
-        "privacyGroupId": "68/Cq0mVjB8FbXDLE1tbDRAvD/srluIok137uFOaClOIn4m3Nn0P4jDuRGhWK3AAVdvkqQ==",
+        "privacyGroupId": "C68ZfeG6wHeXb+CyfwS6NjmmaMWwRaj8ZkrPq/o+S8Q=",
         "from": "negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk="
       }'
     ```
    
     ```json tab="Result"
-    "68/Cq0mVjB8FbXDLE1tbDRAvD/srluIok137uFOaClOIn4m3Nn0P4jDuRGhWK3AAVdvkqQ==" 
+    "C68ZfeG6wHeXb+CyfwS6NjmmaMWwRaj8ZkrPq/o+S8Q=" 
     ```
 
 ## findPrivacyGroup
@@ -174,7 +175,7 @@ To return the Privacy Group ID with the payload, use the `receive` method with t
       http://127.0.0.1:8888/receive \
       -H 'Content-Type: application/vnd.orion.v1+json' \
       -d '{
-    	"key": "X0iCPeAy8I/+IUeq13X1ozdVH5AHL6ISwmLXk6nPkPo=",
+    	"key": "dRQUqPeGy6sj9LQJUYqNlUFroBiWm/tJO+CriTce6AA=",
     	"to": "negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk="
     }'
     ```
@@ -238,7 +239,7 @@ Content-Type: application/json
 
 or
  
- `privacyGroupId` : *data, 32 bytes* - Privacy group to receive this payload
+ `privacyGroupId` : *string* - Privacy group to receive this payload
 
 **Returns**
 
