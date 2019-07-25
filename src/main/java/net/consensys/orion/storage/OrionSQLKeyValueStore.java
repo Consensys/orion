@@ -12,6 +12,7 @@
  */
 package net.consensys.orion.storage;
 
+import javax.persistence.EntityManager;
 import net.consensys.cava.bytes.Bytes;
 import net.consensys.cava.concurrent.AsyncCompletion;
 import net.consensys.cava.concurrent.AsyncResult;
@@ -32,96 +33,82 @@ import kotlin.Unit;
 import kotlin.coroutines.Continuation;
 import kotlinx.coroutines.CoroutineDispatcher;
 import kotlinx.coroutines.Dispatchers;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class OrionSQLKeyValueStore implements KeyValueStore {
-  private SQLKeyValueStore delegate = null;
+  private final JpaEntityManagerFactory jpaEntityManagerFactory;
 
-  private final String jdbcUrl;
-  private final String tableName;
-  private final String keyColumn;
-  private final String valueColumn;
-
-  BoneCP connectionPool;
-  private final CoroutineDispatcher dispatcher = Dispatchers.getIO();
-
-  public OrionSQLKeyValueStore(String jdbcUrl, String tableName, String keyColumn, String valueColumn)
-      throws SQLException, IOException {
-    this.jdbcUrl = jdbcUrl;
-    this.tableName = tableName;
-    this.keyColumn = keyColumn;
-    this.valueColumn = valueColumn;
-    this.delegate = new SQLKeyValueStore(jdbcUrl, tableName, keyColumn, valueColumn, dispatcher);
-    setBoneCPConfig();
+  public OrionSQLKeyValueStore(final JpaEntityManagerFactory jpaEntityManagerFactory) {
+    this.jpaEntityManagerFactory = jpaEntityManagerFactory;
   }
 
-  public OrionSQLKeyValueStore(String jdbcUrl) throws SQLException, IOException {
-    this(jdbcUrl, "store", "key", "value");
-  }
-
+  @Nullable
   @Override
-  public AsyncResult<Bytes> getAsync(Bytes key) {
-    return delegate.getAsync(key);
+  public Bytes get(@NotNull final Bytes key, final Continuation<? super Bytes> ignore) {
+    final EntityManager entityManager = jpaEntityManagerFactory.createEntityManager();
+    final Store store = entityManager.find(Store.class, key.toArrayUnsafe());
+    if (store != null) {
+      return Bytes.wrap(store.getValue());
+    } else {
+      return null;
+    }
   }
 
+  @NotNull
   @Override
-  public AsyncResult<Bytes> getAsync(CoroutineDispatcher dispatcher, Bytes key) {
-    return delegate.getAsync(dispatcher, key);
+  public AsyncResult<Bytes> getAsync(final CoroutineDispatcher ignore, @NotNull final Bytes key) {
+    final Bytes bytes = get(key, null);
+    // TODO this should be done async
+    return AsyncResult.completed(bytes);
   }
 
+  @NotNull
   @Override
-  public AsyncCompletion putAsync(Bytes key, Bytes value) {
+  public AsyncResult<Bytes> getAsync(@NotNull final Bytes key) {
+    // TODO this should be done async
+    final Bytes bytes = get(key, null);
+    return AsyncResult.completed(bytes);
+  }
+
+  @Nullable
+  @Override
+  public AsyncCompletion put(
+      @NotNull final Bytes key,
+      @NotNull final Bytes value,
+      final Continuation<? super Unit> ignore) {
+    // TODO this should be done async
+    EntityManager entityManager = jpaEntityManagerFactory.createEntityManager();
+    entityManager.getTransaction().begin();
+
+    final Store store = new Store();
+    store.setKey(key.toArrayUnsafe());
+    store.setValue(value.toArrayUnsafe());
+
+    entityManager.merge(store);
+    entityManager.getTransaction().commit();
+    return AsyncCompletion.completed();
+  }
+
+  @NotNull
+  @Override
+  public AsyncCompletion putAsync(
+      final CoroutineDispatcher ignore,
+      @NotNull final Bytes key,
+      @NotNull final Bytes value) {
+    // TODO this should be done async
+    return put(key, value, null);
+  }
+
+  @NotNull
+  @Override
+  public AsyncCompletion putAsync(@NotNull final Bytes key, @NotNull final Bytes value) {
+    // TODO this should be done async
     return put(key, value, null);
   }
 
   @Override
-  public AsyncCompletion putAsync(CoroutineDispatcher dispatcher, Bytes key, Bytes value) {
-    return delegate.putAsync(dispatcher, key, value);
+  public void close() throws IOException {
+    // TODO what should this do?
   }
-
-  @Override
-  public void close() {
-    delegate.close();
-  }
-
-  @Override
-  public Bytes get(Bytes key, Continuation<? super Bytes> continuation) {
-    return (Bytes) delegate.get(key, continuation);
-  }
-
-  @Override
-  public AsyncCompletion put(Bytes key, Bytes value, Continuation<? super Unit> continuation) {
-
-    CompletableFuture<Boolean> cfs = new CompletableFuture<>();
-    PreparedStatement preparedStatement;
-    try {
-      preparedStatement = connectionPool.getConnection().prepareStatement(
-          String.format("MERGE INTO %s(%s,%s) VALUES(?,?)", tableName, keyColumn, valueColumn));
-      preparedStatement.setBytes(1, key.toArrayUnsafe());
-      preparedStatement.setBytes(2, value.toArrayUnsafe());
-      preparedStatement.execute();
-      cfs.complete(true);
-    } catch (SQLException e) {
-      e.printStackTrace();
-      cfs.completeExceptionally(e);
-    }
-
-    try {
-      Boolean successful = cfs.get();
-      if (successful) {
-        return AsyncCompletion.completed();
-      } else {
-        return AsyncCompletion.exceptional(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP));
-      }
-    } catch (InterruptedException | ExecutionException e) {
-      e.printStackTrace();
-      return AsyncCompletion.exceptional(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP));
-    }
-  }
-
-  private void setBoneCPConfig() throws SQLException {
-    BoneCPConfig boneCPConfig = new BoneCPConfig();
-    boneCPConfig.setJdbcUrl(jdbcUrl);
-    connectionPool = new BoneCP(boneCPConfig);
-  }
-
 }

@@ -53,7 +53,7 @@ class PrivacyGroupStorageTest {
   private Storage<PrivacyGroupPayload> payloadStorage;
 
   @BeforeEach
-  void setup(@TempDirectory Path tempDir) throws IOException, SQLException {
+  void setup(@TempDirectory Path tempDir) throws SQLException {
     memoryKeyStore = new MemoryKeyStore();
     Box.PublicKey defaultNodeKey = memoryKeyStore.generateKeyPair();
     memoryKeyStore.addNodeKey(defaultNodeKey);
@@ -64,7 +64,9 @@ class PrivacyGroupStorageTest {
       Statement st = conn.createStatement();
       st.executeUpdate("create table if not exists store(key binary, value binary, primary key(key))");
     }
-    storage = new OrionSQLKeyValueStore(jdbcUrl);
+    // TODO doesn't seem right to be passing in the entity class here
+    final JpaEntityManagerFactory jpaEntityManagerFactory = new JpaEntityManagerFactory(jdbcUrl, Store.class);
+    storage = new OrionSQLKeyValueStore(jpaEntityManagerFactory);
     payloadStorage = new PrivacyGroupStorage(storage, enclave);
   }
 

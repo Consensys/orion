@@ -261,7 +261,8 @@ dependencies {
   // XML
   compile 'javax.xml.bind:jaxb-api:2.3.0'
 
-  // database drivers
+  // database
+  compile 'org.apache.openjpa:openjpa:3.1.0'
   compile 'org.postgresql:postgresql:42.2.6'
 
   // testing
