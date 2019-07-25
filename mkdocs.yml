@@ -47,6 +47,7 @@ nav:
     - Build from Source: Installation/Build-From-Source.md
   - Using Orion:
     - Getting Started: Getting-Started/Quickstart.md
+    - Privacy Groups: Using-Orion/Privacy-Groups.md
   - Configuring Orion:
     - Configuration File: Configuring-Orion/Configuration-File.md
     - TLS: Configuring-Orion/TLS.md
