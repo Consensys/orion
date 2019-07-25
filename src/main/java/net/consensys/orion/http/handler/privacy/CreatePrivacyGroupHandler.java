@@ -76,7 +76,7 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
     byte[] request = routingContext.getBody().getBytes();
     PrivacyGroupRequest privacyGroupRequest = Serializer.deserialize(JSON, PrivacyGroupRequest.class, request);
 
-    if (privacyGroupRequest.name() == null || privacyGroupRequest.description() == null) {
+    if (privacyGroupRequest.name().isBlank() || privacyGroupRequest.description().isBlank()) {
       routingContext.fail(
           new OrionException(
               OrionErrorCode.CREATE_GROUP_INVALID_PARAMS,
