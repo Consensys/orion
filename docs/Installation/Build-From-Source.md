@@ -8,7 +8,7 @@ description: Building Orion from source code
 * [Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 
 !!!important
-    Orion requires Java 8+ to compile; earlier versions are not supported.
+    Orion is supported on Java 11+. Java 8 support is deprecated and will be removed in a future release.
 
 * [Git](https://git-scm.com/downloads) or [GitHub Desktop](https://desktop.github.com/)
 

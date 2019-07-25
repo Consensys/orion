@@ -476,7 +476,7 @@ class SendHandlerTest extends HandlerTest {
     Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
     byte[] privacyGroupId = enclave
-        .generatePrivacyGroupId(new Box.PublicKey[] {recipientKey, senderKey}, null, PrivacyGroupPayload.Type.LEGACY);
+        .generatePrivacyGroupId(new Box.PublicKey[] {recipientKey, senderKey}, null, PrivacyGroupPayload.Type.PANTHEON);
 
     // generate random byte content
     byte[] toEncrypt = new byte[342];
@@ -531,7 +531,7 @@ class SendHandlerTest extends HandlerTest {
     // build the store privacy group request
     PrivacyGroupRequest privacyGroupRequestExpected =
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "test");
-    Request request = buildPrivateAPIRequest("/privacyGroupId", JSON, privacyGroupRequestExpected);
+    Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
 
     byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
         addresses,
@@ -541,7 +541,7 @@ class SendHandlerTest extends HandlerTest {
     FakePeer fakePeer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey);
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    // execute /privacyGroupId request
+    // execute /createPrivacyGroupId request
     Response resp = httpClient.newCall(request).execute();
 
     assertEquals(resp.code(), 200);

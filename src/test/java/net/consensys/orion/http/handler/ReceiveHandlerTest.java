@@ -44,6 +44,7 @@ import okhttp3.Response;
 import org.junit.jupiter.api.Test;
 
 class ReceiveHandlerTest extends HandlerTest {
+
   private MemoryKeyStore memoryKeyStore;
 
   static {
@@ -215,6 +216,7 @@ class ReceiveHandlerTest extends HandlerTest {
     Response resp = httpClient.newCall(request).execute();
 
     assertEquals(404, resp.code());
+    assertError(OrionErrorCode.ENCLAVE_PAYLOAD_NOT_FOUND, resp);
   }
 
   @Test
@@ -238,6 +240,7 @@ class ReceiveHandlerTest extends HandlerTest {
 
     Response resp = httpClient.newCall(request).execute();
     assertEquals(404, resp.code());
+    assertError(OrionErrorCode.ENCLAVE_KEY_CANNOT_DECRYPT_PAYLOAD, resp);
   }
 
   @Test

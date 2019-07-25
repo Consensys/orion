@@ -21,6 +21,8 @@ import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
+import net.consensys.orion.exception.OrionErrorCode;
+import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
 
@@ -59,5 +61,10 @@ public class PrivacyGroupStorage implements Storage<PrivacyGroupPayload> {
     return store.getAsync(keyBytes).thenApply(
         maybeBytes -> Optional.ofNullable(maybeBytes).map(
             bytes -> Serializer.deserialize(HttpContentType.CBOR, PrivacyGroupPayload.class, bytes.toArrayUnsafe())));
+  }
+
+  @Override
+  public AsyncResult<Optional<PrivacyGroupPayload>> update(String key, PrivacyGroupPayload data) {
+    throw new OrionException(OrionErrorCode.METHOD_UNIMPLEMENTED);
   }
 }

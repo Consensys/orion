@@ -83,6 +83,16 @@ Content-Type: application/json
         "from": "negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk="
       }'
     ```
+    
+    ```bash tab="With Privacy Group ID"
+        curl -X POST http://127.0.0.1:8888/send \
+          -H 'Content-Type: application/json' \
+          -d '{
+        	"payload": "SGVsbG8sIFdvcmxkIQ==",
+        	"from": "4xanJzyaDPcBVMUSwl/tLp+DbXzd3jF9MKk1yJuyewE=",
+        	"privacyGroupId": "kAbelwaVW7okoEn1+okO+AbA4Hhz/7DaCOWVQz9nx5M="
+        }'
+    ```
    
     ```json tab="Result"
     "C68ZfeG6wHeXb+CyfwS6NjmmaMWwRaj8ZkrPq/o+S8Q=" 

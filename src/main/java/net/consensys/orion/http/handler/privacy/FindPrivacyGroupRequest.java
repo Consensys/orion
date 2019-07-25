@@ -13,23 +13,22 @@
 package net.consensys.orion.http.handler.privacy;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class PrivacyGroupResponse implements Serializable {
+public class FindPrivacyGroupRequest implements Serializable {
 
-  private List<PrivacyGroup> groups = new ArrayList<>();
+  private final String[] addresses;
 
   @JsonCreator
-  public PrivacyGroupResponse(@JsonProperty("groups") List<PrivacyGroup> groups) {
-    this.groups = groups;
+  public FindPrivacyGroupRequest(@JsonProperty("addresses") String[] addresses) {
+    this.addresses = addresses;
   }
 
-  @JsonProperty("groups")
-  public List<PrivacyGroup> privacyGroupId() {
-    return groups;
+  @JsonProperty("addresses")
+  public String[] addresses() {
+    return addresses;
   }
+
 }

@@ -18,6 +18,7 @@ import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
+import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.http.server.HttpContentType;
@@ -42,25 +43,28 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Get the privacyGroup id given the list of addresses.
+ * Create a privacyGroup given the list of addresses.
  */
-public class PrivacyGroupHandler implements Handler<RoutingContext> {
+public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
 
 
   private static final Logger log = LogManager.getLogger();
 
   private final Storage<PrivacyGroupPayload> privacyGroupStorage;
+  private final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
   private final ConcurrentNetworkNodes networkNodes;
   private final Enclave enclave;
   private final HttpClient httpClient;
 
-  public PrivacyGroupHandler(
+  public CreatePrivacyGroupHandler(
       Storage<PrivacyGroupPayload> privacyGroupStorage,
+      Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
       ConcurrentNetworkNodes networkNodes,
       Enclave enclave,
       Vertx vertx,
       Config config) {
     this.privacyGroupStorage = privacyGroupStorage;
+    this.queryPrivacyGroupStorage = queryPrivacyGroupStorage;
     this.networkNodes = networkNodes;
     this.enclave = enclave;
     this.httpClient = NodeHttpClientBuilder.build(vertx, config, 1500);
@@ -70,28 +74,34 @@ public class PrivacyGroupHandler implements Handler<RoutingContext> {
   public void handle(RoutingContext routingContext) {
 
     byte[] request = routingContext.getBody().getBytes();
-    PrivacyGroupRequest privacyGroup = Serializer.deserialize(JSON, PrivacyGroupRequest.class, request);
+    PrivacyGroupRequest privacyGroupRequest = Serializer.deserialize(JSON, PrivacyGroupRequest.class, request);
+
+    if (!Arrays.asList(privacyGroupRequest.addresses()).contains(privacyGroupRequest.from())) {
+      routingContext.fail(
+          new OrionException(OrionErrorCode.CREATE_GROUP_INCLUDE_SELF, "the list of addresses should include self "));
+      return;
+    }
 
     byte[] bytes = new byte[20];
-    if (privacyGroup.getSeed().isPresent()) {
-      bytes = privacyGroup.getSeed().get();
+    if (privacyGroupRequest.getSeed().isPresent()) {
+      bytes = privacyGroupRequest.getSeed().get();
     } else {
       SecureRandom random = new SecureRandom();
       random.nextBytes(bytes);
     }
 
     PrivacyGroupPayload privacyGroupPayload = new PrivacyGroupPayload(
-        privacyGroup.addresses(),
-        privacyGroup.name(),
-        privacyGroup.description(),
+        privacyGroupRequest.addresses(),
+        privacyGroupRequest.name(),
+        privacyGroupRequest.description(),
         PrivacyGroupPayload.State.ACTIVE,
         PrivacyGroupPayload.Type.PANTHEON,
         bytes);
     final String privacyGroupId = privacyGroupStorage.generateDigest(privacyGroupPayload);
 
     List<Box.PublicKey> addressListToForward = Arrays
-        .stream(privacyGroup.addresses())
-        .filter(key -> !key.equals(privacyGroup.from())) // don't forward to self
+        .stream(privacyGroupRequest.addresses())
+        .filter(key -> !key.equals(privacyGroupRequest.from())) // don't forward to self
         .distinct()
         .map(enclave::readKey)
         .collect(Collectors.toList());
@@ -137,14 +147,26 @@ public class PrivacyGroupHandler implements Handler<RoutingContext> {
       }
       privacyGroupStorage.put(privacyGroupPayload).thenAccept((result) -> {
 
-        PrivacyGroup group = new PrivacyGroup(
-            privacyGroupId,
-            PrivacyGroupPayload.Type.PANTHEON,
-            privacyGroup.name(),
-            privacyGroup.description());
+        QueryPrivacyGroupPayload queryPrivacyGroupPayload =
+            new QueryPrivacyGroupPayload(privacyGroupPayload.addresses(), null);
 
-        Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, group));
-        routingContext.response().end(toReturn);
+        queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupId);
+        String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
+        queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenAccept((res) -> {
+
+          PrivacyGroup group = new PrivacyGroup(
+              privacyGroupId,
+              PrivacyGroupPayload.Type.PANTHEON,
+              privacyGroupRequest.name(),
+              privacyGroupRequest.description(),
+              privacyGroupRequest.addresses());
+
+          Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, group));
+          routingContext.response().end(toReturn);
+
+        }).exceptionally(
+            e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
+
       }).exceptionally(
           e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
     });
