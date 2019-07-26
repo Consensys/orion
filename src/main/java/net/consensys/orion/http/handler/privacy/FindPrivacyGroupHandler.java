@@ -12,11 +12,8 @@
  */
 package net.consensys.orion.http.handler.privacy;
 
-import static net.consensys.cava.io.Base64.encodeBytes;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
-import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
 import net.consensys.orion.exception.OrionErrorCode;
@@ -33,54 +30,56 @@ import java.util.concurrent.ExecutionException;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
- * Delete the privacy group given the privacyGroupId.
+ * Find the privacy group given the privacyGroupId.
  */
 public class FindPrivacyGroupHandler implements Handler<RoutingContext> {
 
+  private static final Logger log = LogManager.getLogger();
+
   private final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
   private final Storage<PrivacyGroupPayload> privacyGroupStorage;
-  private final Enclave enclave;
 
   public FindPrivacyGroupHandler(
-      Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
-      Storage<PrivacyGroupPayload> privacyGroupStorage,
-      Enclave enclave) {
+      final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
+      final Storage<PrivacyGroupPayload> privacyGroupStorage) {
     this.queryPrivacyGroupStorage = queryPrivacyGroupStorage;
     this.privacyGroupStorage = privacyGroupStorage;
-    this.enclave = enclave;
   }
 
   @Override
   @SuppressWarnings("rawtypes")
-  public void handle(RoutingContext routingContext) {
+  public void handle(final RoutingContext routingContext) {
 
-    byte[] request = routingContext.getBody().getBytes();
-    FindPrivacyGroupRequest findPrivacyGroupRequest =
+    final byte[] request = routingContext.getBody().getBytes();
+    final FindPrivacyGroupRequest findPrivacyGroupRequest =
         Serializer.deserialize(JSON, FindPrivacyGroupRequest.class, request);
 
-    String[] addresses = findPrivacyGroupRequest.addresses();
-    Box.PublicKey[] toKeys = Arrays.stream(addresses).map(enclave::readKey).toArray(Box.PublicKey[]::new);
+    final String[] addresses = findPrivacyGroupRequest.addresses();
+    log.info("Searching for groups with {}", Arrays.toString(addresses));
 
-    QueryPrivacyGroupPayload queryPrivacyGroupPayload =
+    final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
         new QueryPrivacyGroupPayload(findPrivacyGroupRequest.addresses(), null);
-    String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
-    encodeBytes(enclave.generatePrivacyGroupId(toKeys, new byte[0], PrivacyGroupPayload.Type.LEGACY));
-
+    final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
+    log.info("Generated digest of find request {}", key);
 
     queryPrivacyGroupStorage.get(key).thenAccept((result) -> {
       if (result.isPresent()) {
-        List<String> privacyGroupIds = result.get().privacyGroupId();
+        final List<String> privacyGroupIds = result.get().privacyGroupId();
+        log.info("Privacy groups ids found {}", Arrays.toString(privacyGroupIds.toArray()));
 
-        CompletableFuture[] cfs = privacyGroupIds.stream().map(pKey -> {
+        final CompletableFuture[] cfs = privacyGroupIds.stream().map(pKey -> {
+          log.info("Retrieving privacy group object for {}", pKey);
 
-          CompletableFuture<PrivacyGroup> responseFuture = new CompletableFuture<>();
+          final CompletableFuture<PrivacyGroup> responseFuture = new CompletableFuture<>();
           privacyGroupStorage.get(pKey).thenAccept((res) -> {
             if (res.isPresent()) {
-              PrivacyGroupPayload privacyGroupPayload = res.get();
+              final PrivacyGroupPayload privacyGroupPayload = res.get();
               if (privacyGroupPayload.state().equals(PrivacyGroupPayload.State.ACTIVE)) {
-                PrivacyGroup response = new PrivacyGroup(
+                final PrivacyGroup response = new PrivacyGroup(
                     pKey,
                     privacyGroupPayload.type(),
                     privacyGroupPayload.name(),
@@ -100,21 +99,26 @@ public class FindPrivacyGroupHandler implements Handler<RoutingContext> {
 
         CompletableFuture.allOf(cfs).whenComplete((all, ex) -> {
           if (ex != null) {
+            log.error(ex);
             routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING));
             return;
           }
 
-          List<PrivacyGroup> listPrivacyGroups = new ArrayList<>();
+          final List<PrivacyGroup> listPrivacyGroups = new ArrayList<>();
           for (CompletableFuture c : cfs) {
             try {
-              PrivacyGroup privacyGroup = (PrivacyGroup) c.get();
+              final PrivacyGroup privacyGroup = (PrivacyGroup) c.get();
               if (privacyGroup.getPrivacyGroupId() != null) {
                 listPrivacyGroups.add(privacyGroup);
+              } else {
+                log.info("Found a privacy group but it does not have a privacy group id");
               }
             } catch (InterruptedException | ExecutionException e) {
+              log.error(e);
               routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING));
             }
           }
+          log.info("Found privacy group objects {}", listPrivacyGroups);
 
           final Buffer responseData = Buffer.buffer(Serializer.serialize(JSON, listPrivacyGroups));
           routingContext.response().end(responseData);
