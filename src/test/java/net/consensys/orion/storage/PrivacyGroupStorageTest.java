@@ -26,7 +26,6 @@ import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.security.Security;
 import java.sql.Connection;
@@ -64,9 +63,8 @@ class PrivacyGroupStorageTest {
       Statement st = conn.createStatement();
       st.executeUpdate("create table if not exists store(key binary, value binary, primary key(key))");
     }
-    // TODO doesn't seem right to be passing in the entity class here
-    final JpaEntityManagerFactory jpaEntityManagerFactory = new JpaEntityManagerFactory(jdbcUrl, Store.class);
-    storage = new OrionSQLKeyValueStore(jpaEntityManagerFactory);
+    final JpaEntityManagerProvider jpaEntityManagerProvider = new JpaEntityManagerProvider(jdbcUrl);
+    storage = new OrionSQLKeyValueStore(jpaEntityManagerProvider);
     payloadStorage = new PrivacyGroupStorage(storage, enclave);
   }
 

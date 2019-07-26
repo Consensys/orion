@@ -23,11 +23,10 @@ import javax.persistence.Persistence;
 
 import com.google.common.collect.ImmutableMap;
 
-public class JpaEntityManagerFactory {
+public class JpaEntityManagerProvider {
   private static final String JDBC_PREFIX = "jdbc:";
-  private final Class<?>[] entityClasses;
-  private final String jdbcUrl;
-  private EntityManager entityManager;
+  private final Class<?>[] entityClasses = new Class[] {Store.class};
+  private final EntityManager entityManager;
 
   private final Map<String, String> jdbcDrivers = ImmutableMap
       .<String, String>builder()
@@ -35,30 +34,34 @@ public class JpaEntityManagerFactory {
       .put("h2", "org.h2.Driver")
       .build();
 
-  public JpaEntityManagerFactory(final String jdbcUrl, Class<?>... entityClasses) {
-    this.entityClasses = entityClasses;
-    this.jdbcUrl = jdbcUrl;
+  public JpaEntityManagerProvider(final String jdbcUrl) {
+    final String databaseDriver = determineDatabaseDriver(jdbcUrl);
+    this.entityManager = createEntityManagerFactory(jdbcUrl, databaseDriver);
   }
 
-  public EntityManager createEntityManager() {
-    if (entityManager == null) {
-      final String dbName = databaseName();
-      final String driverName = jdbcDrivers.get(dbName);
-      // TODO throw error if no driver found
-      entityManager = createEntityManagerFactory(driverName);
-    }
+  public EntityManager getEntityManager() {
     return entityManager;
   }
 
-  private String databaseName() {
+  private String determineDatabaseDriver(final String jdbcUrl) {
+    final String dbName = databaseName(jdbcUrl);
+    final String driverName = jdbcDrivers.get(dbName);
+    if (driverName == null) {
+      throw new IllegalStateException("No database driver found for jdbc url " + jdbcUrl);
+    }
+    return driverName;
+  }
+
+  private String databaseName(final String jdbcUrl) {
     int jdbcPrefixOffset = JDBC_PREFIX.length();
     int dbEndSeparator = jdbcUrl.indexOf(":", jdbcPrefixOffset);
     return jdbcUrl.substring(jdbcPrefixOffset, dbEndSeparator);
   }
 
-  private EntityManager createEntityManagerFactory(final String driverName) {
+  private EntityManager createEntityManagerFactory(final String jdbcUrl, final String driverName) {
     final String types = Arrays.stream(entityClasses).map(Class::getName).collect(joining(";"));
     final Map<String, String> properties = new HashMap<>();
+    // TODO use OpenJPA enhancer
     properties.put("openjpa.RuntimeUnenhancedClasses", "supported");
     properties.put("openjpa.ConnectionURL", jdbcUrl);
     properties.put("openjpa.ConnectionDriverName", driverName);
@@ -67,6 +70,5 @@ public class JpaEntityManagerFactory {
     final EntityManagerFactory factory = Persistence.createEntityManagerFactory("orion", properties);
     return factory.createEntityManager();
   }
-
 
 }

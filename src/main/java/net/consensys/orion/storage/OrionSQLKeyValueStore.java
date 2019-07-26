@@ -12,41 +12,31 @@
  */
 package net.consensys.orion.storage;
 
-import javax.persistence.EntityManager;
 import net.consensys.cava.bytes.Bytes;
 import net.consensys.cava.concurrent.AsyncCompletion;
 import net.consensys.cava.concurrent.AsyncResult;
 import net.consensys.cava.kv.KeyValueStore;
-import net.consensys.cava.kv.SQLKeyValueStore;
-import net.consensys.orion.exception.OrionErrorCode;
-import net.consensys.orion.exception.OrionException;
 
 import java.io.IOException;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import javax.persistence.EntityManager;
 
-import com.jolbox.bonecp.BoneCP;
-import com.jolbox.bonecp.BoneCPConfig;
 import kotlin.Unit;
 import kotlin.coroutines.Continuation;
 import kotlinx.coroutines.CoroutineDispatcher;
-import kotlinx.coroutines.Dispatchers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class OrionSQLKeyValueStore implements KeyValueStore {
-  private final JpaEntityManagerFactory jpaEntityManagerFactory;
+  private final JpaEntityManagerProvider jpaEntityManagerProvider;
 
-  public OrionSQLKeyValueStore(final JpaEntityManagerFactory jpaEntityManagerFactory) {
-    this.jpaEntityManagerFactory = jpaEntityManagerFactory;
+  public OrionSQLKeyValueStore(final JpaEntityManagerProvider jpaEntityManagerProvider) {
+    this.jpaEntityManagerProvider = jpaEntityManagerProvider;
   }
 
   @Nullable
   @Override
   public Bytes get(@NotNull final Bytes key, final Continuation<? super Bytes> ignore) {
-    final EntityManager entityManager = jpaEntityManagerFactory.createEntityManager();
+    final EntityManager entityManager = jpaEntityManagerProvider.getEntityManager();
     final Store store = entityManager.find(Store.class, key.toArrayUnsafe());
     if (store != null) {
       return Bytes.wrap(store.getValue());
@@ -78,7 +68,7 @@ public class OrionSQLKeyValueStore implements KeyValueStore {
       @NotNull final Bytes value,
       final Continuation<? super Unit> ignore) {
     // TODO this should be done async
-    EntityManager entityManager = jpaEntityManagerFactory.createEntityManager();
+    EntityManager entityManager = jpaEntityManagerProvider.getEntityManager();
     entityManager.getTransaction().begin();
 
     final Store store = new Store();
