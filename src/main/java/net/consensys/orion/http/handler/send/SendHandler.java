@@ -12,6 +12,7 @@
  */
 package net.consensys.orion.http.handler.send;
 
+import static net.consensys.cava.io.Base64.encodeBytes;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
 import net.consensys.cava.crypto.sodium.Box;
@@ -117,18 +118,31 @@ public class SendHandler implements Handler<RoutingContext> {
           PrivacyGroupPayload.State.ACTIVE,
           PrivacyGroupPayload.Type.LEGACY,
           null);
-      privacyGroupStorage.put(privacyGroupPayload).thenApply((result) -> {
-        QueryPrivacyGroupPayload queryPrivacyGroupPayload =
-            new QueryPrivacyGroupPayload(keys.toArray(new String[0]), null);
-        queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupStorage.generateDigest(privacyGroupPayload));
-        String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
-        return queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenApply((res) -> {
+
+      QueryPrivacyGroupPayload queryPrivacyGroupPayload =
+              new QueryPrivacyGroupPayload(keys.toArray(new String[0]), null);
+      final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
+
+
+      queryPrivacyGroupStorage.get(key).thenApply(privacyGroup -> {
+        if (privacyGroup.isPresent()) {
           send(routingContext, sendRequest, fromKey, toKeys, privacyGroupPayload);
-          return result;
-        }).exceptionally(e -> {
-          handleFailure(routingContext, e, ErrorType.FIND_GROUP);
-          return null;
-        });
+          return key;
+        } else {
+          return privacyGroupStorage.put(privacyGroupPayload).thenApply((result) -> {
+            queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupStorage.generateDigest(privacyGroupPayload));
+            return queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenApply((res) -> {
+              send(routingContext, sendRequest, fromKey, toKeys, privacyGroupPayload);
+              return result;
+            }).exceptionally(e -> {
+              handleFailure(routingContext, e, ErrorType.FIND_GROUP);
+              return null;
+            });
+          }).exceptionally(e -> {
+            handleFailure(routingContext, e, ErrorType.FIND_GROUP);
+            return null;
+          });
+        }
       }).exceptionally(e -> {
         handleFailure(routingContext, e, ErrorType.FIND_GROUP);
         return null;
