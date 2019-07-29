@@ -12,9 +12,6 @@
  */
 package net.consensys.orion.storage;
 
-import static java.util.stream.Collectors.joining;
-
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import javax.persistence.EntityManager;
@@ -25,8 +22,6 @@ import com.google.common.collect.ImmutableMap;
 
 public class JpaEntityManagerProvider {
   private static final String JDBC_PREFIX = "jdbc:";
-  // TODO remove duplication with the persistence.xml for the entity class
-  private final Class<?>[] entityClasses = new Class<?>[] {Store.class};
   private final EntityManager entityManager;
 
   private final Map<String, String> jdbcDrivers = ImmutableMap
@@ -60,13 +55,10 @@ public class JpaEntityManagerProvider {
   }
 
   private EntityManager createEntityManagerFactory(final String jdbcUrl, final String driverName) {
-    final String types = Arrays.stream(entityClasses).map(Class::getName).collect(joining(";"));
     final Map<String, String> properties = new HashMap<>();
-    // TODO use OpenJPA enhancer
     properties.put("openjpa.RuntimeUnenhancedClasses", "supported");
     properties.put("openjpa.ConnectionURL", jdbcUrl);
     properties.put("openjpa.ConnectionDriverName", driverName);
-    properties.put("openjpa.MetaDataFactory", "jpa(Types=" + types + ")");
 
     final EntityManagerFactory factory = Persistence.createEntityManagerFactory("orion", properties);
     return factory.createEntityManager();
