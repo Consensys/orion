@@ -13,6 +13,15 @@
 
 import net.ltgt.gradle.errorprone.CheckSeverity
 
+buildscript {
+  repositories { jcenter() }
+
+  dependencies {
+    classpath 'org.apache.openjpa:openjpa:3.1.0'
+    classpath 'com.radcortez.gradle:openjpa-gradle-plugin:3.0.0'
+  }
+}
+
 plugins {
   id "com.diffplug.gradle.spotless" version "3.10.0"
   id "com.github.hierynomus.license" version "0.14.0"
@@ -28,8 +37,11 @@ apply plugin: 'application'
 apply plugin: 'maven-publish'
 apply from: "gradle/check-licenses.gradle"
 apply plugin: 'com.jfrog.bintray'
+apply plugin: 'openjpa'
 
 version = '1.4.0-SNAPSHOT'
+
+
 
 //////
 // Default tasks and build aliases
@@ -217,6 +229,10 @@ task performanceTest(type: JavaExec) {
   systemProperties = ['gatling.core.directory.binaries': sourceSets.test.output.classesDirs]
 }
 
+openjpa {
+  // only use the jpa entity classes defined the in the persistence.xml
+  excludes = ['**/*.class']
+}
 
 //////
 // Dependencies

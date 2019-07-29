@@ -25,7 +25,8 @@ import com.google.common.collect.ImmutableMap;
 
 public class JpaEntityManagerProvider {
   private static final String JDBC_PREFIX = "jdbc:";
-  private final Class<?>[] entityClasses = new Class[] {Store.class};
+  // TODO remove duplication with the persistence.xml for the entity class
+  private final Class<?>[] entityClasses = new Class<?>[] {Store.class};
   private final EntityManager entityManager;
 
   private final Map<String, String> jdbcDrivers = ImmutableMap
