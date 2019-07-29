@@ -12,7 +12,6 @@
  */
 package net.consensys.orion.http.handler.send;
 
-import static net.consensys.cava.io.Base64.encodeBytes;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
 import net.consensys.cava.crypto.sodium.Box;
@@ -120,7 +119,7 @@ public class SendHandler implements Handler<RoutingContext> {
           null);
 
       QueryPrivacyGroupPayload queryPrivacyGroupPayload =
-              new QueryPrivacyGroupPayload(keys.toArray(new String[0]), null);
+          new QueryPrivacyGroupPayload(keys.toArray(new String[0]), null);
       final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
 
 
