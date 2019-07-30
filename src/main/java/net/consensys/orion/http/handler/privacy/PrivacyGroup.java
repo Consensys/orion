@@ -15,6 +15,7 @@ package net.consensys.orion.http.handler.privacy;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class PrivacyGroup implements Serializable {
 
@@ -81,5 +82,22 @@ public class PrivacyGroup implements Serializable {
     this.members = members;
   }
 
-
+  @Override
+  public String toString() {
+    return "PrivacyGroup{"
+        + "privacyGroupId='"
+        + privacyGroupId
+        + '\''
+        + ", name='"
+        + name
+        + '\''
+        + ", description='"
+        + description
+        + '\''
+        + ", type="
+        + type
+        + ", members="
+        + Arrays.toString(members)
+        + '}';
+  }
 }

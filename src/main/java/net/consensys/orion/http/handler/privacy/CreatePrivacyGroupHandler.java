@@ -47,7 +47,6 @@ import org.apache.logging.log4j.Logger;
  */
 public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
 
-
   private static final Logger log = LogManager.getLogger();
 
   private final Storage<PrivacyGroupPayload> privacyGroupStorage;
@@ -57,12 +56,12 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
   private final HttpClient httpClient;
 
   public CreatePrivacyGroupHandler(
-      Storage<PrivacyGroupPayload> privacyGroupStorage,
-      Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
-      ConcurrentNetworkNodes networkNodes,
-      Enclave enclave,
-      Vertx vertx,
-      Config config) {
+      final Storage<PrivacyGroupPayload> privacyGroupStorage,
+      final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
+      final ConcurrentNetworkNodes networkNodes,
+      final Enclave enclave,
+      final Vertx vertx,
+      final Config config) {
     this.privacyGroupStorage = privacyGroupStorage;
     this.queryPrivacyGroupStorage = queryPrivacyGroupStorage;
     this.networkNodes = networkNodes;
@@ -71,10 +70,10 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
   }
 
   @Override
-  public void handle(RoutingContext routingContext) {
+  public void handle(final RoutingContext routingContext) {
 
-    byte[] request = routingContext.getBody().getBytes();
-    PrivacyGroupRequest privacyGroupRequest = Serializer.deserialize(JSON, PrivacyGroupRequest.class, request);
+    final byte[] request = routingContext.getBody().getBytes();
+    final PrivacyGroupRequest privacyGroupRequest = Serializer.deserialize(JSON, PrivacyGroupRequest.class, request);
 
     if (privacyGroupRequest.name().isBlank() || privacyGroupRequest.description().isBlank()) {
       routingContext.fail(
@@ -90,15 +89,18 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
       return;
     }
 
-    byte[] bytes = new byte[20];
+    final byte[] bytes;
     if (privacyGroupRequest.getSeed().isPresent()) {
       bytes = privacyGroupRequest.getSeed().get();
     } else {
-      SecureRandom random = new SecureRandom();
+      final SecureRandom random = new SecureRandom();
+      bytes = new byte[20];
       random.nextBytes(bytes);
     }
 
-    PrivacyGroupPayload privacyGroupPayload = new PrivacyGroupPayload(
+    log.info("Creating privacy group for {}", Arrays.toString(privacyGroupRequest.addresses()));
+
+    final PrivacyGroupPayload privacyGroupPayload = new PrivacyGroupPayload(
         privacyGroupRequest.addresses(),
         privacyGroupRequest.name(),
         privacyGroupRequest.description(),
@@ -107,7 +109,7 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
         bytes);
     final String privacyGroupId = privacyGroupStorage.generateDigest(privacyGroupPayload);
 
-    List<Box.PublicKey> addressListToForward = Arrays
+    final List<Box.PublicKey> addressListToForward = Arrays
         .stream(privacyGroupRequest.addresses())
         .filter(key -> !key.equals(privacyGroupRequest.from())) // don't forward to self
         .distinct()
@@ -122,10 +124,12 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
     log.debug("propagating payload");
 
     @SuppressWarnings("rawtypes")
-    CompletableFuture[] cfs = addressListToForward.stream().map(pKey -> {
+    final CompletableFuture[] cfs = addressListToForward.stream().map(pKey -> {
       URL recipientURL = networkNodes.urlForRecipient(pKey);
 
-      CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
+      log.info("Propagating create request to {} with URL {}", pKey, recipientURL.toString());
+
+      final CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
 
       // serialize payload, stripping non-relevant encryptedKeys, and configureRoutes payload
       final byte[] payload = Serializer.serialize(HttpContentType.CBOR, privacyGroupPayload);
@@ -135,6 +139,7 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
           .post(recipientURL.getPort(), recipientURL.getHost(), "/pushPrivacyGroup")
           .putHeader("Content-Type", "application/cbor")
           .handler(response -> response.bodyHandler(responseBody -> {
+            log.info("{} with URL {} responded with {}", pKey, recipientURL.toString(), response.statusCode());
             if (response.statusCode() != 200 || !privacyGroupId.equals(responseBody.toString())) {
               responseFuture.completeExceptionally(new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS));
             } else {
@@ -153,23 +158,29 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
         handleFailure(routingContext, ex);
         return;
       }
+      log.info("Storing privacy group {}", privacyGroupId);
+
       privacyGroupStorage.put(privacyGroupPayload).thenAccept((result) -> {
 
-        QueryPrivacyGroupPayload queryPrivacyGroupPayload =
+        final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
             new QueryPrivacyGroupPayload(privacyGroupPayload.addresses(), null);
 
         queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupId);
-        String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
+        final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
+
+        log.info("Stored privacy group. resulting digest: {}", key);
+
         queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenAccept((res) -> {
 
-          PrivacyGroup group = new PrivacyGroup(
+          final PrivacyGroup group = new PrivacyGroup(
               privacyGroupId,
               PrivacyGroupPayload.Type.PANTHEON,
               privacyGroupRequest.name(),
               privacyGroupRequest.description(),
               privacyGroupRequest.addresses());
+          log.info("Storing privacy group {} complete", privacyGroupId);
 
-          Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, group));
+          final Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, group));
           routingContext.response().end(toReturn);
 
         }).exceptionally(
@@ -180,10 +191,10 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
     });
   }
 
-  private void handleFailure(RoutingContext routingContext, Throwable ex) {
+  private void handleFailure(final RoutingContext routingContext, final Throwable ex) {
     log.warn("propagating the payload failed");
 
-    Throwable cause = ex.getCause();
+    final Throwable cause = ex.getCause();
     if (cause instanceof OrionException) {
       routingContext.fail(cause);
     } else {
