@@ -144,8 +144,7 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
     assertEquals(privacyGroupList[0].getDescription(), description);
 
     //delete the privacy group
-    DeletePrivacyGroupRequest deletePrivacyGroupRequest =
-        new DeletePrivacyGroupRequest(privacyGroupId, encodeBytes(senderKey.bytesArray()));
+    DeletePrivacyGroupRequest deletePrivacyGroupRequest = new DeletePrivacyGroupRequest(privacyGroupId);
 
     request = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
 

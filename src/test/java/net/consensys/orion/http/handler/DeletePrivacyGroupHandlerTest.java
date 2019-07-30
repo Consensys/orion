@@ -87,8 +87,7 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
   @Test
   void expectedDeletePrivacyGroupId() throws Exception {
 
-    DeletePrivacyGroupRequest deletePrivacyGroupRequest =
-        buildDeletePrivacyGroupRequest(privacyGroupId, encodeBytes(senderKey.bytesArray()));
+    DeletePrivacyGroupRequest deletePrivacyGroupRequest = buildDeletePrivacyGroupRequest(privacyGroupId);
 
     Request request = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
 
@@ -102,8 +101,7 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
   @Test
   void expectErrorDeletePrivacyGroupIdTwice() throws Exception {
 
-    DeletePrivacyGroupRequest deletePrivacyGroupRequest =
-        buildDeletePrivacyGroupRequest(privacyGroupId, encodeBytes(senderKey.bytesArray()));
+    DeletePrivacyGroupRequest deletePrivacyGroupRequest = buildDeletePrivacyGroupRequest(privacyGroupId);
 
     Request request = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
 
@@ -122,8 +120,7 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
   @Test
   void expectErrorDeleteIncorrectPrivacyGroupId() throws Exception {
 
-    DeletePrivacyGroupRequest deletePrivacyGroupRequest =
-        buildDeletePrivacyGroupRequest("test", encodeBytes(senderKey.bytesArray()));
+    DeletePrivacyGroupRequest deletePrivacyGroupRequest = buildDeletePrivacyGroupRequest("test");
 
     Request request = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
 
@@ -145,7 +142,7 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
     return privacyGroupRequest;
   }
 
-  DeletePrivacyGroupRequest buildDeletePrivacyGroupRequest(String key, String from) {
-    return new DeletePrivacyGroupRequest(key, from);
+  DeletePrivacyGroupRequest buildDeletePrivacyGroupRequest(String key) {
+    return new DeletePrivacyGroupRequest(key);
   }
 }

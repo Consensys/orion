@@ -15,6 +15,7 @@ package net.consensys.orion.http.handler.privacy;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
 import net.consensys.cava.crypto.sodium.Box;
+import net.consensys.cava.io.Base64;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
@@ -86,9 +87,12 @@ public class DeletePrivacyGroupHandler implements Handler<RoutingContext> {
         // set state to deleted and propagate and store it
         privacyGroupPayload.setState(PrivacyGroupPayload.State.DELETED);
 
+        final List<String> nodeKeys =
+            Arrays.stream(enclave.nodeKeys()).map(key -> Base64.encodeBytes(key.bytesArray())).collect(
+                Collectors.toList());
         final List<Box.PublicKey> addressListToForward = Arrays
             .stream(privacyGroupPayload.addresses())
-            .filter(key -> !key.equals(privacyGroup.from())) // don't forward to self
+            .filter(nodeKeys::contains) // don't forward to self
             .distinct()
             .map(enclave::readKey)
             .collect(Collectors.toList());
