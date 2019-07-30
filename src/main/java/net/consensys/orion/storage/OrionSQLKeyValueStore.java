@@ -17,7 +17,6 @@ import net.consensys.cava.concurrent.AsyncCompletion;
 import net.consensys.cava.concurrent.AsyncResult;
 import net.consensys.cava.kv.KeyValueStore;
 
-import java.io.IOException;
 import javax.persistence.EntityManager;
 
 import kotlin.Unit;
@@ -36,7 +35,7 @@ public class OrionSQLKeyValueStore implements KeyValueStore {
   @Nullable
   @Override
   public Bytes get(@NotNull final Bytes key, final Continuation<? super Bytes> ignore) {
-    final EntityManager entityManager = jpaEntityManagerProvider.getEntityManager();
+    final EntityManager entityManager = jpaEntityManagerProvider.createEntityManager();
     final Store store = entityManager.find(Store.class, key.toArrayUnsafe());
     if (store != null) {
       return Bytes.wrap(store.getValue());
@@ -48,27 +47,19 @@ public class OrionSQLKeyValueStore implements KeyValueStore {
   @NotNull
   @Override
   public AsyncResult<Bytes> getAsync(final CoroutineDispatcher ignore, @NotNull final Bytes key) {
-    final Bytes bytes = get(key, null);
-    // TODO this should be done async
-    return AsyncResult.completed(bytes);
+    return AsyncResult.executeBlocking(() -> get(key, null));
   }
 
   @NotNull
   @Override
   public AsyncResult<Bytes> getAsync(@NotNull final Bytes key) {
-    // TODO this should be done async
-    final Bytes bytes = get(key, null);
-    return AsyncResult.completed(bytes);
+    return AsyncResult.executeBlocking(() -> get(key, null));
   }
 
   @Nullable
   @Override
-  public AsyncCompletion put(
-      @NotNull final Bytes key,
-      @NotNull final Bytes value,
-      final Continuation<? super Unit> ignore) {
-    // TODO this should be done async
-    EntityManager entityManager = jpaEntityManagerProvider.getEntityManager();
+  public Unit put(@NotNull final Bytes key, @NotNull final Bytes value, final Continuation<? super Unit> ignore) {
+    EntityManager entityManager = jpaEntityManagerProvider.createEntityManager();
     entityManager.getTransaction().begin();
 
     final Store store = new Store();
@@ -76,8 +67,9 @@ public class OrionSQLKeyValueStore implements KeyValueStore {
     store.setValue(value.toArrayUnsafe());
 
     entityManager.merge(store);
+    entityManager.flush();
     entityManager.getTransaction().commit();
-    return AsyncCompletion.completed();
+    return Unit.INSTANCE;
   }
 
   @NotNull
@@ -86,19 +78,17 @@ public class OrionSQLKeyValueStore implements KeyValueStore {
       final CoroutineDispatcher ignore,
       @NotNull final Bytes key,
       @NotNull final Bytes value) {
-    // TODO this should be done async
-    return put(key, value, null);
+    return AsyncCompletion.executeBlocking(() -> put(key, value, null));
   }
 
   @NotNull
   @Override
   public AsyncCompletion putAsync(@NotNull final Bytes key, @NotNull final Bytes value) {
-    // TODO this should be done async
-    return put(key, value, null);
+    return AsyncCompletion.executeBlocking(() -> put(key, value, null));
   }
 
   @Override
-  public void close() throws IOException {
-    // TODO what should this do?
+  public void close() {
+    jpaEntityManagerProvider.close();
   }
 }

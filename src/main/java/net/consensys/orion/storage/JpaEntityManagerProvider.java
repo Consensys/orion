@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableMap;
 
 public class JpaEntityManagerProvider {
   private static final String JDBC_PREFIX = "jdbc:";
-  private final EntityManager entityManager;
+  private final EntityManagerFactory entityManagerFactory;
 
   private final Map<String, String> jdbcDrivers = ImmutableMap
       .<String, String>builder()
@@ -32,11 +32,11 @@ public class JpaEntityManagerProvider {
 
   public JpaEntityManagerProvider(final String jdbcUrl) {
     final String databaseDriver = determineDatabaseDriver(jdbcUrl);
-    this.entityManager = createEntityManagerFactory(jdbcUrl, databaseDriver);
+    this.entityManagerFactory = createEntityManagerFactory(jdbcUrl, databaseDriver);
   }
 
-  public EntityManager getEntityManager() {
-    return entityManager;
+  public EntityManager createEntityManager() {
+    return entityManagerFactory.createEntityManager();
   }
 
   private String determineDatabaseDriver(final String jdbcUrl) {
@@ -49,19 +49,20 @@ public class JpaEntityManagerProvider {
   }
 
   private String databaseName(final String jdbcUrl) {
-    int jdbcPrefixOffset = JDBC_PREFIX.length();
-    int dbEndSeparator = jdbcUrl.indexOf(":", jdbcPrefixOffset);
+    final int jdbcPrefixOffset = JDBC_PREFIX.length();
+    final int dbEndSeparator = jdbcUrl.indexOf(":", jdbcPrefixOffset);
     return jdbcUrl.substring(jdbcPrefixOffset, dbEndSeparator);
   }
 
-  private EntityManager createEntityManagerFactory(final String jdbcUrl, final String driverName) {
+  private EntityManagerFactory createEntityManagerFactory(final String jdbcUrl, final String driverName) {
     final Map<String, String> properties = new HashMap<>();
     properties.put("openjpa.RuntimeUnenhancedClasses", "supported");
     properties.put("openjpa.ConnectionURL", jdbcUrl);
     properties.put("openjpa.ConnectionDriverName", driverName);
-
-    final EntityManagerFactory factory = Persistence.createEntityManagerFactory("orion", properties);
-    return factory.createEntityManager();
+    return Persistence.createEntityManagerFactory("orion", properties);
   }
 
+  public void close() {
+    entityManagerFactory.close();
+  }
 }
