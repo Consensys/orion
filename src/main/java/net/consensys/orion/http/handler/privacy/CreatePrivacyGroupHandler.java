@@ -75,6 +75,14 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
     final byte[] request = routingContext.getBody().getBytes();
     final PrivacyGroupRequest privacyGroupRequest = Serializer.deserialize(JSON, PrivacyGroupRequest.class, request);
 
+    if (privacyGroupRequest.name().isBlank() || privacyGroupRequest.description().isBlank()) {
+      routingContext.fail(
+          new OrionException(
+              OrionErrorCode.CREATE_GROUP_INVALID_PARAMS,
+              "neither the name nor the description may be null "));
+      return;
+    }
+
     if (!Arrays.asList(privacyGroupRequest.addresses()).contains(privacyGroupRequest.from())) {
       routingContext.fail(
           new OrionException(OrionErrorCode.CREATE_GROUP_INCLUDE_SELF, "the list of addresses should include self "));

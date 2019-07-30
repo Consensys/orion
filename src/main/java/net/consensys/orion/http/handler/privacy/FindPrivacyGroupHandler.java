@@ -126,7 +126,8 @@ public class FindPrivacyGroupHandler implements Handler<RoutingContext> {
         });
 
       } else {
-        routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING));
+        final Buffer responseData = Buffer.buffer(Serializer.serialize(JSON, new ArrayList<>()));
+        routingContext.response().end(responseData);
       }
     });
   }
