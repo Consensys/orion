@@ -29,7 +29,7 @@ apply plugin: 'maven-publish'
 apply from: "gradle/check-licenses.gradle"
 apply plugin: 'com.jfrog.bintray'
 
-version = '1.3.2'
+version = '1.4.0-SNAPSHOT'
 
 //////
 // Default tasks and build aliases
