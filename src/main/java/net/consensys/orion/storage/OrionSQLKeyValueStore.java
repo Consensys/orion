@@ -17,6 +17,7 @@ import net.consensys.cava.concurrent.AsyncCompletion;
 import net.consensys.cava.concurrent.AsyncResult;
 import net.consensys.cava.kv.KeyValueStore;
 
+import java.util.function.Function;
 import javax.persistence.EntityManager;
 
 import kotlin.Unit;
@@ -32,16 +33,24 @@ public class OrionSQLKeyValueStore implements KeyValueStore {
     this.jpaEntityManagerProvider = jpaEntityManagerProvider;
   }
 
+  private <T> T withEntityManager(final Function<EntityManager, T> entityManagerConsumer) {
+    final EntityManager entityManager = jpaEntityManagerProvider.createEntityManager();
+    try {
+      entityManager.getTransaction().begin();
+      return entityManagerConsumer.apply(entityManager);
+    } finally {
+      entityManager.getTransaction().commit();
+      entityManager.close();
+    }
+  }
+
   @Nullable
   @Override
   public Bytes get(@NotNull final Bytes key, final Continuation<? super Bytes> ignore) {
-    final EntityManager entityManager = jpaEntityManagerProvider.createEntityManager();
-    final Store store = entityManager.find(Store.class, key.toArrayUnsafe());
-    if (store != null) {
-      return Bytes.wrap(store.getValue());
-    } else {
-      return null;
-    }
+    return withEntityManager(entityManager -> {
+      final Store store = entityManager.find(Store.class, key.toArrayUnsafe());
+      return store != null ? Bytes.wrap(store.getValue()) : null;
+    });
   }
 
   @NotNull
@@ -59,16 +68,10 @@ public class OrionSQLKeyValueStore implements KeyValueStore {
   @Nullable
   @Override
   public Unit put(@NotNull final Bytes key, @NotNull final Bytes value, final Continuation<? super Unit> ignore) {
-    EntityManager entityManager = jpaEntityManagerProvider.createEntityManager();
-    entityManager.getTransaction().begin();
-
     final Store store = new Store();
     store.setKey(key.toArrayUnsafe());
     store.setValue(value.toArrayUnsafe());
-
-    entityManager.merge(store);
-    entityManager.flush();
-    entityManager.getTransaction().commit();
+    withEntityManager(entityManager -> entityManager.merge(store));
     return Unit.INSTANCE;
   }
 
