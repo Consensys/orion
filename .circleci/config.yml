@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: circleci/openjdk:11.0.2-jdk-stretch
       - image: postgres:11.4-alpine
         environment:
           POSTGRES_USER: test
@@ -142,7 +142,7 @@ jobs:
 
   upload-distribution:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: circleci/openjdk:11.0.2-jdk-stretch
     steps:
       - checkout
       - attach_workspace:

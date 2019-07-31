@@ -55,12 +55,12 @@ public class DeletePrivacyGroupHandler implements Handler<RoutingContext> {
   private final HttpClient httpClient;
 
   public DeletePrivacyGroupHandler(
-      Storage<PrivacyGroupPayload> privacyGroupStorage,
-      Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
-      ConcurrentNetworkNodes networkNodes,
-      Enclave enclave,
-      Vertx vertx,
-      Config config) {
+      final Storage<PrivacyGroupPayload> privacyGroupStorage,
+      final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
+      final ConcurrentNetworkNodes networkNodes,
+      final Enclave enclave,
+      final Vertx vertx,
+      final Config config) {
     this.privacyGroupStorage = privacyGroupStorage;
     this.queryPrivacyGroupStorage = queryPrivacyGroupStorage;
     this.networkNodes = networkNodes;
@@ -69,22 +69,24 @@ public class DeletePrivacyGroupHandler implements Handler<RoutingContext> {
   }
 
   @Override
-  public void handle(RoutingContext routingContext) {
+  public void handle(final RoutingContext routingContext) {
 
-    byte[] request = routingContext.getBody().getBytes();
-    DeletePrivacyGroupRequest privacyGroup = Serializer.deserialize(JSON, DeletePrivacyGroupRequest.class, request);
+    final byte[] request = routingContext.getBody().getBytes();
+    final DeletePrivacyGroupRequest privacyGroup =
+        Serializer.deserialize(JSON, DeletePrivacyGroupRequest.class, request);
+    log.info("Deleting privacy group {}", privacyGroup.privacyGroupId());
 
     privacyGroupStorage.get(privacyGroup.privacyGroupId()).thenAccept((result) -> {
       if (!result.isPresent() || result.get().state() == PrivacyGroupPayload.State.DELETED) {
         routingContext
             .fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_DELETE_PRIVACY_GROUP, "couldn't delete group"));
       } else {
-        PrivacyGroupPayload privacyGroupPayload = result.get();
+        final PrivacyGroupPayload privacyGroupPayload = result.get();
 
         // set state to deleted and propagate and store it
         privacyGroupPayload.setState(PrivacyGroupPayload.State.DELETED);
 
-        List<Box.PublicKey> addressListToForward = Arrays
+        final List<Box.PublicKey> addressListToForward = Arrays
             .stream(privacyGroupPayload.addresses())
             .filter(key -> !key.equals(privacyGroup.from())) // don't forward to self
             .distinct()
@@ -99,10 +101,12 @@ public class DeletePrivacyGroupHandler implements Handler<RoutingContext> {
         log.debug("propagating payload");
 
         @SuppressWarnings("rawtypes")
-        CompletableFuture[] cfs = addressListToForward.stream().map(pKey -> {
-          URL recipientURL = networkNodes.urlForRecipient(pKey);
+        final CompletableFuture[] cfs = addressListToForward.stream().map(pKey -> {
+          final URL recipientURL = networkNodes.urlForRecipient(pKey);
 
-          CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
+          log.info("Propagating delete request to {} with URL {}", pKey, recipientURL.toString());
+
+          final CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
 
           // serialize payload, stripping non-relevant encryptedKeys, and configureRoutes payload
           final byte[] payload = Serializer.serialize(HttpContentType.CBOR, privacyGroupPayload);
@@ -112,6 +116,7 @@ public class DeletePrivacyGroupHandler implements Handler<RoutingContext> {
               .post(recipientURL.getPort(), recipientURL.getHost(), "/pushPrivacyGroup")
               .putHeader("Content-Type", "application/cbor")
               .handler(response -> response.bodyHandler(responseBody -> {
+                log.info("{} with URL {} responded with {}", pKey, recipientURL.toString(), response.statusCode());
                 if (response.statusCode() != 200 || !privacyGroup.privacyGroupId().equals(responseBody.toString())) {
                   responseFuture
                       .completeExceptionally(new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS));
@@ -133,15 +138,23 @@ public class DeletePrivacyGroupHandler implements Handler<RoutingContext> {
             return;
           }
 
+          log.info("Deleting privacy group {}", privacyGroup.privacyGroupId());
+
           privacyGroupStorage.put(privacyGroupPayload).thenAccept((digest) -> {
-            QueryPrivacyGroupPayload queryPrivacyGroupPayload =
+            final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
                 new QueryPrivacyGroupPayload(privacyGroupPayload.addresses(), null);
 
             queryPrivacyGroupPayload.setToDelete(true);
             queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupStorage.generateDigest(privacyGroupPayload));
-            String k = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
+            final String k = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
+
+            log.info("Deleting privacy group. resulting digest: {}", k);
+
             queryPrivacyGroupStorage.update(k, queryPrivacyGroupPayload).thenApply((res) -> {
-              Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, digest));
+              final Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, digest));
+
+              log.info("Deleting privacy group {} complete", privacyGroup.privacyGroupId());
+
               routingContext.response().end(toReturn);
               return result;
             }).exceptionally(e -> {
@@ -156,10 +169,10 @@ public class DeletePrivacyGroupHandler implements Handler<RoutingContext> {
     });
   }
 
-  private void handleFailure(RoutingContext routingContext, Throwable ex) {
+  private void handleFailure(final RoutingContext routingContext, final Throwable ex) {
     log.warn("propagating the payload failed");
 
-    Throwable cause = ex.getCause();
+    final Throwable cause = ex.getCause();
     if (cause instanceof OrionException) {
       routingContext.fail(cause);
     } else {
