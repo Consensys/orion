@@ -4,7 +4,7 @@
 
 Orion is supported on Java 11+.  Java 8 support is deprecated and will be removed in a future release.
 
-## 1.2.1 
+## 1.3.1 
 
 ### Additions and Improvements 
 
@@ -15,6 +15,7 @@ Orion is supported on Java 11+.  Java 8 support is deprecated and will be remove
   
 ### Technical Improvements 
 
+- Check if legacy group already exists on send [\#269](https://github.com/PegaSysEng/orion/pull/269)
 - Updating CircleCI jobs to Java 11 [\#267](https://github.com/PegaSysEng/orion/pull/267) 
 - Null checks name and description of privacy group, and associated test [\#265](https://github.com/PegaSysEng/orion/pull/265) (thanks to [josh-richardson](https://github.com/josh-richardson))
 - Always return empty list when privacy group id doesn't exist [\#264](https://github.com/PegaSysEng/orion/pull/264) 
