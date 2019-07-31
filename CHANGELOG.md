@@ -21,7 +21,7 @@ Orion is supported on Java 11+.  Java 8 support is deprecated and will be remove
 - Always return empty list when privacy group id doesn't exist [\#264](https://github.com/PegaSysEng/orion/pull/264) 
 - Adding error msg on /receive [\#263](https://github.com/PegaSysEng/orion/pull/263) 
 - Avoid Orion node calling itself for discovery through listening interface [\#261](https://github.com/PegaSysEng/orion/pull/261) 
-- Upgrade jackson [\#258](https://github.com/PegaSysEng/orion/pull/258) 
+- Upgrade Jackson [\#258](https://github.com/PegaSysEng/orion/pull/258) 
 - Change CreatePrivacyGroup and FindPrivacyGroup to return the same type [\#257](https://github.com/PegaSysEng/orion/pull/257) (thanks to [josh-richardson](https://github.com/josh-richardson))
 - Change generatePrivacyGroupId to generate hash based on random seed [\#256](https://github.com/PegaSysEng/orion/pull/256) (thanks to [josh-richardson](https://github.com/josh-richardson))
 
@@ -34,7 +34,7 @@ Orion is supported on Java 11+.  Java 8 support is deprecated and will be remove
 ## 1.1 
 
 - Rethrow the Exception in SendHandler [\#244](https://github.com/PegaSysEng/orion/pull/244) (thanks to [Puneetha17](https://github.com/Puneetha17))
-- Rethrow the Exception in SendHandler in after getting privacy group. [\#243](https://github.com/PegaSysEng/orion/pull/243) (thanks to [Puneetha17](https://github.com/Puneetha17))
+- Rethrow the Exception in SendHandler after getting privacy group. [\#243](https://github.com/PegaSysEng/orion/pull/243) (thanks to [Puneetha17](https://github.com/Puneetha17))
 - Publish source and javadoc to bintray [\#242](https://github.com/PegaSysEng/orion/pull/242) 
 - Upgrade bintray plugin [\#241](https://github.com/PegaSysEng/orion/pull/241) 
 - Support building on JDK 11 and 12 [\#240](https://github.com/PegaSysEng/orion/pull/240) 
@@ -43,5 +43,5 @@ Orion is supported on Java 11+.  Java 8 support is deprecated and will be remove
 - Push the created privacy group to all the recipients [\#237](https://github.com/PegaSysEng/orion/pull/237) (thanks to [Puneetha17](https://github.com/Puneetha17))
 - Add delete group API in Orion [\#236](https://github.com/PegaSysEng/orion/pull/236) (thanks to [Puneetha17](https://github.com/Puneetha17))
 - Enable send API to accept privacy group Id [\#235](https://github.com/PegaSysEng/orion/pull/235) (thanks to [Puneetha17](https://github.com/Puneetha17))
-- Updating vertx and jackson deps [\#233](https://github.com/PegaSysEng/orion/pull/233) 
+- Updating Vertx and Jackson dependencies [\#233](https://github.com/PegaSysEng/orion/pull/233) 
 - Add endpoint to retrieve privacyGroupId from the given list of addresses [\#227](https://github.com/PegaSysEng/orion/pull/227) (thanks to [Puneetha17](https://github.com/Puneetha17))
