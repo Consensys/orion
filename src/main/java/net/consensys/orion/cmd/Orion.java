@@ -216,7 +216,7 @@ public class Orion {
             config));
 
     clientRouter.post("/findPrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
-        new FindPrivacyGroupHandler(queryPrivacyGroupStorage, privacyGroupStorage, enclave));
+        new FindPrivacyGroupHandler(queryPrivacyGroupStorage, privacyGroupStorage));
   }
 
   public Orion() {
