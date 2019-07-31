@@ -4,6 +4,10 @@
 
 Orion is supported on Java 11+.  Java 8 support is deprecated and will be removed in a future release.
 
+## 1.3.2 
+
+Stability improvements and bug fixes
+
 ## 1.3.1 
 
 ### Additions and Improvements 
