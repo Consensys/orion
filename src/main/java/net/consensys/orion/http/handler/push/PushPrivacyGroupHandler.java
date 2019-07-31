@@ -30,26 +30,27 @@ public class PushPrivacyGroupHandler implements Handler<RoutingContext> {
   private final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
 
   public PushPrivacyGroupHandler(
-      Storage<PrivacyGroupPayload> storage,
-      Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage) {
+      final Storage<PrivacyGroupPayload> storage,
+      final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage) {
     this.storage = storage;
     this.queryPrivacyGroupStorage = queryPrivacyGroupStorage;
   }
 
   @Override
-  public void handle(RoutingContext routingContext) {
-    PrivacyGroupPayload pushRequest =
+  public void handle(final RoutingContext routingContext) {
+    final PrivacyGroupPayload pushRequest =
         Serializer.deserialize(HttpContentType.CBOR, PrivacyGroupPayload.class, routingContext.getBody().getBytes());
 
     storage.put(pushRequest).thenAccept((digest) -> {
-      QueryPrivacyGroupPayload queryPrivacyGroupPayload = new QueryPrivacyGroupPayload(pushRequest.addresses(), null);
+      final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
+          new QueryPrivacyGroupPayload(pushRequest.addresses(), null);
       if (pushRequest.state().equals(PrivacyGroupPayload.State.DELETED)) {
         queryPrivacyGroupPayload.setToDelete(true);
       }
       queryPrivacyGroupPayload.setPrivacyGroupToAppend(storage.generateDigest(pushRequest));
-      String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
+      final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
       queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenApply((res) -> {
-        log.debug("stored privacy group. resulting digest: {}", digest);
+        log.info("Stored privacy group. resulting digest: {}", digest);
         routingContext.response().end(digest);
         return null;
       }).exceptionally(e -> {
@@ -57,7 +58,7 @@ public class PushPrivacyGroupHandler implements Handler<RoutingContext> {
         return null;
       });
 
-    }).exceptionally(e -> routingContext.fail(e));
+    }).exceptionally(routingContext::fail);
 
   }
 }
