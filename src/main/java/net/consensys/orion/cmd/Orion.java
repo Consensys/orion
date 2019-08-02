@@ -456,35 +456,39 @@ public class Orion {
       }
     }
 
-    nodeHTTPServer =
-        vertx.createHttpServer(options).requestHandler(nodeRouter::accept).exceptionHandler(log::error).listen(
-            completeFutureInHandler(nodeFuture));
-    CompletableFuture<Boolean> clientFuture = new CompletableFuture<>();
-    HttpServerOptions clientOptions =
-        new HttpServerOptions().setPort(config.clientPort()).setHost(config.clientNetworkInterface());
-    clientHTTPServer =
-        vertx.createHttpServer(clientOptions).requestHandler(clientRouter::accept).exceptionHandler(log::error).listen(
-            completeFutureInHandler(clientFuture));
-
-    CompletableFuture<Boolean> verticleFuture = new CompletableFuture<>();
-    // start network discovery of other peers
-    discovery = new NetworkDiscovery(networkNodes, config);
-    vertx.deployVerticle(discovery, result -> {
-      if (result.succeeded()) {
-        verticleFuture.complete(true);
-      } else {
-        verticleFuture.completeExceptionally(result.cause());
-      }
-    });
-
     try {
-      CompletableFuture.allOf(nodeFuture, clientFuture, verticleFuture).get();
+      nodeHTTPServer =
+          vertx.createHttpServer(options).requestHandler(nodeRouter::accept).exceptionHandler(log::error).listen(
+              completeFutureInHandler(nodeFuture));
+      CompletableFuture<Boolean> clientFuture = new CompletableFuture<>();
+      HttpServerOptions clientOptions =
+          new HttpServerOptions().setPort(config.clientPort()).setHost(config.clientNetworkInterface());
+      clientHTTPServer = vertx
+          .createHttpServer(clientOptions)
+          .requestHandler(clientRouter::accept)
+          .exceptionHandler(log::error)
+          .listen(completeFutureInHandler(clientFuture));
+
+      // wait for node and client http server to start successfully
+      CompletableFuture.allOf(nodeFuture, clientFuture).get();
       // if there is not a node url in the config, then grab the actual port and use it to set the node url.
       if (!config.nodeUrl().isPresent()) {
         networkNodes.setNodeUrl(
             new URL("http", config.nodeNetworkInterface(), nodeHTTPServer.actualPort(), ""),
             keyStore.nodeKeys());
       }
+
+      CompletableFuture<Boolean> networkDiscoveryFuture = new CompletableFuture<>();
+      // start network discovery of other peers
+      discovery = new NetworkDiscovery(networkNodes, config);
+      vertx.deployVerticle(discovery, result -> {
+        if (result.succeeded()) {
+          networkDiscoveryFuture.complete(true);
+        } else {
+          networkDiscoveryFuture.completeExceptionally(result.cause());
+        }
+      });
+      CompletableFuture.allOf(networkDiscoveryFuture).get();
     } catch (ExecutionException | MalformedURLException e) {
       throw new OrionStartException("Orion failed to start: " + e.getCause().getMessage(), e.getCause());
     } catch (InterruptedException e) {
