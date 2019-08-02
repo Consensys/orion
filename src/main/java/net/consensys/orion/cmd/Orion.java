@@ -526,7 +526,6 @@ public class Orion {
         throw new OrionStartException("Couldn't create LevelDB store: " + db, e);
       }
     } else if (storage.toLowerCase().startsWith("sql")) {
-      // FIXME: Hack to enable update in SQL.
       final JpaEntityManagerProvider jpaEntityManagerProvider = new JpaEntityManagerProvider(db);
       return new OrionSQLKeyValueStore(jpaEntityManagerProvider);
     } else {
