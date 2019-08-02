@@ -42,7 +42,6 @@ public class OrionSQLKeyValueStore implements KeyValueStore {
     }
   }
 
-
   @Override
   public Bytes get(final Bytes key, final Continuation<? super Bytes> ignore) {
     return withEntityManager(entityManager -> {
@@ -51,18 +50,15 @@ public class OrionSQLKeyValueStore implements KeyValueStore {
     });
   }
 
-
   @Override
   public AsyncResult<Bytes> getAsync(final CoroutineDispatcher ignore, final Bytes key) {
     return AsyncResult.executeBlocking(() -> get(key, null));
   }
 
-
   @Override
   public AsyncResult<Bytes> getAsync(final Bytes key) {
     return AsyncResult.executeBlocking(() -> get(key, null));
   }
-
 
   @Override
   public Unit put(final Bytes key, final Bytes value, final Continuation<? super Unit> ignore) {
@@ -73,12 +69,10 @@ public class OrionSQLKeyValueStore implements KeyValueStore {
     return Unit.INSTANCE;
   }
 
-
   @Override
   public AsyncCompletion putAsync(final CoroutineDispatcher ignore, final Bytes key, final Bytes value) {
     return AsyncCompletion.executeBlocking(() -> put(key, value, null));
   }
-
 
   @Override
   public AsyncCompletion putAsync(final Bytes key, final Bytes value) {
