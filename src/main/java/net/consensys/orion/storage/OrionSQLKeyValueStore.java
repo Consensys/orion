@@ -23,8 +23,6 @@ import javax.persistence.EntityManager;
 import kotlin.Unit;
 import kotlin.coroutines.Continuation;
 import kotlinx.coroutines.CoroutineDispatcher;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class OrionSQLKeyValueStore implements KeyValueStore {
   private final JpaEntityManagerProvider jpaEntityManagerProvider;
@@ -44,30 +42,30 @@ public class OrionSQLKeyValueStore implements KeyValueStore {
     }
   }
 
-  @Nullable
+
   @Override
-  public Bytes get(@NotNull final Bytes key, final Continuation<? super Bytes> ignore) {
+  public Bytes get(final Bytes key, final Continuation<? super Bytes> ignore) {
     return withEntityManager(entityManager -> {
       final Store store = entityManager.find(Store.class, key.toArrayUnsafe());
       return store != null ? Bytes.wrap(store.getValue()) : null;
     });
   }
 
-  @NotNull
+
   @Override
-  public AsyncResult<Bytes> getAsync(final CoroutineDispatcher ignore, @NotNull final Bytes key) {
+  public AsyncResult<Bytes> getAsync(final CoroutineDispatcher ignore, final Bytes key) {
     return AsyncResult.executeBlocking(() -> get(key, null));
   }
 
-  @NotNull
+
   @Override
-  public AsyncResult<Bytes> getAsync(@NotNull final Bytes key) {
+  public AsyncResult<Bytes> getAsync(final Bytes key) {
     return AsyncResult.executeBlocking(() -> get(key, null));
   }
 
-  @Nullable
+
   @Override
-  public Unit put(@NotNull final Bytes key, @NotNull final Bytes value, final Continuation<? super Unit> ignore) {
+  public Unit put(final Bytes key, final Bytes value, final Continuation<? super Unit> ignore) {
     final Store store = new Store();
     store.setKey(key.toArrayUnsafe());
     store.setValue(value.toArrayUnsafe());
@@ -75,18 +73,15 @@ public class OrionSQLKeyValueStore implements KeyValueStore {
     return Unit.INSTANCE;
   }
 
-  @NotNull
+
   @Override
-  public AsyncCompletion putAsync(
-      final CoroutineDispatcher ignore,
-      @NotNull final Bytes key,
-      @NotNull final Bytes value) {
+  public AsyncCompletion putAsync(final CoroutineDispatcher ignore, final Bytes key, final Bytes value) {
     return AsyncCompletion.executeBlocking(() -> put(key, value, null));
   }
 
-  @NotNull
+
   @Override
-  public AsyncCompletion putAsync(@NotNull final Bytes key, @NotNull final Bytes value) {
+  public AsyncCompletion putAsync(final Bytes key, final Bytes value) {
     return AsyncCompletion.executeBlocking(() -> put(key, value, null));
   }
 
