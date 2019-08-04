@@ -3,6 +3,11 @@ jobs:
   build:
     docker:
       - image: circleci/openjdk:11.0.2-jdk-stretch
+      - image: postgres:11.4-alpine
+        environment:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: orion
 
     working_directory: ~/repo
 
@@ -11,6 +16,9 @@ jobs:
       JAVA_TOOL_OPTIONS: -Xmx2048m
       GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2
       GRADLE_MAX_TEST_FORKS: 2
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: orion
 
     steps:
       - checkout
@@ -45,6 +53,17 @@ jobs:
           command: ./gradlew --stacktrace test
 
       - run:
+          name: Waiting for Postgres to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z localhost 5432 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for Postgres to startup and be ready && exit 1
+
+      - run:
           name: Running acceptance tests
           command: ./gradlew --stacktrace acceptanceTest
 
@@ -54,6 +73,7 @@ jobs:
             ./gradlew jacocoTestReport
             mkdir -p ~/test-results/
             find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/ \;
+            find . -type f -regex ".*/build/acceptance-results/.*xml" -exec cp {} ~/test-results/ \;
           when: always
 
       - store_test_results:
@@ -67,10 +87,15 @@ jobs:
           command: |
             mkdir -p ~/reports/license
             (cd ./build/reports/license && tar c .) | (cd ~/reports/license && tar x)
-            find . -type d -regex ".*/build/reports/tests/test" | while read dir; do
+              find . -type d -regex ".*/build/reports/tests/test" | while read dir; do
                   module=`echo $dir | sed -e 's/build\/reports\/tests\/test//'`
                   mkdir -p ~/reports/test/"$module"
                   (cd "$dir" && tar c .) | (cd ~/reports/test/"$module" && tar x)
+              done
+              find . -type d -regex ".*/build/reports/acceptance" | while read dir; do
+                  module=`echo $dir | sed -e 's/build\/reports\/acceptance//'`
+                  mkdir -p ~/reports/acceptance/"$module"
+                  (cd "$dir" && tar c .) | (cd ~/reports/acceptance/"$module" && tar x)
               done
               find . -type d -regex ".*/build/reports/jacoco/test/html" | while read dir; do
                   module=`echo $dir | sed -e 's/build\/reports\/jacoco\/test\/html//'`

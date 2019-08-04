@@ -46,6 +46,7 @@ import net.consensys.orion.http.server.vertx.HttpErrorHandler;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.network.NetworkDiscovery;
 import net.consensys.orion.storage.EncryptedPayloadStorage;
+import net.consensys.orion.storage.JpaEntityManagerProvider;
 import net.consensys.orion.storage.OrionSQLKeyValueStore;
 import net.consensys.orion.storage.PrivacyGroupStorage;
 import net.consensys.orion.storage.QueryPrivacyGroupStorage;
@@ -62,7 +63,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Security;
-import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -530,13 +530,8 @@ public class Orion {
         throw new OrionStartException("Couldn't create LevelDB store: " + db, e);
       }
     } else if (storage.toLowerCase().startsWith("sql")) {
-      try {
-        // FIXME: Hack to enable update in SQL.
-        // TODO: Update net.consensys.cava.kv.SQLKeyValueStore to enable updates
-        return new OrionSQLKeyValueStore(db);
-      } catch (IOException | SQLException e) {
-        throw new OrionStartException("Couldn't create SQL-backed store: " + db, e);
-      }
+      final JpaEntityManagerProvider jpaEntityManagerProvider = new JpaEntityManagerProvider(db);
+      return new OrionSQLKeyValueStore(jpaEntityManagerProvider);
     } else {
       throw new OrionStartException("unsupported storage mechanism: " + storage);
     }

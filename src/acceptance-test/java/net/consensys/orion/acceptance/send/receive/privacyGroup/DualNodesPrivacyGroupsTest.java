@@ -240,6 +240,7 @@ class DualNodesPrivacyGroupsTest {
     assertEquals(initialPrivacyGroups.length, 1);
     assertEquals(initialPrivacyGroups[0].getPrivacyGroupId(), firstPrivacyGroupId);
 
+
     //create another privacy group
     PrivacyGroup secondPrivacyGroup = createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, name, description);
 
@@ -248,8 +249,8 @@ class DualNodesPrivacyGroupsTest {
     assertEquals(firstPrivacyGroup.getDescription(), description);
 
     // find the created privacy group in second node
+    await().atMost(5, TimeUnit.SECONDS).until(() -> findPrivacyGroupTransaction(secondNode, addresses).length == 2);
     PrivacyGroup[] updatedPrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
-    assertEquals(updatedPrivacyGroups.length, 2);
     assertEquals(updatedPrivacyGroups[0].getPrivacyGroupId(), firstPrivacyGroupId);
     assertEquals(updatedPrivacyGroups[1].getPrivacyGroupId(), secondPrivacyGroupId);
 
