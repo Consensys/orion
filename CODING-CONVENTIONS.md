@@ -7,11 +7,15 @@
 
 # 1 Introduction 
 
-This document contains guidelines (some stricter than others) so we can be consistent and spend more time solving the bigger and more interesting issues. 
+This document contains guidelines (some stricter than others) so we can be consistent and spend more
+time solving the bigger and more interesting issues. 
 
-The guidelines are intended to facilitate working together not to facilitate reviews that criticize without adding value. 
+The guidelines are intended to facilitate working together not to facilitate reviews that criticize
+without adding value. 
 
-Some guidelines are personal opinion.  The idea being we make a decision once, document it, and apply it for consistency.  Again, we can then spend more time on the interesting issues and less time discussing coding conventions :-)
+Some guidelines are personal opinion.  The idea being we make a decision once, document it, and apply
+it for consistency.  Again, we can then spend more time on the interesting issues and less time
+discussing coding conventions :-)
 
 # 2 General Design Philosophy 
 
@@ -31,29 +35,40 @@ Simple does not mean the fewest lines of code. Simple code is:
 * Not simplistic:
 
   - Ethereum is complex and Orion must handle this complexity and operate correctly and securely 
-  - Orion code should align with well-established Ethereum abstractions and terminology used in Ethereum specifications 
+  - Orion code should align with well-established Ethereum abstractions and terminology used in
+  Ethereum specifications 
   - Aim to make the code as simple as possible but no simpler
   
 ## 2.2 Idiomatic Java 
 
 Orion embraces typical Java idioms including using an Object Oriented approach to design. This includes:   
-* Providing alternate behaviours via polymorphism instead of having conditional logic scattered through the codebase. For example, `ProtocolSpec` provides a standard interface to blockchain operations and multiple implementations define the different behaviours for each Ethereum milestone. 
-* Encapsulating behaviour and data together in classes. For example, `BytesValue` encapsulates byte data and methods operating on the byte data. `BytesValue.isZero()` is an instance method instead of accepting a `BytesValue` parameter.
+* Providing alternate behaviours via polymorphism instead of having conditional logic scattered through
+the codebase. For example, `ProtocolSpec` provides a standard interface to blockchain operations and
+multiple implementations define the different behaviours for each Ethereum milestone. 
+* Encapsulating behaviour and data together in classes. For example, `BytesValue` encapsulates byte
+data and methods operating on the byte data. `BytesValue.isZero()` is an instance method instead of
+accepting a `BytesValue` parameter.
 
-  `ProtocolSpec` is an exception and does not hold the blockchain data on which it operates. This is because that blockchain data is widely shared and not specifically owned by `ProtocolSpec`.
+  `ProtocolSpec` is an exception and does not hold the blockchain data on which it operates. This is
+  because that blockchain data is widely shared and not specifically owned by `ProtocolSpec`.
 * Embracing modern Java features like Optional, Streams and lambdas when they make code simpler and clearer. 
 
    - Do use Streams and map with lambdas to convert values in a list to a different form.
-   - Don't pass lambdas into executors because it makes it harder to identify the threading interactions. The lambda makes the code shorter but not clearer. Instead use a separate class or extract a method. 
+   - Don't pass lambdas into executors because it makes it harder to identify the threading interactions.
+   The lambda makes the code shorter but not clearer. Instead use a separate class or extract a method. 
 * For good examples, refer to the APIs the JDK itself exposes. 
 
->**Note** If you're not sure what idiomatic Java looks like, start by following the typical patterns and naming used in Orion, or otherwise, other Pegasys codebases.
+>**Note** If you're not sure what idiomatic Java looks like, start by following the typical patterns
+and naming used in Orion.
 
 ## 2.3 You Ain't Gonna Need It (YAGNI)
 
-The Orion design prioritizes meeting current requirements in the simplest, clearest way over attempting to anticipate future functionality. As a result, Orion’s design:
-* Is not set in stone as a big upfront design. The design is adjusted through constant refactoring as new requirements are added and understood.
-* Uses abstraction only where it aids understanding of the current code. Abstraction is not used where it only supports future needs.
+The Orion design prioritizes meeting current requirements in the simplest, clearest way over attempting
+to anticipate future functionality. As a result, Orion’s design:
+* Is not set in stone as a big upfront design. The design is adjusted through constant refactoring as
+new requirements are added and understood.
+* Uses abstraction only where it aids understanding of the current code. Abstraction is not used where
+it only supports future needs.
 * Avoids over-engineering.
 
 # 3 Specific Design Techniques
@@ -74,7 +89,8 @@ To create understandable, self-documenting code:
   - Be consistent
   - Make it easy to follow the control flow by _clicking through_ in an IDE
   - Make it easier to use the right way than the wrong way
-  - Avoid abbreviations. We are a global team and when English is a second language abbreviations reduce readability. The following abbreviations are exceptions: 
+  - Avoid abbreviations. We are a global team and when English is a second language abbreviations
+  reduce readability. The following abbreviations are exceptions: 
     * tx -> Transaction
     * IBFT -> Istanbul Byzantine Fault Tolerant (a consensus protocol)
     * EVM -> Ethereum Virtual Machine 
@@ -102,9 +118,11 @@ So the code can cope with constant refactoring and evolving design, write code t
   - Constructors should be simple, with dependencies passed in rather than built in the constructor
   - Orion does not use a dependency injection framework
 
-* Validates method parameters for public methods using the Guava `Preconditions` class. Avoid validating parameters in private methods
+* Validates method parameters for public methods using the Guava `Preconditions` class. Avoid
+validating parameters in private methods
 
-* Generally avoids interfaces with a single implementation unless they are explicitly being used to narrow the exposed API
+* Generally avoids interfaces with a single implementation unless they are explicitly being used to
+narrow the exposed API
 
 * Uses the most general applicable type. For example,  `List` or `Collection` instead of `ArrayList`
 
@@ -123,7 +141,8 @@ So the code can cope with constant refactoring and evolving design, write code t
 
 ## 4.1 Style Guide 
 
-Orion follows the [Google code style](https://google.github.io/styleguide/javaguide.html) and uses spotless to ensure consistency of formatting. 
+Orion follows the [Google code style](https://google.github.io/styleguide/javaguide.html) and uses
+spotless to ensure consistency of formatting. 
 
 To automatically reformat the code before creating a pull request, run: 
 
@@ -133,13 +152,15 @@ To automatically reformat the code before creating a pull request, run:
 
 ### 4.1.1 Install Google Style Settings 
 
-The Google style settings can be installed in [Intellij](https://github.com/google/google-java-format#intellij) and [Eclipse](https://github.com/google/google-java-format#eclipse). 
+The Google style settings can be installed in [Intellij](https://github.com/google/google-java-format#intellij)
+and [Eclipse](https://github.com/google/google-java-format#eclipse). 
 
 ## 4.2 Additional Java Style Guidelines
 
 ## 4.2.1 Fields 
 
-Class-level fields are generally not separated by blank lines but can use a blank line to separate them into logical groupings.
+Class-level fields are generally not separated by blank lines but can use a blank line to separate
+them into logical groupings.
 
 ## 4.2.2 Final Keyword
 
@@ -150,7 +171,8 @@ Method parameters must be final.  Class level and local fields should be final w
 * Getters follow idiomatic format with `get` prefix.  For example, `getBlock()` gets a block property.
 * Setters follow idiomatic format with `set` prefix. For example, `setBlock(Block block)` sets a block property.
 * For `toString methods`,  use the Guava 18+ `MoreObjects.toStringHelper`
-* Equals and `hashCode()` methods use the `Object.equals` and `Object.hash` methods (this is the _Java 7+_ template in IntelliJ. Don’t accept subclasses and don’t use getters)
+* Equals and `hashCode()` methods use the `Object.equals` and `Object.hash` methods (this is the
+_Java 7+_ template in IntelliJ. Don’t accept subclasses and don’t use getters)
 
 ## 4.2.4 Testing
 
@@ -162,7 +184,8 @@ Method parameters must be final.  Class level and local fields should be final w
 
 * Use AssertJ for assertions in preference to JUnit’s Assert class.
 
-  To help future-proof the code (avoiding libraries that may be deprecated in the near future), avoid assertions from the `org.assertj.core.api.Java6Assertions` class. Java6 in the name is a concerning signal
+  To help future-proof the code (avoiding libraries that may be deprecated in the near future), avoid
+  assertions from the `org.assertj.core.api.Java6Assertions` class. Java6 in the name is a concerning signal
 
 ## 4.2.5 Miscellaneous 
 
@@ -180,7 +203,8 @@ Method parameters must be final.  Class level and local fields should be final w
 
 # 5 Logging
 
-Logging is important for understanding what Orion is doing at any given time and investigating defects.  During development, add logging to aid in these cases. 
+Logging is important for understanding what Orion is doing at any given time and investigating defects.
+During development, add logging to aid in these cases. 
 
 ## 5.1 Log Messages
 
