@@ -1,0 +1,77 @@
+/*
+ * Copyright 2018 ConsenSys AG.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+
+dependencyManagement {
+  dependencies {
+    dependency "com.google.errorprone:javac:9+181-r4173-1"
+
+    dependency 'com.fasterxml.jackson.core:jackson-databind:2.9.9.1'
+    dependency 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.9'
+    dependency 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.9'
+
+    dependency 'com.github.jnr:jnr-ffi:2.1.8'
+
+    dependency 'com.google.errorprone:error_prone_core:2.3.3'
+
+    dependency 'com.h2database:h2:1.4.197'
+
+    dependency 'com.jolbox:bonecp:0.8.0.RELEASE'
+
+    dependency 'com.moandjiezana.toml:toml4j:0.7.2'
+
+    dependency 'com.radcortez.gradle:openjpa-gradle-plugin:3.0.0'
+
+    dependency 'com.squareup.okhttp3:mockwebserver:3.10.0'
+    dependency 'com.squareup.okhttp3:okhttp:3.10.0'
+
+    dependency 'io.gatling.highcharts:gatling-charts-highcharts:2.3.1'
+    dependency 'io.gatling:gatling-app:2.3.1'
+    dependency 'io.gatling:gatling-core:2.3.1'
+    dependency 'io.gatling:gatling-http:2.3.1'
+
+    dependency 'io.vertx:vertx-core:3.7.0'
+    dependency 'io.vertx:vertx-web:3.7.0'
+
+    dependency 'javax.xml.bind:jaxb-api:2.3.0'
+
+    dependency 'net.consensys.cava:cava:0.5.0'
+
+    dependency 'org.apache.logging.log4j:log4j-api:2.11.2'
+    dependency 'org.apache.logging.log4j:log4j-core:2.11.2'
+    dependency 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.2'
+
+    dependency 'org.apache.openjpa:openjpa:3.1.0'
+    dependency 'org.apache.openjpa:openjpa:3.1.0'
+
+    dependency 'org.awaitility:awaitility:3.1.0'
+
+    dependency 'org.bouncycastle:bcpkix-jdk15on:1.60'
+    dependency 'org.bouncycastle:bcprov-jdk15on:1.60'
+
+    dependency 'org.fusesource.leveldbjni:leveldbjni-all:1.8'
+
+    dependency 'org.junit.jupiter:junit-jupiter-api:5.2.0'
+    dependency 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
+    dependency 'org.junit.jupiter:junit-jupiter-params:5.2.0'
+
+    dependency 'org.mapdb:mapdb:3.0.7'
+
+    dependency 'org.postgresql:postgresql:42.2.6'
+
+    dependency 'org.scala-lang:scala-library:2.12.6'
+
+    dependency 'org.scalatest:scalatest_2.12:3.0.5'
+
+    dependency 'org.mockito:mockito-all:1.10.19'
+  }
+}

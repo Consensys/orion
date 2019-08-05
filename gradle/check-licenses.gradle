@@ -88,6 +88,7 @@ downloadLicenses {
       'Apache License 2.0',
       'Apache License Version 2.0',
       'Apache License, Version 2.0',
+      'Apache Software License 2.0',
       'Apache Software Licenses',
       'Apache v2',
       'ASL, Version 2',
@@ -103,6 +104,7 @@ downloadLicenses {
       'New BSD License',
       'The BSD Licence',
       'The BSD License',
+      'BSD-2-Clause'
     ],
     (bsd3Clause): [
       'BSD 3-Clause',
@@ -139,6 +141,7 @@ downloadLicenses {
     (group('orion')): apache2,
     (group('net.java.dev.jna')): apache2,
     (group('net.jcip')): apache2,
+    (group('org.apache.xbean')): apache2,
 
     // https://checkerframework.org/manual/#license
     // The more permissive MIT License applies to code that you might want

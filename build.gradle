@@ -13,11 +13,22 @@
 
 import net.ltgt.gradle.errorprone.CheckSeverity
 
+buildscript {
+  repositories { jcenter() }
+
+  dependencies {
+    classpath 'org.apache.openjpa:openjpa:3.1.0'
+    classpath 'com.radcortez.gradle:openjpa-gradle-plugin:3.0.0'
+  }
+}
+
 plugins {
   id "com.diffplug.gradle.spotless" version "3.10.0"
+  id 'com.github.ben-manes.versions' version '0.20.0'
   id "com.github.hierynomus.license" version "0.14.0"
   id "com.jfrog.bintray" version "1.8.4"
   id 'net.ltgt.errorprone' version '0.8'
+  id 'io.spring.dependency-management' version '1.0.6.RELEASE'
 }
 
 apply plugin: 'java-library'
@@ -26,10 +37,15 @@ apply plugin: "jacoco"
 apply plugin: 'net.ltgt.errorprone'
 apply plugin: 'application'
 apply plugin: 'maven-publish'
+apply plugin: 'io.spring.dependency-management'
 apply from: "gradle/check-licenses.gradle"
+apply from: "gradle/versions.gradle"
 apply plugin: 'com.jfrog.bintray'
+apply plugin: 'openjpa'
 
 version = '1.4.0-SNAPSHOT'
+
+
 
 //////
 // Default tasks and build aliases
@@ -217,6 +233,10 @@ task performanceTest(type: JavaExec) {
   systemProperties = ['gatling.core.directory.binaries': sourceSets.test.output.classesDirs]
 }
 
+openjpa {
+  // only use the jpa entity classes defined the in the persistence.xml
+  excludes = ['**/*.class']
+}
 
 //////
 // Dependencies
@@ -228,60 +248,62 @@ repositories {
 
 dependencies {
   // cava
-  compile 'net.consensys.cava:cava:0.5.0'
+  compile 'net.consensys.cava:cava'
 
   // vertx
-  compile 'io.vertx:vertx-core:3.7.0'
-  compile 'io.vertx:vertx-web:3.7.0'
+  compile 'io.vertx:vertx-core'
+  compile 'io.vertx:vertx-web'
 
   // crypto
-  compile 'org.bouncycastle:bcprov-jdk15on:1.60'
-  compile 'org.bouncycastle:bcpkix-jdk15on:1.60'
-  compile 'com.github.jnr:jnr-ffi:2.1.8'
+  compile 'org.bouncycastle:bcprov-jdk15on'
+  compile 'org.bouncycastle:bcpkix-jdk15on'
+  compile 'com.github.jnr:jnr-ffi'
 
   // http client
-  testCompile 'com.squareup.okhttp3:okhttp:3.10.0'
+  testCompile 'com.squareup.okhttp3:okhttp'
 
   // storage
-  compile 'org.fusesource.leveldbjni:leveldbjni-all:1.8'
-  compile 'org.mapdb:mapdb:3.0.7'
-  compile 'com.jolbox:bonecp:0.8.0.RELEASE'
+  compile 'org.fusesource.leveldbjni:leveldbjni-all'
+  compile 'org.mapdb:mapdb'
+  compile 'com.jolbox:bonecp'
+  compile 'org.apache.openjpa:openjpa'
+  compile 'org.postgresql:postgresql'
 
   // serialization
-  compile 'com.moandjiezana.toml:toml4j:0.7.2'
-  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.9.1'
-  compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.9'
-  compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.9'
+  compile 'com.moandjiezana.toml:toml4j'
+  compile 'com.fasterxml.jackson.core:jackson-databind'
+  compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor'
+  compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
 
   // logging
-  compile 'org.apache.logging.log4j:log4j-api:2.11.2'
-  compile 'org.apache.logging.log4j:log4j-core:2.11.2'
-  compile 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.2'
+  compile 'org.apache.logging.log4j:log4j-api'
+  compile 'org.apache.logging.log4j:log4j-core'
+  compile 'org.apache.logging.log4j:log4j-slf4j-impl'
 
   // XML
-  compile 'javax.xml.bind:jaxb-api:2.3.0'
+  compile 'javax.xml.bind:jaxb-api'
 
   // testing
-  testCompile 'com.h2database:h2:1.4.197'
-  testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0'
-  testCompile 'org.junit.jupiter:junit-jupiter-params:5.2.0'
-  testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
-  testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
-  testCompile 'org.awaitility:awaitility:3.1.0'
+  testCompile 'com.h2database:h2'
+  testCompile 'org.junit.jupiter:junit-jupiter-api'
+  testCompile 'org.junit.jupiter:junit-jupiter-params'
+  testRuntime 'org.junit.jupiter:junit-jupiter-engine'
+  testCompile 'org.mockito:mockito-all'
+  testCompile 'org.awaitility:awaitility'
   // mock http server (unit test purposes)
-  testCompile 'com.squareup.okhttp3:mockwebserver:3.10.0'
+  testCompile 'com.squareup.okhttp3:mockwebserver'
 
   // performance testing
-  performanceCompile 'org.scala-lang:scala-library:2.12.6'
-  performanceCompile 'org.scalatest:scalatest_2.12:3.0.5'
-  performanceCompile 'io.gatling:gatling-core:2.3.1'
-  performanceCompile 'io.gatling:gatling-http:2.3.1'
-  performanceCompile 'io.gatling:gatling-app:2.3.1'
-  performanceCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.3.1'
+  performanceCompile 'org.scala-lang:scala-library'
+  performanceCompile 'org.scalatest:scalatest_2.12'
+  performanceCompile 'io.gatling:gatling-core'
+  performanceCompile 'io.gatling:gatling-http'
+  performanceCompile 'io.gatling:gatling-app'
+  performanceCompile 'io.gatling.highcharts:gatling-charts-highcharts'
 
-  errorprone 'com.google.errorprone:error_prone_core:2.3.3'
+  errorprone 'com.google.errorprone:error_prone_core'
   if (JavaVersion.current().isJava8()) {
-    errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
+    errorproneJavac("com.google.errorprone:javac")
   }
 }
 

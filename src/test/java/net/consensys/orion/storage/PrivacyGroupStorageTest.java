@@ -26,7 +26,6 @@ import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.security.Security;
 import java.sql.Connection;
@@ -53,7 +52,7 @@ class PrivacyGroupStorageTest {
   private Storage<PrivacyGroupPayload> payloadStorage;
 
   @BeforeEach
-  void setup(@TempDirectory Path tempDir) throws IOException, SQLException {
+  void setup(@TempDirectory Path tempDir) throws SQLException {
     memoryKeyStore = new MemoryKeyStore();
     Box.PublicKey defaultNodeKey = memoryKeyStore.generateKeyPair();
     memoryKeyStore.addNodeKey(defaultNodeKey);
@@ -64,7 +63,8 @@ class PrivacyGroupStorageTest {
       Statement st = conn.createStatement();
       st.executeUpdate("create table if not exists store(key binary, value binary, primary key(key))");
     }
-    storage = new OrionSQLKeyValueStore(jdbcUrl);
+    final JpaEntityManagerProvider jpaEntityManagerProvider = new JpaEntityManagerProvider(jdbcUrl);
+    storage = new OrionSQLKeyValueStore(jpaEntityManagerProvider);
     payloadStorage = new PrivacyGroupStorage(storage, enclave);
   }
 
