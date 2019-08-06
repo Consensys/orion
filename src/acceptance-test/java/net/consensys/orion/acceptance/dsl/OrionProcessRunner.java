@@ -57,10 +57,10 @@ public class OrionProcessRunner {
   public void start(final String processName) {
     final List<String> params = Lists.newArrayList();
     params.add(executableLocation());
-    params.add(configFilename);
+    params.add(workPath.resolve(configFilename).toString());
 
     final ProcessBuilder processBuilder = new ProcessBuilder(params)
-        .directory(new File(System.getProperty("user.dir")).getParentFile())
+        .directory(new File(System.getProperty("user.dir")))
         .redirectErrorStream(true)
         .redirectInput(Redirect.INHERIT);
 

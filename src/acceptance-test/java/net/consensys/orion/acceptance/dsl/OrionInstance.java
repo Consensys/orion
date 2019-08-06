@@ -70,18 +70,18 @@ public class OrionInstance {
 
   private void generateConfigFile() throws IOException {
     final String pubKeys =
-        keys.stream().map(k -> k.getPublicKeyPath().relativize(workPath).toString())
+        keys.stream().map(k -> "\"" + k.getPublicKeyPath().getFileName().toString() + "\"")
             .collect(Collectors.joining(","));
     final String privKeys =
-        keys.stream().map(k -> k.getPrivateKeyPath().relativize(workPath).toString())
+        keys.stream().map(k -> "\"" + k.getPrivateKeyPath().getFileName().toString() + "\"")
             .collect(Collectors.joining(","));
 
     String configContent = "workdir = \"" + workPath.toString() + "\"\n";
-    configContent += "nodeUrl = http://127.0.0.1:0"; // 0 means Vertx will find a suitable port.
-    configContent += "clientPort = http://127.0.0.1:0";
-    configContent += "nodenetworkinterface = 127.0.0.1";
-    configContent += "clientnetworkinterface = 127.0.0.1";
-    configContent += "libsodiumPath = " + libSodiumPath;
+    configContent += "nodeUrl = \"http://127.0.0.1:0\"\n"; // 0 means Vertx will find a suitable port.
+    configContent += "clientPort = \"http://127.0.0.1:0\"\n";
+    configContent += "nodenetworkinterface = \"127.0.0.1\"\n";
+    configContent += "clientnetworkinterface = \"127.0.0.1\"\n";
+    configContent += "libsodiumPath = \"" + libSodiumPath + "\"\n";
 
     configContent += "publickeys = [" + pubKeys + "]\n";
     configContent += "privatekeys = [" + privKeys + "]\n";
