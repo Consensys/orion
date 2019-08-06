@@ -77,6 +77,7 @@ import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.PemKeyCertOptions;
+import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.LoggerHandler;
@@ -415,13 +416,18 @@ public class Orion {
       Path tlsServerKey = workDir.resolve(config.tlsServerKey());
       PemKeyCertOptions pemKeyCertOptions =
           new PemKeyCertOptions().setKeyPath(tlsServerKey.toString()).setCertPath(tlsServerCert.toString());
-      for (Path chainCert : config.tlsServerChain()) {
-        pemKeyCertOptions.addCertPath(chainCert.toAbsolutePath().toString());
-      }
 
       options.setSsl(true);
       options.setClientAuth(ClientAuth.REQUIRED);
       options.setPemKeyCertOptions(pemKeyCertOptions);
+
+      if (!config.tlsServerChain().isEmpty()) {
+        PemTrustOptions pemTrustOptions = new PemTrustOptions();
+        for (Path chainCert : config.tlsServerChain()) {
+          pemTrustOptions.addCertPath(chainCert.toAbsolutePath().toString());
+        }
+        options.setPemTrustOptions(pemTrustOptions);
+      }
 
       Path knownClientsFile = config.tlsKnownClients();
       String serverTrustMode = config.tlsServerTrust().toLowerCase();

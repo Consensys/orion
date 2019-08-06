@@ -21,6 +21,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.net.PemKeyCertOptions;
+import io.vertx.core.net.PemTrustOptions;
 
 public class NodeHttpClientBuilder {
 
@@ -37,12 +38,17 @@ public class NodeHttpClientBuilder {
 
       PemKeyCertOptions pemKeyCertOptions =
           new PemKeyCertOptions().setKeyPath(tlsClientKey.toString()).setCertPath(tlsClientCert.toString());
-      for (Path chainCert : config.tlsClientChain()) {
-        pemKeyCertOptions.addCertPath(chainCert.toAbsolutePath().toString());
-      }
 
       options.setSsl(true);
       options.setPemKeyCertOptions(pemKeyCertOptions);
+
+      if (!config.tlsClientChain().isEmpty()) {
+        PemTrustOptions pemTrustOptions = new PemTrustOptions();
+        for (Path chainCert : config.tlsClientChain()) {
+          pemTrustOptions.addCertPath(chainCert.toAbsolutePath().toString());
+        }
+        options.setPemTrustOptions(pemTrustOptions);
+      }
 
       Path knownServersFile = config.tlsKnownServers();
       String clientTrustMode = config.tlsClientTrust();
