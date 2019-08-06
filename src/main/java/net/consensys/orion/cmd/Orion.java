@@ -55,6 +55,8 @@ import net.consensys.orion.storage.Storage;
 import net.consensys.orion.storage.StorageKeyBuilder;
 import net.consensys.orion.utils.TLS;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
@@ -63,6 +65,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Security;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -501,9 +504,31 @@ public class Orion {
       throw new OrionStartException("Orion was interrupted while starting services");
     }
 
+    //write acutal ports to a ports file
+    writePortsToFile(config, nodeHTTPServer.actualPort(), clientHTTPServer.actualPort());
+
     // set shutdown hook
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     isRunning.set(true);
+  }
+
+  private void writePortsToFile(final Config config, final int nodePort, final int clientPort) {
+    final Path dataPath = config.workDir();
+    final File portsFile = new File(dataPath.toFile(), "orion.ports");
+    portsFile.deleteOnExit();
+
+    final Properties properties = new Properties();
+    properties.setProperty("http-node-port", String.valueOf(nodePort));
+    properties.setProperty("http-client-port", String.valueOf(clientPort));
+
+    log.info("Writing orion.ports file: {}, with contents: {}", portsFile.getAbsolutePath(), properties);
+    try (final FileOutputStream fileOutputStream = new FileOutputStream(portsFile)) {
+      properties.store(
+          fileOutputStream,
+          "This file contains the ports used by the running instance of Pantheon. This file will be deleted after the node is shutdown.");
+    } catch (final Exception e) {
+      log.warn("Error writing ports file", e);
+    }
   }
 
   private Handler<AsyncResult<HttpServer>> completeFutureInHandler(CompletableFuture<Boolean> future) {
