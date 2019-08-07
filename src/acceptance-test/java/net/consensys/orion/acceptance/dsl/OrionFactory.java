@@ -19,7 +19,9 @@ import net.consensys.orion.enclave.sodium.FileKeyStore;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
@@ -32,7 +34,12 @@ public class OrionFactory {
   private static final String libSodiumPath = "/usr/local/lib/libsodium.dylib";
 
 
-  public OrionInstance create(int keyCount) throws IOException {
+  public OrionInstance create(final String nodeName, int keyCount) throws IOException {
+    return create(nodeName, keyCount, Collections.emptyList());
+  }
+
+  public OrionInstance create(final String nodeName, final int keyCount, final List<OrionInstance> bootnodes)
+      throws IOException {
     final Path nodePath;
     try {
       nodePath = Files.createTempDirectory("orion");
@@ -58,11 +65,15 @@ public class OrionFactory {
         nodeKeys.add(keys);
       }
 
-      return new OrionInstance(nodeKeys, nodePath, libSodiumPath);
+      final List<String> bootnodeStrings =
+          bootnodes.stream().map(OrionInstance::nodeAddress).collect(Collectors.toList());
+
+      return new OrionInstance(nodeName, nodeKeys, nodePath, libSodiumPath, bootnodeStrings);
 
     } catch (final IOException e) {
       LOG.error("Failed to create filekeyStore");
       throw e;
     }
   }
+
 }

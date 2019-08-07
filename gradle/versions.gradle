@@ -73,5 +73,7 @@ dependencyManagement {
     dependency 'org.scalatest:scalatest_2.12:3.0.5'
 
     dependency 'org.mockito:mockito-all:1.10.19'
+
+    dependency 'org.assertj:assertj-core:3.11.1'
   }
 }

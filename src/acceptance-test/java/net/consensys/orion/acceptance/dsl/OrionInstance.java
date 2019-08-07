@@ -12,16 +12,31 @@
  */
 package net.consensys.orion.acceptance.dsl;
 
-import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import jdk.javadoc.doclet.StandardDoclet;
 import net.consensys.cava.crypto.sodium.Box;
+import net.consensys.cava.crypto.sodium.Box.PublicKey;
+import net.consensys.cava.io.Base64;
+import net.consensys.orion.http.handler.receive.ReceiveRequest;
+import net.consensys.orion.http.server.HttpContentType;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import io.vertx.core.json.JsonObject;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Responsible for providing access to a running Orion instance via its HTTP interface such that
@@ -33,58 +48,113 @@ import java.util.stream.Collectors;
 public class OrionInstance {
 
   private static final String configFileName = "config.toml";
+  private static final String networkInterface = "127.0.0.1";
 
+  private static final String urlPattern = "http://" + networkInterface + ":%d";
+
+  private final String nodeName;
   private final List<KeyDefinition> keys;
   private final Path workPath;
   private final String libSodiumPath;
+  private final List<String> bootnodeClientUrl;
+  private OkHttpClient httpClient;
 
-  public OrionInstance(final List<KeyDefinition> keys, final Path workPath,
-      final String libSodiumPath) {
+  private OrionProcessRunner runner = null;
+
+  public OrionInstance(
+      final String nodeName,
+      final List<KeyDefinition> keys,
+      final Path workPath,
+      final String libSodiumPath,
+      final List<String> bootnodeClientUrl) {
+    this.nodeName = nodeName;
     this.keys = keys;
     this.workPath = workPath;
     this.libSodiumPath = libSodiumPath;
+    this.bootnodeClientUrl = bootnodeClientUrl;
   }
 
   public void start() throws IOException {
     generateConfigFile();
-    OrionProcessRunner runner = new OrionProcessRunner(configFileName, workPath);
-    runner.start("orionNode1");
+    runner = new OrionProcessRunner(configFileName, workPath);
+    runner.start(nodeName);
+    httpClient = new OkHttpClient();
 
   }
 
-  public void sendData(final byte[] data, final String sender, final List<String> recipients) {
+  public String sendData(final byte[] data, final Box.PublicKey sender,
+      final Collection<PublicKey> recipients) throws IOException {
+    final JsonObject payload = new JsonObject(sendRequest(data, sender, recipients));
+    final RequestBody requestBody =
+        RequestBody.create(MediaType.parse(HttpContentType.JSON.toString()), payload.encode());
+
+    Request request =
+        new Request.Builder().url(clientAddress() + "/send").post(requestBody).build();
+    final Response response = httpClient.newCall(request).execute();
+
+    JsonObject responseJson = new JsonObject(response.body().string());
+
+    return responseJson.getString("key");
 
   }
 
-  public byte[] extractDataItem(final String dataKey, final String identity) {
-    return null;
+  public byte[] extractDataItem(final String dataKey, final Box.PublicKey identity)
+      throws IOException {
+    final ReceiveRequest rxReqeust =
+        new ReceiveRequest(dataKey, Base64.encodeBytes(identity.bytesArray()));
+    final JsonObject payload = JsonObject.mapFrom(rxReqeust);
+    final RequestBody requestBody =
+        RequestBody.create(MediaType.parse(HttpContentType.JSON.toString()), payload.encode());
+
+    final Request request =
+        new Request.Builder().url(clientAddress() + "/receive").post(requestBody).build();
+    final Response response = httpClient.newCall(request).execute();
+
+    final JsonObject responseJson = new JsonObject(response.body().string());
+    return Base64.decodeBytes(responseJson.getString("payload"));
   }
 
-  public List<Box.PublicKey> publicKeys() {
-    return keys.stream().map(k -> k.getKeys().publicKey()).collect(Collectors.toList());
+  public Box.PublicKey getPublicKey(final int index) {
+    return keys.get(index).getKeys().publicKey();
   }
 
-  public List<Box.SecretKey> privateKeys() {
-    return keys.stream().map(k -> k.getKeys().secretKey()).collect(Collectors.toList());
+//  public List<Box.SecretKey> privateKeys() {
+//    return keys.stream().map(k -> k.getKeys().secretKey()).collect(Collectors.toList());
+//  }
+
+  public String clientAddress() {
+    return String.format(urlPattern, runner.clientPort());
+  }
+
+  public String nodeAddress() {
+    return String.format(urlPattern, runner.nodePort());
   }
 
   private void generateConfigFile() throws IOException {
     final String pubKeys =
-        keys.stream().map(k -> "\"" + k.getPublicKeyPath().getFileName().toString() + "\"")
-            .collect(Collectors.joining(","));
+        keys.stream().map(k -> "\"" + k.getPublicKeyPath().getFileName().toString() + "\"").collect(
+            Collectors.joining(","));
     final String privKeys =
         keys.stream().map(k -> "\"" + k.getPrivateKeyPath().getFileName().toString() + "\"")
-            .collect(Collectors.joining(","));
+            .collect(
+                Collectors.joining(","));
 
+    final String otherNodes =
+        bootnodeClientUrl.stream().map(k -> "\"" + k + "\"").collect(Collectors.joining(","));
+
+    // 0 means Vertx will find a suitable port.
     String configContent = "workdir = \"" + workPath.toString() + "\"\n";
-    configContent += "nodeUrl = \"http://127.0.0.1:0\"\n"; // 0 means Vertx will find a suitable port.
-    configContent += "clientPort = \"http://127.0.0.1:0\"\n";
-    configContent += "nodenetworkinterface = \"127.0.0.1\"\n";
-    configContent += "clientnetworkinterface = \"127.0.0.1\"\n";
+    configContent += "nodeUrl = \"" + String.format(urlPattern, 0) + "\"\n";
+    configContent += "clientUrl = \"" + String.format(urlPattern, 0) + "\"\n";
+    configContent += "nodenetworkinterface = \"" + networkInterface + "\"\n";
+    configContent += "clientnetworkinterface = \"" + networkInterface + "\"\n";
     configContent += "libsodiumPath = \"" + libSodiumPath + "\"\n";
+    configContent += "nodeport = 0\n";
+    configContent += "clientport = 0\n";
 
     configContent += "publickeys = [" + pubKeys + "]\n";
     configContent += "privatekeys = [" + privKeys + "]\n";
+    configContent += "othernodes  = [" + otherNodes + "]\n";
 
     final File configFile = new File(workPath.toFile(), configFileName);
     Files.write(configFile.toPath(), configContent.getBytes(StandardCharsets.UTF_8),
@@ -93,4 +163,12 @@ public class OrionInstance {
   }
 
 
+  private Map<String, Object> sendRequest(byte[] payload, final Box.PublicKey sender,
+      final Collection<Box.PublicKey> to) {
+    Map<String, Object> map = new HashMap<>();
+    map.put("payload", payload);
+    map.put("from", Base64.encodeBytes(sender.bytesArray()));
+    map.put("to", to.stream().map(t -> Base64.encodeBytes(t.bytesArray())).toArray());
+    return map;
+  }
 }

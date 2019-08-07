@@ -50,9 +50,26 @@ public class OrionProcessRunner {
   private final Properties portProperties = new Properties();
 
   public OrionProcessRunner(final String configFilename, final Path workPath) {
+    Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     this.configFilename = configFilename;
     this.workPath = workPath;
   }
+
+  @SuppressWarnings("UnstableApiUsage")
+  public synchronized void shutdown() {
+    final HashMap<String, Process> localMap = new HashMap<>(processes);
+    localMap.forEach(this::killProcess);
+    outputProcessorExecutor.shutdown();
+    try {
+      if (!outputProcessorExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+        LOG.error("Output processor executor did not shutdown cleanly.");
+      }
+    } catch (final InterruptedException e) {
+      LOG.error("Interrupted while already shutting down", e);
+      Thread.currentThread().interrupt();
+    }
+  }
+
 
   public void start(final String processName) {
     final List<String> params = Lists.newArrayList();
@@ -90,7 +107,7 @@ public class OrionProcessRunner {
   private String executableLocation() {
     return "build/install/orion/bin/orion";
   }
-/*
+
   private void killProcess(final String name, final Process process) {
     LOG.info("Killing {} process", name);
 
@@ -115,24 +132,21 @@ public class OrionProcessRunner {
     final String value = portProperties.getProperty("http-client-port");
     return Integer.parseInt(value);
   }
-  */
 
 
   private void loadPortsFile() {
     final File portsFile = new File(workPath.toFile(), PORTS_FILENAME);
-    LOG.info("Awaiting presence of ethsigner.ports file: {}", portsFile.getAbsolutePath());
+    LOG.info("Awaiting presence of orion.ports file: {}", portsFile.getAbsolutePath());
     awaitPortsFile(workPath);
-    LOG.info("Found ethsigner.ports file: {}", portsFile.getAbsolutePath());
+    LOG.info("Found orion.ports file: {}", portsFile.getAbsolutePath());
 
     try (final FileInputStream fis = new FileInputStream(portsFile)) {
       portProperties.load(fis);
-      LOG.info("EthSigner ports: {}", portProperties);
+      LOG.info("Orion ports: {}", portProperties);
     } catch (final IOException e) {
       throw new RuntimeException("Error reading Pantheon ports file", e);
     }
   }
-
-
 
   private void awaitPortsFile(final Path dataDir) {
     final File file = new File(dataDir.toFile(), PORTS_FILENAME);
