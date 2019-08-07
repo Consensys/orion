@@ -12,8 +12,6 @@
  */
 package net.consensys.orion.acceptance.dsl;
 
-import java.util.Collection;
-import jdk.javadoc.doclet.StandardDoclet;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.crypto.sodium.Box.PublicKey;
 import net.consensys.cava.io.Base64;
@@ -26,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,11 +38,10 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * Responsible for providing access to a running Orion instance via its HTTP interface such that
- * payloads can be submitted and extracted.
+ * Responsible for providing access to a running Orion instance via its HTTP interface such that payloads can be
+ * submitted and extracted.
  *
- * It also encapsulates all aspects of the Orion Instance - such as its datapath and maintained
- * keys.
+ * It also encapsulates all aspects of the Orion Instance - such as its datapath and maintained keys.
  */
 public class OrionInstance {
 
@@ -82,14 +80,13 @@ public class OrionInstance {
 
   }
 
-  public String sendData(final byte[] data, final Box.PublicKey sender,
-      final Collection<PublicKey> recipients) throws IOException {
+  public String sendData(final byte[] data, final Box.PublicKey sender, final Collection<PublicKey> recipients)
+      throws IOException {
     final JsonObject payload = new JsonObject(sendRequest(data, sender, recipients));
     final RequestBody requestBody =
         RequestBody.create(MediaType.parse(HttpContentType.JSON.toString()), payload.encode());
 
-    Request request =
-        new Request.Builder().url(clientAddress() + "/send").post(requestBody).build();
+    Request request = new Request.Builder().url(clientAddress() + "/send").post(requestBody).build();
     final Response response = httpClient.newCall(request).execute();
 
     JsonObject responseJson = new JsonObject(response.body().string());
@@ -98,16 +95,13 @@ public class OrionInstance {
 
   }
 
-  public byte[] extractDataItem(final String dataKey, final Box.PublicKey identity)
-      throws IOException {
-    final ReceiveRequest rxReqeust =
-        new ReceiveRequest(dataKey, Base64.encodeBytes(identity.bytesArray()));
+  public byte[] extractDataItem(final String dataKey, final Box.PublicKey identity) throws IOException {
+    final ReceiveRequest rxReqeust = new ReceiveRequest(dataKey, Base64.encodeBytes(identity.bytesArray()));
     final JsonObject payload = JsonObject.mapFrom(rxReqeust);
     final RequestBody requestBody =
         RequestBody.create(MediaType.parse(HttpContentType.JSON.toString()), payload.encode());
 
-    final Request request =
-        new Request.Builder().url(clientAddress() + "/receive").post(requestBody).build();
+    final Request request = new Request.Builder().url(clientAddress() + "/receive").post(requestBody).build();
     final Response response = httpClient.newCall(request).execute();
 
     final JsonObject responseJson = new JsonObject(response.body().string());
@@ -118,9 +112,9 @@ public class OrionInstance {
     return keys.get(index).getKeys().publicKey();
   }
 
-//  public List<Box.SecretKey> privateKeys() {
-//    return keys.stream().map(k -> k.getKeys().secretKey()).collect(Collectors.toList());
-//  }
+  //  public List<Box.SecretKey> privateKeys() {
+  //    return keys.stream().map(k -> k.getKeys().secretKey()).collect(Collectors.toList());
+  //  }
 
   public String clientAddress() {
     return String.format(urlPattern, runner.clientPort());
@@ -131,16 +125,13 @@ public class OrionInstance {
   }
 
   private void generateConfigFile() throws IOException {
-    final String pubKeys =
-        keys.stream().map(k -> "\"" + k.getPublicKeyPath().getFileName().toString() + "\"").collect(
-            Collectors.joining(","));
+    final String pubKeys = keys.stream().map(k -> "\"" + k.getPublicKeyPath().getFileName().toString() + "\"").collect(
+        Collectors.joining(","));
     final String privKeys =
-        keys.stream().map(k -> "\"" + k.getPrivateKeyPath().getFileName().toString() + "\"")
-            .collect(
-                Collectors.joining(","));
+        keys.stream().map(k -> "\"" + k.getPrivateKeyPath().getFileName().toString() + "\"").collect(
+            Collectors.joining(","));
 
-    final String otherNodes =
-        bootnodeClientUrl.stream().map(k -> "\"" + k + "\"").collect(Collectors.joining(","));
+    final String otherNodes = bootnodeClientUrl.stream().map(k -> "\"" + k + "\"").collect(Collectors.joining(","));
 
     // 0 means Vertx will find a suitable port.
     String configContent = "workdir = \"" + workPath.toString() + "\"\n";
@@ -157,13 +148,14 @@ public class OrionInstance {
     configContent += "othernodes  = [" + otherNodes + "]\n";
 
     final File configFile = new File(workPath.toFile(), configFileName);
-    Files.write(configFile.toPath(), configContent.getBytes(StandardCharsets.UTF_8),
-        StandardOpenOption.CREATE);
+    Files.write(configFile.toPath(), configContent.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 
   }
 
 
-  private Map<String, Object> sendRequest(byte[] payload, final Box.PublicKey sender,
+  private Map<String, Object> sendRequest(
+      byte[] payload,
+      final Box.PublicKey sender,
       final Collection<Box.PublicKey> to) {
     Map<String, Object> map = new HashMap<>();
     map.put("payload", payload);

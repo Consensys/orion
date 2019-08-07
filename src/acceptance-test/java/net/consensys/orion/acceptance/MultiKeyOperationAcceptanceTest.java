@@ -15,10 +15,12 @@ package net.consensys.orion.acceptance;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import net.consensys.orion.acceptance.dsl.AcceptanceTestBase;
 import net.consensys.orion.acceptance.dsl.OrionInstance;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 import org.junit.Test;
 
 public class MultiKeyOperationAcceptanceTest extends AcceptanceTestBase {
@@ -29,14 +31,12 @@ public class MultiKeyOperationAcceptanceTest extends AcceptanceTestBase {
     final OrionInstance bootnode = orionFactory().create("node_1", 1);
     bootnode.start();
 
-    final OrionInstance secondNode =
-        orionFactory().create("node_2", 1, singletonList(bootnode));
+    final OrionInstance secondNode = orionFactory().create("node_2", 1, singletonList(bootnode));
     secondNode.start();
 
     Thread.sleep(1000);
 
-    final String key = bootnode.sendData(payload, bootnode.getPublicKey(0),
-        singletonList(secondNode.getPublicKey(0)));
+    final String key = bootnode.sendData(payload, bootnode.getPublicKey(0), singletonList(secondNode.getPublicKey(0)));
 
     final byte[] dataInReceivingNode = secondNode.extractDataItem(key, secondNode.getPublicKey(0));
     assertThat(dataInReceivingNode).isEqualTo(payload);
@@ -48,14 +48,12 @@ public class MultiKeyOperationAcceptanceTest extends AcceptanceTestBase {
     final OrionInstance bootnode = orionFactory().create("node_1", 2);
     bootnode.start();
 
-    final OrionInstance secondNode =
-        orionFactory().create("node_2", 2, singletonList(bootnode));
+    final OrionInstance secondNode = orionFactory().create("node_2", 2, singletonList(bootnode));
     secondNode.start();
 
     Thread.sleep(1000);
 
-    final String key = bootnode.sendData(payload, bootnode.getPublicKey(1),
-        singletonList(secondNode.getPublicKey(1)));
+    final String key = bootnode.sendData(payload, bootnode.getPublicKey(1), singletonList(secondNode.getPublicKey(1)));
 
     final byte[] dataInReceivingNode = secondNode.extractDataItem(key, secondNode.getPublicKey(1));
     assertThat(dataInReceivingNode).isEqualTo(payload);
