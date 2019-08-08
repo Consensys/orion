@@ -34,11 +34,11 @@ public class OrionFactory {
   private static final String libSodiumPath = "/usr/local/lib/libsodium.dylib";
 
 
-  public OrionInstance create(final String nodeName, int keyCount) throws IOException {
+  public OrionNode create(final String nodeName, int keyCount) throws IOException {
     return create(nodeName, keyCount, Collections.emptyList());
   }
 
-  public OrionInstance create(final String nodeName, final int keyCount, final List<OrionInstance> bootnodes)
+  public OrionNode create(final String nodeName, final int keyCount, final List<OrionNode> bootnodes)
       throws IOException {
     final Path nodePath;
     try {
@@ -65,10 +65,9 @@ public class OrionFactory {
         nodeKeys.add(keys);
       }
 
-      final List<String> bootnodeStrings =
-          bootnodes.stream().map(OrionInstance::nodeAddress).collect(Collectors.toList());
+      final List<String> bootnodeStrings = bootnodes.stream().map(OrionNode::nodeAddress).collect(Collectors.toList());
 
-      return new OrionInstance(nodeName, nodeKeys, nodePath, libSodiumPath, bootnodeStrings);
+      return new OrionNode(nodeName, nodeKeys, nodePath, libSodiumPath, bootnodeStrings);
 
     } catch (final IOException e) {
       LOG.error("Failed to create filekeyStore");

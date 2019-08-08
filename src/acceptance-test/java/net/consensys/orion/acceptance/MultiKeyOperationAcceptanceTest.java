@@ -16,7 +16,7 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import net.consensys.orion.acceptance.dsl.AcceptanceTestBase;
-import net.consensys.orion.acceptance.dsl.OrionInstance;
+import net.consensys.orion.acceptance.dsl.OrionNode;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -28,13 +28,13 @@ public class MultiKeyOperationAcceptanceTest extends AcceptanceTestBase {
 
   @Test
   public void dataTransfersFromOneNodeToAnother() throws IOException, InterruptedException {
-    final OrionInstance bootnode = orionFactory().create("node_1", 1);
+    final OrionNode bootnode = orionFactory().create("node_1", 1);
     bootnode.start();
 
-    final OrionInstance secondNode = orionFactory().create("node_2", 1, singletonList(bootnode));
+    final OrionNode secondNode = orionFactory().create("node_2", 1, singletonList(bootnode));
     secondNode.start();
 
-    Thread.sleep(1000);
+    Thread.sleep(5000);
 
     final String key = bootnode.sendData(payload, bootnode.getPublicKey(0), singletonList(secondNode.getPublicKey(0)));
 
@@ -45,10 +45,10 @@ public class MultiKeyOperationAcceptanceTest extends AcceptanceTestBase {
 
   @Test
   public void multiKeyPerNodeResultsInValidDataTransfer() throws IOException, InterruptedException {
-    final OrionInstance bootnode = orionFactory().create("node_1", 2);
+    final OrionNode bootnode = orionFactory().create("node_1", 2);
     bootnode.start();
 
-    final OrionInstance secondNode = orionFactory().create("node_2", 2, singletonList(bootnode));
+    final OrionNode secondNode = orionFactory().create("node_2", 2, singletonList(bootnode));
     secondNode.start();
 
     Thread.sleep(1000);
