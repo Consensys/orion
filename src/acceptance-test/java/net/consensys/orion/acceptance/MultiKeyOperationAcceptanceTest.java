@@ -15,12 +15,14 @@ package net.consensys.orion.acceptance;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.concurrent.TimeUnit;
 import net.consensys.orion.acceptance.dsl.AcceptanceTestBase;
 import net.consensys.orion.acceptance.dsl.OrionNode;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import org.awaitility.Awaitility;
 import org.junit.Test;
 
 public class MultiKeyOperationAcceptanceTest extends AcceptanceTestBase {
@@ -34,7 +36,7 @@ public class MultiKeyOperationAcceptanceTest extends AcceptanceTestBase {
     final OrionNode secondNode = orionFactory().create("node_2", 1, singletonList(bootnode));
     secondNode.start();
 
-    Thread.sleep(5000);
+    Awaitility.waitAtMost(5, TimeUnit.SECONDS).until(() -> bootnode.peerCount() > 1);
 
     final String key = bootnode.sendData(payload, bootnode.getPublicKey(0), singletonList(secondNode.getPublicKey(0)));
 
@@ -51,7 +53,7 @@ public class MultiKeyOperationAcceptanceTest extends AcceptanceTestBase {
     final OrionNode secondNode = orionFactory().create("node_2", 2, singletonList(bootnode));
     secondNode.start();
 
-    Thread.sleep(1000);
+    Awaitility.waitAtMost(5, TimeUnit.SECONDS).until(() -> bootnode.peerCount() > 1);
 
     final String key = bootnode.sendData(payload, bootnode.getPublicKey(1), singletonList(secondNode.getPublicKey(1)));
 

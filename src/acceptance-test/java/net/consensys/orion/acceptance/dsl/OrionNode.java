@@ -37,6 +37,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Responsible for providing access to a running Orion instance via its HTTP interface such that
@@ -46,6 +48,7 @@ import okhttp3.Response;
  * keys.
  */
 public class OrionNode {
+  private static final Logger LOG = LogManager.getLogger();
 
   private static final String configFileName = "config.toml";
   private static final String networkInterface = "127.0.0.1";
@@ -80,6 +83,16 @@ public class OrionNode {
     runner.start(nodeName);
     httpClient = new OkHttpClient();
 
+  }
+
+  public int peerCount() throws IOException {
+        final Request request =
+        new Request.Builder().url(clientAddress() + "/peercount").get().build();
+    final Response response = httpClient.newCall(request).execute();
+
+    LOG.info("Peers = " + response.body());
+
+    return Integer.parseInt(response.body().string());
   }
 
   public String sendData(final byte[] data, final Box.PublicKey sender,
