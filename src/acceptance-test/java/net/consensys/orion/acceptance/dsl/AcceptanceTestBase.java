@@ -13,6 +13,12 @@
 package net.consensys.orion.acceptance.dsl;
 
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import com.google.common.collect.Lists;
+import org.awaitility.Awaitility;
+
 public class AcceptanceTestBase {
 
   private static final OrionFactory orionFactory = new OrionFactory();
@@ -21,5 +27,15 @@ public class AcceptanceTestBase {
     return orionFactory;
   }
 
+  public void waitForClientInterconnect(final OrionNode... nodes) {
+    List<OrionNode> nodeList = Lists.newArrayList(nodes);
+    // Note peerCount returns a number which includes yourself, your bootnodes AND your connections
+    // therefore each node expects a "peerCount".
+    final int expectedConnectionsPerNode = nodeList.size() - 1;
 
+    for (final OrionNode node : nodeList) {
+      final int expectedReportedPeerCount = expectedConnectionsPerNode + 1 + node.getBootnodeCount();
+      Awaitility.waitAtMost(5, TimeUnit.SECONDS).until(() -> node.peerCount() == expectedReportedPeerCount);
+    }
+  }
 }

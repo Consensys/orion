@@ -15,12 +15,12 @@ package net.consensys.orion.acceptance;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.concurrent.TimeUnit;
 import net.consensys.orion.acceptance.dsl.AcceptanceTestBase;
 import net.consensys.orion.acceptance.dsl.OrionNode;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 import org.junit.Test;
@@ -29,14 +29,11 @@ public class MultiKeyOperationAcceptanceTest extends AcceptanceTestBase {
   private final byte[] payload = "This Is My Data".getBytes(StandardCharsets.UTF_8);
 
   @Test
-  public void dataTransfersFromOneNodeToAnother() throws IOException, InterruptedException {
+  public void dataTransfersFromOneNodeToAnother() throws IOException {
     final OrionNode bootnode = orionFactory().create("node_1", 1);
-    bootnode.start();
-
     final OrionNode secondNode = orionFactory().create("node_2", 1, singletonList(bootnode));
-    secondNode.start();
 
-    Awaitility.waitAtMost(5, TimeUnit.SECONDS).until(() -> bootnode.peerCount() > 1);
+    waitForClientInterconnect(bootnode, secondNode);
 
     final String key = bootnode.sendData(payload, bootnode.getPublicKey(0), singletonList(secondNode.getPublicKey(0)));
 
@@ -46,14 +43,11 @@ public class MultiKeyOperationAcceptanceTest extends AcceptanceTestBase {
 
 
   @Test
-  public void multiKeyPerNodeResultsInValidDataTransfer() throws IOException, InterruptedException {
+  public void multiKeyPerNodeResultsInValidDataTransfer() throws IOException {
     final OrionNode bootnode = orionFactory().create("node_1", 2);
-    bootnode.start();
-
     final OrionNode secondNode = orionFactory().create("node_2", 2, singletonList(bootnode));
-    secondNode.start();
 
-    Awaitility.waitAtMost(5, TimeUnit.SECONDS).until(() -> bootnode.peerCount() > 1);
+    waitForClientInterconnect(bootnode, secondNode);
 
     final String key = bootnode.sendData(payload, bootnode.getPublicKey(1), singletonList(secondNode.getPublicKey(1)));
 

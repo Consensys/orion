@@ -165,8 +165,8 @@ public class Orion {
         .failureHandler(new HttpErrorHandler());
 
     clientRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
-    clientRouter.get("/peercount").produces(TEXT.httpHeaderValue).handler(new PeerCountHandler(
-        () -> networkNodes.nodeURLs().size()));
+    clientRouter.get("/peercount").produces(TEXT.httpHeaderValue).handler(
+        new PeerCountHandler(() -> networkNodes.nodeURLs().size()));
 
     clientRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
         new SendHandler(

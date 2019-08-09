@@ -14,6 +14,8 @@ package net.consensys.orion.acceptance.dsl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import net.consensys.orion.config.Config;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,19 +42,17 @@ public class OrionProcessRunner {
 
   private static final Logger LOG = LogManager.getLogger();
   private static final Logger PROCESS_LOG = LogManager.getLogger("tech.pegasys.orion.SubProcessLog");
+  private static final String PORTS_FILENAME = "orion.ports";
+
   private final Map<String, Process> processes = new HashMap<>();
   private final ExecutorService outputProcessorExecutor = Executors.newCachedThreadPool();
 
-
-  private final String configFilename;
-  private static final String PORTS_FILENAME = "orion.ports";
-  private final Path workPath;
+  private final Path configFilePath;
   private final Properties portProperties = new Properties();
 
-  public OrionProcessRunner(final String configFilename, final Path workPath) {
+  public OrionProcessRunner(final Path configFilePath) {
     Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
-    this.configFilename = configFilename;
-    this.workPath = workPath;
+    this.configFilePath = configFilePath;
   }
 
   @SuppressWarnings("UnstableApiUsage")
@@ -71,10 +71,13 @@ public class OrionProcessRunner {
   }
 
 
-  public void start(final String processName) {
+  public void start(final String processName) throws IOException {
+    final Config config = Config.load(this.configFilePath);
+    final Path workPath = config.workDir();
+
     final List<String> params = Lists.newArrayList();
     params.add(executableLocation());
-    params.add(workPath.resolve(configFilename).toString());
+    params.add(configFilePath.toString());
 
     final ProcessBuilder processBuilder = new ProcessBuilder(params)
         .directory(new File(System.getProperty("user.dir")))
@@ -89,7 +92,7 @@ public class OrionProcessRunner {
       LOG.error("Error starting Orion process", e);
     }
 
-    loadPortsFile();
+    loadPortsFile(workPath);
   }
 
   private void printOutput(final String name, final Process process) {
@@ -123,21 +126,21 @@ public class OrionProcessRunner {
     });
   }
 
-  public int nodePort() {
+  public String nodeUrl() {
     final String value = portProperties.getProperty("http-node-port");
-    return Integer.parseInt(value);
+    return String.format(OrionConfigFileGenerator.URL_PATTERN, Integer.parseInt(value));
   }
 
-  public int clientPort() {
+  public String clientUrl() {
     final String value = portProperties.getProperty("http-client-port");
-    return Integer.parseInt(value);
+    return String.format(OrionConfigFileGenerator.URL_PATTERN, Integer.parseInt(value));
   }
 
 
-  private void loadPortsFile() {
-    final File portsFile = new File(workPath.toFile(), PORTS_FILENAME);
+  private void loadPortsFile(final Path parentDir) {
+    final File portsFile = new File(parentDir.toFile(), PORTS_FILENAME);
     LOG.info("Awaiting presence of orion.ports file: {}", portsFile.getAbsolutePath());
-    awaitPortsFile(workPath);
+    awaitPortsFile(parentDir);
     LOG.info("Found orion.ports file: {}", portsFile.getAbsolutePath());
 
     try (final FileInputStream fis = new FileInputStream(portsFile)) {

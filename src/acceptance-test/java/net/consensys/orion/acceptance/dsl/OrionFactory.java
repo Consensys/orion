@@ -65,9 +65,19 @@ public class OrionFactory {
         nodeKeys.add(keys);
       }
 
-      final List<String> bootnodeStrings = bootnodes.stream().map(OrionNode::nodeAddress).collect(Collectors.toList());
+      final List<String> bootnodeStrings = bootnodes.stream().map(OrionNode::nodeUrl).collect(Collectors.toList());
 
-      return new OrionNode(nodeName, nodeKeys, nodePath, libSodiumPath, bootnodeStrings);
+      final OrionConfigFileGenerator fileGenerator =
+          new OrionConfigFileGenerator(nodeKeys, libSodiumPath, bootnodeStrings, nodePath);
+      final Path configFilePath = fileGenerator.generateConfigFile();
+      final OrionProcessRunner runner = new OrionProcessRunner(configFilePath);
+      runner.start(nodeName);
+
+      return new OrionNode(
+          nodeKeys.stream().map(key -> key.getKeys().publicKey()).collect(Collectors.toList()),
+          runner,
+          bootnodes.size());
+
 
     } catch (final IOException e) {
       LOG.error("Failed to create filekeyStore");
