@@ -10,7 +10,6 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 import net.ltgt.gradle.errorprone.CheckSeverity
 
 buildscript {
@@ -44,8 +43,6 @@ apply plugin: 'com.jfrog.bintray'
 apply plugin: 'openjpa'
 
 version = '1.4.0-SNAPSHOT'
-
-
 
 //////
 // Default tasks and build aliases
@@ -91,7 +88,7 @@ spotless {
   }
   format 'build-gradle', {
     target '/build.gradle'
-    licenseHeaderFile 'gradle/spotless.license.java', 'plugins'
+    licenseHeaderFile 'gradle/spotless.license.java', 'import'
     paddedCell()
   }
 }
@@ -292,6 +289,7 @@ dependencies {
   testCompile 'org.awaitility:awaitility'
   // mock http server (unit test purposes)
   testCompile 'com.squareup.okhttp3:mockwebserver'
+  testCompile 'org.assertj:assertj-core'
 
   // performance testing
   performanceCompile 'org.scala-lang:scala-library'
