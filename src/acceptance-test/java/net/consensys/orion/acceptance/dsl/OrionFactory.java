@@ -38,7 +38,8 @@ public class OrionFactory {
     return create(nodeName, keyCount, Collections.emptyList());
   }
 
-  public OrionNode create(final String nodeName, final int keyCount, final List<OrionNode> bootnodes)
+  public OrionNode create(final String nodeName, final int keyCount,
+      final List<OrionNode> bootnodes)
       throws IOException {
     final Path nodePath;
     try {
@@ -48,15 +49,34 @@ public class OrionFactory {
       throw e;
     }
 
-    final Config config = Config.defaultConfig();
+    final List<KeyDefinition> nodeKeys = generateKeys(keyCount, nodePath);
+
+    final List<String> bootnodeStrings =
+        bootnodes.stream().map(OrionNode::nodeUrl).collect(Collectors.toList());
+
+    final OrionConfigFileGenerator fileGenerator =
+        new OrionConfigFileGenerator(nodeKeys, libSodiumPath, bootnodeStrings, nodePath);
+    final Path configFilePath = fileGenerator.generateConfigFile();
+    final OrionProcessRunner runner = new OrionProcessRunner(configFilePath);
+    runner.start(nodeName);
+
+    return new OrionNode(
+        nodeKeys.stream().map(key -> key.getKeys().publicKey()).collect(Collectors.toList()),
+        runner,
+        bootnodes.size());
+  }
+
+  private List<KeyDefinition> generateKeys(final int keyCount, final Path nodePath)
+      throws IOException {
+
     try {
-      final FileKeyStore fileKeyStore = new FileKeyStore(config);
+      final FileKeyStore fileKeyStore = new FileKeyStore(Config.defaultConfig());
 
       final List<KeyDefinition> nodeKeys = Lists.newArrayList();
       for (int i = 0; i < keyCount; i++) {
         final String keyFileName = String.format("key_%d", i);
         final Path rootPath = nodePath.resolve(keyFileName);
-        Box.PublicKey pubKey = fileKeyStore.generateKeyPair(rootPath, null);
+        final Box.PublicKey pubKey = fileKeyStore.generateKeyPair(rootPath, null);
 
         final KeyDefinition keys = new KeyDefinition(
             new Box.KeyPair(pubKey, fileKeyStore.privateKey(pubKey)),
@@ -64,25 +84,10 @@ public class OrionFactory {
             rootPath.resolveSibling(rootPath.getFileName() + ".key"));
         nodeKeys.add(keys);
       }
-
-      final List<String> bootnodeStrings = bootnodes.stream().map(OrionNode::nodeUrl).collect(Collectors.toList());
-
-      final OrionConfigFileGenerator fileGenerator =
-          new OrionConfigFileGenerator(nodeKeys, libSodiumPath, bootnodeStrings, nodePath);
-      final Path configFilePath = fileGenerator.generateConfigFile();
-      final OrionProcessRunner runner = new OrionProcessRunner(configFilePath);
-      runner.start(nodeName);
-
-      return new OrionNode(
-          nodeKeys.stream().map(key -> key.getKeys().publicKey()).collect(Collectors.toList()),
-          runner,
-          bootnodes.size());
-
-
-    } catch (final IOException e) {
+      return nodeKeys;
+    } catch (final IOException ex) {
       LOG.error("Failed to create filekeyStore");
-      throw e;
+      throw ex;
     }
   }
-
 }
