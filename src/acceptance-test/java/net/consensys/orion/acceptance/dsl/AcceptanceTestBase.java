@@ -27,15 +27,24 @@ public class AcceptanceTestBase {
     return orionFactory;
   }
 
-  public void waitForClientInterconnect(final OrionNode... nodes) {
+  public void waitForClientInterconnect(final int timeoutSeconds, final OrionNode... nodes) {
     List<OrionNode> nodeList = Lists.newArrayList(nodes);
-    // Note peerCount returns a number which includes yourself, your bootnodes AND your connections
-    // therefore each node expects a "peerCount".
-    final int expectedConnectionsPerNode = nodeList.size() - 1;
+
+    // The value reported by PeerCount _appears_ to be calculated by adding:
+    // 1. Yourself
+    // 2. The number of keys reported by remote peers
+    // 3. The number of bootnodes specified
+
+    final int expectedKeyEndpoints = nodeList.stream().map(OrionNode::getPublicKeyCount).reduce(0, Integer::sum);
 
     for (final OrionNode node : nodeList) {
-      final int expectedReportedPeerCount = expectedConnectionsPerNode + 1 + node.getBootnodeCount();
-      Awaitility.waitAtMost(5, TimeUnit.SECONDS).until(() -> node.peerCount() == expectedReportedPeerCount);
+      //
+      final int expectedPeerCount = expectedKeyEndpoints - node.getPublicKeyCount() + 1 + node.getBootnodeCount();
+      Awaitility.waitAtMost(timeoutSeconds, TimeUnit.SECONDS).until(() -> node.peerCount() == expectedPeerCount);
     }
+  }
+
+  public void waitForClientInterconnect(final OrionNode... nodes) {
+    waitForClientInterconnect(5, nodes);
   }
 }

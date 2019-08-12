@@ -19,19 +19,17 @@ import net.consensys.orion.http.handler.receive.ReceiveRequest;
 import net.consensys.orion.http.server.HttpContentType;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Lists;
 import io.vertx.core.json.JsonObject;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Responsible for providing access to a running Orion instance via its HTTP interface such that payloads can be
@@ -40,16 +38,14 @@ import org.apache.logging.log4j.Logger;
  * It also encapsulates all aspects of the Orion Instance - such as its datapath and maintained publicKeys.
  */
 public class OrionNode {
+
   private final List<Box.PublicKey> publicKeys;
   private final OkHttpClient httpClient = new OkHttpClient();
 
   private final OrionProcessRunner runner;
   private final int bootNodeCount;
 
-  public OrionNode(
-      final List<Box.PublicKey> publicKeys,
-      final OrionProcessRunner runner,
-      final int bootNodeCount) {
+  public OrionNode(final List<Box.PublicKey> publicKeys, final OrionProcessRunner runner, final int bootNodeCount) {
     this.publicKeys = publicKeys;
     this.runner = runner;
     this.bootNodeCount = bootNodeCount;
@@ -67,7 +63,11 @@ public class OrionNode {
     return bootNodeCount;
   }
 
-  public String sendData(final byte[] data, final Box.PublicKey sender, final Collection<PublicKey> recipients)
+  public int getPublicKeyCount() {
+    return publicKeys.size();
+  }
+
+  public String sendData(final byte[] data, final Box.PublicKey sender, final PublicKey... recipients)
       throws IOException {
 
     final JsonObject responseJson = createSendRequest(data, sender, recipients);
@@ -105,8 +105,9 @@ public class OrionNode {
     return new JsonObject(response.body().string());
   }
 
-  private JsonObject createSendRequest(byte[] payload, final Box.PublicKey sender, final Collection<Box.PublicKey> to)
+  private JsonObject createSendRequest(byte[] payload, final Box.PublicKey sender, final PublicKey... recipients)
       throws IOException {
+    final List<PublicKey> to = Lists.newArrayList(recipients);
     Map<String, Object> map = new HashMap<>();
     map.put("payload", payload);
     map.put("from", Base64.encodeBytes(sender.bytesArray()));

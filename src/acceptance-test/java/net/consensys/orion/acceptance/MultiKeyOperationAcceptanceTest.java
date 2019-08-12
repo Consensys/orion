@@ -15,43 +15,46 @@ package net.consensys.orion.acceptance;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.acceptance.dsl.AcceptanceTestBase;
 import net.consensys.orion.acceptance.dsl.OrionNode;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 
 public class MultiKeyOperationAcceptanceTest extends AcceptanceTestBase {
+
   private final byte[] payload = "This Is My Data".getBytes(StandardCharsets.UTF_8);
 
   @Test
   public void dataTransfersFromOneNodeToAnother() throws IOException {
     final OrionNode bootnode = orionFactory().create("node_1", 1);
     final OrionNode secondNode = orionFactory().create("node_2", 1, singletonList(bootnode));
+    final Box.PublicKey recipientKey = secondNode.getPublicKey(0);
 
     waitForClientInterconnect(bootnode, secondNode);
 
-    final String key = bootnode.sendData(payload, bootnode.getPublicKey(0), singletonList(secondNode.getPublicKey(0)));
+    final String key = bootnode.sendData(payload, bootnode.getPublicKey(0), recipientKey);
 
-    final byte[] dataInReceivingNode = secondNode.extractDataItem(key, secondNode.getPublicKey(0));
+    final byte[] dataInReceivingNode = secondNode.extractDataItem(key, recipientKey);
     assertThat(dataInReceivingNode).isEqualTo(payload);
   }
 
 
   @Test
   public void multiKeyPerNodeResultsInValidDataTransfer() throws IOException {
-    final OrionNode bootnode = orionFactory().create("node_1", 2);
-    final OrionNode secondNode = orionFactory().create("node_2", 2, singletonList(bootnode));
+
+    final OrionNode bootnode = orionFactory().create("node_1", 1000);
+    final OrionNode secondNode = orionFactory().create("node_2", 1000, singletonList(bootnode));
+    final Box.PublicKey recipientKey = secondNode.getPublicKey(1);
 
     waitForClientInterconnect(bootnode, secondNode);
 
-    final String key = bootnode.sendData(payload, bootnode.getPublicKey(1), singletonList(secondNode.getPublicKey(1)));
+    final String key = bootnode.sendData(payload, bootnode.getPublicKey(1), recipientKey);
 
-    final byte[] dataInReceivingNode = secondNode.extractDataItem(key, secondNode.getPublicKey(1));
+    final byte[] dataInReceivingNode = secondNode.extractDataItem(key, recipientKey);
     assertThat(dataInReceivingNode).isEqualTo(payload);
   }
 }
