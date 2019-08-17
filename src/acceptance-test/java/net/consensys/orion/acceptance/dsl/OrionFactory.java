@@ -38,8 +38,7 @@ public class OrionFactory {
     return create(nodeName, keyCount, Collections.emptyList());
   }
 
-  public OrionNode create(final String nodeName, final int keyCount,
-      final List<OrionNode> bootnodes)
+  public OrionNode create(final String nodeName, final int keyCount, final List<OrionNode> bootnodes)
       throws IOException {
     final Path nodePath;
     try {
@@ -51,8 +50,7 @@ public class OrionFactory {
 
     final List<KeyDefinition> nodeKeys = generateKeys(keyCount, nodePath);
 
-    final List<String> bootnodeStrings =
-        bootnodes.stream().map(OrionNode::nodeUrl).collect(Collectors.toList());
+    final List<String> bootnodeStrings = bootnodes.stream().map(OrionNode::nodeUrl).collect(Collectors.toList());
 
     final OrionConfigFileGenerator fileGenerator =
         new OrionConfigFileGenerator(nodeKeys, libSodiumPath, bootnodeStrings, nodePath);
@@ -66,8 +64,7 @@ public class OrionFactory {
         bootnodes.size());
   }
 
-  private List<KeyDefinition> generateKeys(final int keyCount, final Path nodePath)
-      throws IOException {
+  private List<KeyDefinition> generateKeys(final int keyCount, final Path nodePath) throws IOException {
 
     try {
       final FileKeyStore fileKeyStore = new FileKeyStore(Config.defaultConfig());
