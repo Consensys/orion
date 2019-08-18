@@ -42,10 +42,6 @@ jobs:
           name: Compiling
           command: ./gradlew build -x test 
 
-      - assemble :
-          name: Compiling
-          command: ./gradlew assemble
-
       - store_artifacts:
           name: Uploading artifacts
           path: build/distributions
