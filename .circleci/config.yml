@@ -38,7 +38,11 @@ jobs:
           name: Downloading dependencies
           command: ./gradlew dependencies checkLicenses
 
-      - run:
+      - compile :
+          name: Compiling
+          command: ./gradlew build -x test 
+
+      - assemble :
           name: Compiling
           command: ./gradlew assemble
 
