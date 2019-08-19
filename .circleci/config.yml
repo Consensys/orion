@@ -35,6 +35,10 @@ jobs:
           - v1-dependencies-
 
       - run:
+          name: Spotless checks
+          command: ./gradlew spotlesscheck
+
+      - run:
           name: Downloading dependencies
           command: ./gradlew dependencies checkLicenses
 
