@@ -35,12 +35,16 @@ jobs:
           - v1-dependencies-
 
       - run:
+          name: Spotless checks
+          command: ./gradlew spotlesscheck
+
+      - run:
           name: Downloading dependencies
           command: ./gradlew dependencies checkLicenses
 
       - run:
           name: Compiling
-          command: ./gradlew build -x test 
+          command: ./gradlew assemble
 
       - store_artifacts:
           name: Uploading artifacts
