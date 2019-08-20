@@ -17,6 +17,7 @@ import static net.consensys.orion.http.server.HttpContentType.JSON;
 
 import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupRequest;
 import net.consensys.orion.http.handler.privacy.FindPrivacyGroupRequest;
+import net.consensys.orion.http.handler.privacy.ModifyPrivacyGroupRequest;
 import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
 import net.consensys.orion.http.handler.receive.ReceiveRequest;
@@ -179,6 +180,26 @@ public class EthClientStub {
       }
     }).exceptionHandler(keyFuture::completeExceptionally).putHeader("Content-Type", "application/json").end(
         Buffer.buffer(Serializer.serialize(JSON, deleteGroupRequest)));
+    return Optional.ofNullable(keyFuture.join());
+  }
+
+  public Optional<PrivacyGroup> modifyPrivacyGroup(
+      String[] addresses,
+      String from,
+      String privacyGroupId,
+      String endpoint) {
+    ModifyPrivacyGroupRequest modifyPrivacyGroupRequest =
+        new ModifyPrivacyGroupRequest(addresses, from, privacyGroupId);
+    CompletableFuture<PrivacyGroup> keyFuture = new CompletableFuture<>();
+
+    httpClient.post(clientPort, "localhost", endpoint).handler(resp -> {
+      if (resp.statusCode() == 200) {
+        resp.bodyHandler(body -> keyFuture.complete(deserialize(body, PrivacyGroup.class)));
+      } else {
+        keyFuture.complete(null);
+      }
+    }).exceptionHandler(keyFuture::completeExceptionally).putHeader("Content-Type", "application/json").end(
+        Buffer.buffer(Serializer.serialize(JSON, modifyPrivacyGroupRequest)));
     return Optional.ofNullable(keyFuture.join());
   }
 

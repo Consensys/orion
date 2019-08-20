@@ -75,7 +75,7 @@ public class QueryPrivacyGroupStorage implements Storage<QueryPrivacyGroupPayloa
       if (result.isPresent()) {
         if (data.isToDelete()) {
           result.get().privacyGroupId().remove(data.privacyGroupToAppend());
-        } else {
+        } else if (!result.get().privacyGroupId().contains(data.privacyGroupToAppend())) {
           result.get().privacyGroupId().add(data.privacyGroupToAppend());
         }
         listPrivacyGroupIds = result.get().privacyGroupId();
