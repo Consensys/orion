@@ -27,11 +27,11 @@ import net.consensys.cava.kv.MapDBKeyValueStore;
 import net.consensys.cava.net.tls.VertxTrustOptions;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.config.ConfigException;
+import net.consensys.orion.enclave.CommitmentPair;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
-import net.consensys.orion.enclave.TransactionPair;
 import net.consensys.orion.enclave.sodium.FileKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.http.handler.partyinfo.PartyInfoHandler;
@@ -42,7 +42,7 @@ import net.consensys.orion.http.handler.push.PushHandler;
 import net.consensys.orion.http.handler.push.PushPrivacyGroupHandler;
 import net.consensys.orion.http.handler.receive.ReceiveHandler;
 import net.consensys.orion.http.handler.send.SendHandler;
-import net.consensys.orion.http.handler.tx.TxPushToHistory;
+import net.consensys.orion.http.handler.tx.PushToHistoryHandler;
 import net.consensys.orion.http.handler.upcheck.UpcheckHandler;
 import net.consensys.orion.http.server.vertx.HttpErrorHandler;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
@@ -135,7 +135,7 @@ public class Orion {
       Storage<EncryptedPayload> storage,
       Storage<PrivacyGroupPayload> privacyGroupStorage,
       Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
-      Storage<ArrayList<TransactionPair>> privateTransactionStorage,
+      Storage<ArrayList<CommitmentPair>> privateTransactionStorage,
       Router nodeRouter,
       Router clientRouter,
       Config config) {
@@ -209,7 +209,7 @@ public class Orion {
         .handler(new ReceiveHandler(enclave, storage, APPLICATION_OCTET_STREAM));
 
     clientRouter.post("/pushToHistory").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
-        new TxPushToHistory(privateTransactionStorage));
+        new PushToHistoryHandler(privateTransactionStorage));
 
     clientRouter.post("/createPrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
         new CreatePrivacyGroupHandler(

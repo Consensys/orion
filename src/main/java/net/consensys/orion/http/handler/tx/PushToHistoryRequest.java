@@ -19,15 +19,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Find the privacy group given the privacyGroupId.
+ * Push a transaction commitment to Orion storage
  */
-public class TxPushToHistoryRequest implements Serializable {
+public class PushToHistoryRequest implements Serializable {
   private final String privacyGroupId;
   private final String privacyMarkerTxHash;
   private final String enclaveKey;
 
   @JsonCreator
-  public TxPushToHistoryRequest(
+  public PushToHistoryRequest(
       @JsonProperty("privacyGroupId") String privacyGroupId,
       @JsonProperty("privacyMarkerTransactionHash") String privacyMarkerTransactionHash,
       @JsonProperty("enclaveKey") String enclaveKey) {
@@ -36,7 +36,6 @@ public class TxPushToHistoryRequest implements Serializable {
     this.privacyMarkerTxHash = privacyMarkerTransactionHash;
     this.enclaveKey = enclaveKey;
   }
-
 
   @JsonProperty("privacyGroupId")
   public String privacyGroupId() {

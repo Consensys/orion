@@ -14,7 +14,7 @@ package net.consensys.orion.http.handler.tx;
 
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
-import net.consensys.orion.enclave.TransactionPair;
+import net.consensys.orion.enclave.CommitmentPair;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.storage.Storage;
@@ -29,11 +29,11 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * Find the privacy group given the privacyGroupId.
  */
-public class TxPushToHistory implements Handler<RoutingContext> {
+public class PushToHistoryHandler implements Handler<RoutingContext> {
 
-  private final Storage<ArrayList<TransactionPair>> privateTransactionStorage;
+  private final Storage<ArrayList<CommitmentPair>> privateTransactionStorage;
 
-  public TxPushToHistory(final Storage<ArrayList<TransactionPair>> privateTransactionStorage) {
+  public PushToHistoryHandler(final Storage<ArrayList<CommitmentPair>> privateTransactionStorage) {
     this.privateTransactionStorage = privateTransactionStorage;
   }
 
@@ -41,20 +41,20 @@ public class TxPushToHistory implements Handler<RoutingContext> {
   @SuppressWarnings("rawtypes")
   public void handle(final RoutingContext routingContext) {
     final byte[] request = routingContext.getBody().getBytes();
-    final TxPushToHistoryRequest addRequest = Serializer.deserialize(JSON, TxPushToHistoryRequest.class, request);
+    final PushToHistoryRequest addRequest = Serializer.deserialize(JSON, PushToHistoryRequest.class, request);
 
 
     privateTransactionStorage.get(addRequest.privacyGroupId()).thenAccept(currentResult -> {
-      var newValue = new ArrayList<TransactionPair>();
+      var newValue = new ArrayList<CommitmentPair>();
       if (currentResult.isPresent()) {
         newValue = currentResult.get();
       }
-      newValue.add(new TransactionPair(addRequest.enclaveKey(), addRequest.privacyMarkerTxHash()));
+      newValue.add(new CommitmentPair(addRequest.enclaveKey(), addRequest.privacyMarkerTxHash()));
       privateTransactionStorage.update(addRequest.privacyGroupId(), newValue).thenAccept(newlyAdded -> {
         if (newlyAdded.isEmpty()) {
           routingContext.fail(
               new OrionException(
-                  OrionErrorCode.ENCLAVE_UNABLE_ADD_PRIVATE_TX,
+                  OrionErrorCode.ENCLAVE_UNABLE_ADD_COMMITMENT,
                   "couldn't add transaction to privacy group"));
           return;
         }

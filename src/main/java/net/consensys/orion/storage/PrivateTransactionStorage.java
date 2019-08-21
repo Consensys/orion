@@ -18,8 +18,8 @@ import static net.consensys.cava.io.Base64.encodeBytes;
 import net.consensys.cava.bytes.Bytes;
 import net.consensys.cava.concurrent.AsyncResult;
 import net.consensys.cava.kv.KeyValueStore;
+import net.consensys.orion.enclave.CommitmentPair;
 import net.consensys.orion.enclave.Enclave;
-import net.consensys.orion.enclave.TransactionPair;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
 
@@ -28,8 +28,7 @@ import java.util.Optional;
 
 import com.google.common.primitives.Longs;
 
-
-public class PrivateTransactionStorage implements Storage<ArrayList<TransactionPair>> {
+public class PrivateTransactionStorage implements Storage<ArrayList<CommitmentPair>> {
 
   private final KeyValueStore store;
   private final Enclave enclave;
@@ -40,7 +39,7 @@ public class PrivateTransactionStorage implements Storage<ArrayList<TransactionP
   }
 
   @Override
-  public AsyncResult<String> put(ArrayList<TransactionPair> data) {
+  public AsyncResult<String> put(ArrayList<CommitmentPair> data) {
     String key = generateDigest(data);
     Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
     Bytes dataBytes = Bytes.wrap(Serializer.serialize(HttpContentType.CBOR, data));
@@ -48,13 +47,12 @@ public class PrivateTransactionStorage implements Storage<ArrayList<TransactionP
   }
 
   @Override
-  public String generateDigest(ArrayList<TransactionPair> data) {
+  public String generateDigest(ArrayList<CommitmentPair> data) {
     return encodeBytes(Longs.toByteArray(data.hashCode()));
   }
 
-
   @Override
-  public AsyncResult<Optional<ArrayList<TransactionPair>>> get(String key) {
+  public AsyncResult<Optional<ArrayList<CommitmentPair>>> get(String key) {
     Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
     return store.getAsync(keyBytes).thenApply(
         maybeBytes -> Optional.ofNullable(maybeBytes).map(
@@ -62,7 +60,7 @@ public class PrivateTransactionStorage implements Storage<ArrayList<TransactionP
   }
 
   @Override
-  public AsyncResult<Optional<ArrayList<TransactionPair>>> update(String key, ArrayList<TransactionPair> data) {
+  public AsyncResult<Optional<ArrayList<CommitmentPair>>> update(String key, ArrayList<CommitmentPair> data) {
     return get(key).thenApply((result) -> {
       Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
       Bytes dataBytes = Bytes.wrap(Serializer.serialize(HttpContentType.CBOR, data));

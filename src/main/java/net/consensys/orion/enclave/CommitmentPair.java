@@ -14,13 +14,13 @@ package net.consensys.orion.enclave;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class TransactionPair {
+public class CommitmentPair {
 
   private final String enclaveKey;
   private final String markerTxHash;
 
 
-  public TransactionPair(
+  public CommitmentPair(
       @JsonProperty("enclaveKey") String enclaveKey,
       @JsonProperty("markerTxHash") String markerTxHash) {
     this.enclaveKey = enclaveKey;

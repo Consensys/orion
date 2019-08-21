@@ -22,11 +22,11 @@ import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.cava.kv.MapDBKeyValueStore;
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
+import net.consensys.orion.enclave.CommitmentPair;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
-import net.consensys.orion.enclave.TransactionPair;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.helpers.StubEnclave;
 import net.consensys.orion.http.server.HttpContentType;
@@ -82,7 +82,7 @@ abstract class HandlerTest {
   protected Storage<EncryptedPayload> payloadStorage;
   protected Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
   protected Storage<PrivacyGroupPayload> privacyGroupStorage;
-  protected Storage<ArrayList<TransactionPair>> privateTransactionStorage;
+  protected Storage<ArrayList<CommitmentPair>> privateTransactionStorage;
 
   @BeforeEach
   void setUp(@TempDirectory Path tempDir) throws Exception {
