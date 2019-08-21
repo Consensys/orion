@@ -76,7 +76,7 @@ public class AddToPrivacyGroupHandler implements Handler<RoutingContext> {
     final ModifyPrivacyGroupRequest modifyPrivacyGroupRequest =
         Serializer.deserialize(JSON, ModifyPrivacyGroupRequest.class, request);
 
-    AtomicReference<PrivacyGroupPayload> combinedPrivacyGroup = new AtomicReference<>();
+    final AtomicReference<PrivacyGroupPayload> combinedPrivacyGroup = new AtomicReference<>();
     privacyGroupStorage.get(modifyPrivacyGroupRequest.privacyGroupId()).thenAccept((result) -> {
       if (result.isEmpty() || result.get().state() == PrivacyGroupPayload.State.DELETED) {
         routingContext
@@ -104,7 +104,7 @@ public class AddToPrivacyGroupHandler implements Handler<RoutingContext> {
             .map(enclave::readKey);
 
 
-        var addRequests = PrivacyGroupUtils.sendRequestsToOthers(
+        final var addRequests = PrivacyGroupUtils.sendRequestsToOthers(
             combinedAddresses,
             new SetPrivacyGroupRequest(combinedPrivacyGroup.get(), modifyPrivacyGroupRequest.privacyGroupId()),
             "/setPrivacyGroup",
@@ -132,7 +132,7 @@ public class AddToPrivacyGroupHandler implements Handler<RoutingContext> {
               PrivacyGroupUtils.handleFailure(routingContext, iiEx);
               return;
             }
-            PrivacyGroupPayload innerCombinedPrivacyGroupPayload = combinedPrivacyGroup.get();
+            final PrivacyGroupPayload innerCombinedPrivacyGroupPayload = combinedPrivacyGroup.get();
             privacyGroupStorage
                 .update(privacyGroupStorage.generateDigest(oldPrivacyGroupPayload), innerCombinedPrivacyGroupPayload)
                 .thenAccept((privacyGroupResult) -> {

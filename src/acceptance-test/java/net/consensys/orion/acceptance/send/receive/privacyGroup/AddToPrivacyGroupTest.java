@@ -37,13 +37,13 @@ class AddToPrivacyGroupTest extends PrivacyGroupAcceptanceTest {
     final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
     final EthClientStub thirdNode = NodeUtils.client(thirdOrionLauncher.clientPort(), thirdHttpClient);
 
-    String name = "testName";
-    String description = "testDescription";
-    String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
+    final String name = "testName";
+    final String description = "testDescription";
+    final String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
     // create a privacy group
     final PrivacyGroup privacyGroup = createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, name, description);
 
-    String privacyGroupId = privacyGroup.getPrivacyGroupId();
+    final String privacyGroupId = privacyGroup.getPrivacyGroupId();
     assertEquals(name, privacyGroup.getName());
     assertEquals(description, privacyGroup.getDescription());
     assertEquals(2, privacyGroup.getMembers().length);
@@ -51,21 +51,19 @@ class AddToPrivacyGroupTest extends PrivacyGroupAcceptanceTest {
 
     NodeUtils.addToPrivacyGroup(firstNode, new String[] {PK_3_B_64}, PK_1_B_64, privacyGroupId);
 
-    String[] newGroupMembers = new String[] {PK_1_B_64, PK_2_B_64, PK_3_B_64};
+    final String[] newGroupMembers = new String[] {PK_1_B_64, PK_2_B_64, PK_3_B_64};
 
-    WaitUtils.waitFor(() -> {
-      assertEquals(1, findPrivacyGroupTransaction(secondNode, newGroupMembers).length);
-    });
+    WaitUtils.waitFor(() -> assertEquals(1, findPrivacyGroupTransaction(secondNode, newGroupMembers).length));
 
-    PrivacyGroup[] propagatedToExistingNode = findPrivacyGroupTransaction(secondNode, newGroupMembers);
+    final PrivacyGroup[] propagatedToExistingNode = findPrivacyGroupTransaction(secondNode, newGroupMembers);
     assertArrayEquals(newGroupMembers, propagatedToExistingNode[0].getMembers());
     assertEquals(privacyGroupId, propagatedToExistingNode[0].getPrivacyGroupId());
 
-    PrivacyGroup[] propagatedToOriginalNode = findPrivacyGroupTransaction(firstNode, newGroupMembers);
+    final PrivacyGroup[] propagatedToOriginalNode = findPrivacyGroupTransaction(firstNode, newGroupMembers);
     assertArrayEquals(newGroupMembers, propagatedToOriginalNode[0].getMembers());
     assertEquals(privacyGroupId, propagatedToOriginalNode[0].getPrivacyGroupId());
 
-    PrivacyGroup[] propagatedToNewNode = findPrivacyGroupTransaction(thirdNode, newGroupMembers);
+    final PrivacyGroup[] propagatedToNewNode = findPrivacyGroupTransaction(thirdNode, newGroupMembers);
     assertArrayEquals(newGroupMembers, propagatedToNewNode[0].getMembers());
     assertEquals(privacyGroupId, propagatedToNewNode[0].getPrivacyGroupId());
 
