@@ -47,8 +47,6 @@ import org.junit.jupiter.api.BeforeEach;
 
 class PrivacyGroupAcceptanceTest {
 
-
-
   static final String PK_1_B_64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
   static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   static final String PK_3_B_64 = "6pFBKvouUVdoXRownMEHrRl8SbLJXIZC0EQOmC+WBlg=";
@@ -153,10 +151,7 @@ class PrivacyGroupAcceptanceTest {
   private ConcurrentNetworkNodes getPartyInfoResponse(OkHttpClient httpClient, Request request) throws Exception {
     Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
-
-    ConcurrentNetworkNodes partyInfoResponse =
-        Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
-    return partyInfoResponse;
+    return Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
   }
 
   @AfterEach

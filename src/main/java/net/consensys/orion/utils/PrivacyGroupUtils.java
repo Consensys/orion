@@ -68,8 +68,6 @@ public class PrivacyGroupUtils {
     });
   }
 
-
-
   public static void handleFailure(final RoutingContext routingContext, final Throwable ex) {
     log.warn("propagating the payload failed");
 
@@ -80,6 +78,5 @@ public class PrivacyGroupUtils {
       routingContext.fail(new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS, ex));
     }
   }
-
 
 }

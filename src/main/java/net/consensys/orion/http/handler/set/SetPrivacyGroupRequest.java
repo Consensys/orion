@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Find the privacy group given the privacyGroupId.
+ * Set a privacy group with the given id to the payload.
  */
 public class SetPrivacyGroupRequest implements Serializable {
   private final PrivacyGroupPayload payload;

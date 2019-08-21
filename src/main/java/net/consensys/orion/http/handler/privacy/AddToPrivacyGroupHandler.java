@@ -71,7 +71,6 @@ public class AddToPrivacyGroupHandler implements Handler<RoutingContext> {
 
   @Override
   public void handle(final RoutingContext routingContext) {
-
     final byte[] request = routingContext.getBody().getBytes();
     final ModifyPrivacyGroupRequest modifyPrivacyGroupRequest =
         Serializer.deserialize(JSON, ModifyPrivacyGroupRequest.class, request);
@@ -103,15 +102,12 @@ public class AddToPrivacyGroupHandler implements Handler<RoutingContext> {
             .distinct()
             .map(enclave::readKey);
 
-
         final var addRequests = PrivacyGroupUtils.sendRequestsToOthers(
             combinedAddresses,
             new SetPrivacyGroupRequest(combinedPrivacyGroup.get(), modifyPrivacyGroupRequest.privacyGroupId()),
             "/setPrivacyGroup",
             networkNodes,
             httpClient);
-
-
 
         CompletableFuture.allOf(addRequests.toArray(CompletableFuture[]::new)).whenComplete((iAll, iEx) -> {
 
@@ -125,7 +121,6 @@ public class AddToPrivacyGroupHandler implements Handler<RoutingContext> {
           /*
            * Todo here: get current private network state from pantheon and send to the new members
            * */
-
 
           sendStateToNewUserFuture.whenComplete((res, iiEx) -> {
             if (iiEx != null) {

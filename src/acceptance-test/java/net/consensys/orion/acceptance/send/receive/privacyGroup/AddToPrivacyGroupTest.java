@@ -26,10 +26,11 @@ import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-/** Runs up a two nodes that communicates with each other. */
+/**
+ * Runs up a three nodes that communicates with each other and tries to add the third node to an existing privacy group.
+ */
 @ExtendWith(TempDirectoryExtension.class)
 class AddToPrivacyGroupTest extends PrivacyGroupAcceptanceTest {
-
 
   @Test
   void addToPrivacyGroup() {

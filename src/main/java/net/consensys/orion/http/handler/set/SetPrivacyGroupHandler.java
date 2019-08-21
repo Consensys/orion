@@ -28,7 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Find the privacy group given the privacyGroupId.
+ * Set a privacy group in the enclave, distinct from push as key is specified.
  */
 public class SetPrivacyGroupHandler implements Handler<RoutingContext> {
 
@@ -43,7 +43,6 @@ public class SetPrivacyGroupHandler implements Handler<RoutingContext> {
     this.privacyGroupStorage = privacyGroupStorage;
     this.queryPrivacyGroupStorage = queryPrivacyGroupStorage;
   }
-
 
   @Override
   @SuppressWarnings("rawtypes")
@@ -83,5 +82,4 @@ public class SetPrivacyGroupHandler implements Handler<RoutingContext> {
         .exceptionally(
             e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
   }
-
 }
