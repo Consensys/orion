@@ -42,7 +42,7 @@ import net.consensys.orion.http.handler.push.PushHandler;
 import net.consensys.orion.http.handler.push.PushPrivacyGroupHandler;
 import net.consensys.orion.http.handler.receive.ReceiveHandler;
 import net.consensys.orion.http.handler.send.SendHandler;
-import net.consensys.orion.http.handler.tx.TxPrivacyGroupHandler;
+import net.consensys.orion.http.handler.tx.TxPushToHistory;
 import net.consensys.orion.http.handler.upcheck.UpcheckHandler;
 import net.consensys.orion.http.server.vertx.HttpErrorHandler;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
@@ -208,8 +208,8 @@ public class Orion {
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .handler(new ReceiveHandler(enclave, storage, APPLICATION_OCTET_STREAM));
 
-    clientRouter.post("/privateTx").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
-        new TxPrivacyGroupHandler(privateTransactionStorage));
+    clientRouter.post("/pushToHistory").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
+        new TxPushToHistory(privateTransactionStorage));
 
     clientRouter.post("/createPrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
         new CreatePrivacyGroupHandler(

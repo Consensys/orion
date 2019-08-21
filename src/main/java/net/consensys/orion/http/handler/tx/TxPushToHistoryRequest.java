@@ -12,7 +12,6 @@
  */
 package net.consensys.orion.http.handler.tx;
 
-import net.consensys.orion.enclave.TransactionPair;
 
 import java.io.Serializable;
 
@@ -22,25 +21,35 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Find the privacy group given the privacyGroupId.
  */
-public class TxPrivacyGroupRequest implements Serializable {
-  private TransactionPair payload;
-  private String privacyGroupId;
+public class TxPushToHistoryRequest implements Serializable {
+  private final String privacyGroupId;
+  private final String privacyMarkerTxHash;
+  private final String enclaveKey;
 
   @JsonCreator
-  public TxPrivacyGroupRequest(
-      @JsonProperty("transactionPair") TransactionPair payload,
-      @JsonProperty("privacyGroupId") String privacyGroupId) {
-    this.payload = payload;
+  public TxPushToHistoryRequest(
+      @JsonProperty("privacyGroupId") String privacyGroupId,
+      @JsonProperty("privacyMarkerTransactionHash") String privacyMarkerTransactionHash,
+      @JsonProperty("enclaveKey") String enclaveKey) {
+
     this.privacyGroupId = privacyGroupId;
+    this.privacyMarkerTxHash = privacyMarkerTransactionHash;
+    this.enclaveKey = enclaveKey;
   }
 
-  @JsonProperty("transactionPair")
-  public TransactionPair payload() {
-    return payload;
-  }
 
   @JsonProperty("privacyGroupId")
   public String privacyGroupId() {
     return privacyGroupId;
+  }
+
+  @JsonProperty("privacyMarkerTransactionHash")
+  public String privacyMarkerTxHash() {
+    return privacyMarkerTxHash;
+  }
+
+  @JsonProperty("enclaveKey")
+  public String enclaveKey() {
+    return enclaveKey;
   }
 }

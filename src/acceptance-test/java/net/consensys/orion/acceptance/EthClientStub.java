@@ -21,6 +21,7 @@ import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
 import net.consensys.orion.http.handler.receive.ReceiveRequest;
 import net.consensys.orion.http.handler.receive.ReceiveResponse;
+import net.consensys.orion.http.handler.tx.TxPushToHistoryRequest;
 import net.consensys.orion.utils.Serializer;
 
 import java.util.HashMap;
@@ -182,6 +183,27 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
+  public Optional<Boolean> pushToHistory(
+      String privacyGroupId,
+      String privacyMarkerTransactionHash,
+      String enclaveKey) {
+    TxPushToHistoryRequest txPushToHistoryRequest =
+        new TxPushToHistoryRequest(privacyGroupId, privacyMarkerTransactionHash, enclaveKey);
+    CompletableFuture<Boolean> keyFuture = new CompletableFuture<>();
+    httpClient.post(clientPort, "localhost", "/pushToHistory").handler(resp -> {
+      if (resp.statusCode() == 200) {
+        resp.bodyHandler((body) -> {
+          Boolean res = deserialize(body, Boolean.class);
+          keyFuture.complete(res);
+        });
+      } else {
+        keyFuture.complete(null);
+      }
+    }).exceptionHandler(keyFuture::completeExceptionally).putHeader("Content-Type", "application/json").end(
+        Buffer.buffer(Serializer.serialize(JSON, txPushToHistoryRequest)));
+    return Optional.ofNullable(keyFuture.join());
+  }
+
   @SuppressWarnings("unchecked")
   private Map<String, String> deserialize(Buffer httpSendResponse) {
     return Serializer.deserialize(JSON, Map.class, httpSendResponse.getBytes());
@@ -207,4 +229,6 @@ public class EthClientStub {
     map.put("privacyGroupId", privacyGroupId);
     return map;
   }
+
+
 }

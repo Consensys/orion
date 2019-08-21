@@ -16,22 +16,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TransactionPair {
 
-  private final String txPointer;
-  private final String value;
+  private final String enclaveKey;
+  private final String markerTxHash;
 
 
-  public TransactionPair(@JsonProperty("txPointer") String txPointer, @JsonProperty("value") String value) {
-    this.txPointer = txPointer;
-    this.value = value;
+  public TransactionPair(
+      @JsonProperty("enclaveKey") String enclaveKey,
+      @JsonProperty("markerTxHash") String markerTxHash) {
+    this.enclaveKey = enclaveKey;
+    this.markerTxHash = markerTxHash;
   }
 
-  @JsonProperty("value")
-  public String value() {
-    return value;
+  @JsonProperty("markerTxHash")
+  public String markerTxHash() {
+    return markerTxHash;
   }
 
-  @JsonProperty("txPointer")
+  @JsonProperty("enclaveKey")
   public String txPointer() {
-    return txPointer;
+    return enclaveKey;
   }
 }

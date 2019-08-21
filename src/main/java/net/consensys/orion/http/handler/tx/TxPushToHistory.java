@@ -12,7 +12,7 @@
  */
 package net.consensys.orion.http.handler.tx;
 
-import static net.consensys.orion.http.server.HttpContentType.CBOR;
+import static net.consensys.orion.http.server.HttpContentType.JSON;
 
 import net.consensys.orion.enclave.TransactionPair;
 import net.consensys.orion.exception.OrionErrorCode;
@@ -25,61 +25,42 @@ import java.util.ArrayList;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Find the privacy group given the privacyGroupId.
  */
-public class TxPrivacyGroupHandler implements Handler<RoutingContext> {
-
-  private static final Logger log = LogManager.getLogger();
+public class TxPushToHistory implements Handler<RoutingContext> {
 
   private final Storage<ArrayList<TransactionPair>> privateTransactionStorage;
 
-
-  public TxPrivacyGroupHandler(final Storage<ArrayList<TransactionPair>> privateTransactionStorage) {
+  public TxPushToHistory(final Storage<ArrayList<TransactionPair>> privateTransactionStorage) {
     this.privateTransactionStorage = privateTransactionStorage;
-
   }
-
 
   @Override
   @SuppressWarnings("rawtypes")
   public void handle(final RoutingContext routingContext) {
     final byte[] request = routingContext.getBody().getBytes();
-    final TxPrivacyGroupRequest addRequest = Serializer.deserialize(CBOR, TxPrivacyGroupRequest.class, request);
+    final TxPushToHistoryRequest addRequest = Serializer.deserialize(JSON, TxPushToHistoryRequest.class, request);
 
 
     privateTransactionStorage.get(addRequest.privacyGroupId()).thenAccept(currentResult -> {
-      if (currentResult.isEmpty()) {
-        routingContext.fail(
-            new OrionException(
-                OrionErrorCode.ENCLAVE_UNABLE_ADD_PRIVATE_TX,
-                "couldn't add transaction to privacy group"));
-        return;
+      var newValue = new ArrayList<TransactionPair>();
+      if (currentResult.isPresent()) {
+        newValue = currentResult.get();
       }
-
-      var newValue = currentResult.get();
-      newValue.add(addRequest.payload());
-
+      newValue.add(new TransactionPair(addRequest.enclaveKey(), addRequest.privacyMarkerTxHash()));
       privateTransactionStorage.update(addRequest.privacyGroupId(), newValue).thenAccept(newlyAdded -> {
         if (newlyAdded.isEmpty()) {
           routingContext.fail(
               new OrionException(
                   OrionErrorCode.ENCLAVE_UNABLE_ADD_PRIVATE_TX,
                   "couldn't add transaction to privacy group"));
-          final Buffer toReturn = Buffer.buffer(Serializer.serialize(CBOR, newlyAdded));
-          routingContext.response().end(toReturn);
+          return;
         }
-
+        final Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, true));
+        routingContext.response().end(toReturn);
       });
-
-
     });
-
-
-
   }
-
 }
