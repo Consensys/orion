@@ -12,11 +12,12 @@
  */
 package net.consensys.orion.http.handler.tx;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import net.consensys.orion.enclave.TransactionPair;
 
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Find the privacy group given the privacyGroupId.

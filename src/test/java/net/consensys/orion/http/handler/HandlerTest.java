@@ -26,12 +26,14 @@ import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
+import net.consensys.orion.enclave.TransactionPair;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.helpers.StubEnclave;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.storage.EncryptedPayloadStorage;
 import net.consensys.orion.storage.PrivacyGroupStorage;
+import net.consensys.orion.storage.PrivateTransactionStorage;
 import net.consensys.orion.storage.QueryPrivacyGroupStorage;
 import net.consensys.orion.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.storage.Storage;
@@ -41,6 +43,7 @@ import net.consensys.orion.utils.Serializer;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Path;
+import java.util.ArrayList;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
@@ -79,6 +82,7 @@ abstract class HandlerTest {
   protected Storage<EncryptedPayload> payloadStorage;
   protected Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
   protected Storage<PrivacyGroupPayload> privacyGroupStorage;
+  protected Storage<ArrayList<TransactionPair>> privateTransactionStorage;
 
   @BeforeEach
   void setUp(@TempDirectory Path tempDir) throws Exception {
@@ -103,6 +107,7 @@ abstract class HandlerTest {
     payloadStorage = new EncryptedPayloadStorage(storage, keyBuilder);
     queryPrivacyGroupStorage = new QueryPrivacyGroupStorage(storage, enclave);
     privacyGroupStorage = new PrivacyGroupStorage(storage, enclave);
+    privateTransactionStorage = new PrivateTransactionStorage(storage, enclave);
     Router publicRouter = Router.router(vertx);
     Router privateRouter = Router.router(vertx);
     Orion.configureRoutes(
@@ -112,6 +117,7 @@ abstract class HandlerTest {
         payloadStorage,
         privacyGroupStorage,
         queryPrivacyGroupStorage,
+        privateTransactionStorage,
         publicRouter,
         privateRouter,
         config);
