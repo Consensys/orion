@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Push a transaction commitment to Orion storage
+ * Request to add a commitment for an enclaveKey to Orion storage
  */
 public class PushToHistoryRequest implements Serializable {
   private final String privacyGroupId;
