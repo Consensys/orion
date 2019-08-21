@@ -209,7 +209,7 @@ public class Orion {
         .handler(new ReceiveHandler(enclave, storage, APPLICATION_OCTET_STREAM));
 
     clientRouter.post("/pushToHistory").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
-        new PushToHistoryHandler(privateTransactionStorage));
+        new PushToHistoryHandler(privateTransactionStorage, storage, privacyGroupStorage));
 
     clientRouter.post("/createPrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
         new CreatePrivacyGroupHandler(

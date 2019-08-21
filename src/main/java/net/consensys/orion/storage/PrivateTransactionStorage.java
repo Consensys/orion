@@ -32,6 +32,7 @@ public class PrivateTransactionStorage implements Storage<ArrayList<CommitmentPa
 
   private final KeyValueStore store;
   private final Enclave enclave;
+  private static final String PREPEND = "commitment_";
 
   public PrivateTransactionStorage(KeyValueStore store, Enclave enclave) {
     this.store = store;
@@ -48,12 +49,12 @@ public class PrivateTransactionStorage implements Storage<ArrayList<CommitmentPa
 
   @Override
   public String generateDigest(ArrayList<CommitmentPair> data) {
-    return encodeBytes(Longs.toByteArray(data.hashCode()));
+    return PREPEND + encodeBytes(Longs.toByteArray(data.hashCode()));
   }
 
   @Override
   public AsyncResult<Optional<ArrayList<CommitmentPair>>> get(String key) {
-    Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
+    Bytes keyBytes = Bytes.wrap((PREPEND + key).getBytes(UTF_8));
     return store.getAsync(keyBytes).thenApply(
         maybeBytes -> Optional.ofNullable(maybeBytes).map(
             bytes -> Serializer.deserialize(HttpContentType.CBOR, ArrayList.class, bytes.toArrayUnsafe())));
@@ -62,7 +63,7 @@ public class PrivateTransactionStorage implements Storage<ArrayList<CommitmentPa
   @Override
   public AsyncResult<Optional<ArrayList<CommitmentPair>>> update(String key, ArrayList<CommitmentPair> data) {
     return get(key).thenApply((result) -> {
-      Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
+      Bytes keyBytes = Bytes.wrap((PREPEND + key).getBytes(UTF_8));
       Bytes dataBytes = Bytes.wrap(Serializer.serialize(HttpContentType.CBOR, data));
       store.putAsync(keyBytes, dataBytes);
       return Optional.of(data);

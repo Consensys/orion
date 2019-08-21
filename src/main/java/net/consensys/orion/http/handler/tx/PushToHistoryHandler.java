@@ -15,6 +15,8 @@ package net.consensys.orion.http.handler.tx;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
 import net.consensys.orion.enclave.CommitmentPair;
+import net.consensys.orion.enclave.EncryptedPayload;
+import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.storage.Storage;
@@ -27,14 +29,19 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * Find the privacy group given the privacyGroupId.
+ * Handler to add a commitment for an enclaveKey to Orion storage
  */
 public class PushToHistoryHandler implements Handler<RoutingContext> {
 
   private final Storage<ArrayList<CommitmentPair>> privateTransactionStorage;
+  private final Storage<EncryptedPayload> storage;
+  private final Storage<PrivacyGroupPayload> privacyGroupStorage;
 
-  public PushToHistoryHandler(final Storage<ArrayList<CommitmentPair>> privateTransactionStorage) {
+
+  public PushToHistoryHandler(final Storage<ArrayList<CommitmentPair>> privateTransactionStorage, Storage<EncryptedPayload> storage, Storage<PrivacyGroupPayload> privacyGroupStorage) {
     this.privateTransactionStorage = privateTransactionStorage;
+    this.storage = storage;
+    this.privacyGroupStorage = privacyGroupStorage;
   }
 
   @Override
@@ -45,11 +52,11 @@ public class PushToHistoryHandler implements Handler<RoutingContext> {
 
 
     privateTransactionStorage.get(addRequest.privacyGroupId()).thenAccept(currentResult -> {
-      var newValue = new ArrayList<CommitmentPair>();
-      if (currentResult.isPresent()) {
-        newValue = currentResult.get();
+      ArrayList<CommitmentPair> newValue = currentResult.orElseGet(ArrayList::new);
+      CommitmentPair pairToAdd = new CommitmentPair(addRequest.enclaveKey(), addRequest.privacyMarkerTxHash());
+      if (!newValue.contains(pairToAdd)) {
+        newValue.add(pairToAdd);
       }
-      newValue.add(new CommitmentPair(addRequest.enclaveKey(), addRequest.privacyMarkerTxHash()));
       privateTransactionStorage.update(addRequest.privacyGroupId(), newValue).thenAccept(newlyAdded -> {
         if (newlyAdded.isEmpty()) {
           routingContext.fail(
@@ -60,7 +67,7 @@ public class PushToHistoryHandler implements Handler<RoutingContext> {
         }
         final Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, true));
         routingContext.response().end(toReturn);
-      });
-    });
+      }).exceptionally(e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_ADD_COMMITMENT, e)));
+    }).exceptionally(e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_ADD_COMMITMENT, e)));
   }
 }
