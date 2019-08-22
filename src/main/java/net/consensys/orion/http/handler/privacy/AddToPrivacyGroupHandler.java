@@ -25,7 +25,6 @@ import net.consensys.orion.http.handler.set.SetPrivacyGroupRequest;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.network.NodeHttpClientBuilder;
 import net.consensys.orion.storage.Storage;
-import net.consensys.orion.utils.PrivacyGroupUtils;
 import net.consensys.orion.utils.Serializer;
 
 import java.util.Arrays;
@@ -36,23 +35,21 @@ import java.util.stream.Stream;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Create a privacyGroup given the list of addresses.
+ * Add a member to a privacy group
  */
-public class AddToPrivacyGroupHandler implements Handler<RoutingContext> {
+public class AddToPrivacyGroupHandler extends PrivacyGroupBaseHandler implements Handler<RoutingContext> {
 
   private static final Logger log = LogManager.getLogger();
 
   private final Storage<PrivacyGroupPayload> privacyGroupStorage;
   private final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
-  private final ConcurrentNetworkNodes networkNodes;
   private final Enclave enclave;
-  private final HttpClient httpClient;
+
 
   public AddToPrivacyGroupHandler(
       final Storage<PrivacyGroupPayload> privacyGroupStorage,
@@ -61,13 +58,11 @@ public class AddToPrivacyGroupHandler implements Handler<RoutingContext> {
       final Enclave enclave,
       final Vertx vertx,
       final Config config) {
+    super(networkNodes, NodeHttpClientBuilder.build(vertx, config, 1500));
     this.privacyGroupStorage = privacyGroupStorage;
     this.queryPrivacyGroupStorage = queryPrivacyGroupStorage;
-    this.networkNodes = networkNodes;
     this.enclave = enclave;
-    this.httpClient = NodeHttpClientBuilder.build(vertx, config, 1500);
   }
-
 
   @Override
   public void handle(final RoutingContext routingContext) {
@@ -79,7 +74,7 @@ public class AddToPrivacyGroupHandler implements Handler<RoutingContext> {
     privacyGroupStorage.get(modifyPrivacyGroupRequest.privacyGroupId()).thenAccept((result) -> {
       if (result.isEmpty() || result.get().state() == PrivacyGroupPayload.State.DELETED) {
         routingContext
-            .fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_ADD_TO_PRIVACY_GROUP, "couldn't add to group"));
+            .fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, "privacy group not found"));
       } else {
         final PrivacyGroupPayload oldPrivacyGroupPayload = result.get();
 
@@ -102,17 +97,15 @@ public class AddToPrivacyGroupHandler implements Handler<RoutingContext> {
             .distinct()
             .map(enclave::readKey);
 
-        final var addRequests = PrivacyGroupUtils.sendRequestsToOthers(
+        final var addRequests = sendRequestsToOthers(
             combinedAddresses,
             new SetPrivacyGroupRequest(combinedPrivacyGroup.get(), modifyPrivacyGroupRequest.privacyGroupId()),
-            "/setPrivacyGroup",
-            networkNodes,
-            httpClient);
+            "/setPrivacyGroup");
 
         CompletableFuture.allOf(addRequests.toArray(CompletableFuture[]::new)).whenComplete((iAll, iEx) -> {
 
           if (iEx != null) {
-            PrivacyGroupUtils.handleFailure(routingContext, iEx);
+            handleFailure(routingContext, iEx);
             return;
           }
 
@@ -124,7 +117,7 @@ public class AddToPrivacyGroupHandler implements Handler<RoutingContext> {
 
           sendStateToNewUserFuture.whenComplete((res, iiEx) -> {
             if (iiEx != null) {
-              PrivacyGroupUtils.handleFailure(routingContext, iiEx);
+              handleFailure(routingContext, iiEx);
               return;
             }
             final PrivacyGroupPayload innerCombinedPrivacyGroupPayload = combinedPrivacyGroup.get();

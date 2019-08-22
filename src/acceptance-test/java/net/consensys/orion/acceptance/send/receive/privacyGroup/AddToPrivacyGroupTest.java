@@ -49,7 +49,6 @@ class AddToPrivacyGroupTest extends PrivacyGroupAcceptanceTest {
     assertEquals(description, privacyGroup.getDescription());
     assertEquals(2, privacyGroup.getMembers().length);
 
-
     NodeUtils.addToPrivacyGroup(firstNode, new String[] {PK_3_B_64}, PK_1_B_64, privacyGroupId);
 
     final String[] newGroupMembers = new String[] {PK_1_B_64, PK_2_B_64, PK_3_B_64};

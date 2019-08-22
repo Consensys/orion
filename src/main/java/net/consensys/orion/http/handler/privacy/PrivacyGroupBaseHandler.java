@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package net.consensys.orion.utils;
+package net.consensys.orion.http.handler.privacy;
 
 import static net.consensys.orion.http.server.HttpContentType.CBOR;
 
@@ -18,6 +18,7 @@ import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
+import net.consensys.orion.utils.Serializer;
 
 import java.io.Serializable;
 import java.net.URL;
@@ -30,17 +31,23 @@ import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class PrivacyGroupUtils {
+abstract class PrivacyGroupBaseHandler {
 
-  private static final Logger log = LogManager.getLogger();
+  private final Logger log = LogManager.getLogger();
+  private final ConcurrentNetworkNodes networkNodes;
+  private final HttpClient httpClient;
+
+  PrivacyGroupBaseHandler(ConcurrentNetworkNodes networkNodes, HttpClient httpClient) {
+    this.networkNodes = networkNodes;
+    this.httpClient = httpClient;
+  }
+
 
   @SuppressWarnings("rawtypes")
-  public static Stream<CompletableFuture> sendRequestsToOthers(
+  Stream<CompletableFuture> sendRequestsToOthers(
       Stream<Box.PublicKey> addresses,
       Serializable request,
-      String endpoint,
-      ConcurrentNetworkNodes networkNodes,
-      HttpClient httpClient) {
+      String endpoint) {
     return addresses.map(pKey -> {
       URL recipientURL = networkNodes.urlForRecipient(pKey);
 
@@ -68,7 +75,7 @@ public class PrivacyGroupUtils {
     });
   }
 
-  public static void handleFailure(final RoutingContext routingContext, final Throwable ex) {
+  void handleFailure(final RoutingContext routingContext, final Throwable ex) {
     log.warn("propagating the payload failed");
 
     final Throwable cause = ex.getCause();
@@ -78,5 +85,4 @@ public class PrivacyGroupUtils {
       routingContext.fail(new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS, ex));
     }
   }
-
 }

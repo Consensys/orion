@@ -58,7 +58,7 @@ public enum OrionErrorCode {
   METHOD_UNIMPLEMENTED("MethodUnimplemented"),
   CREATE_GROUP_INCLUDE_SELF("CreatePrivacyGroupShouldIncludeSelf"),
   CREATE_GROUP_INVALID_PARAMS("CreateGroupInvalidParams"),
-  ENCLAVE_UNABLE_ADD_TO_PRIVACY_GROUP("PrivacyGroupNotAddedTo");
+  UNABLE_TO_ADD_TO_PRIVACY_GROUP("UnableToAddToPrivacyGroup");
 
   private final String code;
 

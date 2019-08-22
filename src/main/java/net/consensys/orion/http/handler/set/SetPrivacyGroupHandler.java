@@ -63,8 +63,8 @@ public class SetPrivacyGroupHandler implements Handler<RoutingContext> {
           log.info("Set privacy group. resulting digest: {}", key);
           queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenAccept((result) -> {
             if (result.isEmpty()) {
-              routingContext.fail(
-                  new OrionException(OrionErrorCode.ENCLAVE_UNABLE_ADD_TO_PRIVACY_GROUP, "couldn't add to group"));
+              routingContext
+                  .fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, "privacy group not found"));
               return;
             }
 
