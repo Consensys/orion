@@ -19,7 +19,6 @@ import net.consensys.cava.bytes.Bytes;
 import net.consensys.cava.concurrent.AsyncResult;
 import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.orion.enclave.CommitmentPair;
-import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
 
@@ -31,12 +30,10 @@ import com.google.common.primitives.Longs;
 public class PrivateTransactionStorage implements Storage<ArrayList<CommitmentPair>> {
 
   private final KeyValueStore store;
-  private final Enclave enclave;
   private static final String PREPEND = "commitment_";
 
-  public PrivateTransactionStorage(KeyValueStore store, Enclave enclave) {
+  public PrivateTransactionStorage(KeyValueStore store) {
     this.store = store;
-    this.enclave = enclave;
   }
 
   @Override
@@ -53,6 +50,7 @@ public class PrivateTransactionStorage implements Storage<ArrayList<CommitmentPa
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public AsyncResult<Optional<ArrayList<CommitmentPair>>> get(String key) {
     Bytes keyBytes = Bytes.wrap((PREPEND + key).getBytes(UTF_8));
     return store.getAsync(keyBytes).thenApply(

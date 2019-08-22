@@ -107,7 +107,7 @@ abstract class HandlerTest {
     payloadStorage = new EncryptedPayloadStorage(storage, keyBuilder);
     queryPrivacyGroupStorage = new QueryPrivacyGroupStorage(storage, enclave);
     privacyGroupStorage = new PrivacyGroupStorage(storage, enclave);
-    privateTransactionStorage = new PrivateTransactionStorage(storage, enclave);
+    privateTransactionStorage = new PrivateTransactionStorage(storage);
     Router publicRouter = Router.router(vertx);
     Router privateRouter = Router.router(vertx);
     Orion.configureRoutes(

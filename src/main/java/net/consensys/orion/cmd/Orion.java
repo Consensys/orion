@@ -209,7 +209,7 @@ public class Orion {
         .handler(new ReceiveHandler(enclave, storage, APPLICATION_OCTET_STREAM));
 
     clientRouter.post("/pushToHistory").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
-        new PushToHistoryHandler(privateTransactionStorage, storage, privacyGroupStorage));
+        new PushToHistoryHandler(privateTransactionStorage, privacyGroupStorage));
 
     clientRouter.post("/createPrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
         new CreatePrivacyGroupHandler(
@@ -406,7 +406,7 @@ public class Orion {
     EncryptedPayloadStorage encryptedStorage = new EncryptedPayloadStorage(storage, keyBuilder);
     QueryPrivacyGroupStorage queryPrivacyGroupStorage = new QueryPrivacyGroupStorage(storage, enclave);
     PrivacyGroupStorage privacyGroupStorage = new PrivacyGroupStorage(storage, enclave);
-    PrivateTransactionStorage privateTransactionStorage = new PrivateTransactionStorage(storage, enclave);
+    PrivateTransactionStorage privateTransactionStorage = new PrivateTransactionStorage(storage);
     configureRoutes(
         vertx,
         networkNodes,
