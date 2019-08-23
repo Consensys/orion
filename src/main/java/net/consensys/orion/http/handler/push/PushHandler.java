@@ -36,10 +36,12 @@ public class PushHandler implements Handler<RoutingContext> {
     EncryptedPayload pushRequest =
         Serializer.deserialize(HttpContentType.CBOR, EncryptedPayload.class, routingContext.getBody().getBytes());
 
+
+
     storage.put(pushRequest).thenAccept((digest) -> {
       log.debug("stored payload. resulting digest: {}", digest);
       routingContext.response().end(digest);
-    }).exceptionally(e -> routingContext.fail(e));
+    }).exceptionally(routingContext::fail);
 
   }
 }

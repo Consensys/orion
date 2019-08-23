@@ -13,10 +13,12 @@
 package net.consensys.orion.acceptance.send.receive.privacyGroup.tx;
 
 import static io.vertx.core.Vertx.vertx;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.consensys.cava.io.Base64.decodeBytes;
 import static net.consensys.cava.io.file.Files.copyResource;
 import static net.consensys.orion.acceptance.NodeUtils.createPrivacyGroupTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
+import static net.consensys.orion.acceptance.NodeUtils.push;
 import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
@@ -29,6 +31,9 @@ import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
+import net.consensys.orion.enclave.EncryptedPayload;
+import net.consensys.orion.enclave.sodium.MemoryKeyStore;
+import net.consensys.orion.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
@@ -55,13 +60,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(TempDirectoryExtension.class)
 class TxPrivacyGroupTest {
 
-
   private static final String PK_1_B_64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
 
   private Orion firstOrionLauncher;
   private Vertx vertx;
   private HttpClient firstHttpClient;
+  private MemoryKeyStore memoryKeyStore;
 
   @BeforeEach
   void setUpSingleNode(@TempDirectory Path tempDir) throws Exception {
@@ -125,6 +130,8 @@ class TxPrivacyGroupTest {
     final String firstNodeBaseUrl = NodeUtils.urlString("127.0.0.1", firstOrionLauncher.nodePort());
     Request request = new Request.Builder().post(partyInfoBody).url(firstNodeBaseUrl + "/partyinfo").build();
     await().atMost(5, TimeUnit.SECONDS).until(() -> getPartyInfoResponse(httpClient, request).nodeURLs().size() == 2);
+
+    memoryKeyStore = new MemoryKeyStore();
   }
 
   private ConcurrentNetworkNodes getPartyInfoResponse(OkHttpClient httpClient, Request request) throws Exception {
@@ -142,11 +149,24 @@ class TxPrivacyGroupTest {
   @Test
   void receiverCanViewWhenSentToPrivacyGroup() {
     final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
+    final EthClientStub firstNodeNode = NodeUtils.client(firstOrionLauncher.nodePort(), firstHttpClient);
+
     String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
     final PrivacyGroup privacyGroup =
         createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, "testName", "testDescription");
 
-    var result = firstNode.pushToHistory(privacyGroup.getPrivacyGroupId(), "def", "ghi");
+    EncryptedPayload payload = mockPayload();
+    var pushResult = push(firstNodeNode, payload);
+
+    var result = firstNode.pushToHistory(privacyGroup.getPrivacyGroupId(), "0xnotahash", pushResult);
     assertTrue(result.isPresent() && result.get());
+  }
+
+
+  private EncryptedPayload mockPayload() {
+    SodiumEnclave sEnclave = new SodiumEnclave(memoryKeyStore);
+    Box.PublicKey k1 = memoryKeyStore.generateKeyPair();
+    Box.PublicKey k2 = memoryKeyStore.generateKeyPair();
+    return sEnclave.encrypt("something important".getBytes(UTF_8), k1, new Box.PublicKey[] {k2}, null);
   }
 }
