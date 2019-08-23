@@ -83,7 +83,7 @@ public class AddToPrivacyGroupHandler extends PrivacyGroupBaseHandler implements
                 Stream
                     .concat(
                         Arrays.stream(oldPrivacyGroupPayload.addresses()),
-                        Arrays.stream(modifyPrivacyGroupRequest.addresses()))
+                        Stream.of(modifyPrivacyGroupRequest.address()))
                     .distinct()
                     .toArray(String[]::new),
                 oldPrivacyGroupPayload.name(),

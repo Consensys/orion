@@ -184,12 +184,11 @@ public class EthClientStub {
   }
 
   public Optional<PrivacyGroup> modifyPrivacyGroup(
-      String[] addresses,
+      String address,
       String from,
       String privacyGroupId,
       String endpoint) {
-    ModifyPrivacyGroupRequest modifyPrivacyGroupRequest =
-        new ModifyPrivacyGroupRequest(addresses, from, privacyGroupId);
+    ModifyPrivacyGroupRequest modifyPrivacyGroupRequest = new ModifyPrivacyGroupRequest(address, from, privacyGroupId);
     CompletableFuture<PrivacyGroup> keyFuture = new CompletableFuture<>();
 
     httpClient.post(clientPort, "localhost", endpoint).handler(resp -> {

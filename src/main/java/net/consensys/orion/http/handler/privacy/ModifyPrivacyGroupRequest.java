@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 
 public class ModifyPrivacyGroupRequest implements Serializable {
 
-  private final String[] addresses;
+  private final String address;
   private final String from;
   private final String privacyGroupId;
 
@@ -29,10 +29,10 @@ public class ModifyPrivacyGroupRequest implements Serializable {
 
   @JsonCreator
   public ModifyPrivacyGroupRequest(
-      @JsonProperty("addresses") String[] addresses,
+      @JsonProperty("address") String address,
       @JsonProperty("from") String from,
       @JsonProperty("privacyGroupId") String privacyGroupId) {
-    this.addresses = addresses;
+    this.address = address;
     this.from = from;
     this.privacyGroupId = privacyGroupId;
   }
@@ -42,9 +42,9 @@ public class ModifyPrivacyGroupRequest implements Serializable {
     this.seed = seed;
   }
 
-  @JsonProperty("addresses")
-  public String[] addresses() {
-    return addresses;
+  @JsonProperty("address")
+  public String address() {
+    return address;
   }
 
   @JsonProperty("privacyGroupId")
