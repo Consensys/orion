@@ -186,7 +186,6 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
-
   public Optional<String> push(EncryptedPayload payload) {
     CompletableFuture<String> pushFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/push").handler(resp -> {

@@ -12,7 +12,6 @@
  */
 package net.consensys.orion.http.handler.tx;
 
-
 import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;

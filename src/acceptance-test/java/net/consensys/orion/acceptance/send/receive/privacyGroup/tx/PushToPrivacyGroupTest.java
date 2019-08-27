@@ -58,7 +58,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(TempDirectoryExtension.class)
-class TxPrivacyGroupTest {
+class PushToPrivacyGroupTest {
 
   private static final String PK_1_B_64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
@@ -148,17 +148,17 @@ class TxPrivacyGroupTest {
 
   @Test
   void receiverCanViewWhenSentToPrivacyGroup() {
-    final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
-    final EthClientStub firstNodeNode = NodeUtils.client(firstOrionLauncher.nodePort(), firstHttpClient);
+    final EthClientStub firstClient = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
+    final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.nodePort(), firstHttpClient);
 
     String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
     final PrivacyGroup privacyGroup =
-        createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, "testName", "testDescription");
+        createPrivacyGroupTransaction(firstClient, addresses, PK_1_B_64, "testName", "testDescription");
 
     EncryptedPayload payload = mockPayload();
-    var pushResult = push(firstNodeNode, payload);
+    var pushResult = push(firstNode, payload);
 
-    var result = firstNode.pushToHistory(privacyGroup.getPrivacyGroupId(), "0xnotahash", pushResult);
+    var result = firstClient.pushToHistory(privacyGroup.getPrivacyGroupId(), "0xnotahash", pushResult);
     assertTrue(result.isPresent() && result.get());
   }
 
