@@ -63,7 +63,7 @@ class PostgresqlSendReceiveTest {
 
     try (Connection conn = DriverManager.getConnection(jdbcUrl)) {
       final Statement st = conn.createStatement();
-      st.executeUpdate("create table if not exists store(key bytea, value bytea, primary key(key))");
+      st.executeUpdate("create table if not exists store(key varchar(120), value bytea, primary key(key))");
     }
 
     Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));

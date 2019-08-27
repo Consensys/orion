@@ -265,6 +265,8 @@ dependencies {
   compile 'com.jolbox:bonecp'
   compile 'org.apache.openjpa:openjpa'
   compile 'org.postgresql:postgresql'
+  // compile 'com.oracle:ojdbc8'
+
 
   // serialization
   compile 'com.moandjiezana.toml:toml4j'
