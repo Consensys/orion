@@ -18,7 +18,6 @@ import static net.consensys.cava.io.Base64.decodeBytes;
 import static net.consensys.cava.io.file.Files.copyResource;
 import static net.consensys.orion.acceptance.NodeUtils.createPrivacyGroupTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
-import static net.consensys.orion.acceptance.NodeUtils.push;
 import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
@@ -156,8 +155,7 @@ class PushToPrivacyGroupTest {
         createPrivacyGroupTransaction(firstClient, addresses, PK_1_B_64, "testName", "testDescription");
 
     EncryptedPayload payload = mockPayload();
-    var pushResult = push(firstNode, payload);
-
+    var pushResult = firstNode.push(payload).orElseThrow();
     var result = firstClient.pushToHistory(privacyGroup.getPrivacyGroupId(), "0xnotahash", pushResult);
     assertTrue(result.isPresent() && result.get());
   }

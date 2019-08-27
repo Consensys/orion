@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
-import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 import net.consensys.orion.http.handler.receive.ReceiveResponse;
 
@@ -147,10 +146,6 @@ public class NodeUtils {
       String name,
       String description) {
     return sender.createPrivacyGroup(addresses, from, name, description).orElseThrow(AssertionFailedError::new);
-  }
-
-  public static String push(EthClientStub sender, EncryptedPayload payload) {
-    return sender.push(payload).orElseThrow(AssertionFailedError::new);
   }
 
   public static PrivacyGroup[] findPrivacyGroupTransaction(EthClientStub sender, String[] addresses) {
