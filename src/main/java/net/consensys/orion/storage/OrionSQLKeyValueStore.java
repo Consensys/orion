@@ -17,6 +17,7 @@ import net.consensys.cava.concurrent.AsyncCompletion;
 import net.consensys.cava.concurrent.AsyncResult;
 import net.consensys.cava.kv.KeyValueStore;
 
+import java.util.Base64;
 import java.util.function.Function;
 import javax.persistence.EntityManager;
 
@@ -45,7 +46,8 @@ public class OrionSQLKeyValueStore implements KeyValueStore {
   @Override
   public Bytes get(final Bytes key, final Continuation<? super Bytes> ignore) {
     return withEntityManager(entityManager -> {
-      final Store store = entityManager.find(Store.class, key.toArrayUnsafe());
+      final String b64String = Base64.getEncoder().encodeToString(key.toArrayUnsafe());
+      final Store store = entityManager.find(Store.class, b64String);
       return store != null ? Bytes.wrap(store.getValue()) : null;
     });
   }
@@ -63,7 +65,8 @@ public class OrionSQLKeyValueStore implements KeyValueStore {
   @Override
   public Unit put(final Bytes key, final Bytes value, final Continuation<? super Unit> ignore) {
     final Store store = new Store();
-    store.setKey(key.toArrayUnsafe());
+    final String b64String = Base64.getEncoder().encodeToString(key.toArrayUnsafe());
+    store.setKey(b64String);
     store.setValue(value.toArrayUnsafe());
     withEntityManager(entityManager -> entityManager.merge(store));
     return Unit.INSTANCE;

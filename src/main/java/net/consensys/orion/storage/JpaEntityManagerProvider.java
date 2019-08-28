@@ -28,6 +28,7 @@ public class JpaEntityManagerProvider {
       .<String, String>builder()
       .put("postgresql", "org.postgresql.Driver")
       .put("h2", "org.h2.Driver")
+      .put("oracle", "oracle.jdbc.OracleDriver")
       .build();
 
   public JpaEntityManagerProvider(final String jdbcUrl) {

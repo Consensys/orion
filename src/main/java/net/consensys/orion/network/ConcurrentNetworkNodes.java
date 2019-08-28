@@ -87,7 +87,7 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
   /**
    * Add a url of a node to perform discovery using that node.
    * 
-   * @param node
+   * @param node URL of new node
    */
   public void addNodeUrl(URL node) {
     this.nodeURLs.add(node);
