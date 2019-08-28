@@ -49,7 +49,10 @@ public class SetPrivacyGroupHandler implements Handler<RoutingContext> {
   public void handle(final RoutingContext routingContext) {
     final byte[] request = routingContext.getBody().getBytes();
     final SetPrivacyGroupRequest addRequest = Serializer.deserialize(CBOR, SetPrivacyGroupRequest.class, request);
+    updatePrivacyGroupStorage(routingContext, addRequest);
+  }
 
+  private void updatePrivacyGroupStorage(RoutingContext routingContext, SetPrivacyGroupRequest addRequest) {
     privacyGroupStorage
         .update(addRequest.getPrivacyGroupId(), addRequest.getPayload())
         .thenAccept((privacyGroupResult) -> {
@@ -61,25 +64,32 @@ public class SetPrivacyGroupHandler implements Handler<RoutingContext> {
           final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
 
           log.info("Set privacy group. resulting digest: {}", key);
-          queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenAccept((result) -> {
-            if (result.isEmpty()) {
-              routingContext
-                  .fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, "privacy group not found"));
-              return;
-            }
-
-            var queryResult = result.get();
-            log.info(
-                "Storing privacy group {} complete with addresses {}",
-                queryResult.privacyGroupId(),
-                result.get().addresses());
-
-            final Buffer toReturn = Buffer.buffer(Serializer.serialize(CBOR, queryResult));
-            routingContext.response().end(toReturn);
-          }).exceptionally(
-              e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
+          updateQueryStorage(routingContext, queryPrivacyGroupPayload, key);
         })
         .exceptionally(
             e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
+  }
+
+  private void updateQueryStorage(
+      RoutingContext routingContext,
+      QueryPrivacyGroupPayload queryPrivacyGroupPayload,
+      String key) {
+    queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenAccept((result) -> {
+      if (result.isEmpty()) {
+        routingContext
+            .fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, "privacy group not found"));
+        return;
+      }
+
+      var queryResult = result.get();
+      log.info(
+          "Storing privacy group {} complete with addresses {}",
+          queryResult.privacyGroupId(),
+          result.get().addresses());
+
+      final Buffer toReturn = Buffer.buffer(Serializer.serialize(CBOR, queryResult));
+      routingContext.response().end(toReturn);
+    }).exceptionally(
+        e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
   }
 }

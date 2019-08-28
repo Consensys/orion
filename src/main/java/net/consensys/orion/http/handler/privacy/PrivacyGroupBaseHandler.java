@@ -14,7 +14,6 @@ package net.consensys.orion.http.handler.privacy;
 
 import static net.consensys.orion.http.server.HttpContentType.CBOR;
 
-import io.vertx.core.http.HttpClientResponse;
 import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.exception.OrionException;
@@ -28,6 +27,7 @@ import java.util.stream.Stream;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientResponse;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,7 +44,10 @@ abstract class PrivacyGroupBaseHandler {
   }
 
   @SuppressWarnings("unchecked")
-  CompletableFuture<Boolean>[] sendRequestsToOthers(Stream<Box.PublicKey> addresses, Serializable request, String endpoint) {
+  CompletableFuture<Boolean>[] sendRequestsToOthers(
+      Stream<Box.PublicKey> addresses,
+      Serializable request,
+      String endpoint) {
     return addresses.map(pKey -> {
       URL recipientURL = networkNodes.urlForRecipient(pKey);
 
@@ -64,7 +67,12 @@ abstract class PrivacyGroupBaseHandler {
     }).toArray(CompletableFuture[]::new);
   }
 
-  private void handleResponse(String endpoint, Box.PublicKey pKey, URL recipientURL, CompletableFuture<Boolean> responseFuture, HttpClientResponse response) {
+  private void handleResponse(
+      String endpoint,
+      Box.PublicKey pKey,
+      URL recipientURL,
+      CompletableFuture<Boolean> responseFuture,
+      HttpClientResponse response) {
     response.bodyHandler(responseBody -> {
       log.info("{} with URL {} responded with {}", pKey, recipientURL.toString(), response.statusCode());
       if (response.statusCode() != 200) {

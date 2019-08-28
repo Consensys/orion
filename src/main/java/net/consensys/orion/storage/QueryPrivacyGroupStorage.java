@@ -24,7 +24,6 @@ import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
-import org.jetbrains.annotations.NotNull;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -85,7 +84,9 @@ public class QueryPrivacyGroupStorage implements Storage<QueryPrivacyGroupPayloa
     });
   }
 
-  private QueryPrivacyGroupPayload handleAlreadyPresentUpdate(QueryPrivacyGroupPayload data, QueryPrivacyGroupPayload result) {
+  private QueryPrivacyGroupPayload handleAlreadyPresentUpdate(
+      QueryPrivacyGroupPayload data,
+      QueryPrivacyGroupPayload result) {
     List<String> listPrivacyGroupIds;
     QueryPrivacyGroupPayload queryPrivacyGroupPayload;
     if (data.isToDelete()) {
