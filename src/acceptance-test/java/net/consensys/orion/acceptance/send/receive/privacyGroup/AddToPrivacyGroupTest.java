@@ -87,7 +87,7 @@ class AddToPrivacyGroupTest extends PrivacyGroupAcceptanceTest {
   }
 
   @Test
-  void addToPRivacyGroupMissingParams() {
+  void addToPrivacyGroupMissingParams() {
     final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
 
     final String name = "testName";
