@@ -86,12 +86,9 @@ class AddToPrivacyGroupTest extends PrivacyGroupAcceptanceTest {
         () -> NodeUtils.addToPrivacyGroup(thirdNode, PK_3_B_64, PK_1_B_64, privacyGroup.getPrivacyGroupId()));
   }
 
-
   @Test
   void addToPRivacyGroupMissingParams() {
     final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
-    final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
-    final EthClientStub thirdNode = NodeUtils.client(thirdOrionLauncher.clientPort(), thirdHttpClient);
 
     final String name = "testName";
     final String description = "testDescription";
@@ -105,7 +102,4 @@ class AddToPrivacyGroupTest extends PrivacyGroupAcceptanceTest {
         AssertionFailedError.class,
         () -> NodeUtils.addToPrivacyGroup(firstNode, "not valid", PK_1_B_64, privacyGroupId));
   }
-
-
-
 }

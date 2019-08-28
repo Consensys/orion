@@ -109,7 +109,7 @@ public class AddToPrivacyGroupHandler extends PrivacyGroupBaseHandler implements
           }
 
           /*
-           * Todo here: get current private network state from pantheon and send to the new members
+           * Todo here: get ordered list of commitments and private transactions from `PrivateTransactionStore` to push to Pantheon
            * */
 
           final PrivacyGroupPayload innerCombinedPrivacyGroupPayload = combinedPrivacyGroup.get();
