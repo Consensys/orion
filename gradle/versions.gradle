@@ -29,8 +29,6 @@ dependencyManagement {
 
     dependency 'com.moandjiezana.toml:toml4j:0.7.2'
 
-    // dependency 'com.oracle:ojdbc8:18.3.0.0'
-
     dependency 'com.radcortez.gradle:openjpa-gradle-plugin:3.0.0'
 
     dependency 'com.squareup.okhttp3:mockwebserver:3.10.0'

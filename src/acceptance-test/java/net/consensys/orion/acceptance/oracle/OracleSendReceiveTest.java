@@ -36,7 +36,6 @@ import io.vertx.core.http.HttpClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -72,7 +71,7 @@ class OracleSendReceiveTest {
               + "  EXCEPTION\n"
               + "      WHEN OTHERS THEN NULL;\n"
               + "  END;");
-      st.executeUpdate("CREATE TABLE store(key varchar2(120) primary key, value BLOB)");
+      st.executeUpdate("CREATE TABLE store(key char(60) primary key, value BLOB)");
     }
 
     Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
@@ -106,7 +105,6 @@ class OracleSendReceiveTest {
   }
 
   @Test
-  @Disabled("Oracle DB needs to be available for this test.")
   void sendAndReceive() {
     final EthClientStub ethClientStub = NodeUtils.client(orionLauncher.clientPort(), httpClient);
 

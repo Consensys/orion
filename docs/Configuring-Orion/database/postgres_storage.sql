@@ -1,7 +1,7 @@
 /* Creates the database table needed when using PostgreSQL for Orion storage. */
 
 CREATE TABLE store (
-  key varchar(120),
+  key char(60),
   value bytea,
   primary key(key)
 );
