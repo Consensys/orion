@@ -43,11 +43,7 @@ abstract class PrivacyGroupBaseHandler {
   }
 
 
-  @SuppressWarnings("rawtypes")
-  Stream<CompletableFuture> sendRequestsToOthers(
-      Stream<Box.PublicKey> addresses,
-      Serializable request,
-      String endpoint) {
+  CompletableFuture[] sendRequestsToOthers(Stream<Box.PublicKey> addresses, Serializable request, String endpoint) {
     return addresses.map(pKey -> {
       URL recipientURL = networkNodes.urlForRecipient(pKey);
 
@@ -72,7 +68,7 @@ abstract class PrivacyGroupBaseHandler {
               ex -> responseFuture.completeExceptionally(new OrionException(OrionErrorCode.NODE_PUSHING_TO_PEER, ex)))
           .end(Buffer.buffer(payload));
       return responseFuture;
-    });
+    }).toArray(CompletableFuture[]::new);
   }
 
   void handleFailure(final RoutingContext routingContext, final Throwable ex) {

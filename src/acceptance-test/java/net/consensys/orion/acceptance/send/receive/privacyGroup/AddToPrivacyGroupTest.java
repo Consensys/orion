@@ -16,6 +16,7 @@ import static net.consensys.orion.acceptance.NodeUtils.createPrivacyGroupTransac
 import static net.consensys.orion.acceptance.NodeUtils.findPrivacyGroupTransaction;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.acceptance.EthClientStub;
@@ -23,6 +24,7 @@ import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.acceptance.WaitUtils;
 import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 
+import junit.framework.AssertionFailedError;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -67,5 +69,43 @@ class AddToPrivacyGroupTest extends PrivacyGroupAcceptanceTest {
     assertArrayEquals(newGroupMembers, propagatedToNewNode[0].getMembers());
     assertEquals(privacyGroupId, propagatedToNewNode[0].getPrivacyGroupId());
   }
+
+  @Test
+  void addToPrivacyGroupFromInvalidNode() {
+    final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
+    final EthClientStub thirdNode = NodeUtils.client(thirdOrionLauncher.clientPort(), thirdHttpClient);
+
+    final String name = "testName";
+    final String description = "testDescription";
+    final String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
+
+    final PrivacyGroup privacyGroup = createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, name, description);
+
+    assertThrows(
+        AssertionFailedError.class,
+        () -> NodeUtils.addToPrivacyGroup(thirdNode, PK_3_B_64, PK_1_B_64, privacyGroup.getPrivacyGroupId()));
+  }
+
+
+  @Test
+  void addToPRivacyGroupMissingParams() {
+    final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
+    final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
+    final EthClientStub thirdNode = NodeUtils.client(thirdOrionLauncher.clientPort(), thirdHttpClient);
+
+    final String name = "testName";
+    final String description = "testDescription";
+    final String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
+    // create a privacy group
+    final PrivacyGroup privacyGroup = createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, name, description);
+
+    final String privacyGroupId = privacyGroup.getPrivacyGroupId();
+
+    assertThrows(
+        AssertionFailedError.class,
+        () -> NodeUtils.addToPrivacyGroup(firstNode, "not valid", PK_1_B_64, privacyGroupId));
+  }
+
+
 
 }

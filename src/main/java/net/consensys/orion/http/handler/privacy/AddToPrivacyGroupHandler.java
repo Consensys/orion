@@ -102,63 +102,51 @@ public class AddToPrivacyGroupHandler extends PrivacyGroupBaseHandler implements
             new SetPrivacyGroupRequest(combinedPrivacyGroup.get(), modifyPrivacyGroupRequest.privacyGroupId()),
             "/setPrivacyGroup");
 
-        CompletableFuture.allOf(addRequests.toArray(CompletableFuture[]::new)).whenComplete((iAll, iEx) -> {
-
+        CompletableFuture.allOf(addRequests).whenComplete((iAll, iEx) -> {
           if (iEx != null) {
             handleFailure(routingContext, iEx);
             return;
           }
 
-          CompletableFuture<Boolean> sendStateToNewUserFuture = new CompletableFuture<>();
-
           /*
            * Todo here: get current private network state from pantheon and send to the new members
            * */
 
-          sendStateToNewUserFuture.whenComplete((res, iiEx) -> {
-            if (iiEx != null) {
-              handleFailure(routingContext, iiEx);
-              return;
-            }
-            final PrivacyGroupPayload innerCombinedPrivacyGroupPayload = combinedPrivacyGroup.get();
-            privacyGroupStorage
-                .update(privacyGroupStorage.generateDigest(oldPrivacyGroupPayload), innerCombinedPrivacyGroupPayload)
-                .thenAccept((privacyGroupResult) -> {
+          final PrivacyGroupPayload innerCombinedPrivacyGroupPayload = combinedPrivacyGroup.get();
+          privacyGroupStorage
+              .update(privacyGroupStorage.generateDigest(oldPrivacyGroupPayload), innerCombinedPrivacyGroupPayload)
+              .thenAccept((privacyGroupResult) -> {
 
-                  final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
-                      new QueryPrivacyGroupPayload(innerCombinedPrivacyGroupPayload.addresses(), null);
+                final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
+                    new QueryPrivacyGroupPayload(innerCombinedPrivacyGroupPayload.addresses(), null);
 
-                  queryPrivacyGroupPayload.setPrivacyGroupToAppend(modifyPrivacyGroupRequest.privacyGroupId());
-                  final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
+                queryPrivacyGroupPayload.setPrivacyGroupToAppend(modifyPrivacyGroupRequest.privacyGroupId());
+                final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
 
-                  log.info("Stored privacy group. resulting digest: {}", key);
-                  queryPrivacyGroupStorage
-                      .update(key, queryPrivacyGroupPayload)
-                      .thenAccept((queryPrivacyGroupStorageResult) -> {
-                        final PrivacyGroup group = new PrivacyGroup(
-                            modifyPrivacyGroupRequest.privacyGroupId(),
-                            PrivacyGroupPayload.Type.PANTHEON,
-                            innerCombinedPrivacyGroupPayload.name(),
-                            innerCombinedPrivacyGroupPayload.description(),
-                            innerCombinedPrivacyGroupPayload.addresses());
-                        log.info("Storing privacy group {} complete", modifyPrivacyGroupRequest.privacyGroupId());
+                log.info("Stored privacy group. resulting digest: {}", key);
+                queryPrivacyGroupStorage
+                    .update(key, queryPrivacyGroupPayload)
+                    .thenAccept((queryPrivacyGroupStorageResult) -> {
+                      final PrivacyGroup group = new PrivacyGroup(
+                          modifyPrivacyGroupRequest.privacyGroupId(),
+                          PrivacyGroupPayload.Type.PANTHEON,
+                          innerCombinedPrivacyGroupPayload.name(),
+                          innerCombinedPrivacyGroupPayload.description(),
+                          innerCombinedPrivacyGroupPayload.addresses());
+                      log.info("Storing privacy group {} complete", modifyPrivacyGroupRequest.privacyGroupId());
 
-                        final Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, group));
-                        routingContext.response().end(toReturn);
-                      })
-                      .exceptionally(
-                          e -> routingContext
-                              .fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
-                })
-                .exceptionally(
-                    e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
-          });
-
-          //hack to get it to run for now?
-          sendStateToNewUserFuture.complete(true);
+                      final Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, group));
+                      routingContext.response().end(toReturn);
+                    })
+                    .exceptionally(
+                        e -> routingContext
+                            .fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
+              })
+              .exceptionally(
+                  e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
         });
       }
-    });
+    }).exceptionally(
+        e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
   }
-
 }
