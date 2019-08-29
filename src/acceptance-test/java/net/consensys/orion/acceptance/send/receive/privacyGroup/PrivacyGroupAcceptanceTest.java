@@ -42,6 +42,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -156,9 +157,16 @@ class PrivacyGroupAcceptanceTest {
 
   @AfterEach
   void tearDown() {
-    firstOrionLauncher.stop();
-    secondOrionLauncher.stop();
-    thirdOrionLauncher.stop();
+    Awaitility.await().until(() -> {
+      try {
+        firstOrionLauncher.stop();
+        secondOrionLauncher.stop();
+        thirdOrionLauncher.stop();
+        return true;
+      } catch (Exception ignored) {
+        return false;
+      }
+    });
     vertx.close();
   }
 
