@@ -61,26 +61,30 @@ public class PushToHistoryHandler implements Handler<RoutingContext> {
                   "couldn't add transaction to privacy group"));
           return;
         }
+        updateTransactionStorageAndReturn(routingContext, addRequest);
+      }).exceptionally(e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_ADD_COMMITMENT, e)));
+    }).exceptionally(e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_ADD_COMMITMENT, e)));
+  }
 
-        privateTransactionStorage.get(addRequest.privacyGroupId()).thenAccept(currentResult -> {
-          ArrayList<CommitmentPair> newValue = currentResult.orElseGet(ArrayList::new);
-          CommitmentPair pairToAdd = new CommitmentPair(addRequest.enclaveKey(), addRequest.privacyMarkerTxHash());
-          if (!newValue.contains(pairToAdd)) {
-            newValue.add(pairToAdd);
-          }
-          privateTransactionStorage.update(addRequest.privacyGroupId(), newValue).thenAccept(newlyAdded -> {
-            if (newlyAdded.isEmpty()) {
-              routingContext.fail(
-                  new OrionException(
-                      OrionErrorCode.ENCLAVE_UNABLE_ADD_COMMITMENT,
-                      "couldn't add transaction to privacy group"));
-              return;
-            }
-            final Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, true));
-            routingContext.response().end(toReturn);
-          }).exceptionally(
-              e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_ADD_COMMITMENT, e)));
-        }).exceptionally(e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_ADD_COMMITMENT, e)));
+  private void updateTransactionStorageAndReturn(
+      final RoutingContext routingContext,
+      final PushToHistoryRequest addRequest) {
+    privateTransactionStorage.get(addRequest.privacyGroupId()).thenAccept(currentResult -> {
+      ArrayList<CommitmentPair> newValue = currentResult.orElseGet(ArrayList::new);
+      CommitmentPair pairToAdd = new CommitmentPair(addRequest.enclaveKey(), addRequest.privacyMarkerTxHash());
+      if (!newValue.contains(pairToAdd)) {
+        newValue.add(pairToAdd);
+      }
+      privateTransactionStorage.update(addRequest.privacyGroupId(), newValue).thenAccept(newlyAdded -> {
+        if (newlyAdded.isEmpty()) {
+          routingContext.fail(
+              new OrionException(
+                  OrionErrorCode.ENCLAVE_UNABLE_ADD_COMMITMENT,
+                  "couldn't add transaction to privacy group"));
+          return;
+        }
+        final Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, true));
+        routingContext.response().end(toReturn);
       }).exceptionally(e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_ADD_COMMITMENT, e)));
     }).exceptionally(e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_ADD_COMMITMENT, e)));
   }
