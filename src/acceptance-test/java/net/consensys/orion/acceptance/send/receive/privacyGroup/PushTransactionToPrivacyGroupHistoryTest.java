@@ -63,12 +63,13 @@ class PushTransactionToPrivacyGroupHistoryTest {
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
 
   private Orion firstOrionLauncher;
+  private Orion secondOrionLauncher;
   private Vertx vertx;
   private HttpClient firstHttpClient;
   private MemoryKeyStore memoryKeyStore;
 
   @BeforeEach
-  void setUpSingleNode(@TempDirectory Path tempDir) throws Exception {
+  void setUpDualNode(@TempDirectory Path tempDir) throws Exception {
     vertx = vertx();
 
     Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
@@ -112,7 +113,7 @@ class PushTransactionToPrivacyGroupHistoryTest {
 
     firstOrionLauncher = NodeUtils.startOrion(firstNodeConfig);
     firstHttpClient = vertx.createHttpClient();
-    Orion secondOrionLauncher = NodeUtils.startOrion(secondNodeConfig);
+    secondOrionLauncher = NodeUtils.startOrion(secondNodeConfig);
 
     Box.PublicKey pk1 = Box.PublicKey.fromBytes(decodeBytes(PK_1_B_64));
     Box.PublicKey pk2 = Box.PublicKey.fromBytes(decodeBytes(PK_2_B_64));
@@ -142,6 +143,7 @@ class PushTransactionToPrivacyGroupHistoryTest {
   @AfterEach
   void tearDown() {
     firstOrionLauncher.stop();
+    secondOrionLauncher.stop();
     vertx.close();
   }
 
