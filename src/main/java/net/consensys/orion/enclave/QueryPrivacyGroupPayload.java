@@ -25,7 +25,7 @@ public class QueryPrivacyGroupPayload implements Serializable {
 
   private final String[] addresses;
   private final List<String> privacyGroupId;
-  private String privacyGroupToAppend = null;
+  private String privacyGroupToModify = null;
 
   private boolean toDelete = false;
 
@@ -47,14 +47,14 @@ public class QueryPrivacyGroupPayload implements Serializable {
     return privacyGroupId;
   }
 
-  @JsonProperty("privacyGroupToAppend")
-  public String privacyGroupToAppend() {
-    return privacyGroupToAppend;
+  @JsonProperty("privacyGroupToModify")
+  public String privacyGroupToModify() {
+    return privacyGroupToModify;
   }
 
-  @JsonSetter("privacyGroupToAppend")
-  public void setPrivacyGroupToAppend(String privacyGroupToAppend) {
-    this.privacyGroupToAppend = privacyGroupToAppend;
+  @JsonSetter("privacyGroupToModify")
+  public void setPrivacyGroupToModify(String privacyGroupToModify) {
+    this.privacyGroupToModify = privacyGroupToModify;
   }
 
 
@@ -77,7 +77,7 @@ public class QueryPrivacyGroupPayload implements Serializable {
     QueryPrivacyGroupPayload that = (QueryPrivacyGroupPayload) o;
     return Arrays.equals(addresses, that.addresses)
         && Objects.equals(privacyGroupId, that.privacyGroupId)
-        && Objects.equals(privacyGroupToAppend, that.privacyGroupToAppend);
+        && Objects.equals(privacyGroupToModify, that.privacyGroupToModify);
 
   }
 
@@ -85,7 +85,7 @@ public class QueryPrivacyGroupPayload implements Serializable {
   public int hashCode() {
     int result = Arrays.hashCode(addresses);
     result = 31 * result + privacyGroupId.hashCode();
-    result = 31 * result + privacyGroupToAppend.hashCode();
+    result = 31 * result + privacyGroupToModify.hashCode();
     return result;
   }
 }

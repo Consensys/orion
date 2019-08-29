@@ -129,7 +129,7 @@ public class SendHandler implements Handler<RoutingContext> {
           return key;
         } else {
           return privacyGroupStorage.put(privacyGroupPayload).thenApply((result) -> {
-            queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupStorage.generateDigest(privacyGroupPayload));
+            queryPrivacyGroupPayload.setPrivacyGroupToModify(privacyGroupStorage.generateDigest(privacyGroupPayload));
             return queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenApply((res) -> {
               send(routingContext, sendRequest, fromKey, toKeys, privacyGroupPayload);
               return result;

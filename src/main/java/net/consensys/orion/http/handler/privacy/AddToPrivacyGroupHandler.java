@@ -146,7 +146,7 @@ public class AddToPrivacyGroupHandler extends PrivacyGroupBaseHandler implements
           updateQueryPrivacyGroupStorage(routingContext, modifyPrivacyGroupRequest, innerCombinedPrivacyGroupPayload);
         })
         .exceptionally(
-            e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
+            e -> routingContext.fail(403, new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
   }
 
   private void updateQueryPrivacyGroupStorage(
@@ -155,7 +155,7 @@ public class AddToPrivacyGroupHandler extends PrivacyGroupBaseHandler implements
       final PrivacyGroupPayload innerCombinedPrivacyGroupPayload) {
     final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
         new QueryPrivacyGroupPayload(innerCombinedPrivacyGroupPayload.addresses(), null);
-    queryPrivacyGroupPayload.setPrivacyGroupToAppend(modifyPrivacyGroupRequest.privacyGroupId());
+    queryPrivacyGroupPayload.setPrivacyGroupToModify(modifyPrivacyGroupRequest.privacyGroupId());
     final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
     log.info("Stored privacy group. resulting digest: {}", key);
     queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenAccept((queryPrivacyGroupStorageResult) -> {
