@@ -73,7 +73,6 @@ class AddToPrivacyGroupTest extends PrivacyGroupAcceptanceTest {
   @Test
   void addToPrivacyGroupFromInvalidNode() {
     final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
-    final EthClientStub thirdNode = NodeUtils.client(thirdOrionLauncher.clientPort(), thirdHttpClient);
 
     final String name = "testName";
     final String description = "testDescription";
@@ -83,7 +82,7 @@ class AddToPrivacyGroupTest extends PrivacyGroupAcceptanceTest {
 
     assertThrows(
         AssertionFailedError.class,
-        () -> NodeUtils.addToPrivacyGroup(thirdNode, PK_3_B_64, PK_1_B_64, privacyGroup.getPrivacyGroupId()));
+        () -> NodeUtils.addToPrivacyGroup(firstNode, PK_3_B_64, PK_3_B_64, privacyGroup.getPrivacyGroupId()));
   }
 
   @Test

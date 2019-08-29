@@ -80,6 +80,12 @@ public class AddToPrivacyGroupHandler extends PrivacyGroupBaseHandler implements
       }
 
       final PrivacyGroupPayload oldPrivacyGroupPayload = result.get();
+      if (!Arrays.asList(oldPrivacyGroupPayload.addresses()).contains(modifyPrivacyGroupRequest.from())) {
+        routingContext
+            .fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, "privacy group not found"));
+        return;
+      }
+
       combinedPrivacyGroup.set(
           new PrivacyGroupPayload(
               getCombinedAddresses(modifyPrivacyGroupRequest, oldPrivacyGroupPayload),
@@ -146,7 +152,7 @@ public class AddToPrivacyGroupHandler extends PrivacyGroupBaseHandler implements
           updateQueryPrivacyGroupStorage(routingContext, modifyPrivacyGroupRequest, innerCombinedPrivacyGroupPayload);
         })
         .exceptionally(
-            e -> routingContext.fail(403, new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
+            e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
   }
 
   private void updateQueryPrivacyGroupStorage(
