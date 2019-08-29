@@ -51,7 +51,6 @@ dependencyManagement {
     dependency 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.2'
 
     dependency 'org.apache.openjpa:openjpa:3.1.0'
-    dependency 'org.apache.openjpa:openjpa:3.1.0'
 
     dependency 'org.awaitility:awaitility:3.1.0'
 

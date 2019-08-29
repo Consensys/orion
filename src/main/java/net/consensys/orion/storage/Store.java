@@ -14,16 +14,14 @@ package net.consensys.orion.storage;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.IdClass;
 
 @Entity
-@IdClass(ByteArrayId.class)
 public class Store {
-  private byte[] key;
+  private String key;
   private byte[] value;
 
   @Id
-  public byte[] getKey() {
+  public String getKey() {
     return key;
   }
 
@@ -31,7 +29,7 @@ public class Store {
     return value;
   }
 
-  public void setKey(final byte[] key) {
+  public void setKey(final String key) {
     this.key = key;
   }
 

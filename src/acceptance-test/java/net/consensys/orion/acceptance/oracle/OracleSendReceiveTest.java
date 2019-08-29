@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package net.consensys.orion.acceptance.postgresql;
+package net.consensys.orion.acceptance.oracle;
 
 import static io.vertx.core.Vertx.vertx;
 import static net.consensys.cava.io.file.Files.copyResource;
@@ -40,30 +40,38 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(TempDirectoryExtension.class)
-class PostgresqlSendReceiveTest {
+class OracleSendReceiveTest {
 
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String HOST_NAME = "127.0.0.1";
-  private static final String JDBC_URL = "jdbc:postgresql://localhost:5432/%s?user=%s&password=%s";
+  private static final String JDBC_URL = "jdbc:oracle:thin:%s/%s@%s:%s:%s";
 
   private Orion orionLauncher;
   private Vertx vertx;
   private HttpClient httpClient;
-  private final String databaseUser = System.getenv("POSTGRES_USER");
-  private final String databasePassword = System.getenv("POSTGRES_PASSWORD");
-  private final String databaseName = System.getenv("POSTGRES_DB");
+  private final String databaseUser = System.getenv("ORACLE_USER");
+  private final String databasePassword = System.getenv("ORACLE_PASSWORD");
+  private final String databaseHost = System.getenv("ORACLE_HOST");
+  private final String databasePort = System.getenv("ORACLE_PORT");
+  private final String databaseSid = System.getenv("ORACLE_SID");
+
 
   @BeforeEach
   void setUp(@TempDirectory Path tempDir) throws Exception {
-    Assumptions.assumeTrue(
-        databaseUser != null && databasePassword != null && databaseName != null,
-        "PostgreSQL not configured");
+    Assumptions.assumeTrue(databaseUser != null && databasePassword != null, "Oracle DB not configured");
 
-    final String jdbcUrl = String.format(JDBC_URL, databaseName, databaseUser, databasePassword);
+    final String jdbcUrl =
+        String.format(JDBC_URL, databaseUser, databasePassword, databaseHost, databasePort, databaseSid);
 
     try (Connection conn = DriverManager.getConnection(jdbcUrl)) {
       final Statement st = conn.createStatement();
-      st.executeUpdate("create table if not exists store(key char(60), value bytea, primary key(key))");
+      st.executeUpdate(
+          " BEGIN\n"
+              + "      EXECUTE IMMEDIATE 'DROP TABLE store';\n"
+              + "  EXCEPTION\n"
+              + "      WHEN OTHERS THEN NULL;\n"
+              + "  END;");
+      st.executeUpdate("CREATE TABLE store(key char(60) primary key, value BLOB)");
     }
 
     Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));

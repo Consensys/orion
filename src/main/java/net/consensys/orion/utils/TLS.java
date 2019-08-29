@@ -69,6 +69,7 @@ public final class TLS {
    *
    * @param key The key path.
    * @param certificate The certificate path.
+   * @param config Orion configuration.
    * @return {@code true} if a self-signed certificate was created.
    * @throws IOException If an IO error occurs creating the certificate.
    */
