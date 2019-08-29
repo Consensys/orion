@@ -80,7 +80,7 @@ class DualNodesSendReceiveTest {
     String jdbcUrl = "jdbc:h2:" + tempDir.resolve("node2").toString();
     try (Connection conn = DriverManager.getConnection(jdbcUrl)) {
       Statement st = conn.createStatement();
-      st.executeUpdate("create table if not exists store(key binary, value binary, primary key(key))");
+      st.executeUpdate("create table if not exists store(key char(60), value binary, primary key(key))");
     }
 
     firstNodeConfig = NodeUtils.nodeConfig(
