@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package net.consensys.orion.acceptance.send.receive.privacyGroup.tx;
+package net.consensys.orion.acceptance.send.receive.privacyGroup;
 
 import static io.vertx.core.Vertx.vertx;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -57,7 +57,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(TempDirectoryExtension.class)
-class PushToPrivacyGroupTest {
+class PushTransactionToPrivacyGroupHistoryTest {
 
   private static final String PK_1_B_64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
@@ -79,7 +79,7 @@ class PushToPrivacyGroupTest {
     String jdbcUrl = "jdbc:h2:" + tempDir.resolve("node2").toString();
     try (Connection conn = DriverManager.getConnection(jdbcUrl)) {
       Statement st = conn.createStatement();
-      st.executeUpdate("create table if not exists store(key binary, value binary, primary key(key))");
+      st.executeUpdate("create table if not exists store(key char(60), value binary, primary key(key))");
     }
 
     Config firstNodeConfig = NodeUtils.nodeConfig(
