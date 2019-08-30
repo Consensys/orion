@@ -13,19 +13,15 @@
 package net.consensys.orion.http.handler.privacy;
 
 import java.io.Serializable;
-import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
 
 public class ModifyPrivacyGroupRequest implements Serializable {
 
   private final String address;
   private final String from;
   private final String privacyGroupId;
-
-  private byte[] seed;
 
   @JsonCreator
   public ModifyPrivacyGroupRequest(
@@ -35,11 +31,6 @@ public class ModifyPrivacyGroupRequest implements Serializable {
     this.address = address;
     this.from = from;
     this.privacyGroupId = privacyGroupId;
-  }
-
-  @JsonSetter
-  public void setSeed(byte[] seed) {
-    this.seed = seed;
   }
 
   @JsonProperty("address")
@@ -57,7 +48,4 @@ public class ModifyPrivacyGroupRequest implements Serializable {
     return from;
   }
 
-  public Optional<byte[]> getSeed() {
-    return Optional.ofNullable(seed);
-  }
 }

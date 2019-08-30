@@ -48,8 +48,8 @@ public class SetPrivacyGroupHandler implements Handler<RoutingContext> {
   @SuppressWarnings("rawtypes")
   public void handle(final RoutingContext routingContext) {
     final byte[] request = routingContext.getBody().getBytes();
-    final SetPrivacyGroupRequest addRequest = Serializer.deserialize(CBOR, SetPrivacyGroupRequest.class, request);
-    updatePrivacyGroupStorage(routingContext, addRequest);
+    final SetPrivacyGroupRequest setRequest = Serializer.deserialize(CBOR, SetPrivacyGroupRequest.class, request);
+    updatePrivacyGroupStorage(routingContext, setRequest);
   }
 
   private void updatePrivacyGroupStorage(RoutingContext routingContext, SetPrivacyGroupRequest addRequest) {

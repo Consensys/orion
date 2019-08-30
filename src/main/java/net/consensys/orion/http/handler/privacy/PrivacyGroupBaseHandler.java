@@ -22,7 +22,9 @@ import net.consensys.orion.utils.Serializer;
 
 import java.io.Serializable;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.vertx.core.buffer.Buffer;
@@ -43,8 +45,7 @@ abstract class PrivacyGroupBaseHandler {
     this.httpClient = httpClient;
   }
 
-  @SuppressWarnings("unchecked")
-  CompletableFuture<Boolean>[] sendRequestsToOthers(
+  List<CompletableFuture<Boolean>> sendRequestsToOthers(
       Stream<Box.PublicKey> addresses,
       Serializable request,
       String endpoint) {
@@ -64,7 +65,7 @@ abstract class PrivacyGroupBaseHandler {
               ex -> responseFuture.completeExceptionally(new OrionException(OrionErrorCode.NODE_PUSHING_TO_PEER, ex)))
           .end(Buffer.buffer(payload));
       return responseFuture;
-    }).toArray(CompletableFuture[]::new);
+    }).collect(Collectors.toList());
   }
 
   private void handleResponse(

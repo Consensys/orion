@@ -32,7 +32,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * Runs up a three nodes that communicates with each other and tries to add the third node to an existing privacy group.
  */
 @ExtendWith(TempDirectoryExtension.class)
-class AddToPrivacyGroupTest extends PrivacyGroupAcceptanceTest {
+class AddToPrivacyGroupTest extends PrivacyGroupAcceptanceTestBase {
 
   @Test
   void addToPrivacyGroup() {

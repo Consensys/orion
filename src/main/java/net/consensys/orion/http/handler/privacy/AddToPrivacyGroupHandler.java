@@ -28,8 +28,8 @@ import net.consensys.orion.storage.Storage;
 import net.consensys.orion.utils.Serializer;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import io.vertx.core.Handler;
@@ -71,7 +71,6 @@ public class AddToPrivacyGroupHandler extends PrivacyGroupBaseHandler implements
     final ModifyPrivacyGroupRequest modifyPrivacyGroupRequest =
         Serializer.deserialize(JSON, ModifyPrivacyGroupRequest.class, request);
 
-    final AtomicReference<PrivacyGroupPayload> combinedPrivacyGroup = new AtomicReference<>();
     privacyGroupStorage.get(modifyPrivacyGroupRequest.privacyGroupId()).thenAccept((result) -> {
       if (result.isEmpty() || result.get().state() == PrivacyGroupPayload.State.DELETED) {
         routingContext
@@ -86,18 +85,18 @@ public class AddToPrivacyGroupHandler extends PrivacyGroupBaseHandler implements
         return;
       }
 
-      combinedPrivacyGroup.set(
-          new PrivacyGroupPayload(
-              getCombinedAddresses(modifyPrivacyGroupRequest, oldPrivacyGroupPayload),
-              oldPrivacyGroupPayload.name(),
-              oldPrivacyGroupPayload.description(),
-              oldPrivacyGroupPayload.state(),
-              oldPrivacyGroupPayload.type(),
-              oldPrivacyGroupPayload.randomSeed()));
+      PrivacyGroupPayload combinedPrivacyGroup = new PrivacyGroupPayload(
+          getCombinedAddresses(modifyPrivacyGroupRequest, oldPrivacyGroupPayload),
+          oldPrivacyGroupPayload.name(),
+          oldPrivacyGroupPayload.description(),
+          oldPrivacyGroupPayload.state(),
+          oldPrivacyGroupPayload.type(),
+          oldPrivacyGroupPayload.randomSeed());
 
-      final CompletableFuture<Boolean>[] addRequests =
+      final List<CompletableFuture<Boolean>> addRequests =
           addToPrivacyGroupOtherMembers(modifyPrivacyGroupRequest, combinedPrivacyGroup);
-      CompletableFuture.allOf(addRequests).whenComplete((all, ex) -> {
+
+      CompletableFuture.allOf(addRequests.toArray(CompletableFuture[]::new)).whenComplete((all, ex) -> {
         if (ex != null) {
           handleFailure(routingContext, ex);
           return;
@@ -111,7 +110,7 @@ public class AddToPrivacyGroupHandler extends PrivacyGroupBaseHandler implements
             routingContext,
             modifyPrivacyGroupRequest,
             oldPrivacyGroupPayload,
-            combinedPrivacyGroup.get());
+            combinedPrivacyGroup);
       });
     }).exceptionally(
         e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
@@ -127,17 +126,17 @@ public class AddToPrivacyGroupHandler extends PrivacyGroupBaseHandler implements
         .toArray(String[]::new);
   }
 
-  private CompletableFuture<Boolean>[] addToPrivacyGroupOtherMembers(
+  private List<CompletableFuture<Boolean>> addToPrivacyGroupOtherMembers(
       final ModifyPrivacyGroupRequest modifyPrivacyGroupRequest,
-      final AtomicReference<PrivacyGroupPayload> combinedPrivacyGroup) {
+      final PrivacyGroupPayload combinedPrivacyGroup) {
     Stream<Box.PublicKey> combinedAddresses = Arrays
-        .stream(combinedPrivacyGroup.get().addresses())
+        .stream(combinedPrivacyGroup.addresses())
         .filter(key -> !key.equals(modifyPrivacyGroupRequest.from()))
         .distinct()
         .map(enclave::readKey);
     return sendRequestsToOthers(
         combinedAddresses,
-        new SetPrivacyGroupRequest(combinedPrivacyGroup.get(), modifyPrivacyGroupRequest.privacyGroupId()),
+        new SetPrivacyGroupRequest(combinedPrivacyGroup, modifyPrivacyGroupRequest.privacyGroupId()),
         "/setPrivacyGroup");
   }
 
