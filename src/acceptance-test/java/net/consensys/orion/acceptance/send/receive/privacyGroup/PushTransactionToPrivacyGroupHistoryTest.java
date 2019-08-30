@@ -162,7 +162,6 @@ class PushTransactionToPrivacyGroupHistoryTest {
     assertTrue(result.isPresent() && result.get());
   }
 
-
   private EncryptedPayload mockPayload() {
     SodiumEnclave sEnclave = new SodiumEnclave(memoryKeyStore);
     Box.PublicKey k1 = memoryKeyStore.generateKeyPair();
