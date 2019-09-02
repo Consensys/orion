@@ -22,7 +22,7 @@ public class ByteArrayId implements Serializable {
     return key;
   }
 
-  public void setKey(byte[] key) {
+  public void setKey(final byte[] key) {
     this.key = key;
   }
 

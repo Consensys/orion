@@ -30,11 +30,11 @@ class EncryptedPayloadTest {
 
   @Test
   void roundTripSerialization() {
-    EncryptedKey encryptedKey = new EncryptedKey("Encrypted key fakery".getBytes(UTF_8));
-    Map<Box.PublicKey, Integer> encryptedKeysOwners = new HashMap<>();
-    Box.PublicKey key = Box.KeyPair.random().publicKey();
+    final EncryptedKey encryptedKey = new EncryptedKey("Encrypted key fakery".getBytes(UTF_8));
+    final Map<Box.PublicKey, Integer> encryptedKeysOwners = new HashMap<>();
+    final Box.PublicKey key = Box.KeyPair.random().publicKey();
     encryptedKeysOwners.put(key, 1);
-    EncryptedPayload payload = new EncryptedPayload(
+    final EncryptedPayload payload = new EncryptedPayload(
         Box.KeyPair.random().publicKey(),
         "fake nonce".getBytes(UTF_8),
         new EncryptedKey[] {encryptedKey},
@@ -47,16 +47,16 @@ class EncryptedPayloadTest {
 
   @Test
   void serializationToJsonWithoutEncryptedKeyOwners() throws Exception {
-    EncryptedKey encryptedKey = new EncryptedKey("Encrypted key fakery".getBytes(UTF_8));
-    EncryptedPayload payload = new EncryptedPayload(
+    final EncryptedKey encryptedKey = new EncryptedKey("Encrypted key fakery".getBytes(UTF_8));
+    final EncryptedPayload payload = new EncryptedPayload(
         Box.KeyPair.random().publicKey(),
         "fake nonce".getBytes(UTF_8),
         new EncryptedKey[] {encryptedKey},
         "fake ciphertext".getBytes(UTF_8),
         "fake group".getBytes(UTF_8));
-    byte[] serialized = Serializer.serialize(HttpContentType.JSON, payload);
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode jsonNode = mapper.readTree(serialized);
+    final byte[] serialized = Serializer.serialize(HttpContentType.JSON, payload);
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode jsonNode = mapper.readTree(serialized);
     jsonNode.fieldNames();
   }
 }

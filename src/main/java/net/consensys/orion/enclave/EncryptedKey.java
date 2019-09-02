@@ -22,7 +22,7 @@ public class EncryptedKey {
   private final byte[] encoded;
 
   @JsonCreator
-  public EncryptedKey(@JsonProperty("encoded") byte[] encoded) {
+  public EncryptedKey(@JsonProperty("encoded") final byte[] encoded) {
     this.encoded = encoded;
   }
 
@@ -31,14 +31,14 @@ public class EncryptedKey {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    EncryptedKey that = (EncryptedKey) o;
+    final EncryptedKey that = (EncryptedKey) o;
     return Arrays.equals(encoded, that.encoded);
   }
 

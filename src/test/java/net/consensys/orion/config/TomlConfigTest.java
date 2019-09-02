@@ -30,10 +30,10 @@ class TomlConfigTest {
 
   @Test
   void fullFileRead() throws Exception {
-    InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("fullConfigTest.toml");
-    Config testConf = Config.load(configAsStream);
+    final InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("fullConfigTest.toml");
+    final Config testConf = Config.load(configAsStream);
 
-    URL expectedURL = new URL("http://127.0.0.1:9001/");
+    final URL expectedURL = new URL("http://127.0.0.1:9001/");
     assertEquals(expectedURL, testConf.nodeUrl().get());
     assertEquals(9001, testConf.nodePort());
     assertEquals("0.0.0.0", testConf.nodeNetworkInterface());
@@ -68,7 +68,7 @@ class TomlConfigTest {
 
   @Test
   void fullFileReadUsingDefaults() throws Exception {
-    Config testConf = Config.load(this.getClass().getClassLoader().getResourceAsStream("defaultConfigTest.toml"));
+    final Config testConf = Config.load(this.getClass().getClassLoader().getResourceAsStream("defaultConfigTest.toml"));
 
     assertEquals("leveldb", testConf.storage());
     assertEquals("off", testConf.tls());
@@ -76,7 +76,7 @@ class TomlConfigTest {
     assertEquals("ca-or-tofu", testConf.tlsClientTrust());
 
     assertFalse(testConf.passwords().isPresent());
-    Path workDir = Paths.get("data");
+    final Path workDir = Paths.get("data");
     assertEquals(workDir.resolve("tls-server-cert.pem"), testConf.tlsServerCert());
     assertEquals(workDir.resolve("tls-server-key.pem"), testConf.tlsServerKey());
     assertEquals(workDir.resolve("tls-known-clients"), testConf.tlsKnownClients());
@@ -88,10 +88,10 @@ class TomlConfigTest {
 
   @Test
   void invalidConfigsThrowException() {
-    ConfigException e = assertThrows(
+    final ConfigException e = assertThrows(
         ConfigException.class,
         () -> Config.load(this.getClass().getClassLoader().getResourceAsStream("invalidConfigTest.toml")));
-    String message = "Value of property 'clienturl' is not a valid URL (line 4, column 1)\n"
+    final String message = "Value of property 'clienturl' is not a valid URL (line 4, column 1)\n"
         + "Value of property 'storage' must have storage type of \"leveldb\", \"mapdb\", \"sql\" or \"memory\" (line 11, column 1)\n"
         + "Value of property 'othernodes' is not a valid URL (line 6, column 1)\n"
         + "Value of property 'othernodes' is not a valid URL (line 6, column 1)\n"

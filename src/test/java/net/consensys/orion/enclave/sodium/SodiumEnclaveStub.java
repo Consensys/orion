@@ -34,26 +34,30 @@ public class SodiumEnclaveStub implements Enclave {
   }
 
   @Override
-  public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, Box.PublicKey publicKey) {
-    byte[] cipherText = ciphertextAndMetadata.cipherText();
-    byte[] plainText = new byte[cipherText.length];
+  public byte[] decrypt(final EncryptedPayload ciphertextAndMetadata, final Box.PublicKey publicKey) {
+    final byte[] cipherText = ciphertextAndMetadata.cipherText();
+    final byte[] plainText = new byte[cipherText.length];
     for (int i = 0; i < cipherText.length; i++) {
-      byte b = cipherText[i];
+      final byte b = cipherText[i];
       plainText[i] = (byte) (b - 10);
     }
     return plainText;
   }
 
   @Override
-  public Box.PublicKey readKey(String b64) {
+  public Box.PublicKey readKey(final String b64) {
     return Box.PublicKey.fromBytes(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
   }
 
   @Override
-  public EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients, byte[] seed) {
-    byte[] cipherText = new byte[plaintext.length];
+  public EncryptedPayload encrypt(
+      final byte[] plaintext,
+      final Box.PublicKey senderKey,
+      final Box.PublicKey[] recipients,
+      final byte[] seed) {
+    final byte[] cipherText = new byte[plaintext.length];
     for (int i = 0; i < plaintext.length; i++) {
-      byte b = plaintext[i];
+      final byte b = plaintext[i];
       cipherText[i] = (byte) (b + 10);
     }
     return new EncryptedPayload(
@@ -66,9 +70,9 @@ public class SodiumEnclaveStub implements Enclave {
 
   @Override
   public byte[] generatePrivacyGroupId(
-      Box.PublicKey[] recipientsAndSender,
-      byte[] seed,
-      PrivacyGroupPayload.Type type) {
+      final Box.PublicKey[] recipientsAndSender,
+      final byte[] seed,
+      final PrivacyGroupPayload.Type type) {
     return new byte[0];
   }
 }

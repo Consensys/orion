@@ -50,7 +50,7 @@ class NetworkDiscoveryTest {
 
   @AfterEach
   void tearDown() throws Exception {
-    CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
+    final CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
     vertx.close(result -> {
       if (result.succeeded()) {
         completion.complete();
@@ -66,7 +66,7 @@ class NetworkDiscoveryTest {
     // add peers
 
     // start network discovery
-    NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config);
+    final NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config);
     deployVerticle(networkDiscovery).join();
 
     assertEquals(0, networkDiscovery.discoverers().size());
@@ -75,19 +75,19 @@ class NetworkDiscoveryTest {
   @Test
   void networkDiscoveryWithUnresponsivePeer() throws Exception {
     // add peers
-    FakePeer fakePeer =
+    final FakePeer fakePeer =
         new FakePeer(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE), Box.KeyPair.random().publicKey());
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // start network discovery
-    NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config, 50, 100);
+    final NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config, 50, 100);
     deployVerticle(networkDiscovery).join();
 
     // assert the discoverer started
     assertEquals(1, networkDiscovery.discoverers().size());
 
     // ensure the discoverer match our peer URL
-    NetworkDiscovery.Discoverer discoverer = networkDiscovery.discoverers().get(fakePeer.getURL().toString());
+    final NetworkDiscovery.Discoverer discoverer = networkDiscovery.discoverers().get(fakePeer.getURL().toString());
     assertNotNull(discoverer);
 
     Thread.sleep(3 * (discoverer.currentRefreshDelay + 200));
@@ -100,33 +100,36 @@ class NetworkDiscoveryTest {
   @Test
   void networkDiscoveryWithMerge() throws Exception {
     // empty memory nodes, lets' say one peer is alone in his network
-    byte[] unknownPeerNetworkNodes =
+    final byte[] unknownPeerNetworkNodes =
         Serializer.serialize(CBOR, new ConcurrentNetworkNodes(new URL("http://localhost/")));
-    Buffer unknownPeerBody = new Buffer();
+    final Buffer unknownPeerBody = new Buffer();
     unknownPeerBody.write(unknownPeerNetworkNodes);
     // create a peer that's not in our current network nodes
-    FakePeer unknownPeer = new FakePeer(new MockResponse().setBody(unknownPeerBody), Box.KeyPair.random().publicKey());
+    final FakePeer unknownPeer =
+        new FakePeer(new MockResponse().setBody(unknownPeerBody), Box.KeyPair.random().publicKey());
 
     // create a peer that we know, and that knows the lonely unknown peer.
-    ConcurrentNetworkNodes knownPeerNetworkNodes = new ConcurrentNetworkNodes(new URL("http://localhost/"));
+    final ConcurrentNetworkNodes knownPeerNetworkNodes = new ConcurrentNetworkNodes(new URL("http://localhost/"));
     knownPeerNetworkNodes.addNode(unknownPeer.publicKey, unknownPeer.getURL());
-    Buffer knownPeerBody = new Buffer();
+    final Buffer knownPeerBody = new Buffer();
     knownPeerBody.write(Serializer.serialize(CBOR, knownPeerNetworkNodes));
-    FakePeer knownPeer = new FakePeer(new MockResponse().setBody(knownPeerBody), Box.KeyPair.random().publicKey());
+    final FakePeer knownPeer =
+        new FakePeer(new MockResponse().setBody(knownPeerBody), Box.KeyPair.random().publicKey());
 
     // we know this peer, add it to our network nodes
     networkNodes.addNode(knownPeer.publicKey, knownPeer.getURL());
 
     // start network discovery
     final Instant discoveryStart = Instant.now();
-    NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config, 500, 500);
+    final NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config, 500, 500);
     deployVerticle(networkDiscovery).join();
 
     // assert the discoverer started, we should only have 1 discoverer for knownPeer
     assertEquals(1, networkDiscovery.discoverers().size());
 
     // ensure the discoverer match our peer URL
-    NetworkDiscovery.Discoverer knownPeerDiscoverer = networkDiscovery.discoverers().get(knownPeer.getURL().toString());
+    final NetworkDiscovery.Discoverer knownPeerDiscoverer =
+        networkDiscovery.discoverers().get(knownPeer.getURL().toString());
     assertNotNull(knownPeerDiscoverer);
 
     Thread.sleep(3 * (knownPeerDiscoverer.currentRefreshDelay + 1000));
@@ -142,7 +145,7 @@ class NetworkDiscoveryTest {
     assertEquals(unknownPeer.getURL(), networkNodes.nodePKs().get(unknownPeer.publicKey));
 
     // ensure unknown peer discoverer is set and being called
-    NetworkDiscovery.Discoverer unknownPeerDiscoverer =
+    final NetworkDiscovery.Discoverer unknownPeerDiscoverer =
         networkDiscovery.discoverers().get(unknownPeer.getURL().toString());
     assertNotNull(unknownPeerDiscoverer);
 
@@ -150,8 +153,8 @@ class NetworkDiscoveryTest {
     assertTrue(unknownPeerDiscoverer.attempts >= 1);
   }
 
-  private AsyncCompletion deployVerticle(Verticle verticle) {
-    CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
+  private AsyncCompletion deployVerticle(final Verticle verticle) {
+    final CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
     vertx.deployVerticle(verticle, result -> {
       if (result.succeeded()) {
         completion.complete();

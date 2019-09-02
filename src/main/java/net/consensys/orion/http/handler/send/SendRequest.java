@@ -54,29 +54,29 @@ public class SendRequest implements Serializable {
 
   @JsonCreator
   public SendRequest(
-      @JsonProperty("payload") String payload,
-      @JsonProperty("from") String from,
-      @JsonProperty("to") String[] to) {
+      @JsonProperty("payload") final String payload,
+      @JsonProperty("from") final String from,
+      @JsonProperty("to") final String[] to) {
     this(decodePayload(payload), from, to);
   }
 
   @JsonSetter("privacyGroupId")
-  void setPrivacyGroupId(String privacyGroupId) {
+  void setPrivacyGroupId(final String privacyGroupId) {
     this.privacyGroupId = privacyGroupId;
   }
 
-  private static byte[] decodePayload(String payload) {
+  private static byte[] decodePayload(final String payload) {
     if (payload == null) {
       return new byte[0];
     }
     try {
       return decodeBytes(payload);
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       return null;
     }
   }
 
-  public SendRequest(byte[] rawPayload, String from, String[] to) {
+  public SendRequest(final byte[] rawPayload, final String from, final String[] to) {
     this.rawPayload = rawPayload;
     this.from = from;
     this.to = to;
@@ -92,14 +92,14 @@ public class SendRequest implements Serializable {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (!(o instanceof SendRequest)) {
       return false;
     }
-    SendRequest that = (SendRequest) o;
+    final SendRequest that = (SendRequest) o;
     return Arrays.equals(rawPayload, that.rawPayload) && Objects.equals(from, that.from) && Arrays.equals(to, that.to);
   }
 
@@ -126,7 +126,7 @@ public class SendRequest implements Serializable {
     return rawPayload;
   }
 
-  public void setTo(String[] to) {
+  public void setTo(final String[] to) {
     this.to = to;
   }
 }

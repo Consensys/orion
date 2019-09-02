@@ -30,10 +30,10 @@ public class PrivacyGroupRequest implements Serializable {
 
   @JsonCreator
   public PrivacyGroupRequest(
-      @JsonProperty("addresses") String[] addresses,
-      @JsonProperty("from") String from,
-      @JsonProperty("name") String name,
-      @JsonProperty("description") String description) {
+      @JsonProperty("addresses") final String[] addresses,
+      @JsonProperty("from") final String from,
+      @JsonProperty("name") final String name,
+      @JsonProperty("description") final String description) {
     this.addresses = addresses;
     this.from = from;
     this.name = name;
@@ -41,7 +41,7 @@ public class PrivacyGroupRequest implements Serializable {
   }
 
   @JsonSetter
-  public void setSeed(byte[] seed) {
+  public void setSeed(final byte[] seed) {
     this.seed = seed;
   }
 

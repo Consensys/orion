@@ -69,19 +69,19 @@ class FileKeyStoreTest {
   @Test
   void missingKeyBehaviourIsNice() {
     // @formatter:off
-    Config config = Config.load(
+    final Config config = Config.load(
         "privatekeys=[\"Does not exist\"]\n"
       + "publickeys=[\"Does not exist\"]\n"
       + "alwayssendto=[\"Does not exist\"]");
     // @formatter:on
-    IOException ex = assertThrows(IOException.class, () -> new FileKeyStore(config));
+    final IOException ex = assertThrows(IOException.class, () -> new FileKeyStore(config));
     assertTrue(ex.getMessage().startsWith("Failed to read public key file '"));
   }
 
   @Test
   void unknownKeyTypeRaisesAppropriateException() {
     // @formatter:off
-    Config config = Config.load(
+    final Config config = Config.load(
         "privatekeys=[\"keys/unknown_type.key\"]\n"
       + "publickeys=[\"keys/tm1a.pub\"]\n"
       + "alwayssendto=[\"keys/tm1a.pub\"]");
@@ -91,30 +91,32 @@ class FileKeyStoreTest {
 
   @Test
   void configLoadsMultipleKeys() throws IOException {
-    Config config = Config.load(this.getClass().getClassLoader().getResourceAsStream("multipleKeyStoreTest.toml"));
+    final Config config =
+        Config.load(this.getClass().getClassLoader().getResourceAsStream("multipleKeyStoreTest.toml"));
     keyStore = new FileKeyStore(config);
-    String[] encodedPublicKeys =
+    final String[] encodedPublicKeys =
         new String[] {"BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=", "8SjRHlUBe4hAmTk3KDeJ96RhN+s10xRrHDrxEi1O5W0="};
 
-    String[] encodedPrivateKeys =
+    final String[] encodedPrivateKeys =
         new String[] {"Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA=", "wGEar7J9G0JAgdisp61ZChyrJWeW2QPyKvecjjeVHOY="};
 
     for (int i = 0; i < encodedPrivateKeys.length; i++) {
-      Box.SecretKey privateKey = Box.SecretKey.fromBytes(decodeBytes(encodedPrivateKeys[i]));
-      Box.PublicKey publicKey = Box.PublicKey.fromBytes(decodeBytes(encodedPublicKeys[i]));
+      final Box.SecretKey privateKey = Box.SecretKey.fromBytes(decodeBytes(encodedPrivateKeys[i]));
+      final Box.PublicKey publicKey = Box.PublicKey.fromBytes(decodeBytes(encodedPublicKeys[i]));
       assertEquals(privateKey, keyStore.privateKey(publicKey));
     }
   }
 
   @Test
   void alwaysSendTo() throws IOException {
-    Config config = Config.load(this.getClass().getClassLoader().getResourceAsStream("alwaysSendToKeyStoreTest.toml"));
+    final Config config =
+        Config.load(this.getClass().getClassLoader().getResourceAsStream("alwaysSendToKeyStoreTest.toml"));
     assertEquals(Paths.get("keys"), config.workDir());
     keyStore = new FileKeyStore(config);
-    String[] encodedPublicKeys =
+    final String[] encodedPublicKeys =
         new String[] {"BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=", "8SjRHlUBe4hAmTk3KDeJ96RhN+s10xRrHDrxEi1O5W0="};
 
-    Box.PublicKey[] publicKeys = new Box.PublicKey[encodedPublicKeys.length];
+    final Box.PublicKey[] publicKeys = new Box.PublicKey[encodedPublicKeys.length];
     for (int i = 0; i < encodedPublicKeys.length; i++) {
       publicKeys[i] = Box.PublicKey.fromBytes(decodeBytes(encodedPublicKeys[i]));
     }
@@ -122,9 +124,9 @@ class FileKeyStoreTest {
   }
 
   @Test
-  void generateUnlockedProtectedKeyPair(@TempDirectory Path tempDir) throws Exception {
+  void generateUnlockedProtectedKeyPair(@TempDirectory final Path tempDir) throws Exception {
     Files.createDirectories(tempDir.resolve("keys"));
-    Path keyPrefix = tempDir.resolve("keys").resolve("generated");
+    final Path keyPrefix = tempDir.resolve("keys").resolve("generated");
     keyStore = new FileKeyStore(config);
     keyStore.generateKeyPair(keyPrefix);
 
@@ -132,41 +134,41 @@ class FileKeyStoreTest {
     // this shows that the key was stored and that we could load it.
 
     // @formatter:off
-    Config config = Config.load(
+    final Config config = Config.load(
           "privatekeys=['keys/generated.key']\n"
         + "publickeys=['keys/generated.pub']\n"
         + "workdir='" + tempDir + "'\n");
     // @formatter:on
     keyStore = new FileKeyStore(config);
-    Box.PublicKey fromStore = keyStore.nodeKeys()[0];
+    final Box.PublicKey fromStore = keyStore.nodeKeys()[0];
     assertNotNull(keyStore.privateKey(fromStore));
 
-    Path privateKey = tempDir.resolve("keys").resolve("generated.key");
-    Path publicKey = tempDir.resolve("keys").resolve("generated.pub");
+    final Path privateKey = tempDir.resolve("keys").resolve("generated.key");
+    final Path publicKey = tempDir.resolve("keys").resolve("generated.pub");
     assertTrue(Files.exists(privateKey));
     assertTrue(Files.exists(publicKey));
   }
 
   @Test
-  void generatePasswordProtectedKeyPair(@TempDirectory Path tempDir) throws Exception {
+  void generatePasswordProtectedKeyPair(@TempDirectory final Path tempDir) throws Exception {
     Files.createDirectories(tempDir.resolve("keys"));
-    Path keyPrefix = tempDir.resolve("keys").resolve("generated_password");
+    final Path keyPrefix = tempDir.resolve("keys").resolve("generated_password");
     keyStore = new FileKeyStore(config);
     keyStore.generateKeyPair(keyPrefix, "yolo");
 
-    Path privateKey = tempDir.resolve("keys").resolve("generated_password.key");
-    Path publicKey = tempDir.resolve("keys").resolve("generated_password.pub");
+    final Path privateKey = tempDir.resolve("keys").resolve("generated_password.key");
+    final Path publicKey = tempDir.resolve("keys").resolve("generated_password.pub");
 
     // Load the a config using the generated key, and confirm that it is valid.
     // this shows that the key was stored and that we could load it.
     // @formatter:off
-    Config config = Config.load(
+    final Config config = Config.load(
         "passwords='keys/password.txt'\n"
       + "privatekeys=['" + privateKey.toAbsolutePath() + "']\n"
       + "publickeys=['" + publicKey.toAbsolutePath() + "']\n");
     // @formatter:on
     keyStore = new FileKeyStore(config);
-    Box.PublicKey fromStore = keyStore.nodeKeys()[0];
+    final Box.PublicKey fromStore = keyStore.nodeKeys()[0];
     assertNotNull(keyStore.privateKey(fromStore));
 
     assertTrue(Files.exists(privateKey));

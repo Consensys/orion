@@ -40,32 +40,34 @@ public class TestUtils {
 
   private TestUtils() {}
 
-  public static void configureJDKTrustStore(SelfSignedCertificate clientCert, Path tempDir) throws Exception {
-    KeyStore ks = KeyStore.getInstance("JKS");
+  public static void configureJDKTrustStore(final SelfSignedCertificate clientCert, final Path tempDir)
+      throws Exception {
+    final KeyStore ks = KeyStore.getInstance("JKS");
     ks.load(null, null);
 
-    KeyFactory kf = KeyFactory.getInstance("RSA");
-    PKCS8EncodedKeySpec keysp = new PKCS8EncodedKeySpec(readPemFile(Paths.get(clientCert.privateKeyPath())));
-    PrivateKey clientPrivateKey = kf.generatePrivate(keysp);
-    CertificateFactory cf = CertificateFactory.getInstance("X.509");
-    Certificate certificate = cf.generateCertificate(
+    final KeyFactory kf = KeyFactory.getInstance("RSA");
+    final PKCS8EncodedKeySpec keysp = new PKCS8EncodedKeySpec(readPemFile(Paths.get(clientCert.privateKeyPath())));
+    final PrivateKey clientPrivateKey = kf.generatePrivate(keysp);
+    final CertificateFactory cf = CertificateFactory.getInstance("X.509");
+    final Certificate certificate = cf.generateCertificate(
         new ByteArrayInputStream(Files.readAllBytes(new File(clientCert.certificatePath()).toPath())));
     ks.setCertificateEntry("clientCert", certificate);
     ks.setKeyEntry("client", clientPrivateKey, "changeit".toCharArray(), new Certificate[] {certificate});
-    Path tempKeystore = tempDir.resolve("keystore.jks");
-    try (FileOutputStream output = new FileOutputStream(tempKeystore.toFile())) {
+    final Path tempKeystore = tempDir.resolve("keystore.jks");
+    try (final FileOutputStream output = new FileOutputStream(tempKeystore.toFile())) {
       ks.store(output, "changeit".toCharArray());
     }
     System.setProperty("javax.net.ssl.trustStore", tempKeystore.toString());
     System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
   }
 
-  public static Config generateAndLoadConfiguration(Path rootDir, IOConsumer<Writer> consumer) throws IOException {
-    Path workDir = rootDir.resolve("data").toAbsolutePath();
-    Path knownClientsFile = rootDir.resolve("knownclients.txt").toAbsolutePath();
-    Path knownServersFile = rootDir.resolve("knownservers.txt").toAbsolutePath();
-    Path configFile = rootDir.resolve("config");
-    try (Writer writer = Files.newBufferedWriter(configFile, UTF_8)) {
+  public static Config generateAndLoadConfiguration(final Path rootDir, final IOConsumer<Writer> consumer)
+      throws IOException {
+    final Path workDir = rootDir.resolve("data").toAbsolutePath();
+    final Path knownClientsFile = rootDir.resolve("knownclients.txt").toAbsolutePath();
+    final Path knownServersFile = rootDir.resolve("knownservers.txt").toAbsolutePath();
+    final Path configFile = rootDir.resolve("config");
+    try (final Writer writer = Files.newBufferedWriter(configFile, UTF_8)) {
       writer.write("tls='strict'\n");
       writer.write("workdir='" + workDir + "'\n");
       writer.write("tlsknownclients='" + knownClientsFile + "'\n");
@@ -76,27 +78,29 @@ public class TestUtils {
     return Config.load(configFile);
   }
 
-  public static void findFreePortsAndWriteToConfig(Writer configWriter) throws IOException {
-    try (ServerSocket nodeSocket = new ServerSocket(0); ServerSocket clientSocket = new ServerSocket(0)) {
-      int nodePort = nodeSocket.getLocalPort();
-      int clientPort = clientSocket.getLocalPort();
+  public static void findFreePortsAndWriteToConfig(final Writer configWriter) throws IOException {
+    try (final ServerSocket nodeSocket = new ServerSocket(0); final ServerSocket clientSocket = new ServerSocket(0)) {
+      final int nodePort = nodeSocket.getLocalPort();
+      final int clientPort = clientSocket.getLocalPort();
       configWriter.write("nodeport=" + nodePort + "\n");
       configWriter.write("clientport=" + clientPort + "\n");
     }
   }
 
-  public static void writeServerCertToConfig(Writer configWriter, SelfSignedCertificate serverCert) throws IOException {
+  public static void writeServerCertToConfig(final Writer configWriter, final SelfSignedCertificate serverCert)
+      throws IOException {
     configWriter.write("tlsservercert=\"" + serverCert.certificatePath() + "\"\n");
     configWriter.write("tlsserverkey=\"" + serverCert.privateKeyPath() + "\"\n");
   }
 
-  public static void writeClientCertToConfig(Writer configWriter, SelfSignedCertificate serverCert) throws IOException {
+  public static void writeClientCertToConfig(final Writer configWriter, final SelfSignedCertificate serverCert)
+      throws IOException {
     configWriter.write("tlsclientcert=\"" + serverCert.certificatePath() + "\"\n");
     configWriter.write("tlsclientkey=\"" + serverCert.privateKeyPath() + "\"\n");
   }
 
   public static int getFreePort() throws Exception {
-    try (ServerSocket nodeSocket = new ServerSocket(0)) {
+    try (final ServerSocket nodeSocket = new ServerSocket(0)) {
       return nodeSocket.getLocalPort();
     }
   }

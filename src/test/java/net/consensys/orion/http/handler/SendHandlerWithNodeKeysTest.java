@@ -39,14 +39,14 @@ import org.junit.jupiter.api.Test;
 class SendHandlerWithNodeKeysTest extends SendHandlerTest {
 
   @Override
-  protected Enclave buildEnclave(Path tempDir) {
+  protected Enclave buildEnclave(final Path tempDir) {
     return new StubEnclave() {
       @Override
       public Box.PublicKey[] nodeKeys() {
         try {
-          Box.KeyPair keyPair = Box.KeyPair.random();
+          final Box.KeyPair keyPair = Box.KeyPair.random();
           return new Box.PublicKey[] {keyPair.publicKey()};
-        } catch (Throwable t) {
+        } catch (final Throwable t) {
           throw new RuntimeException(t);
         }
       }
@@ -57,30 +57,30 @@ class SendHandlerWithNodeKeysTest extends SendHandlerTest {
   @Override
   void sendWithNoFrom() throws Exception {
     // generate random byte content
-    byte[] toEncrypt = new byte[342];
+    final byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
     // encrypt it here to compute digest
-    EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
-    String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
+    final EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
+    final String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     // create fake peer
-    FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
+    final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    String[] to = new String[] {encodeBytes(fakePeer.publicKey.bytesArray())};
+    final String[] to = new String[] {encodeBytes(fakePeer.publicKey.bytesArray())};
 
-    Map<String, Object> sendRequest = buildRequest(to, toEncrypt, null);
-    Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
+    final Map<String, Object> sendRequest = buildRequest(to, toEncrypt, null);
+    final Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
 
     // execute request
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     // ensure it comes back OK.
     assertEquals(200, resp.code());
 
     // ensure pear actually got the EncryptedPayload
-    RecordedRequest recordedRequest = fakePeer.server.takeRequest();
+    final RecordedRequest recordedRequest = fakePeer.server.takeRequest();
 
     // check method and path
     assertEquals("/push", recordedRequest.getPath());
@@ -90,7 +90,7 @@ class SendHandlerWithNodeKeysTest extends SendHandlerTest {
     assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
 
     // ensure cipher text is same.
-    EncryptedPayload receivedPayload =
+    final EncryptedPayload receivedPayload =
         Serializer.deserialize(CBOR, EncryptedPayload.class, recordedRequest.getBody().readByteArray());
     assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
   }

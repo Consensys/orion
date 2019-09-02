@@ -59,9 +59,9 @@ class TofuSecurityTest {
   private Orion orion;
 
   @BeforeEach
-  void setUp(@TempDirectory Path tempDir) throws Exception {
-    SelfSignedCertificate serverCertificate = SelfSignedCertificate.create("localhost");
-    Config config = generateAndLoadConfiguration(tempDir, writer -> {
+  void setUp(@TempDirectory final Path tempDir) throws Exception {
+    final SelfSignedCertificate serverCertificate = SelfSignedCertificate.create("localhost");
+    final Config config = generateAndLoadConfiguration(tempDir, writer -> {
       writer.write("tlsservertrust='tofu'\n");
       writeServerCertToConfig(writer, serverCertificate);
     });
@@ -69,13 +69,13 @@ class TofuSecurityTest {
     configureJDKTrustStore(serverCertificate, tempDir);
     knownClientsFile = config.tlsKnownClients();
 
-    SelfSignedCertificate clientCertificate = SelfSignedCertificate.create("example.com");
+    final SelfSignedCertificate clientCertificate = SelfSignedCertificate.create("example.com");
     exampleComFingerprint = certificateHexFingerprint(Paths.get(clientCertificate.keyCertOptions().getCertPath()));
     Files.write(knownClientsFile, Collections.singletonList("#First line"));
     httpClient = vertx
         .createHttpClient(new HttpClientOptions().setSsl(true).setKeyCertOptions(clientCertificate.keyCertOptions()));
 
-    SelfSignedCertificate anotherExampleDotComCert = SelfSignedCertificate.create("example.com");
+    final SelfSignedCertificate anotherExampleDotComCert = SelfSignedCertificate.create("example.com");
     anotherExampleComClient = vertx.createHttpClient(
         new HttpClientOptions().setSsl(true).setKeyCertOptions(anotherExampleDotComCert.keyCertOptions()));
 
@@ -93,13 +93,13 @@ class TofuSecurityTest {
   @Test
   void testUpCheckOnNodePort() throws Exception {
     for (int i = 0; i < 5; i++) {
-      HttpClientRequest req = httpClient.get(nodePort, "localhost", "/upcheck");
-      CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
+      final HttpClientRequest req = httpClient.get(nodePort, "localhost", "/upcheck");
+      final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
       req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
-      HttpClientResponse resp = result.get();
+      final HttpClientResponse resp = result.get();
       assertEquals(200, resp.statusCode());
     }
-    List<String> fingerprints = Files.readAllLines(knownClientsFile);
+    final List<String> fingerprints = Files.readAllLines(knownClientsFile);
     assertEquals(2, fingerprints.size(), String.join("\n", fingerprints));
     assertEquals("#First line", fingerprints.get(0));
     assertEquals("example.com " + exampleComFingerprint, fingerprints.get(1));
@@ -108,22 +108,22 @@ class TofuSecurityTest {
   @Test
   void testSameHostnameUnknownCertificate() throws Exception {
     testUpCheckOnNodePort();
-    HttpClientRequest req = anotherExampleComClient.get(nodePort, "localhost", "/upcheck");
-    CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
+    final HttpClientRequest req = anotherExampleComClient.get(nodePort, "localhost", "/upcheck");
+    final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
 
-    CompletionException e = assertThrows(CompletionException.class, result::get);
+    final CompletionException e = assertThrows(CompletionException.class, result::get);
     assertEquals("Received fatal alert: certificate_unknown", e.getCause().getCause().getMessage());
   }
 
   @Test
   void testWithoutSSLConfiguration() {
-    CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
-    HttpClient insecureClient = vertx.createHttpClient(new HttpClientOptions().setSsl(true));
-    HttpClientRequest req = insecureClient.get(nodePort, "localhost", "/upcheck");
+    final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
+    final HttpClient insecureClient = vertx.createHttpClient(new HttpClientOptions().setSsl(true));
+    final HttpClientRequest req = insecureClient.get(nodePort, "localhost", "/upcheck");
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
 
-    CompletionException e = assertThrows(CompletionException.class, result::get);
+    final CompletionException e = assertThrows(CompletionException.class, result::get);
     assertTrue(e.getCause() instanceof SSLHandshakeException);
   }
 }

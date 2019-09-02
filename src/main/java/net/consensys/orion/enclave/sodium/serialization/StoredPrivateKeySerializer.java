@@ -23,7 +23,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 public final class StoredPrivateKeySerializer extends JsonSerializer<StoredPrivateKey> {
 
   @Override
-  public void serialize(StoredPrivateKey key, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+  public void serialize(final StoredPrivateKey key, final JsonGenerator gen, final SerializerProvider serializers)
+      throws IOException {
     gen.writeStartObject();
     gen.writeFieldName("data");
     gen.writeStartObject();

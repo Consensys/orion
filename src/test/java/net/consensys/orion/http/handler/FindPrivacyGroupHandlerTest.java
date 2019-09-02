@@ -51,9 +51,9 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
   private final String description = "testDescription";
 
   @Override
-  protected Enclave buildEnclave(Path tempDir) {
+  protected Enclave buildEnclave(final Path tempDir) {
     memoryKeyStore = new MemoryKeyStore();
-    Box.PublicKey defaultNodeKey = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey defaultNodeKey = memoryKeyStore.generateKeyPair();
     memoryKeyStore.addNodeKey(defaultNodeKey);
     return new SodiumEnclave(memoryKeyStore);
   }
@@ -61,14 +61,14 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
   @BeforeEach
   void setup() throws IOException, InterruptedException {
     senderKey = memoryKeyStore.generateKeyPair();
-    Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
 
     toEncrypt = new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
-    PrivacyGroupRequest privacyGroupRequestExpected =
+    final PrivacyGroupRequest privacyGroupRequestExpected =
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), name, description);
-    Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
+    final Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
 
-    byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
+    final byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
         new Box.PublicKey[] {senderKey, recipientKey},
         privacyGroupRequestExpected.getSeed().get(),
         PrivacyGroupPayload.Type.PANTHEON);
@@ -78,46 +78,46 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // execute request
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     assertEquals(200, resp.code());
 
-    RecordedRequest recordedRequest = fakePeer.server.takeRequest();
+    final RecordedRequest recordedRequest = fakePeer.server.takeRequest();
     assertEquals("/pushPrivacyGroup", recordedRequest.getPath());
     assertEquals("POST", recordedRequest.getMethod());
 
-    PrivacyGroup privacyGroup = Serializer.deserialize(JSON, PrivacyGroup.class, resp.body().bytes());
+    final PrivacyGroup privacyGroup = Serializer.deserialize(JSON, PrivacyGroup.class, resp.body().bytes());
     privacyGroupId = privacyGroup.getPrivacyGroupId();
   }
 
   @Test
   void findPrivacyGroupIdBeforeCreationShouldReturnEmptyList() throws Exception {
-    Box.PublicKey newSender = memoryKeyStore.generateKeyPair();
-    Box.PublicKey newRecipient = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey newSender = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey newRecipient = memoryKeyStore.generateKeyPair();
 
-    String[] to = new String[] {encodeBytes(newSender.bytesArray()), encodeBytes(newRecipient.bytesArray())};
+    final String[] to = new String[] {encodeBytes(newSender.bytesArray()), encodeBytes(newRecipient.bytesArray())};
 
-    FindPrivacyGroupRequest findPrivacyGroupRequest = new FindPrivacyGroupRequest(to);
-    Request request = buildPrivateAPIRequest("/findPrivacyGroup", JSON, findPrivacyGroupRequest);
+    final FindPrivacyGroupRequest findPrivacyGroupRequest = new FindPrivacyGroupRequest(to);
+    final Request request = buildPrivateAPIRequest("/findPrivacyGroup", JSON, findPrivacyGroupRequest);
 
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     assertEquals(200, resp.code());
 
-    PrivacyGroup[] privacyGroupList = Serializer.deserialize(JSON, PrivacyGroup[].class, resp.body().bytes());
+    final PrivacyGroup[] privacyGroupList = Serializer.deserialize(JSON, PrivacyGroup[].class, resp.body().bytes());
     assertEquals(privacyGroupList.length, 0);
   }
 
   @Test
   void findPrivacyGroupIdAfterCreation() throws Exception {
-    FindPrivacyGroupRequest findPrivacyGroupRequest = new FindPrivacyGroupRequest(toEncrypt);
-    Request request = buildPrivateAPIRequest("/findPrivacyGroup", JSON, findPrivacyGroupRequest);
+    final FindPrivacyGroupRequest findPrivacyGroupRequest = new FindPrivacyGroupRequest(toEncrypt);
+    final Request request = buildPrivateAPIRequest("/findPrivacyGroup", JSON, findPrivacyGroupRequest);
 
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     assertEquals(200, resp.code());
 
-    PrivacyGroup[] privacyGroupList = Serializer.deserialize(JSON, PrivacyGroup[].class, resp.body().bytes());
+    final PrivacyGroup[] privacyGroupList = Serializer.deserialize(JSON, PrivacyGroup[].class, resp.body().bytes());
     assertEquals(privacyGroupList.length, 1);
     assertEquals(privacyGroupList[0].getPrivacyGroupId(), privacyGroupId);
     assertArrayEquals(privacyGroupList[0].getMembers(), toEncrypt);
@@ -144,7 +144,7 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
     assertEquals(privacyGroupList[0].getDescription(), description);
 
     //delete the privacy group
-    DeletePrivacyGroupRequest deletePrivacyGroupRequest =
+    final DeletePrivacyGroupRequest deletePrivacyGroupRequest =
         new DeletePrivacyGroupRequest(privacyGroupId, encodeBytes(senderKey.bytesArray()));
 
     request = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
@@ -167,11 +167,15 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
     assertEquals(privacyGroupList.length, 0);
   }
 
-  PrivacyGroupRequest buildPrivacyGroupRequest(String[] addresses, String from, String name, String description) {
-    PrivacyGroupRequest privacyGroupRequest = new PrivacyGroupRequest(addresses, from, name, description);
+  PrivacyGroupRequest buildPrivacyGroupRequest(
+      final String[] addresses,
+      final String from,
+      final String name,
+      final String description) {
+    final PrivacyGroupRequest privacyGroupRequest = new PrivacyGroupRequest(addresses, from, name, description);
     // create a random seed
-    SecureRandom random = new SecureRandom();
-    byte[] bytes = new byte[20];
+    final SecureRandom random = new SecureRandom();
+    final byte[] bytes = new byte[20];
     random.nextBytes(bytes);
     privacyGroupRequest.setSeed(bytes);
 

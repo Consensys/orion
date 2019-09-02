@@ -22,19 +22,19 @@ public class HttpError {
 
   private final OrionErrorCode error;
 
-  public HttpError(OrionErrorCode error) {
+  public HttpError(final OrionErrorCode error) {
     this.error = error;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    HttpError httpError = (HttpError) o;
+    final HttpError httpError = (HttpError) o;
     return Objects.equals(error, httpError.error);
   }
 

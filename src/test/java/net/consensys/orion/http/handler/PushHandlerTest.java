@@ -40,37 +40,37 @@ class PushHandlerTest extends HandlerTest {
   private MemoryKeyStore memoryKeyStore;
 
   @BeforeEach
-  void setUpKeyStore(@TempDirectory Path tempDir) {
+  void setUpKeyStore(@TempDirectory final Path tempDir) {
     memoryKeyStore = new MemoryKeyStore();
   }
 
   @Test
   void payloadIsStored() throws Exception {
     // configureRoutes & serialize our payload
-    EncryptedPayload encryptedPayload = mockPayload();
+    final EncryptedPayload encryptedPayload = mockPayload();
 
     // PUSH operation, sending an encrypted payload
-    RequestBody body = RequestBody.create(
+    final RequestBody body = RequestBody.create(
         MediaType.parse(HttpContentType.CBOR.httpHeaderValue),
         Serializer.serialize(HttpContentType.CBOR, encryptedPayload));
 
-    Request request = new Request.Builder().post(body).url(nodeBaseUrl + "/push").build();
+    final Request request = new Request.Builder().post(body).url(nodeBaseUrl + "/push").build();
 
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     assertEquals(200, resp.code());
-    String digest = resp.body().string();
+    final String digest = resp.body().string();
     assertTrue(digest.length() > 0);
 
     // we should be able to read that from storage
-    Optional<EncryptedPayload> data = payloadStorage.get(digest).get();
+    final Optional<EncryptedPayload> data = payloadStorage.get(digest).get();
     assertTrue(data.isPresent());
     assertEquals(encryptedPayload, data.get());
   }
 
   @Test
   void roundTripSerialization() {
-    EncryptedPayload pushRequest = mockPayload();
+    final EncryptedPayload pushRequest = mockPayload();
     assertEquals(pushRequest, Serializer.roundTrip(HttpContentType.CBOR, EncryptedPayload.class, pushRequest));
     assertEquals(pushRequest, Serializer.roundTrip(HttpContentType.JSON, EncryptedPayload.class, pushRequest));
   }
@@ -78,27 +78,27 @@ class PushHandlerTest extends HandlerTest {
   @Test
   void pushWithInvalidContentType() throws Exception {
     // configureRoutes & serialize our payload
-    EncryptedPayload encryptedPayload = mockPayload();
+    final EncryptedPayload encryptedPayload = mockPayload();
 
     // PUSH operation with invalid content type
-    RequestBody body = RequestBody.create(
+    final RequestBody body = RequestBody.create(
         MediaType.parse(HttpContentType.JSON.httpHeaderValue),
         Serializer.serialize(HttpContentType.JSON, encryptedPayload));
 
-    Request request = new Request.Builder().post(body).url(nodeBaseUrl + "/push").build();
+    final Request request = new Request.Builder().post(body).url(nodeBaseUrl + "/push").build();
 
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     assertEquals(404, resp.code());
   }
 
   @Test
   void pushWithInvalidBody() throws Exception {
-    RequestBody body = RequestBody.create(MediaType.parse(HttpContentType.CBOR.httpHeaderValue), "foo");
+    final RequestBody body = RequestBody.create(MediaType.parse(HttpContentType.CBOR.httpHeaderValue), "foo");
 
-    Request request = new Request.Builder().post(body).url(nodeBaseUrl + "/push").build();
+    final Request request = new Request.Builder().post(body).url(nodeBaseUrl + "/push").build();
 
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     // produces 500 because serialisation error
     assertEquals(500, resp.code());
@@ -107,9 +107,9 @@ class PushHandlerTest extends HandlerTest {
   }
 
   private EncryptedPayload mockPayload() {
-    SodiumEnclave sEnclave = new SodiumEnclave(memoryKeyStore);
-    Box.PublicKey k1 = memoryKeyStore.generateKeyPair();
-    Box.PublicKey k2 = memoryKeyStore.generateKeyPair();
+    final SodiumEnclave sEnclave = new SodiumEnclave(memoryKeyStore);
+    final Box.PublicKey k1 = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey k2 = memoryKeyStore.generateKeyPair();
     return sEnclave.encrypt("something important".getBytes(UTF_8), k1, new Box.PublicKey[] {k2}, null);
   }
 }

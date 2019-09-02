@@ -30,12 +30,12 @@ public class PrivacyGroupPayload implements Serializable {
 
   @JsonCreator
   public PrivacyGroupPayload(
-      @JsonProperty("addresses") String[] addresses,
-      @JsonProperty("name") String name,
-      @JsonProperty("description") String description,
-      @JsonProperty("state") State state,
-      @JsonProperty("type") Type type,
-      @JsonProperty("randomSeed") byte[] randomSeed) {
+      @JsonProperty("addresses") final String[] addresses,
+      @JsonProperty("name") final String name,
+      @JsonProperty("description") final String description,
+      @JsonProperty("state") final State state,
+      @JsonProperty("type") final Type type,
+      @JsonProperty("randomSeed") final byte[] randomSeed) {
     this.addresses = addresses;
     this.name = name;
     this.description = description;
@@ -74,19 +74,19 @@ public class PrivacyGroupPayload implements Serializable {
     return randomSeed;
   }
 
-  public void setState(State state) {
+  public void setState(final State state) {
     this.state = state;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    PrivacyGroupPayload that = (PrivacyGroupPayload) o;
+    final PrivacyGroupPayload that = (PrivacyGroupPayload) o;
     return Arrays.equals(addresses, that.addresses)
         && Objects.equals(name, that.name)
         && Objects.equals(description, that.description)

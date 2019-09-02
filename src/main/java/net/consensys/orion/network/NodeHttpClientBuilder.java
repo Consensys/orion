@@ -27,31 +27,31 @@ public class NodeHttpClientBuilder {
 
   private NodeHttpClientBuilder() {}
 
-  public static HttpClient build(Vertx vertx, Config config, int clientTimeoutMs) {
-    HttpClientOptions options =
+  public static HttpClient build(final Vertx vertx, final Config config, final int clientTimeoutMs) {
+    final HttpClientOptions options =
         new HttpClientOptions().setConnectTimeout(clientTimeoutMs).setIdleTimeout(clientTimeoutMs);
 
     if ("strict".equals(config.tls())) {
-      Path workDir = config.workDir();
-      Path tlsClientCert = workDir.resolve(config.tlsClientCert());
-      Path tlsClientKey = workDir.resolve(config.tlsClientKey());
+      final Path workDir = config.workDir();
+      final Path tlsClientCert = workDir.resolve(config.tlsClientCert());
+      final Path tlsClientKey = workDir.resolve(config.tlsClientKey());
 
-      PemKeyCertOptions pemKeyCertOptions =
+      final PemKeyCertOptions pemKeyCertOptions =
           new PemKeyCertOptions().setKeyPath(tlsClientKey.toString()).setCertPath(tlsClientCert.toString());
 
       options.setSsl(true);
       options.setPemKeyCertOptions(pemKeyCertOptions);
 
       if (!config.tlsClientChain().isEmpty()) {
-        PemTrustOptions pemTrustOptions = new PemTrustOptions();
-        for (Path chainCert : config.tlsClientChain()) {
+        final PemTrustOptions pemTrustOptions = new PemTrustOptions();
+        for (final Path chainCert : config.tlsClientChain()) {
           pemTrustOptions.addCertPath(chainCert.toAbsolutePath().toString());
         }
         options.setPemTrustOptions(pemTrustOptions);
       }
 
-      Path knownServersFile = config.tlsKnownServers();
-      String clientTrustMode = config.tlsClientTrust();
+      final Path knownServersFile = config.tlsKnownServers();
+      final String clientTrustMode = config.tlsClientTrust();
       switch (clientTrustMode) {
         case "whitelist":
           options.setTrustOptions(VertxTrustOptions.whitelistServers(knownServersFile, false));

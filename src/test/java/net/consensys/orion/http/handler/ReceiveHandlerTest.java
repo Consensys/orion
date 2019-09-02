@@ -52,9 +52,9 @@ class ReceiveHandlerTest extends HandlerTest {
   }
 
   @Override
-  protected Enclave buildEnclave(Path tempDir) {
+  protected Enclave buildEnclave(final Path tempDir) {
     memoryKeyStore = new MemoryKeyStore();
-    Box.PublicKey defaultNodeKey = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey defaultNodeKey = memoryKeyStore.generateKeyPair();
     memoryKeyStore.addNodeKey(defaultNodeKey);
     return new SodiumEnclave(memoryKeyStore);
   }
@@ -63,18 +63,18 @@ class ReceiveHandlerTest extends HandlerTest {
   @Test
   void payloadIsRetrieved() throws Exception {
     // generate random byte content
-    byte[] toEncrypt = new byte[342];
+    final byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    ReceiveRequest receiveRequest = buildReceiveRequest(payloadStorage, toEncrypt);
-    Request request = buildPrivateAPIRequest("/receive", HttpContentType.JSON, receiveRequest);
+    final ReceiveRequest receiveRequest = buildReceiveRequest(payloadStorage, toEncrypt);
+    final Request request = buildPrivateAPIRequest("/receive", HttpContentType.JSON, receiveRequest);
 
     // execute request
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     assertEquals(200, resp.code());
 
-    ReceiveResponse receiveResponse = Serializer.deserialize(JSON, ReceiveResponse.class, resp.body().bytes());
+    final ReceiveResponse receiveResponse = Serializer.deserialize(JSON, ReceiveResponse.class, resp.body().bytes());
 
     assertArrayEquals(toEncrypt, receiveResponse.getPayload());
   }
@@ -82,23 +82,23 @@ class ReceiveHandlerTest extends HandlerTest {
   @Test
   void validPrivacyGroupId() throws Exception {
     // generate keys and the privacy group
-    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
-    byte[] privacyGroupId = getPrivacyGroupId(senderKey, new Box.PublicKey[] {recipientKey});
+    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    final byte[] privacyGroupId = getPrivacyGroupId(senderKey, new Box.PublicKey[] {recipientKey});
 
-    byte[] toEncrypt = new byte[342];
+    final byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    ReceiveRequest receiveRequest =
+    final ReceiveRequest receiveRequest =
         buildReceiveRequestSenderRecipient(payloadStorage, toEncrypt, senderKey, new Box.PublicKey[] {recipientKey});
-    Request request = buildPrivateAPIRequest("/receive", HttpContentType.ORION, receiveRequest);
+    final Request request = buildPrivateAPIRequest("/receive", HttpContentType.ORION, receiveRequest);
 
     // execute request
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     assertEquals(200, resp.code());
 
-    ReceiveResponse receiveResponse = Serializer.deserialize(JSON, ReceiveResponse.class, resp.body().bytes());
+    final ReceiveResponse receiveResponse = Serializer.deserialize(JSON, ReceiveResponse.class, resp.body().bytes());
     assertArrayEquals(toEncrypt, receiveResponse.getPayload());
     assertArrayEquals(privacyGroupId, receiveResponse.getPrivacyGroupId());
   }
@@ -106,26 +106,26 @@ class ReceiveHandlerTest extends HandlerTest {
   @Test
   void validPrivacyGroupIdRepeatedPeers() throws Exception {
     // generate keys and the privacy group
-    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
-    byte[] privacyGroupId = getPrivacyGroupId(senderKey, new Box.PublicKey[] {recipientKey});
+    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    final byte[] privacyGroupId = getPrivacyGroupId(senderKey, new Box.PublicKey[] {recipientKey});
 
-    byte[] toEncrypt = new byte[342];
+    final byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    ReceiveRequest receiveRequest = buildReceiveRequestSenderRecipient(
+    final ReceiveRequest receiveRequest = buildReceiveRequestSenderRecipient(
         payloadStorage,
         toEncrypt,
         senderKey,
         new Box.PublicKey[] {recipientKey, senderKey});
-    Request request = buildPrivateAPIRequest("/receive", HttpContentType.ORION, receiveRequest);
+    final Request request = buildPrivateAPIRequest("/receive", HttpContentType.ORION, receiveRequest);
 
     // execute request
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     assertEquals(200, resp.code());
 
-    ReceiveResponse receiveResponse = Serializer.deserialize(JSON, ReceiveResponse.class, resp.body().bytes());
+    final ReceiveResponse receiveResponse = Serializer.deserialize(JSON, ReceiveResponse.class, resp.body().bytes());
     assertArrayEquals(toEncrypt, receiveResponse.getPayload());
     assertArrayEquals(privacyGroupId, receiveResponse.getPrivacyGroupId());
   }
@@ -134,19 +134,19 @@ class ReceiveHandlerTest extends HandlerTest {
   void rawPayloadIsRetrieved() throws Exception {
 
     // generate random byte content
-    byte[] toEncrypt = new byte[342];
+    final byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
     // encrypt a payload
-    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys(), null);
+    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    final EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys(), null);
 
     // store it
-    String key = payloadStorage.put(originalPayload).get();
+    final String key = payloadStorage.put(originalPayload).get();
     // Receive operation, sending a ReceivePayload request
-    RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
+    final RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
-    Request request = new Request.Builder()
+    final Request request = new Request.Builder()
         .post(body)
         .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
         .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
@@ -155,24 +155,24 @@ class ReceiveHandlerTest extends HandlerTest {
         .build();
 
     // execute request
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
 
-    byte[] decodedPayload = resp.body().bytes();
+    final byte[] decodedPayload = resp.body().bytes();
     assertArrayEquals(toEncrypt, decodedPayload);
   }
 
   @Test
   void receiveApiOnlyWorksOnPrivatePort() throws Exception {
     // generate random byte content
-    byte[] toEncrypt = new byte[342];
+    final byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    ReceiveRequest receiveRequest = buildReceiveRequest(payloadStorage, toEncrypt);
-    Request request = buildPublicAPIRequest("/receive", HttpContentType.JSON, receiveRequest);
+    final ReceiveRequest receiveRequest = buildReceiveRequest(payloadStorage, toEncrypt);
+    final Request request = buildPublicAPIRequest("/receive", HttpContentType.JSON, receiveRequest);
 
     // execute request
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     assertEquals(404, resp.code());
   }
@@ -180,19 +180,19 @@ class ReceiveHandlerTest extends HandlerTest {
   @Test
   void receiveRawApiOnlyWorksOnPrivatePort() throws Exception {
     // generate random byte content
-    byte[] toEncrypt = new byte[342];
+    final byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
     // encrypt a payload
-    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys(), null);
+    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    final EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, enclave.nodeKeys(), null);
 
     // store it
-    String key = payloadStorage.put(originalPayload).get();
+    final String key = payloadStorage.put(originalPayload).get();
     // Receive operation, sending a ReceivePayload request
-    RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
+    final RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
-    Request request = new Request.Builder()
+    final Request request = new Request.Builder()
         .post(body)
         .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
         .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
@@ -201,19 +201,19 @@ class ReceiveHandlerTest extends HandlerTest {
         .build();
 
     // execute request
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
     assertEquals(404, resp.code());
   }
 
   @Test
   void responseWhenKeyNotFound() throws Exception {
     // Receive operation, sending a ReceivePayload request
-    ReceiveRequest receiveRequest = new ReceiveRequest("notForMe", null);
+    final ReceiveRequest receiveRequest = new ReceiveRequest("notForMe", null);
 
-    Request request = buildPrivateAPIRequest("/receive", HttpContentType.JSON, receiveRequest);
+    final Request request = buildPrivateAPIRequest("/receive", HttpContentType.JSON, receiveRequest);
 
     // execute request
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     assertEquals(404, resp.code());
     assertError(OrionErrorCode.ENCLAVE_PAYLOAD_NOT_FOUND, resp);
@@ -221,16 +221,17 @@ class ReceiveHandlerTest extends HandlerTest {
 
   @Test
   void responseWhenDecryptFails() throws Exception {
-    byte[] toEncrypt = new byte[342];
+    final byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {senderKey}, null);
+    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    final EncryptedPayload originalPayload =
+        enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {senderKey}, null);
 
-    String key = payloadStorage.put(originalPayload).get();
-    RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
+    final String key = payloadStorage.put(originalPayload).get();
+    final RequestBody body = RequestBody.create(MediaType.parse(APPLICATION_OCTET_STREAM.httpHeaderValue), "");
 
-    Request request = new Request.Builder()
+    final Request request = new Request.Builder()
         .post(body)
         .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
         .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
@@ -238,19 +239,19 @@ class ReceiveHandlerTest extends HandlerTest {
         .url(clientBaseUrl + "receiveraw")
         .build();
 
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
     assertEquals(404, resp.code());
     assertError(OrionErrorCode.ENCLAVE_KEY_CANNOT_DECRYPT_PAYLOAD, resp);
   }
 
   @Test
   void roundTripSerialization() {
-    Map<String, String> receiveResponse = Collections.singletonMap("payload", "some payload");
+    final Map<String, String> receiveResponse = Collections.singletonMap("payload", "some payload");
     assertEquals(receiveResponse, Serializer.roundTrip(HttpContentType.CBOR, Map.class, receiveResponse));
     assertEquals(receiveResponse, Serializer.roundTrip(HttpContentType.JSON, Map.class, receiveResponse));
 
-    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    ReceiveRequest receiveRequest = new ReceiveRequest("some key", encodeBytes(senderKey.bytesArray()));
+    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    final ReceiveRequest receiveRequest = new ReceiveRequest("some key", encodeBytes(senderKey.bytesArray()));
     assertEquals(receiveRequest, Serializer.roundTrip(HttpContentType.CBOR, ReceiveRequest.class, receiveRequest));
     assertEquals(receiveRequest, Serializer.roundTrip(HttpContentType.JSON, ReceiveRequest.class, receiveRequest));
   }
@@ -258,25 +259,25 @@ class ReceiveHandlerTest extends HandlerTest {
   @Test
   void receiveWithInvalidContentType() throws Exception {
     // generate random byte content
-    byte[] toEncrypt = new byte[342];
+    final byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
     // configureRoutes receive request with payload
-    ReceiveRequest receiveRequest = buildReceiveRequest(payloadStorage, toEncrypt);
-    Request request = buildPrivateAPIRequest("/receive", HttpContentType.CBOR, receiveRequest);
+    final ReceiveRequest receiveRequest = buildReceiveRequest(payloadStorage, toEncrypt);
+    final Request request = buildPrivateAPIRequest("/receive", HttpContentType.CBOR, receiveRequest);
 
     // execute request
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     assertEquals(404, resp.code());
   }
 
   @Test
   void receiveWithInvalidBody() throws Exception {
-    Request request = buildPrivateAPIRequest("/receive", HttpContentType.JSON, "{\"foo\": \"bar\"}");
+    final Request request = buildPrivateAPIRequest("/receive", HttpContentType.JSON, "{\"foo\": \"bar\"}");
 
     // execute request
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     // produces 500 because serialisation error
     assertEquals(500, resp.code());
@@ -284,31 +285,32 @@ class ReceiveHandlerTest extends HandlerTest {
     assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
   }
 
-  private ReceiveRequest buildReceiveRequest(Storage<EncryptedPayload> storage, byte[] toEncrypt) throws Exception {
+  private ReceiveRequest buildReceiveRequest(final Storage<EncryptedPayload> storage, final byte[] toEncrypt)
+      throws Exception {
     // encrypt a payload
-    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
 
     return buildReceiveRequestSenderRecipient(storage, toEncrypt, senderKey, new Box.PublicKey[] {recipientKey});
   }
 
   private ReceiveRequest buildReceiveRequestSenderRecipient(
-      Storage<EncryptedPayload> storage,
-      byte[] toEncrypt,
-      Box.PublicKey senderKey,
-      Box.PublicKey[] recipientKeys) throws Exception {
+      final Storage<EncryptedPayload> storage,
+      final byte[] toEncrypt,
+      final Box.PublicKey senderKey,
+      final Box.PublicKey[] recipientKeys) throws Exception {
     // encrypt a payload
-    EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, recipientKeys, null);
+    final EncryptedPayload originalPayload = enclave.encrypt(toEncrypt, senderKey, recipientKeys, null);
 
     // store it
-    String key = storage.put(originalPayload).get();
+    final String key = storage.put(originalPayload).get();
 
     // Receive operation, sending a ReceivePayload request
     return new ReceiveRequest(key, encodeBytes(recipientKeys[0].bytesArray()));
   }
 
-  byte[] getPrivacyGroupId(Box.PublicKey sender, Box.PublicKey[] recipient) {
-    Box.PublicKey[] tempArray = new Box.PublicKey[recipient.length + 1];
+  byte[] getPrivacyGroupId(final Box.PublicKey sender, final Box.PublicKey[] recipient) {
+    final Box.PublicKey[] tempArray = new Box.PublicKey[recipient.length + 1];
     System.arraycopy(recipient, 0, tempArray, 0, recipient.length);
     tempArray[recipient.length] = sender;
     return enclave.generatePrivacyGroupId(tempArray, null, PrivacyGroupPayload.Type.LEGACY);

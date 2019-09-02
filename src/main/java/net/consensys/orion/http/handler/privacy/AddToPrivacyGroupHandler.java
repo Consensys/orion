@@ -129,7 +129,7 @@ public class AddToPrivacyGroupHandler extends PrivacyGroupBaseHandler implements
   private List<CompletableFuture<Boolean>> addToPrivacyGroupOtherMembers(
       final ModifyPrivacyGroupRequest modifyPrivacyGroupRequest,
       final PrivacyGroupPayload combinedPrivacyGroup) {
-    Stream<Box.PublicKey> combinedAddresses = Arrays
+    final Stream<Box.PublicKey> combinedAddresses = Arrays
         .stream(combinedPrivacyGroup.addresses())
         .filter(key -> !key.equals(modifyPrivacyGroupRequest.from()))
         .distinct()

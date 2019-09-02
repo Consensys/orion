@@ -54,14 +54,14 @@ class SingleNodeSendReceiveTest {
   private HttpClient httpClient;
 
   @BeforeAll
-  static void setUpSingleNode(@TempDirectory Path tempDir) throws Exception {
+  static void setUpSingleNode(@TempDirectory final Path tempDir) throws Exception {
     final int nodePort = freePort();
     clientPort = freePort();
 
-    Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
-    Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
-    Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
-    Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
+    final Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
+    final Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
+    final Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
+    final Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
 
     config = NodeUtils.nodeConfig(
         tempDir,

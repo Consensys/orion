@@ -73,8 +73,10 @@ public final class TLS {
    * @return {@code true} if a self-signed certificate was created.
    * @throws IOException If an IO error occurs creating the certificate.
    */
-  public static boolean createSelfSignedCertificateIfMissing(Path key, Path certificate, Config config)
-      throws IOException {
+  public static boolean createSelfSignedCertificateIfMissing(
+      final Path key,
+      final Path certificate,
+      final Config config) throws IOException {
     if (Files.exists(certificate) || Files.exists(key)) {
       return false;
     }
@@ -82,12 +84,12 @@ public final class TLS {
     createDirectories(certificate.getParent());
     createDirectories(key.getParent());
 
-    Path keyFile = Files.createTempFile(key.getParent(), "client-key", ".tmp");
-    Path certFile = Files.createTempFile(certificate.getParent(), "client-cert", ".tmp");
+    final Path keyFile = Files.createTempFile(key.getParent(), "client-key", ".tmp");
+    final Path certFile = Files.createTempFile(certificate.getParent(), "client-cert", ".tmp");
 
     try {
       createSelfSignedCertificate(new Date(), keyFile, certFile, config);
-    } catch (CertificateException | NoSuchAlgorithmException | OperatorCreationException e) {
+    } catch (final CertificateException | NoSuchAlgorithmException | OperatorCreationException e) {
       throw new RuntimeException("Could not generate certificate: " + e.getMessage(), e);
     }
 
@@ -96,25 +98,28 @@ public final class TLS {
     return true;
   }
 
-  private static void createSelfSignedCertificate(Date now, Path key, Path certificate, Config config)
-      throws NoSuchAlgorithmException,
+  private static void createSelfSignedCertificate(
+      final Date now,
+      final Path key,
+      final Path certificate,
+      final Config config) throws NoSuchAlgorithmException,
       IOException,
       OperatorCreationException,
       CertificateException {
-    KeyPairGenerator rsa = KeyPairGenerator.getInstance("RSA");
+    final KeyPairGenerator rsa = KeyPairGenerator.getInstance("RSA");
     rsa.initialize(2048, new SecureRandom());
 
-    KeyPair keyPair = rsa.generateKeyPair();
+    final KeyPair keyPair = rsa.generateKeyPair();
 
-    Calendar cal = Calendar.getInstance();
+    final Calendar cal = Calendar.getInstance();
     cal.setTime(now);
     cal.add(Calendar.YEAR, 1);
-    Date yearFromNow = cal.getTime();
+    final Date yearFromNow = cal.getTime();
 
     final String cn = buildCNProperty(config);
-    X500Name dn = new X500Name("CN=" + cn);
+    final X500Name dn = new X500Name("CN=" + cn);
 
-    X509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
+    final X509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
         dn,
         new BigInteger(64, new SecureRandom()),
         now,
@@ -122,25 +127,26 @@ public final class TLS {
         dn,
         keyPair.getPublic());
 
-    ContentSigner signer =
+    final ContentSigner signer =
         new JcaContentSignerBuilder("SHA256WithRSAEncryption").setProvider("BC").build(keyPair.getPrivate());
-    X509Certificate x509Certificate =
+    final X509Certificate x509Certificate =
         new JcaX509CertificateConverter().setProvider("BC").getCertificate(builder.build(signer));
 
-    try (BufferedWriter writer = Files.newBufferedWriter(key, UTF_8); PemWriter pemWriter = new PemWriter(writer)) {
+    try (final BufferedWriter writer = Files.newBufferedWriter(key, UTF_8);
+        final PemWriter pemWriter = new PemWriter(writer)) {
       pemWriter.writeObject(new PemObject("PRIVATE KEY", keyPair.getPrivate().getEncoded()));
     }
 
-    try (BufferedWriter writer = Files.newBufferedWriter(certificate, UTF_8);
-        PemWriter pemWriter = new PemWriter(writer)) {
+    try (final BufferedWriter writer = Files.newBufferedWriter(certificate, UTF_8);
+        final PemWriter pemWriter = new PemWriter(writer)) {
       pemWriter.writeObject(new PemObject("CERTIFICATE", x509Certificate.getEncoded()));
     }
   }
 
-  private static String buildCNProperty(Config config) {
-    String cn;
+  private static String buildCNProperty(final Config config) {
+    final String cn;
     if (config.nodeUrl().isPresent()) {
-      URL url = config.nodeUrl().get();
+      final URL url = config.nodeUrl().get();
       cn = url.getHost() + ":" + url.getPort();
     } else {
       cn = UUID.randomUUID().toString() + ".com";

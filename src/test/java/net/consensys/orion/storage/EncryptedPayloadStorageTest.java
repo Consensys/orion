@@ -39,12 +39,12 @@ class EncryptedPayloadStorageTest {
   @Test
   void storeAndRetrieve() throws Exception {
     // generate random byte content
-    byte[] toEncrypt = new byte[342];
+    final byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    EncryptedPayload toStore = enclave.encrypt(toEncrypt, null, null, null);
+    final EncryptedPayload toStore = enclave.encrypt(toEncrypt, null, null, null);
 
-    String key = payloadStorage.put(toStore).get();
+    final String key = payloadStorage.put(toStore).get();
     assertEquals(toStore, payloadStorage.get(key).get().get());
   }
 

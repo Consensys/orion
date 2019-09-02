@@ -22,7 +22,7 @@ public class FindPrivacyGroupRequest implements Serializable {
   private final String[] addresses;
 
   @JsonCreator
-  public FindPrivacyGroupRequest(@JsonProperty("addresses") String[] addresses) {
+  public FindPrivacyGroupRequest(@JsonProperty("addresses") final String[] addresses) {
     this.addresses = addresses;
   }
 

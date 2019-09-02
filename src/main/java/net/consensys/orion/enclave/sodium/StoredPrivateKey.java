@@ -44,7 +44,7 @@ public class StoredPrivateKey {
   private final String encoded;
   private final String type;
 
-  public StoredPrivateKey(String encoded, String type) {
+  public StoredPrivateKey(final String encoded, final String type) {
     this.encoded = encoded;
     this.type = type;
   }
@@ -57,17 +57,17 @@ public class StoredPrivateKey {
     return type;
   }
 
-  static StoredPrivateKey fromSecretKey(Box.SecretKey secretKey, @Nullable String password) {
+  static StoredPrivateKey fromSecretKey(final Box.SecretKey secretKey, @Nullable final String password) {
     if (password == null) {
       return new StoredPrivateKey(Base64.encodeBytes(secretKey.bytesArray()), UNLOCKED);
     }
     return lock(secretKey, password);
   }
 
-  private static StoredPrivateKey lock(SecretKey secretKey, String password) {
-    byte[] keyBytes = secretKey.bytesArray();
+  private static StoredPrivateKey lock(final SecretKey secretKey, final String password) {
+    final byte[] keyBytes = secretKey.bytesArray();
     try {
-      byte[] cipherText =
+      final byte[] cipherText =
           SecretBox.encrypt(keyBytes, password, ENCRYPT_OPS_LIMIT, ENCRYPT_MEM_LIMIT, ENCRYPT_ALGORITHM);
       return new StoredPrivateKey(Base64.encodeBytes(cipherText), ENCRYPTED);
     } finally {
@@ -75,7 +75,7 @@ public class StoredPrivateKey {
     }
   }
 
-  Box.SecretKey toSecretKey(@Nullable String password) {
+  Box.SecretKey toSecretKey(@Nullable final String password) {
     switch (type) {
       case UNLOCKED:
         return Box.SecretKey.fromBytes(Base64.decode(encoded));
@@ -93,8 +93,8 @@ public class StoredPrivateKey {
     }
   }
 
-  private SecretKey unlock(String password) {
-    byte[] keyBytes = SecretBox
+  private SecretKey unlock(final String password) {
+    final byte[] keyBytes = SecretBox
         .decrypt(Base64.decodeBytes(encoded), password, ENCRYPT_OPS_LIMIT, ENCRYPT_MEM_LIMIT, ENCRYPT_ALGORITHM);
     if (keyBytes == null) {
       throw new EnclaveException(OrionErrorCode.ENCLAVE_STORAGE_DECRYPT, "Key decryption failed");

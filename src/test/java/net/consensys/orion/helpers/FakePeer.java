@@ -25,21 +25,21 @@ public class FakePeer {
   public final MockWebServer server;
   public final Box.PublicKey publicKey;
 
-  public FakePeer(MockResponse response, MemoryKeyStore memoryKeyStore) throws IOException {
+  public FakePeer(final MockResponse response, final MemoryKeyStore memoryKeyStore) throws IOException {
     server = new MockWebServer();
     publicKey = memoryKeyStore.generateKeyPair();
     server.enqueue(response);
     server.start();
   }
 
-  public FakePeer(MockResponse response, Box.PublicKey publicKey) throws IOException {
+  public FakePeer(final MockResponse response, final Box.PublicKey publicKey) throws IOException {
     server = new MockWebServer();
     this.publicKey = publicKey;
     server.enqueue(response);
     server.start();
   }
 
-  public void addResponse(MockResponse response) {
+  public void addResponse(final MockResponse response) {
     server.enqueue(response);
   }
 

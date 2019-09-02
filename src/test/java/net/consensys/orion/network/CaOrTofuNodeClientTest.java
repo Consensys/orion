@@ -59,23 +59,23 @@ class CaOrTofuNodeClientTest {
   private static HttpClient client;
 
   @BeforeAll
-  static void setUp(@TempDirectory Path tempDir) throws Exception {
-    SelfSignedCertificate clientCert = SelfSignedCertificate.create("localhost");
-    Config config = generateAndLoadConfiguration(tempDir, writer -> {
+  static void setUp(@TempDirectory final Path tempDir) throws Exception {
+    final SelfSignedCertificate clientCert = SelfSignedCertificate.create("localhost");
+    final Config config = generateAndLoadConfiguration(tempDir, writer -> {
       writer.write("tlsclienttrust='ca-or-tofu'\n");
       writeClientCertToConfig(writer, clientCert);
     });
 
     knownServersFile = config.tlsKnownServers();
 
-    SelfSignedCertificate serverCert = SelfSignedCertificate.create("foo.com");
-    SelfSignedCertificate tofuCert = SelfSignedCertificate.create();
+    final SelfSignedCertificate serverCert = SelfSignedCertificate.create("foo.com");
+    final SelfSignedCertificate tofuCert = SelfSignedCertificate.create();
     TestUtils.configureJDKTrustStore(serverCert, tempDir);
     fooFingerprint = certificateHexFingerprint(Paths.get(tofuCert.keyCertOptions().getCertPath()));
     Files.write(knownServersFile, Collections.singletonList("#First line"));
 
-    Router dummyRouter = Router.router(vertx);
-    ConcurrentNetworkNodes payload = new ConcurrentNetworkNodes(new URL("http://www.example.com"));
+    final Router dummyRouter = Router.router(vertx);
+    final ConcurrentNetworkNodes payload = new ConcurrentNetworkNodes(new URL("http://www.example.com"));
     dummyRouter.post("/partyinfo").handler(routingContext -> {
       routingContext.response().end(Buffer.buffer(Serializer.serialize(HttpContentType.CBOR, payload)));
     });
@@ -92,8 +92,8 @@ class CaOrTofuNodeClientTest {
     client = NodeHttpClientBuilder.build(vertx, config, 100);
   }
 
-  private static void startServer(HttpServer server) throws Exception {
-    CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
+  private static void startServer(final HttpServer server) throws Exception {
+    final CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
     server.listen(getFreePort(), result -> {
       if (result.succeeded()) {
         completion.complete();
@@ -106,7 +106,7 @@ class CaOrTofuNodeClientTest {
 
   @Test
   void testValidCertificateServer() throws Exception {
-    CompletableAsyncResult<Integer> statusCode = AsyncResult.incomplete();
+    final CompletableAsyncResult<Integer> statusCode = AsyncResult.incomplete();
     client
         .post(
             caValidServer.actualPort(),
@@ -119,7 +119,7 @@ class CaOrTofuNodeClientTest {
 
   @Test
   void testTOFU() throws Exception {
-    CompletableAsyncResult<Integer> statusCode = AsyncResult.incomplete();
+    final CompletableAsyncResult<Integer> statusCode = AsyncResult.incomplete();
     client
         .post(
             tofuServer.actualPort(),
@@ -129,7 +129,7 @@ class CaOrTofuNodeClientTest {
         .end();
     assertEquals((Integer) 200, statusCode.get());
 
-    List<String> fingerprints = Files.readAllLines(knownServersFile);
+    final List<String> fingerprints = Files.readAllLines(knownServersFile);
     assertEquals(2, fingerprints.size(), String.join("\n", fingerprints));
     assertEquals("#First line", fingerprints.get(0));
     assertEquals("localhost:" + tofuServer.actualPort() + " " + fooFingerprint, fingerprints.get(1));

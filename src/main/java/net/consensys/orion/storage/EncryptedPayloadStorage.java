@@ -31,35 +31,35 @@ public class EncryptedPayloadStorage implements Storage<EncryptedPayload> {
   private final KeyValueStore store;
   private final StorageKeyBuilder keyBuilder;
 
-  public EncryptedPayloadStorage(KeyValueStore store, StorageKeyBuilder keyBuilder) {
+  public EncryptedPayloadStorage(final KeyValueStore store, final StorageKeyBuilder keyBuilder) {
     this.store = store;
     this.keyBuilder = keyBuilder;
   }
 
   @Override
-  public AsyncResult<String> put(EncryptedPayload data) {
-    String key = generateDigest(data);
-    Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
-    Bytes dataBytes = Bytes.wrap(Serializer.serialize(HttpContentType.CBOR, data));
+  public AsyncResult<String> put(final EncryptedPayload data) {
+    final String key = generateDigest(data);
+    final Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
+    final Bytes dataBytes = Bytes.wrap(Serializer.serialize(HttpContentType.CBOR, data));
     return store.putAsync(keyBytes, dataBytes).thenSupply(() -> key);
   }
 
   @Override
-  public String generateDigest(EncryptedPayload data) {
+  public String generateDigest(final EncryptedPayload data) {
     return encodeBytes(keyBuilder.build(data.cipherText()));
   }
 
 
   @Override
-  public AsyncResult<Optional<EncryptedPayload>> get(String key) {
-    Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
+  public AsyncResult<Optional<EncryptedPayload>> get(final String key) {
+    final Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
     return store.getAsync(keyBytes).thenApply(
         maybeBytes -> Optional.ofNullable(maybeBytes).map(
             bytes -> Serializer.deserialize(HttpContentType.CBOR, EncryptedPayload.class, bytes.toArrayUnsafe())));
   }
 
   @Override
-  public AsyncResult<Optional<EncryptedPayload>> update(String key, EncryptedPayload data) {
+  public AsyncResult<Optional<EncryptedPayload>> update(final String key, final EncryptedPayload data) {
     throw new OrionException(OrionErrorCode.METHOD_UNIMPLEMENTED);
   }
 }

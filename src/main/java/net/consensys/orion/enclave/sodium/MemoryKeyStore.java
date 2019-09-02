@@ -32,7 +32,7 @@ public class MemoryKeyStore implements KeyStore {
 
   @Override
   @Nullable
-  public Box.SecretKey privateKey(Box.PublicKey publicKey) {
+  public Box.SecretKey privateKey(final Box.PublicKey publicKey) {
     return store.get(publicKey);
   }
 
@@ -43,8 +43,8 @@ public class MemoryKeyStore implements KeyStore {
    */
   public PublicKey generateKeyPair() {
     try {
-      Box.KeyPair keyPair = Box.KeyPair.random();
-      Box.PublicKey publicKey = keyPair.publicKey();
+      final Box.KeyPair keyPair = Box.KeyPair.random();
+      final Box.PublicKey publicKey = keyPair.publicKey();
       store.put(publicKey, keyPair.secretKey());
       return publicKey;
     } catch (final SodiumException e) {
@@ -57,7 +57,7 @@ public class MemoryKeyStore implements KeyStore {
     return new Box.PublicKey[0];
   }
 
-  public void addNodeKey(Box.PublicKey key) {
+  public void addNodeKey(final Box.PublicKey key) {
     nodeKeys.add(key);
   }
 

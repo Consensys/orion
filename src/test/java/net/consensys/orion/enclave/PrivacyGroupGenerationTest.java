@@ -54,26 +54,26 @@ public class PrivacyGroupGenerationTest {
   @Test
   public void expectedPrivacyGroupIsGenerated() throws IOException {
 
-    URL url = getClass().getClassLoader().getResource("keySets.json");
+    final URL url = getClass().getClassLoader().getResource("keySets.json");
     if (url == null) {
       throw new FileNotFoundException();
     }
-    try (Reader reader = Files.newBufferedReader(Paths.get(url.getPath()), Charset.defaultCharset())) {
-      ObjectMapper objectMapper = new ObjectMapper();
+    try (final Reader reader = Files.newBufferedReader(Paths.get(url.getPath()), Charset.defaultCharset())) {
+      final ObjectMapper objectMapper = new ObjectMapper();
 
-      List<PrivacyGroupTest> privacyGroups =
+      final List<PrivacyGroupTest> privacyGroups =
           objectMapper.readValue(reader, new TypeReference<List<PrivacyGroupTest>>() {});
 
       assertTrue(true);
-      for (PrivacyGroupTest privacyGroup : privacyGroups) {
-        Box.PublicKey[] addresses =
+      for (final PrivacyGroupTest privacyGroup : privacyGroups) {
+        final Box.PublicKey[] addresses =
             Arrays.stream(privacyGroup.getPrivacyGroup()).map(enclave::readKey).toArray(Box.PublicKey[]::new);
         assertEquals(
             privacyGroup.getPrivacyGroupId(),
             encodeBytes(enclave.generatePrivacyGroupId(addresses, null, PrivacyGroupPayload.Type.LEGACY)));
 
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw e;
     }
   }
@@ -92,11 +92,11 @@ class PrivacyGroupTest {
     return privacyGroup;
   }
 
-  public void setPrivacyGroupId(String privacyGroupId) {
+  public void setPrivacyGroupId(final String privacyGroupId) {
     this.privacyGroupId = privacyGroupId;
   }
 
-  public void setPrivacyGroup(String[] privacyGroup) {
+  public void setPrivacyGroup(final String[] privacyGroup) {
     this.privacyGroup = privacyGroup;
   }
 }

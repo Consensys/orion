@@ -27,13 +27,13 @@ public class PushHandler implements Handler<RoutingContext> {
   private static final Logger log = LogManager.getLogger();
   private final Storage<EncryptedPayload> storage;
 
-  public PushHandler(Storage<EncryptedPayload> storage) {
+  public PushHandler(final Storage<EncryptedPayload> storage) {
     this.storage = storage;
   }
 
   @Override
-  public void handle(RoutingContext routingContext) {
-    EncryptedPayload pushRequest =
+  public void handle(final RoutingContext routingContext) {
+    final EncryptedPayload pushRequest =
         Serializer.deserialize(HttpContentType.CBOR, EncryptedPayload.class, routingContext.getBody().getBytes());
 
     storage.put(pushRequest).thenAccept((digest) -> {

@@ -14,11 +14,11 @@ package net.consensys.orion.cmd;
 
 class OrionStartException extends RuntimeException {
 
-  OrionStartException(String message) {
+  OrionStartException(final String message) {
     super(message);
   }
 
-  OrionStartException(String message, Throwable cause) {
+  OrionStartException(final String message, final Throwable cause) {
     super(message, cause);
   }
 }

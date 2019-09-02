@@ -51,13 +51,13 @@ class CertificateAuthoritySecurityTest {
   private static Orion orion;
 
   @BeforeAll
-  static void setUp(@TempDirectory Path tempDir) throws Exception {
-    Config config = generateAndLoadConfiguration(tempDir, writer -> {
+  static void setUp(@TempDirectory final Path tempDir) throws Exception {
+    final Config config = generateAndLoadConfiguration(tempDir, writer -> {
       writer.write("tlsservertrust='ca'\n");
       writeServerCertToConfig(writer, SelfSignedCertificate.create("localhost"));
     });
 
-    SelfSignedCertificate clientCert = SelfSignedCertificate.create("example.com");
+    final SelfSignedCertificate clientCert = SelfSignedCertificate.create("example.com");
     TestUtils.configureJDKTrustStore(clientCert, tempDir);
     httpClient = vertx.createHttpClient(
         new HttpClientOptions().setSsl(true).setTrustAll(true).setKeyCertOptions(clientCert.keyCertOptions()));
@@ -77,18 +77,18 @@ class CertificateAuthoritySecurityTest {
 
   @Test
   void testUpCheckOnNodePort() throws Exception {
-    HttpClientRequest req = httpClient.get(nodePort, "localhost", "/upcheck");
-    CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
+    final HttpClientRequest req = httpClient.get(nodePort, "localhost", "/upcheck");
+    final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
-    HttpClientResponse resp = result.get();
+    final HttpClientResponse resp = result.get();
     assertEquals(200, resp.statusCode());
   }
 
   @Test
   void testWithoutSSLConfiguration() {
-    OkHttpClient unsecureHttpClient = new OkHttpClient.Builder().build();
+    final OkHttpClient unsecureHttpClient = new OkHttpClient.Builder().build();
 
-    Request upcheckRequest = new Request.Builder().url("https://localhost:" + nodePort + "/upcheck").build();
+    final Request upcheckRequest = new Request.Builder().url("https://localhost:" + nodePort + "/upcheck").build();
     assertThrows(SSLException.class, () -> unsecureHttpClient.newCall(upcheckRequest).execute());
   }
 }

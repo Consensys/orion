@@ -27,15 +27,15 @@ import io.vertx.ext.web.RoutingContext;
 public class PartyInfoHandler implements Handler<RoutingContext> {
   private final ConcurrentNetworkNodes networkNodes;
 
-  public PartyInfoHandler(ConcurrentNetworkNodes networkNodes) {
+  public PartyInfoHandler(final ConcurrentNetworkNodes networkNodes) {
     this.networkNodes = networkNodes;
   }
 
   @Override
-  public void handle(RoutingContext routingContext) {
-    ConcurrentNetworkNodes callerPeers =
+  public void handle(final RoutingContext routingContext) {
+    final ConcurrentNetworkNodes callerPeers =
         Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, routingContext.getBody().getBytes());
-    Buffer toReturn = Buffer.buffer(Serializer.serialize(HttpContentType.CBOR, networkNodes));
+    final Buffer toReturn = Buffer.buffer(Serializer.serialize(HttpContentType.CBOR, networkNodes));
     routingContext.response().end(toReturn);
 
     // merge callerPeers into our peers
