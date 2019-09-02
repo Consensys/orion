@@ -73,20 +73,29 @@ public class QueryPrivacyGroupStorage implements Storage<QueryPrivacyGroupPayloa
       List<String> listPrivacyGroupIds;
       QueryPrivacyGroupPayload queryPrivacyGroupPayload;
       if (result.isPresent()) {
-        if (data.isToDelete()) {
-          result.get().privacyGroupId().remove(data.privacyGroupToAppend());
-        } else {
-          result.get().privacyGroupId().add(data.privacyGroupToAppend());
-        }
-        listPrivacyGroupIds = result.get().privacyGroupId();
-        queryPrivacyGroupPayload = new QueryPrivacyGroupPayload(result.get().addresses(), listPrivacyGroupIds);
+        queryPrivacyGroupPayload = handleAlreadyPresentUpdate(data, result.get());
       } else {
-        listPrivacyGroupIds = Collections.singletonList(data.privacyGroupToAppend());
+        listPrivacyGroupIds = Collections.singletonList(data.privacyGroupToModify());
         queryPrivacyGroupPayload = new QueryPrivacyGroupPayload(data.addresses(), listPrivacyGroupIds);
       }
 
       put(queryPrivacyGroupPayload);
       return Optional.of(queryPrivacyGroupPayload);
     });
+  }
+
+  private QueryPrivacyGroupPayload handleAlreadyPresentUpdate(
+      final QueryPrivacyGroupPayload data,
+      final QueryPrivacyGroupPayload result) {
+    List<String> listPrivacyGroupIds;
+    QueryPrivacyGroupPayload queryPrivacyGroupPayload;
+    if (data.isToDelete()) {
+      result.privacyGroupId().remove(data.privacyGroupToModify());
+    } else if (!result.privacyGroupId().contains(data.privacyGroupToModify())) {
+      result.privacyGroupId().add(data.privacyGroupToModify());
+    }
+    listPrivacyGroupIds = result.privacyGroupId();
+    queryPrivacyGroupPayload = new QueryPrivacyGroupPayload(result.addresses(), listPrivacyGroupIds);
+    return queryPrivacyGroupPayload;
   }
 }

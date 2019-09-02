@@ -34,6 +34,7 @@ import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
 import net.consensys.orion.enclave.sodium.FileKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.http.handler.partyinfo.PartyInfoHandler;
+import net.consensys.orion.http.handler.privacy.AddToPrivacyGroupHandler;
 import net.consensys.orion.http.handler.privacy.CreatePrivacyGroupHandler;
 import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupHandler;
 import net.consensys.orion.http.handler.privacy.FindPrivacyGroupHandler;
@@ -41,6 +42,7 @@ import net.consensys.orion.http.handler.push.PushHandler;
 import net.consensys.orion.http.handler.push.PushPrivacyGroupHandler;
 import net.consensys.orion.http.handler.receive.ReceiveHandler;
 import net.consensys.orion.http.handler.send.SendHandler;
+import net.consensys.orion.http.handler.set.SetPrivacyGroupHandler;
 import net.consensys.orion.http.handler.upcheck.UpcheckHandler;
 import net.consensys.orion.http.server.vertx.HttpErrorHandler;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
@@ -156,6 +158,9 @@ public class Orion {
     nodeRouter.post("/pushPrivacyGroup").produces(TEXT.httpHeaderValue).consumes(CBOR.httpHeaderValue).handler(
         new PushPrivacyGroupHandler(privacyGroupStorage, queryPrivacyGroupStorage));
 
+    nodeRouter.post("/setPrivacyGroup").consumes(CBOR.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
+        new SetPrivacyGroupHandler(privacyGroupStorage, queryPrivacyGroupStorage));
+
     //Setup client APIs
     clientRouter
         .route()
@@ -202,6 +207,15 @@ public class Orion {
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .handler(new ReceiveHandler(enclave, storage, APPLICATION_OCTET_STREAM));
+
+    clientRouter.post("/addToPrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
+        new AddToPrivacyGroupHandler(
+            privacyGroupStorage,
+            queryPrivacyGroupStorage,
+            networkNodes,
+            enclave,
+            vertx,
+            config));
 
     clientRouter.post("/createPrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
         new CreatePrivacyGroupHandler(
