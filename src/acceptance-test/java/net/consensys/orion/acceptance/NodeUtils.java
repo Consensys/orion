@@ -153,10 +153,10 @@ public class NodeUtils {
   }
 
   public static PrivacyGroup addToPrivacyGroup(
-      EthClientStub sender,
-      String address,
-      String from,
-      String privacyGroupId) {
+      final EthClientStub sender,
+      final String address,
+      final String from,
+      final String privacyGroupId) {
     return sender.modifyPrivacyGroup(address, from, privacyGroupId, "/addToPrivacyGroup").orElseThrow(
         AssertionFailedError::new);
   }

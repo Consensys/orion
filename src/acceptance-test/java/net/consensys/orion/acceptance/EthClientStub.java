@@ -184,10 +184,10 @@ public class EthClientStub {
   }
 
   public Optional<PrivacyGroup> modifyPrivacyGroup(
-      String address,
-      String from,
-      String privacyGroupId,
-      String endpoint) {
+      final String address,
+      final String from,
+      final String privacyGroupId,
+      final String endpoint) {
     ModifyPrivacyGroupRequest modifyPrivacyGroupRequest = new ModifyPrivacyGroupRequest(address, from, privacyGroupId);
     CompletableFuture<PrivacyGroup> keyFuture = new CompletableFuture<>();
 

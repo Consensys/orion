@@ -66,7 +66,7 @@ class PrivacyGroupAcceptanceTestBase {
   HttpClient thirdHttpClient;
 
   @BeforeEach
-  void setUpTriNodes(@TempDirectory Path tempDir) throws Exception {
+  void setUpTriNodes(@TempDirectory final Path tempDir) throws Exception {
 
     Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
     Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));

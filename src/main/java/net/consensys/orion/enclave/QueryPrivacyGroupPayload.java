@@ -78,7 +78,6 @@ public class QueryPrivacyGroupPayload implements Serializable {
     return Arrays.equals(addresses, that.addresses)
         && Objects.equals(privacyGroupId, that.privacyGroupId)
         && Objects.equals(privacyGroupToModify, that.privacyGroupToModify);
-
   }
 
   @Override

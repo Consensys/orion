@@ -85,8 +85,8 @@ public class QueryPrivacyGroupStorage implements Storage<QueryPrivacyGroupPayloa
   }
 
   private QueryPrivacyGroupPayload handleAlreadyPresentUpdate(
-      QueryPrivacyGroupPayload data,
-      QueryPrivacyGroupPayload result) {
+      final QueryPrivacyGroupPayload data,
+      final QueryPrivacyGroupPayload result) {
     List<String> listPrivacyGroupIds;
     QueryPrivacyGroupPayload queryPrivacyGroupPayload;
     if (data.isToDelete()) {

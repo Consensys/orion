@@ -46,11 +46,11 @@ abstract class PrivacyGroupBaseHandler {
   }
 
   List<CompletableFuture<Boolean>> sendRequestsToOthers(
-      Stream<Box.PublicKey> addresses,
-      Serializable request,
-      String endpoint) {
+      final Stream<Box.PublicKey> addresses,
+      final Serializable request,
+      final String endpoint) {
     return addresses.map(pKey -> {
-      URL recipientURL = networkNodes.urlForRecipient(pKey);
+      final URL recipientURL = networkNodes.urlForRecipient(pKey);
 
       log.info("Propagating request to {} with URL {} {}", pKey, recipientURL.toString(), endpoint);
 
@@ -69,11 +69,11 @@ abstract class PrivacyGroupBaseHandler {
   }
 
   private void handleResponse(
-      String endpoint,
-      Box.PublicKey pKey,
-      URL recipientURL,
-      CompletableFuture<Boolean> responseFuture,
-      HttpClientResponse response) {
+      final String endpoint,
+      final Box.PublicKey pKey,
+      final URL recipientURL,
+      final CompletableFuture<Boolean> responseFuture,
+      final HttpClientResponse response) {
     response.bodyHandler(responseBody -> {
       log.info("{} with URL {} responded with {}", pKey, recipientURL.toString(), response.statusCode());
       if (response.statusCode() != 200) {
