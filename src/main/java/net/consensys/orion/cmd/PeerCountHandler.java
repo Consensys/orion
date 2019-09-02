@@ -22,12 +22,12 @@ public class PeerCountHandler implements Handler<RoutingContext> {
 
   private final Supplier<Integer> peerCountSupplier;
 
-  public PeerCountHandler(Supplier<Integer> peerCountSupplier) {
+  public PeerCountHandler(final Supplier<Integer> peerCountSupplier) {
     this.peerCountSupplier = peerCountSupplier;
   }
 
   @Override
-  public void handle(RoutingContext routingContext) {
+  public void handle(final RoutingContext routingContext) {
     routingContext.response().end(this.peerCountSupplier.get().toString());
   }
 }

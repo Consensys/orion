@@ -52,33 +52,37 @@ public class StubEnclave implements Enclave {
   }
 
   @Override
-  public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, Box.PublicKey publicKey) {
-    byte[] cipherText = ciphertextAndMetadata.cipherText();
-    byte[] plainText = new byte[cipherText.length];
+  public byte[] decrypt(final EncryptedPayload ciphertextAndMetadata, final Box.PublicKey publicKey) {
+    final byte[] cipherText = ciphertextAndMetadata.cipherText();
+    final byte[] plainText = new byte[cipherText.length];
     for (int i = 0; i < cipherText.length; i++) {
-      byte b = cipherText[i];
+      final byte b = cipherText[i];
       plainText[i] = (byte) (b - 10);
     }
     return plainText;
   }
 
   @Override
-  public Box.PublicKey readKey(String b64) {
+  public Box.PublicKey readKey(final String b64) {
     return Box.PublicKey.fromBytes(Base64.getDecoder().decode(b64.getBytes(StandardCharsets.UTF_8)));
   }
 
   @Override
-  public EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients, byte[] seed) {
-    byte[] ciphterText = new byte[plaintext.length];
+  public EncryptedPayload encrypt(
+      final byte[] plaintext,
+      final Box.PublicKey senderKey,
+      final Box.PublicKey[] recipients,
+      final byte[] seed) {
+    final byte[] ciphterText = new byte[plaintext.length];
     for (int i = 0; i < plaintext.length; i++) {
-      byte b = plaintext[i];
+      final byte b = plaintext[i];
       ciphterText[i] = (byte) (b + 10);
     }
 
-    byte[] nonce = {};
+    final byte[] nonce = {};
 
-    EncryptedKey[] encryptedKeys;
-    Map<Box.PublicKey, Integer> encryptedKeyOwners = new HashMap<>();
+    final EncryptedKey[] encryptedKeys;
+    final Map<Box.PublicKey, Integer> encryptedKeyOwners = new HashMap<>();
     ArrayList<Box.PublicKey> keys = new ArrayList<>();
 
     if (recipients != null && recipients.length > 0) {
@@ -106,10 +110,10 @@ public class StubEnclave implements Enclave {
 
   @Override
   public byte[] generatePrivacyGroupId(
-      Box.PublicKey[] recipientsAndSender,
-      byte[] seed,
-      PrivacyGroupPayload.Type type) {
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      final Box.PublicKey[] recipientsAndSender,
+      final byte[] seed,
+      final PrivacyGroupPayload.Type type) {
+    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
     for (int i = 0; recipientsAndSender != null && i < recipientsAndSender.length; i++) {
       outputStream.write(i);

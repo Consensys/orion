@@ -58,23 +58,23 @@ class InsecureNodeClientTest {
   private static HttpClient client;
 
   @BeforeAll
-  static void setUp(@TempDirectory Path tempDir) throws Exception {
-    SelfSignedCertificate clientCert = SelfSignedCertificate.create("localhost");
-    Config config = generateAndLoadConfiguration(tempDir, writer -> {
+  static void setUp(@TempDirectory final Path tempDir) throws Exception {
+    final SelfSignedCertificate clientCert = SelfSignedCertificate.create("localhost");
+    final Config config = generateAndLoadConfiguration(tempDir, writer -> {
       writer.write("tlsclienttrust='insecure-no-validation'\n");
       writeClientCertToConfig(writer, clientCert);
     });
 
     knownServersFile = config.tlsKnownServers();
 
-    SelfSignedCertificate serverCert = SelfSignedCertificate.create("foo.com");
+    final SelfSignedCertificate serverCert = SelfSignedCertificate.create("foo.com");
     fooFingerprint = certificateHexFingerprint(Paths.get(serverCert.keyCertOptions().getCertPath()));
     Files.write(knownServersFile, Collections.singletonList("#First line"));
 
     client = NodeHttpClientBuilder.build(vertx, config, 100);
 
-    Router dummyRouter = Router.router(vertx);
-    ConcurrentNetworkNodes payload = new ConcurrentNetworkNodes(new URL("http://www.example.com"));
+    final Router dummyRouter = Router.router(vertx);
+    final ConcurrentNetworkNodes payload = new ConcurrentNetworkNodes(new URL("http://www.example.com"));
     dummyRouter.post("/partyinfo").handler(routingContext -> {
       routingContext.response().end(Buffer.buffer(Serializer.serialize(HttpContentType.CBOR, payload)));
     });
@@ -91,8 +91,8 @@ class InsecureNodeClientTest {
     startServer(foobarComServer);
   }
 
-  private static void startServer(HttpServer server) throws Exception {
-    CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
+  private static void startServer(final HttpServer server) throws Exception {
+    final CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
     server.listen(getFreePort(), result -> {
       if (result.succeeded()) {
         completion.complete();
@@ -105,7 +105,7 @@ class InsecureNodeClientTest {
 
   @Test
   void testInsecure() throws Exception {
-    CompletableAsyncResult<Integer> statusCode = AsyncResult.incomplete();
+    final CompletableAsyncResult<Integer> statusCode = AsyncResult.incomplete();
     client
         .post(
             insecureServer.actualPort(),
@@ -120,7 +120,7 @@ class InsecureNodeClientTest {
     assertEquals("#First line", fingerprints.get(0));
     assertEquals("localhost:" + insecureServer.actualPort() + " " + fooFingerprint, fingerprints.get(1));
 
-    CompletableAsyncResult<Integer> secondStatusCode = AsyncResult.incomplete();
+    final CompletableAsyncResult<Integer> secondStatusCode = AsyncResult.incomplete();
     client
         .post(
             foobarComServer.actualPort(),

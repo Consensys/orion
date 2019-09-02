@@ -58,21 +58,21 @@ class CertificateAuthorityNodeClientTest {
   private static HttpClient client;
 
   @BeforeAll
-  static void setUp(@TempDirectory Path tempDir) throws Exception {
-    SelfSignedCertificate clientCert = SelfSignedCertificate.create("localhost");
-    Config config = generateAndLoadConfiguration(tempDir, writer -> {
+  static void setUp(@TempDirectory final Path tempDir) throws Exception {
+    final SelfSignedCertificate clientCert = SelfSignedCertificate.create("localhost");
+    final Config config = generateAndLoadConfiguration(tempDir, writer -> {
       writer.write("tlsclienttrust='ca'\n");
       writeClientCertToConfig(writer, clientCert);
     });
 
-    Path knownServersFile = config.tlsKnownServers();
+    final Path knownServersFile = config.tlsKnownServers();
 
-    SelfSignedCertificate serverCert = SelfSignedCertificate.create("localhost");
+    final SelfSignedCertificate serverCert = SelfSignedCertificate.create("localhost");
     TestUtils.configureJDKTrustStore(serverCert, tempDir);
     Files.write(knownServersFile, Collections.singletonList("#First line"));
 
-    Router dummyRouter = Router.router(vertx);
-    ConcurrentNetworkNodes payload = new ConcurrentNetworkNodes(new URL("http://www.example.com"));
+    final Router dummyRouter = Router.router(vertx);
+    final ConcurrentNetworkNodes payload = new ConcurrentNetworkNodes(new URL("http://www.example.com"));
     dummyRouter.post("/partyinfo").handler(routingContext -> {
       routingContext.response().end(Buffer.buffer(Serializer.serialize(HttpContentType.CBOR, payload)));
     });
@@ -89,8 +89,8 @@ class CertificateAuthorityNodeClientTest {
     startServer(unknownServer);
   }
 
-  private static void startServer(HttpServer server) throws Exception {
-    CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
+  private static void startServer(final HttpServer server) throws Exception {
+    final CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
     server.listen(getFreePort(), result -> {
       if (result.succeeded()) {
         completion.complete();
@@ -103,7 +103,7 @@ class CertificateAuthorityNodeClientTest {
 
   @Test
   void testValidCertificateServer() throws Exception {
-    CompletableAsyncResult<Integer> statusCode = AsyncResult.incomplete();
+    final CompletableAsyncResult<Integer> statusCode = AsyncResult.incomplete();
     client
         .post(
             caValidServer.actualPort(),
@@ -116,7 +116,7 @@ class CertificateAuthorityNodeClientTest {
 
   @Test
   void testUnknownServer() throws Exception {
-    CompletableAsyncResult<Integer> statusCode = AsyncResult.incomplete();
+    final CompletableAsyncResult<Integer> statusCode = AsyncResult.incomplete();
     client
         .post(
             unknownServer.actualPort(),
@@ -125,7 +125,7 @@ class CertificateAuthorityNodeClientTest {
             response -> statusCode.complete(response.statusCode()))
         .exceptionHandler(statusCode::completeExceptionally)
         .end();
-    CompletionException e = assertThrows(CompletionException.class, statusCode::get);
+    final CompletionException e = assertThrows(CompletionException.class, statusCode::get);
     assertTrue(e.getCause() instanceof SSLException);
   }
 

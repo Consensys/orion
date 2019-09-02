@@ -24,8 +24,8 @@ public class DeletePrivacyGroupRequest implements Serializable {
 
   @JsonCreator
   public DeletePrivacyGroupRequest(
-      @JsonProperty("privacyGroupId") String privacyGroupId,
-      @JsonProperty("from") String from) {
+      @JsonProperty("privacyGroupId") final String privacyGroupId,
+      @JsonProperty("from") final String from) {
     this.privacyGroupId = privacyGroupId;
     this.from = from;
   }

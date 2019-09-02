@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.KeyDeserializer;
 public final class PublicKeyMapKeyDeserializer extends KeyDeserializer {
 
   @Override
-  public Box.PublicKey deserializeKey(String key, DeserializationContext ctxt) {
+  public Box.PublicKey deserializeKey(final String key, final DeserializationContext ctxt) {
     return Box.PublicKey.fromBytes(decodeBytes(key));
   }
 }

@@ -85,7 +85,7 @@ class SodiumEnclaveTest {
     final Box.PublicKey fake = Box.KeyPair.random().publicKey();
     final Box.PublicKey recipientKey = keyStore.generateKeyPair();
 
-    EnclaveException e = assertThrows(EnclaveException.class, () -> encrypt("plaintext", fake, recipientKey));
+    final EnclaveException e = assertThrows(EnclaveException.class, () -> encrypt("plaintext", fake, recipientKey));
     assertEquals("No StoredPrivateKey found in keystore", e.getMessage());
   }
 
@@ -94,7 +94,7 @@ class SodiumEnclaveTest {
     final Box.PublicKey fake = Box.KeyPair.random().publicKey();
     final Box.PublicKey sender = keyStore.generateKeyPair();
 
-    EnclaveException e = assertThrows(EnclaveException.class, () -> {
+    final EnclaveException e = assertThrows(EnclaveException.class, () -> {
       final EncryptedPayload payload =
           new EncryptedPayload(sender, new byte[] {}, new EncryptedKey[] {}, new byte[] {}, new byte[0]);
       enclave.decrypt(payload, fake);
@@ -133,7 +133,8 @@ class SodiumEnclaveTest {
         encryptedPayload.cipherText(),
         new byte[0]);
 
-    IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> decrypt(payload, recipientKey));
+    final IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> decrypt(payload, recipientKey));
     assertEquals("nonce must be 24 bytes, got 0", e.getMessage());
   }
 
@@ -147,7 +148,7 @@ class SodiumEnclaveTest {
     final EncryptedPayload encryptedPayload1 = encrypt(plaintext, senderKey, recipientKey1);
 
     // trying to decrypt payload1 with recipient2 key
-    EnclaveException e = assertThrows(EnclaveException.class, () -> decrypt(encryptedPayload1, recipientKey2));
+    final EnclaveException e = assertThrows(EnclaveException.class, () -> decrypt(encryptedPayload1, recipientKey2));
     assertEquals(OrionErrorCode.ENCLAVE_DECRYPT_WRONG_PRIVATE_KEY, e.code());
   }
 
@@ -163,11 +164,14 @@ class SodiumEnclaveTest {
     assertNotEquals(encryptedPayload1.cipherText(), encryptedPayload2.cipherText());
   }
 
-  private String decrypt(EncryptedPayload encryptedPayload, Box.PublicKey senderKey) {
+  private String decrypt(final EncryptedPayload encryptedPayload, final Box.PublicKey senderKey) {
     return new String(enclave.decrypt(encryptedPayload, senderKey), UTF_8);
   }
 
-  private EncryptedPayload encrypt(String plaintext, Box.PublicKey senderKey, Box.PublicKey... recipientKey) {
+  private EncryptedPayload encrypt(
+      final String plaintext,
+      final Box.PublicKey senderKey,
+      final Box.PublicKey... recipientKey) {
     return enclave.encrypt(plaintext.getBytes(UTF_8), senderKey, recipientKey, null);
   }
 }

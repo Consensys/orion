@@ -28,8 +28,8 @@ public class SetPrivacyGroupRequest implements Serializable {
 
   @JsonCreator
   public SetPrivacyGroupRequest(
-      @JsonProperty("privacyGroupPayload") PrivacyGroupPayload payload,
-      @JsonProperty("privacyGroupId") String privacyGroupId) {
+      @JsonProperty("privacyGroupPayload") final PrivacyGroupPayload payload,
+      @JsonProperty("privacyGroupId") final String privacyGroupId) {
     this.payload = payload;
     this.privacyGroupId = privacyGroupId;
   }

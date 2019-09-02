@@ -29,7 +29,7 @@ public class PrivacyGroup implements Serializable {
     return privacyGroupId;
   }
 
-  public void setPrivacyGroupId(String privacyGroupId) {
+  public void setPrivacyGroupId(final String privacyGroupId) {
     this.privacyGroupId = privacyGroupId;
   }
 
@@ -37,7 +37,7 @@ public class PrivacyGroup implements Serializable {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(final String name) {
     this.name = name;
   }
 
@@ -45,7 +45,7 @@ public class PrivacyGroup implements Serializable {
     return description;
   }
 
-  public void setDescription(String description) {
+  public void setDescription(final String description) {
     this.description = description;
   }
 
@@ -53,7 +53,7 @@ public class PrivacyGroup implements Serializable {
     return type;
   }
 
-  public void setType(PrivacyGroupPayload.Type type) {
+  public void setType(final PrivacyGroupPayload.Type type) {
     this.type = type;
   }
 
@@ -61,7 +61,7 @@ public class PrivacyGroup implements Serializable {
     return members;
   }
 
-  public void setMembers(String[] members) {
+  public void setMembers(final String[] members) {
     this.members = members;
   }
 
@@ -70,11 +70,11 @@ public class PrivacyGroup implements Serializable {
 
 
   public PrivacyGroup(
-      String privacyGroupId,
-      PrivacyGroupPayload.Type type,
-      String name,
-      String description,
-      String[] members) {
+      final String privacyGroupId,
+      final PrivacyGroupPayload.Type type,
+      final String name,
+      final String description,
+      final String[] members) {
     this.privacyGroupId = privacyGroupId;
     this.type = type;
     this.name = name;

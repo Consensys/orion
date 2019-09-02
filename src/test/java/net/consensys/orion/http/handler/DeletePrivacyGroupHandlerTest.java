@@ -45,9 +45,9 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
   private Box.PublicKey senderKey;
 
   @Override
-  protected Enclave buildEnclave(Path tempDir) {
+  protected Enclave buildEnclave(final Path tempDir) {
     memoryKeyStore = new MemoryKeyStore();
-    Box.PublicKey defaultNodeKey = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey defaultNodeKey = memoryKeyStore.generateKeyPair();
     memoryKeyStore.addNodeKey(defaultNodeKey);
     return new SodiumEnclave(memoryKeyStore);
   }
@@ -55,14 +55,15 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
   @BeforeEach
   void setup() throws IOException, InterruptedException {
     senderKey = memoryKeyStore.generateKeyPair();
-    Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
 
-    String[] toEncrypt = new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
-    PrivacyGroupRequest privacyGroupRequestExpected =
+    final String[] toEncrypt =
+        new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
+    final PrivacyGroupRequest privacyGroupRequestExpected =
         buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
-    Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
+    final Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
 
-    byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
+    final byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
         new Box.PublicKey[] {senderKey, recipientKey},
         privacyGroupRequestExpected.getSeed().get(),
         PrivacyGroupPayload.Type.PANTHEON);
@@ -72,29 +73,29 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
     // execute request
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     assertEquals(200, resp.code());
 
-    RecordedRequest recordedRequest = fakePeer.server.takeRequest();
+    final RecordedRequest recordedRequest = fakePeer.server.takeRequest();
     assertEquals("/pushPrivacyGroup", recordedRequest.getPath());
     assertEquals("POST", recordedRequest.getMethod());
 
-    PrivacyGroup privacyGroup = Serializer.deserialize(JSON, PrivacyGroup.class, resp.body().bytes());
+    final PrivacyGroup privacyGroup = Serializer.deserialize(JSON, PrivacyGroup.class, resp.body().bytes());
     privacyGroupId = privacyGroup.getPrivacyGroupId();
   }
 
   @Test
   void expectedDeletePrivacyGroupId() throws Exception {
 
-    DeletePrivacyGroupRequest deletePrivacyGroupRequest =
+    final DeletePrivacyGroupRequest deletePrivacyGroupRequest =
         buildDeletePrivacyGroupRequest(privacyGroupId, encodeBytes(senderKey.bytesArray()));
 
-    Request request = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
+    final Request request = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
 
     fakePeer.addResponse(new MockResponse().setBody(privacyGroupId));
     // execute request
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     assertEquals(200, resp.code());
   }
@@ -102,10 +103,10 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
   @Test
   void expectErrorDeletePrivacyGroupIdTwice() throws Exception {
 
-    DeletePrivacyGroupRequest deletePrivacyGroupRequest =
+    final DeletePrivacyGroupRequest deletePrivacyGroupRequest =
         buildDeletePrivacyGroupRequest(privacyGroupId, encodeBytes(senderKey.bytesArray()));
 
-    Request request = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
+    final Request request = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
 
     fakePeer.addResponse(new MockResponse().setBody(privacyGroupId));
     // execute request
@@ -122,30 +123,34 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
   @Test
   void expectErrorDeleteIncorrectPrivacyGroupId() throws Exception {
 
-    DeletePrivacyGroupRequest deletePrivacyGroupRequest =
+    final DeletePrivacyGroupRequest deletePrivacyGroupRequest =
         buildDeletePrivacyGroupRequest("test", encodeBytes(senderKey.bytesArray()));
 
-    Request request = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
+    final Request request = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
 
     // execute request
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     assertEquals(500, resp.code());
   }
 
 
-  PrivacyGroupRequest buildPrivacyGroupRequest(String[] addresses, String from, String name, String description) {
-    PrivacyGroupRequest privacyGroupRequest = new PrivacyGroupRequest(addresses, from, name, description);
+  PrivacyGroupRequest buildPrivacyGroupRequest(
+      final String[] addresses,
+      final String from,
+      final String name,
+      final String description) {
+    final PrivacyGroupRequest privacyGroupRequest = new PrivacyGroupRequest(addresses, from, name, description);
     // create a random seed
-    SecureRandom random = new SecureRandom();
-    byte[] bytes = new byte[20];
+    final SecureRandom random = new SecureRandom();
+    final byte[] bytes = new byte[20];
     random.nextBytes(bytes);
     privacyGroupRequest.setSeed(bytes);
 
     return privacyGroupRequest;
   }
 
-  DeletePrivacyGroupRequest buildDeletePrivacyGroupRequest(String key, String from) {
+  DeletePrivacyGroupRequest buildDeletePrivacyGroupRequest(final String key, final String from) {
     return new DeletePrivacyGroupRequest(key, from);
   }
 }

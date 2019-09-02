@@ -33,10 +33,10 @@ import okhttp3.HttpUrl;
 
 public class NodeUtils {
 
-  public static String joinPathsAsTomlListEntry(Path... paths) {
-    StringBuilder builder = new StringBuilder();
+  public static String joinPathsAsTomlListEntry(final Path... paths) {
+    final StringBuilder builder = new StringBuilder();
     boolean first = true;
-    for (Path path : paths) {
+    for (final Path path : paths) {
       if (!first) {
         builder.append(",");
       }
@@ -50,29 +50,29 @@ public class NodeUtils {
     return new HttpUrl.Builder().scheme("http").host(host).port(port).build();
   }
 
-  public static String urlString(String host, int port) {
+  public static String urlString(final String host, final int port) {
     return buildUrl(host, port).toString();
   }
 
-  public static URL url(String host, int port) {
+  public static URL url(final String host, final int port) {
     return buildUrl(host, port).url();
   }
 
   public static Config nodeConfig(
-      Path tempDir,
-      int nodePort,
-      String nodeNetworkInterface,
-      int clientPort,
-      String clientNetworkInterface,
-      String nodeName,
-      String pubKeys,
-      String privKeys,
-      String tls,
-      String tlsServerTrust,
-      String tlsClientTrust,
-      String storage) throws IOException {
+      final Path tempDir,
+      final int nodePort,
+      final String nodeNetworkInterface,
+      final int clientPort,
+      final String clientNetworkInterface,
+      final String nodeName,
+      final String pubKeys,
+      final String privKeys,
+      final String tls,
+      final String tlsServerTrust,
+      final String tlsClientTrust,
+      final String storage) throws IOException {
 
-    Path workDir = tempDir.resolve("acceptance").toAbsolutePath();
+    final Path workDir = tempDir.resolve("acceptance").toAbsolutePath();
     Files.createDirectories(workDir);
 
     // @formatter:off
@@ -94,19 +94,19 @@ public class NodeUtils {
   }
 
   public static int freePort() throws Exception {
-    try (ServerSocket socket = new ServerSocket(0)) {
+    try (final ServerSocket socket = new ServerSocket(0)) {
       return socket.getLocalPort();
     }
   }
 
   /** It's the callers responsibility to stop the started Orion. */
-  public static Orion startOrion(Config config) {
+  public static Orion startOrion(final Config config) {
     final Orion orion = new Orion();
     orion.run(System.out, System.err, config);
     return orion;
   }
 
-  public static EthClientStub client(int clientPort, HttpClient httpClient) {
+  public static EthClientStub client(final int clientPort, final HttpClient httpClient) {
     final EthClientStub client = new EthClientStub(clientPort, httpClient);
     assertTrue(client.upCheck());
     return client;
@@ -114,41 +114,53 @@ public class NodeUtils {
 
   private static final byte[] originalPayload = "a wonderful transaction".getBytes(UTF_8);
 
-  public static byte[] viewTransaction(EthClientStub viewer, String viewerKey, String digest) {
+  public static byte[] viewTransaction(final EthClientStub viewer, final String viewerKey, final String digest) {
     return viewer.receive(digest, viewerKey).orElseThrow(AssertionFailedError::new);
   }
 
-  public static ReceiveResponse viewTransactionPrivacyGroupId(EthClientStub viewer, String viewerKey, String digest) {
+  public static ReceiveResponse viewTransactionPrivacyGroupId(
+      final EthClientStub viewer,
+      final String viewerKey,
+      final String digest) {
     return viewer.receivePrivacy(digest, viewerKey);
   }
 
-  public static String sendTransaction(EthClientStub sender, String senderKey, String... recipientsKey) {
+  public static String sendTransaction(
+      final EthClientStub sender,
+      final String senderKey,
+      final String... recipientsKey) {
     return sender.send(originalPayload, senderKey, recipientsKey).orElseThrow(AssertionFailedError::new);
   }
 
-  public static String sendTransactionPrivacyGroupId(EthClientStub sender, String senderKey, String privacyGroupId) {
+  public static String sendTransactionPrivacyGroupId(
+      final EthClientStub sender,
+      final String senderKey,
+      final String privacyGroupId) {
     return sender.send(originalPayload, senderKey, privacyGroupId).orElseThrow(AssertionFailedError::new);
   }
 
   public static PrivacyGroup createPrivacyGroupTransaction(
-      EthClientStub sender,
-      String[] addresses,
-      String from,
-      String name,
-      String description) {
+      final EthClientStub sender,
+      final String[] addresses,
+      final String from,
+      final String name,
+      final String description) {
     return sender.createPrivacyGroup(addresses, from, name, description).orElseThrow(AssertionFailedError::new);
   }
 
-  public static PrivacyGroup[] findPrivacyGroupTransaction(EthClientStub sender, String[] addresses) {
+  public static PrivacyGroup[] findPrivacyGroupTransaction(final EthClientStub sender, final String[] addresses) {
     return sender.findPrivacyGroup(addresses).orElseThrow(AssertionFailedError::new);
   }
 
-  public static String deletePrivacyGroupTransaction(EthClientStub sender, String privacyGroupId, String from) {
+  public static String deletePrivacyGroupTransaction(
+      final EthClientStub sender,
+      final String privacyGroupId,
+      final String from) {
     return sender.deletePrivacyGroup(privacyGroupId, from).orElseThrow(AssertionFailedError::new);
   }
 
   /** Asserts the received payload matches that sent. */
-  public static void assertTransaction(byte[] receivedPayload) {
+  public static void assertTransaction(final byte[] receivedPayload) {
     assertArrayEquals(originalPayload, receivedPayload);
   }
 

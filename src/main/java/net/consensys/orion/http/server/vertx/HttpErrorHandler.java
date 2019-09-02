@@ -34,7 +34,7 @@ public class HttpErrorHandler implements Handler<RoutingContext> {
   public HttpErrorHandler() {}
 
   @Override
-  public void handle(RoutingContext failureContext) {
+  public void handle(final RoutingContext failureContext) {
     final int statusCode = statusCode(failureContext);
     final HttpServerResponse response = failureContext.response().setStatusCode(statusCode);
 
@@ -60,12 +60,12 @@ public class HttpErrorHandler implements Handler<RoutingContext> {
   /**
    * Status code may not have been set (left as a negative number), in which case assume server side issue.
    */
-  private int statusCode(RoutingContext failureContext) {
+  private int statusCode(final RoutingContext failureContext) {
     return failureContext.statusCode() < 0 ? HttpResponseStatus.INTERNAL_SERVER_ERROR.code()
         : failureContext.statusCode();
   }
 
-  private boolean hasError(RoutingContext failureContext) {
+  private boolean hasError(final RoutingContext failureContext) {
     return failureContext.failure() != null;
   }
 

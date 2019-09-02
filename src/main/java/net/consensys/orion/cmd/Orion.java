@@ -109,16 +109,16 @@ public class Orion {
   private HttpServer nodeHTTPServer;
   private HttpServer clientHTTPServer;
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     log.info("starting orion");
-    Orion orion = new Orion();
+    final Orion orion = new Orion();
     try {
       orion.run(System.out, System.err, args);
-    } catch (OrionStartException | ConfigException e) {
+    } catch (final OrionStartException | ConfigException e) {
       log.error(e.getMessage(), e.getCause());
       System.err.println(e.getMessage());
       System.exit(1);
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       log.error("Unexpected exception upon starting Orion", t);
       System.err.println(
           "An unexpected exception was reported while starting Orion. Please refer to the logs for more information");
@@ -127,17 +127,17 @@ public class Orion {
   }
 
   public static void configureRoutes(
-      Vertx vertx,
-      ConcurrentNetworkNodes networkNodes,
-      Enclave enclave,
-      Storage<EncryptedPayload> storage,
-      Storage<PrivacyGroupPayload> privacyGroupStorage,
-      Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
-      Router nodeRouter,
-      Router clientRouter,
-      Config config) {
+      final Vertx vertx,
+      final ConcurrentNetworkNodes networkNodes,
+      final Enclave enclave,
+      final Storage<EncryptedPayload> storage,
+      final Storage<PrivacyGroupPayload> privacyGroupStorage,
+      final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
+      final Router nodeRouter,
+      final Router clientRouter,
+      final Config config) {
 
-    LoggerHandler loggerHandler = LoggerHandler.create();
+    final LoggerHandler loggerHandler = LoggerHandler.create();
 
     //Setup Orion node APIs
     nodeRouter
@@ -243,7 +243,7 @@ public class Orion {
     this(vertx());
   }
 
-  public Orion(Vertx vertx) {
+  public Orion(final Vertx vertx) {
     this.vertx = vertx;
   }
 
@@ -253,9 +253,9 @@ public class Orion {
     if (!isRunning.compareAndSet(true, false)) {
       return;
     }
-    CompletableFuture<Boolean> publicServerFuture = new CompletableFuture<>();
-    CompletableFuture<Boolean> privateServerFuture = new CompletableFuture<>();
-    CompletableFuture<Boolean> discoveryFuture = new CompletableFuture<>();
+    final CompletableFuture<Boolean> publicServerFuture = new CompletableFuture<>();
+    final CompletableFuture<Boolean> privateServerFuture = new CompletableFuture<>();
+    final CompletableFuture<Boolean> discoveryFuture = new CompletableFuture<>();
     nodeHTTPServer.close(result -> {
       if (result.succeeded()) {
         publicServerFuture.complete(true);
@@ -271,7 +271,7 @@ public class Orion {
       }
     });
     try {
-      Future<Void> future = Future.future();
+      final Future<Void> future = Future.future();
       future.setHandler(result -> {
         if (result.succeeded()) {
           discoveryFuture.complete(true);
@@ -280,17 +280,17 @@ public class Orion {
         }
       });
       discovery.stop(future);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
 
     try {
       CompletableFuture.allOf(publicServerFuture, privateServerFuture, discoveryFuture).get();
-    } catch (InterruptedException | ExecutionException e) {
+    } catch (final InterruptedException | ExecutionException e) {
       log.error("Error stopping vert.x HTTP servers and discovery", e);
     }
 
-    CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
+    final CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
 
     vertx.close(result -> {
       if (result.succeeded()) {
@@ -302,35 +302,35 @@ public class Orion {
 
     try {
       resultFuture.get();
-    } catch (InterruptedException | ExecutionException io) {
+    } catch (final InterruptedException | ExecutionException io) {
       log.error("Error stopping vert.x", io);
     }
 
     if (storage != null) {
       try {
         storage.close();
-      } catch (IOException e) {
+      } catch (final IOException e) {
         log.error("Error closing storage", e);
       }
     }
   }
 
-  public void run(PrintStream out, PrintStream err, String... args) {
+  public void run(final PrintStream out, final PrintStream err, final String... args) {
     // parsing arguments
-    OrionArguments arguments = new OrionArguments(out, err, args);
+    final OrionArguments arguments = new OrionArguments(out, err, args);
 
     if (arguments.argumentExit()) {
       return;
     }
 
     // load config file
-    Config config = loadConfig(arguments.configFileName().map(Paths::get).orElse(null));
+    final Config config = loadConfig(arguments.configFileName().map(Paths::get).orElse(null));
 
     // generate key pair and exit
     if (arguments.keysToGenerate().isPresent()) {
       try {
         generateKeyPairs(out, err, config, arguments.keysToGenerate().get());
-      } catch (IOException ex) {
+      } catch (final IOException ex) {
         throw new OrionStartException(ex.getMessage(), ex);
       }
       return;
@@ -339,39 +339,39 @@ public class Orion {
     run(out, err, config);
   }
 
-  public void run(PrintStream out, PrintStream err, Config config) {
-    Path libSodiumPath = config.libSodiumPath();
+  public void run(final PrintStream out, final PrintStream err, final Config config) {
+    final Path libSodiumPath = config.libSodiumPath();
     if (libSodiumPath != null) {
       Sodium.loadLibrary(libSodiumPath);
     }
 
-    FileKeyStore keyStore;
+    final FileKeyStore keyStore;
     try {
       keyStore = new FileKeyStore(config);
-    } catch (IOException ex) {
+    } catch (final IOException ex) {
       throw new OrionStartException(ex.getMessage(), ex);
     }
-    ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(config, keyStore.nodeKeys());
+    final ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(config, keyStore.nodeKeys());
 
-    Enclave enclave = new SodiumEnclave(keyStore);
+    final Enclave enclave = new SodiumEnclave(keyStore);
 
-    Path workDir = config.workDir();
+    final Path workDir = config.workDir();
     log.info("using working directory {}", workDir);
 
     try {
       Files.createDirectories(workDir);
-    } catch (IOException ex) {
+    } catch (final IOException ex) {
       throw new OrionStartException("Couldn't create working directory '" + workDir + "': " + ex.getMessage(), ex);
     }
 
     if (!"off".equals(config.tls())) {
       // verify server TLS cert and key
-      Path tlsServerCert = config.tlsServerCert();
-      Path tlsServerKey = config.tlsServerKey();
+      final Path tlsServerCert = config.tlsServerCert();
+      final Path tlsServerKey = config.tlsServerKey();
 
       try {
         TLS.createSelfSignedCertificateIfMissing(tlsServerKey, tlsServerCert, config);
-      } catch (IOException e) {
+      } catch (final IOException e) {
         throw new OrionStartException(
             "An error occurred while writing the server TLS certificate files: " + e.getMessage(),
             e);
@@ -383,12 +383,12 @@ public class Orion {
       }
 
       // verify client TLS cert and key
-      Path tlsClientCert = config.tlsClientCert();
-      Path tlsClientKey = config.tlsClientKey();
+      final Path tlsClientCert = config.tlsClientCert();
+      final Path tlsClientKey = config.tlsClientKey();
 
       try {
         TLS.createSelfSignedCertificateIfMissing(tlsClientKey, tlsClientCert, config);
-      } catch (IOException e) {
+      } catch (final IOException e) {
         throw new OrionStartException(
             "An error occurred while writing the client TLS certificate files: " + e.getMessage(),
             e);
@@ -404,14 +404,14 @@ public class Orion {
     storage = createStorage(config.storage(), workDir);
 
     // Vertx routers
-    Router nodeRouter = Router.router(vertx).exceptionHandler(log::error);
-    Router clientRouter = Router.router(vertx).exceptionHandler(log::error);
+    final Router nodeRouter = Router.router(vertx).exceptionHandler(log::error);
+    final Router clientRouter = Router.router(vertx).exceptionHandler(log::error);
 
     // controller dependencies
-    StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
-    EncryptedPayloadStorage encryptedStorage = new EncryptedPayloadStorage(storage, keyBuilder);
-    QueryPrivacyGroupStorage queryPrivacyGroupStorage = new QueryPrivacyGroupStorage(storage, enclave);
-    PrivacyGroupStorage privacyGroupStorage = new PrivacyGroupStorage(storage, enclave);
+    final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
+    final EncryptedPayloadStorage encryptedStorage = new EncryptedPayloadStorage(storage, keyBuilder);
+    final QueryPrivacyGroupStorage queryPrivacyGroupStorage = new QueryPrivacyGroupStorage(storage, enclave);
+    final PrivacyGroupStorage privacyGroupStorage = new PrivacyGroupStorage(storage, enclave);
     configureRoutes(
         vertx,
         networkNodes,
@@ -424,16 +424,16 @@ public class Orion {
         config);
 
     // asynchronously start the vertx http server for public API
-    CompletableFuture<Boolean> nodeFuture = new CompletableFuture<>();
-    HttpServerOptions options = new HttpServerOptions()
+    final CompletableFuture<Boolean> nodeFuture = new CompletableFuture<>();
+    final HttpServerOptions options = new HttpServerOptions()
         .setPort(config.nodePort())
         .setHost(config.nodeNetworkInterface())
         .setCompressionSupported(true);
 
     if (!"off".equals(config.tls())) {
-      Path tlsServerCert = workDir.resolve(config.tlsServerCert());
-      Path tlsServerKey = workDir.resolve(config.tlsServerKey());
-      PemKeyCertOptions pemKeyCertOptions =
+      final Path tlsServerCert = workDir.resolve(config.tlsServerCert());
+      final Path tlsServerKey = workDir.resolve(config.tlsServerKey());
+      final PemKeyCertOptions pemKeyCertOptions =
           new PemKeyCertOptions().setKeyPath(tlsServerKey.toString()).setCertPath(tlsServerCert.toString());
 
       options.setSsl(true);
@@ -441,15 +441,15 @@ public class Orion {
       options.setPemKeyCertOptions(pemKeyCertOptions);
 
       if (!config.tlsServerChain().isEmpty()) {
-        PemTrustOptions pemTrustOptions = new PemTrustOptions();
-        for (Path chainCert : config.tlsServerChain()) {
+        final PemTrustOptions pemTrustOptions = new PemTrustOptions();
+        for (final Path chainCert : config.tlsServerChain()) {
           pemTrustOptions.addCertPath(chainCert.toAbsolutePath().toString());
         }
         options.setPemTrustOptions(pemTrustOptions);
       }
 
-      Path knownClientsFile = config.tlsKnownClients();
-      String serverTrustMode = config.tlsServerTrust().toLowerCase();
+      final Path knownClientsFile = config.tlsKnownClients();
+      final String serverTrustMode = config.tlsServerTrust().toLowerCase();
       switch (serverTrustMode) {
         case "whitelist":
           options.setTrustOptions(VertxTrustOptions.whitelistClients(knownClientsFile, false));
@@ -485,8 +485,8 @@ public class Orion {
       nodeHTTPServer =
           vertx.createHttpServer(options).requestHandler(nodeRouter::accept).exceptionHandler(log::error).listen(
               completeFutureInHandler(nodeFuture));
-      CompletableFuture<Boolean> clientFuture = new CompletableFuture<>();
-      HttpServerOptions clientOptions =
+      final CompletableFuture<Boolean> clientFuture = new CompletableFuture<>();
+      final HttpServerOptions clientOptions =
           new HttpServerOptions().setPort(config.clientPort()).setHost(config.clientNetworkInterface());
       clientHTTPServer = vertx
           .createHttpServer(clientOptions)
@@ -503,7 +503,7 @@ public class Orion {
             keyStore.nodeKeys());
       }
 
-      CompletableFuture<Boolean> networkDiscoveryFuture = new CompletableFuture<>();
+      final CompletableFuture<Boolean> networkDiscoveryFuture = new CompletableFuture<>();
       // start network discovery of other peers
       discovery = new NetworkDiscovery(networkNodes, config);
       vertx.deployVerticle(discovery, result -> {
@@ -514,9 +514,9 @@ public class Orion {
         }
       });
       CompletableFuture.allOf(networkDiscoveryFuture).get();
-    } catch (ExecutionException | MalformedURLException e) {
+    } catch (final ExecutionException | MalformedURLException e) {
       throw new OrionStartException("Orion failed to start: " + e.getCause().getMessage(), e.getCause());
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       throw new OrionStartException("Orion was interrupted while starting services");
     }
 
@@ -547,7 +547,7 @@ public class Orion {
     }
   }
 
-  private Handler<AsyncResult<HttpServer>> completeFutureInHandler(CompletableFuture<Boolean> future) {
+  private Handler<AsyncResult<HttpServer>> completeFutureInHandler(final CompletableFuture<Boolean> future) {
     return result -> {
       if (result.succeeded()) {
         future.complete(true);
@@ -557,9 +557,9 @@ public class Orion {
     };
   }
 
-  private KeyValueStore createStorage(String storage, Path storagePath) {
+  private KeyValueStore createStorage(final String storage, final Path storagePath) {
     String db = "routerdb";
-    String[] storageOptions = storage.split(":", 2);
+    final String[] storageOptions = storage.split(":", 2);
     if (storageOptions.length > 1) {
       db = storageOptions[1];
     }
@@ -567,13 +567,13 @@ public class Orion {
     if (storage.toLowerCase().startsWith("mapdb")) {
       try {
         return MapDBKeyValueStore.open(storagePath.resolve(db));
-      } catch (IOException e) {
+      } catch (final IOException e) {
         throw new OrionStartException("Couldn't create MapDB store: " + db, e);
       }
     } else if (storage.toLowerCase().startsWith("leveldb")) {
       try {
         return LevelDBKeyValueStore.open(storagePath.resolve(db));
-      } catch (IOException e) {
+      } catch (final IOException e) {
         throw new OrionStartException("Couldn't create LevelDB store: " + db, e);
       }
     } else if (storage.toLowerCase().startsWith("sql")) {
@@ -585,29 +585,32 @@ public class Orion {
   }
 
   @SuppressWarnings("unused")
-  private void generateKeyPairs(PrintStream out, PrintStream err, Config config, String[] keysToGenerate)
-      throws IOException {
+  private void generateKeyPairs(
+      final PrintStream out,
+      final PrintStream err,
+      final Config config,
+      final String[] keysToGenerate) throws IOException {
     log.info("generating Key Pairs");
 
-    Path libSodiumPath = config.libSodiumPath();
+    final Path libSodiumPath = config.libSodiumPath();
     if (libSodiumPath != null) {
       Sodium.loadLibrary(libSodiumPath);
     }
-    FileKeyStore keyStore = new FileKeyStore(config);
+    final FileKeyStore keyStore = new FileKeyStore(config);
 
-    Scanner scanner = new Scanner(System.in, UTF_8.name());
+    final Scanner scanner = new Scanner(System.in, UTF_8.name());
 
-    for (String keyName : keysToGenerate) {
-      Path basePath = Paths.get(keyName);
+    for (final String keyName : keysToGenerate) {
+      final Path basePath = Paths.get(keyName);
 
       //Prompt for Password from user
       out.format("Enter password for key pair [%s] : ", keyName);
-      String pwd = scanner.nextLine().trim();
+      final String pwd = scanner.nextLine().trim();
       keyStore.generateKeyPair(basePath, pwd.length() > 0 ? pwd : null);
     }
   }
 
-  private static Config loadConfig(@Nullable Path configFile) {
+  private static Config loadConfig(@Nullable final Path configFile) {
     if (configFile == null) {
       log.warn("no config file provided, using default");
       return Config.defaultConfig();
@@ -615,7 +618,7 @@ public class Orion {
     log.info("using {} provided config file", configFile.toAbsolutePath());
     try {
       return Config.load(configFile);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new OrionStartException("Could not open '" + configFile.toAbsolutePath() + "': " + e.getMessage(), e);
     }
   }

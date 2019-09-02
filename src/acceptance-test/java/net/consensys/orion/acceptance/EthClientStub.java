@@ -37,13 +37,13 @@ public class EthClientStub {
   private final HttpClient httpClient;
   private final int clientPort;
 
-  EthClientStub(int clientPort, HttpClient httpClient) {
+  EthClientStub(final int clientPort, final HttpClient httpClient) {
     this.httpClient = httpClient;
     this.clientPort = clientPort;
   }
 
   boolean upCheck() {
-    CompletableFuture<Integer> statusCodeFuture = new CompletableFuture<>();
+    final CompletableFuture<Integer> statusCodeFuture = new CompletableFuture<>();
     httpClient
         .get(clientPort, "localhost", "/upcheck")
         .handler(resp -> statusCodeFuture.complete(resp.statusCode()))
@@ -52,9 +52,9 @@ public class EthClientStub {
     return Integer.valueOf(200).equals(statusCodeFuture.join());
   }
 
-  Optional<String> send(byte[] payload, String from, String[] to) {
-    Map<String, Object> sendRequest = sendRequest(payload, from, to);
-    CompletableFuture<String> keyFuture = new CompletableFuture<>();
+  Optional<String> send(final byte[] payload, final String from, final String[] to) {
+    final Map<String, Object> sendRequest = sendRequest(payload, from, to);
+    final CompletableFuture<String> keyFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/send").handler(resp -> {
       if (resp.statusCode() == 200) {
         resp.bodyHandler(body -> keyFuture.complete(deserialize(body).get("key")));
@@ -66,9 +66,9 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
-  public Optional<String> sendExpectingError(byte[] payload, String from, String[] to) {
-    Map<String, Object> sendRequest = sendRequest(payload, from, to);
-    CompletableFuture<String> keyFuture = new CompletableFuture<>();
+  public Optional<String> sendExpectingError(final byte[] payload, final String from, final String[] to) {
+    final Map<String, Object> sendRequest = sendRequest(payload, from, to);
+    final CompletableFuture<String> keyFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/send").handler(resp -> {
       if (resp.statusCode() != 200) {
         resp.bodyHandler(body -> keyFuture.complete(body.toString()));
@@ -80,9 +80,9 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
-  Optional<String> send(byte[] payload, String from, String privacyGroupId) {
-    Map<String, Object> sendRequest = sendRequest(payload, from, privacyGroupId);
-    CompletableFuture<String> keyFuture = new CompletableFuture<>();
+  Optional<String> send(final byte[] payload, final String from, final String privacyGroupId) {
+    final Map<String, Object> sendRequest = sendRequest(payload, from, privacyGroupId);
+    final CompletableFuture<String> keyFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/send").handler(resp -> {
       if (resp.statusCode() == 200) {
         resp.bodyHandler(body -> keyFuture.complete(deserialize(body).get("key")));
@@ -94,9 +94,12 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
-  public Optional<String> sendPrivacyExpectingError(byte[] payload, String from, String privacyGroupId) {
-    Map<String, Object> sendRequest = sendRequest(payload, from, privacyGroupId);
-    CompletableFuture<String> keyFuture = new CompletableFuture<>();
+  public Optional<String> sendPrivacyExpectingError(
+      final byte[] payload,
+      final String from,
+      final String privacyGroupId) {
+    final Map<String, Object> sendRequest = sendRequest(payload, from, privacyGroupId);
+    final CompletableFuture<String> keyFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/send").handler(resp -> {
       if (resp.statusCode() != 200) {
         resp.bodyHandler(body -> keyFuture.complete(body.toString()));
@@ -108,9 +111,9 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
-  Optional<byte[]> receive(String digest, String publicKey) {
-    ReceiveRequest receiveRequest = new ReceiveRequest(digest, publicKey);
-    CompletableFuture<byte[]> payloadFuture = new CompletableFuture<>();
+  Optional<byte[]> receive(final String digest, final String publicKey) {
+    final ReceiveRequest receiveRequest = new ReceiveRequest(digest, publicKey);
+    final CompletableFuture<byte[]> payloadFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/receive").handler(resp -> {
       if (resp.statusCode() == 200) {
         resp.bodyHandler(body -> payloadFuture.complete(decodeBytes(deserialize(body).get("payload"))));
@@ -122,9 +125,9 @@ public class EthClientStub {
     return Optional.ofNullable(payloadFuture.join());
   }
 
-  ReceiveResponse receivePrivacy(String digest, String publicKey) {
-    ReceiveRequest receiveRequest = new ReceiveRequest(digest, publicKey);
-    CompletableFuture<ReceiveResponse> payloadFuture = new CompletableFuture<>();
+  ReceiveResponse receivePrivacy(final String digest, final String publicKey) {
+    final ReceiveRequest receiveRequest = new ReceiveRequest(digest, publicKey);
+    final CompletableFuture<ReceiveResponse> payloadFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/receive").handler(resp -> {
       if (resp.statusCode() == 200) {
         resp.bodyHandler(body -> payloadFuture.complete(deserialize(body, ReceiveResponse.class)));
@@ -138,9 +141,13 @@ public class EthClientStub {
     return payloadFuture.join();
   }
 
-  public Optional<PrivacyGroup> createPrivacyGroup(String[] addresses, String from, String name, String description) {
-    PrivacyGroupRequest createGroupRequest = new PrivacyGroupRequest(addresses, from, name, description);
-    CompletableFuture<PrivacyGroup> keyFuture = new CompletableFuture<>();
+  public Optional<PrivacyGroup> createPrivacyGroup(
+      final String[] addresses,
+      final String from,
+      final String name,
+      final String description) {
+    final PrivacyGroupRequest createGroupRequest = new PrivacyGroupRequest(addresses, from, name, description);
+    final CompletableFuture<PrivacyGroup> keyFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/createPrivacyGroup").handler(resp -> {
       if (resp.statusCode() == 200) {
         resp.bodyHandler(body -> keyFuture.complete(deserialize(body, PrivacyGroup.class)));
@@ -152,9 +159,9 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
-  public Optional<PrivacyGroup[]> findPrivacyGroup(String[] addresses) {
-    FindPrivacyGroupRequest findGroupRequest = new FindPrivacyGroupRequest(addresses);
-    CompletableFuture<PrivacyGroup[]> keyFuture = new CompletableFuture<>();
+  public Optional<PrivacyGroup[]> findPrivacyGroup(final String[] addresses) {
+    final FindPrivacyGroupRequest findGroupRequest = new FindPrivacyGroupRequest(addresses);
+    final CompletableFuture<PrivacyGroup[]> keyFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/findPrivacyGroup").handler(resp -> {
       if (resp.statusCode() == 200) {
         resp.bodyHandler(body -> keyFuture.complete(deserialize(body, PrivacyGroup[].class)));
@@ -166,9 +173,9 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
-  public Optional<String> deletePrivacyGroup(String privacyGroupId, String from) {
-    DeletePrivacyGroupRequest deleteGroupRequest = new DeletePrivacyGroupRequest(privacyGroupId, from);
-    CompletableFuture<String> keyFuture = new CompletableFuture<>();
+  public Optional<String> deletePrivacyGroup(final String privacyGroupId, final String from) {
+    final DeletePrivacyGroupRequest deleteGroupRequest = new DeletePrivacyGroupRequest(privacyGroupId, from);
+    final CompletableFuture<String> keyFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/deletePrivacyGroup").handler(resp -> {
       if (resp.statusCode() == 200) {
         resp.bodyHandler((body) -> {
@@ -188,8 +195,9 @@ public class EthClientStub {
       final String from,
       final String privacyGroupId,
       final String endpoint) {
-    ModifyPrivacyGroupRequest modifyPrivacyGroupRequest = new ModifyPrivacyGroupRequest(address, from, privacyGroupId);
-    CompletableFuture<PrivacyGroup> keyFuture = new CompletableFuture<>();
+    final ModifyPrivacyGroupRequest modifyPrivacyGroupRequest =
+        new ModifyPrivacyGroupRequest(address, from, privacyGroupId);
+    final CompletableFuture<PrivacyGroup> keyFuture = new CompletableFuture<>();
 
     httpClient.post(clientPort, "localhost", endpoint).handler(resp -> {
       if (resp.statusCode() == 200) {
@@ -203,25 +211,25 @@ public class EthClientStub {
   }
 
   @SuppressWarnings("unchecked")
-  private Map<String, String> deserialize(Buffer httpSendResponse) {
+  private Map<String, String> deserialize(final Buffer httpSendResponse) {
     return Serializer.deserialize(JSON, Map.class, httpSendResponse.getBytes());
   }
 
   @SuppressWarnings("unchecked")
-  private <T> T deserialize(Buffer httpSendResponse, Class<T> responseType) {
+  private <T> T deserialize(final Buffer httpSendResponse, final Class<T> responseType) {
     return Serializer.deserialize(JSON, responseType, httpSendResponse.getBytes());
   }
 
-  private Map<String, Object> sendRequest(byte[] payload, String from, String[] to) {
-    Map<String, Object> map = new HashMap<>();
+  private Map<String, Object> sendRequest(final byte[] payload, final String from, final String[] to) {
+    final Map<String, Object> map = new HashMap<>();
     map.put("payload", payload);
     map.put("from", from);
     map.put("to", to);
     return map;
   }
 
-  private Map<String, Object> sendRequest(byte[] payload, String from, String privacyGroupId) {
-    Map<String, Object> map = new HashMap<>();
+  private Map<String, Object> sendRequest(final byte[] payload, final String from, final String privacyGroupId) {
+    final Map<String, Object> map = new HashMap<>();
     map.put("payload", payload);
     map.put("from", from);
     map.put("privacyGroupId", privacyGroupId);

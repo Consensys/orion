@@ -17,7 +17,7 @@ import net.consensys.cava.crypto.Hash;
 public class Sha512_256StorageKeyBuilder implements StorageKeyBuilder {
 
   @Override
-  public byte[] build(byte[] data) {
+  public byte[] build(final byte[] data) {
     return Hash.sha2_512_256(data);
   }
 }

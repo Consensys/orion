@@ -25,9 +25,9 @@ public class ModifyPrivacyGroupRequest implements Serializable {
 
   @JsonCreator
   public ModifyPrivacyGroupRequest(
-      @JsonProperty("address") String address,
-      @JsonProperty("from") String from,
-      @JsonProperty("privacyGroupId") String privacyGroupId) {
+      @JsonProperty("address") final String address,
+      @JsonProperty("from") final String from,
+      @JsonProperty("privacyGroupId") final String privacyGroupId) {
     this.address = address;
     this.from = from;
     this.privacyGroupId = privacyGroupId;

@@ -38,16 +38,16 @@ class PartyInfoHandlerTest extends HandlerTest {
     networkNodes.addNode(Box.KeyPair.random().publicKey(), new URL("http://127.0.0.1:9002/"));
 
     // prepare /partyinfo payload (our known peers)
-    RequestBody partyInfoBody =
+    final RequestBody partyInfoBody =
         RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), Serializer.serialize(CBOR, networkNodes));
 
     // call http endpoint
-    Request request = new Request.Builder().post(partyInfoBody).url(nodeBaseUrl + "/partyinfo").build();
+    final Request request = new Request.Builder().post(partyInfoBody).url(nodeBaseUrl + "/partyinfo").build();
 
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
 
-    ConcurrentNetworkNodes partyInfoResponse =
+    final ConcurrentNetworkNodes partyInfoResponse =
         Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
 
     assertEquals(networkNodes, partyInfoResponse);
@@ -55,7 +55,7 @@ class PartyInfoHandlerTest extends HandlerTest {
 
   @Test
   void roundTripSerialization() throws Exception {
-    ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(new URL("http://localhost:1234/"));
+    final ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(new URL("http://localhost:1234/"));
     networkNodes.addNode(Box.KeyPair.random().publicKey(), new URL("http://localhost/"));
     assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.CBOR, ConcurrentNetworkNodes.class, networkNodes));
     assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.JSON, ConcurrentNetworkNodes.class, networkNodes));
@@ -67,22 +67,22 @@ class PartyInfoHandlerTest extends HandlerTest {
     networkNodes.addNode(Box.KeyPair.random().publicKey(), new URL("http://127.0.0.1:9002/"));
 
     // prepare /partyinfo payload (our known peers) with invalid content type (json)
-    RequestBody partyInfoBody =
+    final RequestBody partyInfoBody =
         RequestBody.create(MediaType.parse(JSON.httpHeaderValue), Serializer.serialize(JSON, networkNodes));
 
-    Request request = new Request.Builder().post(partyInfoBody).url(nodeBaseUrl + "/partyinfo").build();
+    final Request request = new Request.Builder().post(partyInfoBody).url(nodeBaseUrl + "/partyinfo").build();
 
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
     assertEquals(404, resp.code());
   }
 
   @Test
   void partyInfoWithInvalidBody() throws Exception {
-    RequestBody partyInfoBody = RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), "foo");
+    final RequestBody partyInfoBody = RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), "foo");
 
-    Request request = new Request.Builder().post(partyInfoBody).url(nodeBaseUrl + "/partyinfo").build();
+    final Request request = new Request.Builder().post(partyInfoBody).url(nodeBaseUrl + "/partyinfo").build();
 
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
 
     // produces 500 because serialisation error
     assertEquals(500, resp.code());

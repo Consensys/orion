@@ -68,16 +68,16 @@ class PrivacyGroupAcceptanceTestBase {
   @BeforeEach
   void setUpTriNodes(@TempDirectory final Path tempDir) throws Exception {
 
-    Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
-    Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
-    Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
-    Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
-    Path key3pub = copyResource("key3.pub", tempDir.resolve("key3.pub"));
-    Path key3key = copyResource("key3.key", tempDir.resolve("key3.key"));
+    final Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
+    final Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
+    final Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
+    final Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
+    final Path key3pub = copyResource("key3.pub", tempDir.resolve("key3.pub"));
+    final Path key3key = copyResource("key3.key", tempDir.resolve("key3.key"));
 
-    String jdbcUrl = "jdbc:h2:" + tempDir.resolve("node2").toString();
-    try (Connection conn = DriverManager.getConnection(jdbcUrl)) {
-      Statement st = conn.createStatement();
+    final String jdbcUrl = "jdbc:h2:" + tempDir.resolve("node2").toString();
+    try (final Connection conn = DriverManager.getConnection(jdbcUrl)) {
+      final Statement st = conn.createStatement();
       st.executeUpdate("create table if not exists store(key char(60), value binary, primary key(key))");
     }
 
@@ -129,28 +129,29 @@ class PrivacyGroupAcceptanceTestBase {
     thirdOrionLauncher = NodeUtils.startOrion(thirdNodeConfig);
     thirdHttpClient = vertx.createHttpClient();
 
-    Box.PublicKey pk1 = Box.PublicKey.fromBytes(decodeBytes(PK_1_B_64));
-    Box.PublicKey pk2 = Box.PublicKey.fromBytes(decodeBytes(PK_2_B_64));
-    Box.PublicKey pk3 = Box.PublicKey.fromBytes(decodeBytes(PK_3_B_64));
+    final Box.PublicKey pk1 = Box.PublicKey.fromBytes(decodeBytes(PK_1_B_64));
+    final Box.PublicKey pk2 = Box.PublicKey.fromBytes(decodeBytes(PK_2_B_64));
+    final Box.PublicKey pk3 = Box.PublicKey.fromBytes(decodeBytes(PK_3_B_64));
 
     networkNodes = new ConcurrentNetworkNodes(NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
     networkNodes.addNode(pk1, NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
     networkNodes.addNode(pk2, NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
     networkNodes.addNode(pk3, NodeUtils.url("127.0.0.1", thirdOrionLauncher.nodePort()));
     // prepare /partyinfo payload (our known peers)
-    RequestBody partyInfoBody =
+    final RequestBody partyInfoBody =
         RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), Serializer.serialize(CBOR, networkNodes));
     // call http endpoint
-    OkHttpClient httpClient = new OkHttpClient();
+    final OkHttpClient httpClient = new OkHttpClient();
 
     final String firstNodeBaseUrl = NodeUtils.urlString("127.0.0.1", firstOrionLauncher.nodePort());
-    Request request = new Request.Builder().post(partyInfoBody).url(firstNodeBaseUrl + "/partyinfo").build();
+    final Request request = new Request.Builder().post(partyInfoBody).url(firstNodeBaseUrl + "/partyinfo").build();
     // first /partyinfo call may just get the one node, so wait until we get exactly 3 nodes
     await().atMost(5, TimeUnit.SECONDS).until(() -> getPartyInfoResponse(httpClient, request).nodeURLs().size() == 3);
   }
 
-  private ConcurrentNetworkNodes getPartyInfoResponse(OkHttpClient httpClient, Request request) throws Exception {
-    Response resp = httpClient.newCall(request).execute();
+  private ConcurrentNetworkNodes getPartyInfoResponse(final OkHttpClient httpClient, final Request request)
+      throws Exception {
+    final Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
     return Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
   }
@@ -163,7 +164,7 @@ class PrivacyGroupAcceptanceTestBase {
         secondOrionLauncher.stop();
         thirdOrionLauncher.stop();
         return true;
-      } catch (Exception ignored) {
+      } catch (final Exception ignored) {
         return false;
       }
     });

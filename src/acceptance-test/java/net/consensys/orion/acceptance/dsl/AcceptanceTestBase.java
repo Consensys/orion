@@ -28,7 +28,7 @@ public class AcceptanceTestBase {
   }
 
   public void waitForClientInterconnect(final int timeoutSeconds, final OrionNode... nodes) {
-    List<OrionNode> nodeList = Lists.newArrayList(nodes);
+    final List<OrionNode> nodeList = Lists.newArrayList(nodes);
 
     // The value reported by PeerCount _appears_ to be calculated by adding:
     // 1. Yourself

@@ -40,7 +40,7 @@ abstract class PrivacyGroupBaseHandler {
   private final ConcurrentNetworkNodes networkNodes;
   private final HttpClient httpClient;
 
-  PrivacyGroupBaseHandler(ConcurrentNetworkNodes networkNodes, HttpClient httpClient) {
+  PrivacyGroupBaseHandler(final ConcurrentNetworkNodes networkNodes, final HttpClient httpClient) {
     this.networkNodes = networkNodes;
     this.httpClient = httpClient;
   }

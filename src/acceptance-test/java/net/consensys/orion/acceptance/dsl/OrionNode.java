@@ -105,10 +105,10 @@ public class OrionNode {
     return new JsonObject(response.body().string());
   }
 
-  private JsonObject createSendRequest(byte[] payload, final Box.PublicKey sender, final PublicKey... recipients)
+  private JsonObject createSendRequest(final byte[] payload, final Box.PublicKey sender, final PublicKey... recipients)
       throws IOException {
     final List<PublicKey> to = Lists.newArrayList(recipients);
-    Map<String, Object> map = new HashMap<>();
+    final Map<String, Object> map = new HashMap<>();
     map.put("payload", payload);
     map.put("from", Base64.encodeBytes(sender.bytesArray()));
     map.put("to", to.stream().map(t -> Base64.encodeBytes(t.bytesArray())).toArray());

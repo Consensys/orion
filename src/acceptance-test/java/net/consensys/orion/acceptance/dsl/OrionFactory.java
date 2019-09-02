@@ -34,7 +34,7 @@ public class OrionFactory {
   private static final String libSodiumPath = "/usr/local/lib/libsodium.dylib";
 
 
-  public OrionNode create(final String nodeName, int keyCount) throws IOException {
+  public OrionNode create(final String nodeName, final int keyCount) throws IOException {
     return create(nodeName, keyCount, Collections.emptyList());
   }
 

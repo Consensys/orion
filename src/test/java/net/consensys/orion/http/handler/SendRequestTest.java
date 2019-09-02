@@ -27,58 +27,59 @@ class SendRequestTest {
 
   @Test
   void invalidBase64Payload() {
-    SendRequest request = new SendRequest("something", "foo", new String[] {"foo"});
+    final SendRequest request = new SendRequest("something", "foo", new String[] {"foo"});
     assertFalse(request.isValid());
   }
 
   @Test
   void noFromValid() {
-    SendRequest request = new SendRequest("something".getBytes(UTF_8), null, new String[] {"foo"});
+    final SendRequest request = new SendRequest("something".getBytes(UTF_8), null, new String[] {"foo"});
     assertTrue(request.isValid());
   }
 
   @Test
   void emptyFromInvalid() {
-    SendRequest request = new SendRequest("something".getBytes(UTF_8), "", new String[] {"foo"});
+    final SendRequest request = new SendRequest("something".getBytes(UTF_8), "", new String[] {"foo"});
     assertFalse(request.isValid());
   }
 
   @Test
   void missingPayload() {
-    SendRequest request = new SendRequest((byte[]) null, "foo", new String[] {"foo"});
+    final SendRequest request = new SendRequest((byte[]) null, "foo", new String[] {"foo"});
     assertFalse(request.isValid());
   }
 
   @Test
   void emptyPayload() {
-    SendRequest request = new SendRequest("".getBytes(UTF_8), "foo", new String[] {"foo"});
+    final SendRequest request = new SendRequest("".getBytes(UTF_8), "foo", new String[] {"foo"});
     assertFalse(request.isValid());
   }
 
   @Test
   void emptyToAddresses() {
-    SendRequest request = new SendRequest("something".getBytes(UTF_8), "foo", new String[0]);
+    final SendRequest request = new SendRequest("something".getBytes(UTF_8), "foo", new String[0]);
     assertFalse(request.isValid());
   }
 
   @Test
   void nullToAddresses() {
-    SendRequest request = new SendRequest("something".getBytes(UTF_8), "foo", null);
+    final SendRequest request = new SendRequest("something".getBytes(UTF_8), "foo", null);
     assertFalse(request.isValid());
   }
 
   @Test
   void toAddressesContainNull() {
-    SendRequest request = new SendRequest("something".getBytes(UTF_8), "foo", new String[] {null, "foo"});
+    final SendRequest request = new SendRequest("something".getBytes(UTF_8), "foo", new String[] {null, "foo"});
     assertFalse(request.isValid());
   }
 
   @Test
   void jsonToObject() throws Exception {
 
-    String json = "{\"payload\":\"" + encodeBytes("foo".getBytes(UTF_8)) + "\", \"from\":\"foo\", \"to\":[\"foo\"]}";
-    ObjectMapper mapper = new ObjectMapper();
-    SendRequest req = mapper.readerFor(SendRequest.class).readValue(json);
+    final String json =
+        "{\"payload\":\"" + encodeBytes("foo".getBytes(UTF_8)) + "\", \"from\":\"foo\", \"to\":[\"foo\"]}";
+    final ObjectMapper mapper = new ObjectMapper();
+    final SendRequest req = mapper.readerFor(SendRequest.class).readValue(json);
 
     assertEquals("foo", req.from().get());
     assertEquals("foo", req.to()[0]);

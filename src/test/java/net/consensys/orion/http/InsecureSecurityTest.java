@@ -57,9 +57,9 @@ class InsecureSecurityTest {
   private static Orion orion;
 
   @BeforeAll
-  static void setUp(@TempDirectory Path tempDir) throws Exception {
-    SelfSignedCertificate serverCertificate = SelfSignedCertificate.create("localhost");
-    Config config = generateAndLoadConfiguration(tempDir, writer -> {
+  static void setUp(@TempDirectory final Path tempDir) throws Exception {
+    final SelfSignedCertificate serverCertificate = SelfSignedCertificate.create("localhost");
+    final Config config = generateAndLoadConfiguration(tempDir, writer -> {
       writer.write("tlsservertrust='insecure-no-validation'\n");
       writeServerCertToConfig(writer, serverCertificate);
     });
@@ -67,7 +67,7 @@ class InsecureSecurityTest {
     configureJDKTrustStore(serverCertificate, tempDir);
     knownClientsFile = config.tlsKnownClients();
 
-    SelfSignedCertificate clientCertificate = SelfSignedCertificate.create("example.com");
+    final SelfSignedCertificate clientCertificate = SelfSignedCertificate.create("example.com");
     exampleComFingerprint = certificateHexFingerprint(Paths.get(clientCertificate.keyCertOptions().getCertPath()));
     httpClient = vertx
         .createHttpClient(new HttpClientOptions().setSsl(true).setKeyCertOptions(clientCertificate.keyCertOptions()));
@@ -87,25 +87,25 @@ class InsecureSecurityTest {
   void testUpCheckOnNodePort() throws Exception {
     assertTrue(Files.readAllLines(knownClientsFile).isEmpty());
     for (int i = 0; i < 5; i++) {
-      HttpClientRequest req = httpClient.get(nodePort, "localhost", "/upcheck");
-      CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
+      final HttpClientRequest req = httpClient.get(nodePort, "localhost", "/upcheck");
+      final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
       req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
-      HttpClientResponse resp = result.get();
+      final HttpClientResponse resp = result.get();
       assertEquals(200, resp.statusCode());
     }
-    List<String> fingerprints = Files.readAllLines(knownClientsFile);
+    final List<String> fingerprints = Files.readAllLines(knownClientsFile);
     assertEquals(1, fingerprints.size());
     assertEquals("example.com " + exampleComFingerprint, fingerprints.get(0));
   }
 
   @Test
   void testWithoutSSLConfiguration() {
-    CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
-    HttpClient insecureClient = vertx.createHttpClient(new HttpClientOptions().setSsl(true));
-    HttpClientRequest req = insecureClient.get(nodePort, "localhost", "/upcheck");
+    final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
+    final HttpClient insecureClient = vertx.createHttpClient(new HttpClientOptions().setSsl(true));
+    final HttpClientRequest req = insecureClient.get(nodePort, "localhost", "/upcheck");
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
 
-    CompletionException e = assertThrows(CompletionException.class, result::get);
+    final CompletionException e = assertThrows(CompletionException.class, result::get);
     assertTrue(e.getCause() instanceof SSLHandshakeException);
   }
 }

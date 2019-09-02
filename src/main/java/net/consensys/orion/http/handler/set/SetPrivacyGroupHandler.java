@@ -52,7 +52,7 @@ public class SetPrivacyGroupHandler implements Handler<RoutingContext> {
     updatePrivacyGroupStorage(routingContext, setRequest);
   }
 
-  private void updatePrivacyGroupStorage(RoutingContext routingContext, SetPrivacyGroupRequest addRequest) {
+  private void updatePrivacyGroupStorage(final RoutingContext routingContext, final SetPrivacyGroupRequest addRequest) {
     privacyGroupStorage
         .update(addRequest.getPrivacyGroupId(), addRequest.getPayload())
         .thenAccept((privacyGroupResult) -> {
@@ -71,9 +71,9 @@ public class SetPrivacyGroupHandler implements Handler<RoutingContext> {
   }
 
   private void updateQueryStorage(
-      RoutingContext routingContext,
-      QueryPrivacyGroupPayload queryPrivacyGroupPayload,
-      String key) {
+      final RoutingContext routingContext,
+      final QueryPrivacyGroupPayload queryPrivacyGroupPayload,
+      final String key) {
     queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenAccept((result) -> {
       if (result.isEmpty()) {
         routingContext

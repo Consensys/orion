@@ -23,7 +23,7 @@ public class KeyDefinition {
   final private Path publicKeyPath;
   final private Path privateKeyPath;
 
-  public KeyDefinition(KeyPair keys, Path publicKeyPath, Path privateKeyPath) {
+  public KeyDefinition(final KeyPair keys, final Path publicKeyPath, final Path privateKeyPath) {
     this.keys = keys;
     this.publicKeyPath = publicKeyPath;
     this.privateKeyPath = privateKeyPath;

@@ -57,13 +57,13 @@ class OracleSendReceiveTest {
 
 
   @BeforeEach
-  void setUp(@TempDirectory Path tempDir) throws Exception {
+  void setUp(@TempDirectory final Path tempDir) throws Exception {
     Assumptions.assumeTrue(databaseUser != null && databasePassword != null, "Oracle DB not configured");
 
     final String jdbcUrl =
         String.format(JDBC_URL, databaseUser, databasePassword, databaseHost, databasePort, databaseSid);
 
-    try (Connection conn = DriverManager.getConnection(jdbcUrl)) {
+    try (final Connection conn = DriverManager.getConnection(jdbcUrl)) {
       final Statement st = conn.createStatement();
       st.executeUpdate(
           " BEGIN\n"
@@ -74,10 +74,10 @@ class OracleSendReceiveTest {
       st.executeUpdate("CREATE TABLE store(key char(60) primary key, value BLOB)");
     }
 
-    Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
-    Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
-    Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
-    Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
+    final Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
+    final Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
+    final Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
+    final Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
 
     final Config config = NodeUtils.nodeConfig(
         tempDir,

@@ -45,7 +45,11 @@ public class NetworkDiscovery extends AbstractVerticle {
   private final long refreshDelayMs;
   private final int clientTimeoutMs;
 
-  public NetworkDiscovery(ConcurrentNetworkNodes nodes, Config config, long refreshDelayMs, int clientTimeoutMs) {
+  public NetworkDiscovery(
+      final ConcurrentNetworkNodes nodes,
+      final Config config,
+      final long refreshDelayMs,
+      final int clientTimeoutMs) {
     this.nodes = nodes;
     this.discoverers = new HashMap<>();
     this.config = config;
@@ -53,7 +57,7 @@ public class NetworkDiscovery extends AbstractVerticle {
     this.clientTimeoutMs = clientTimeoutMs;
   }
 
-  public NetworkDiscovery(ConcurrentNetworkNodes nodes, Config config) {
+  public NetworkDiscovery(final ConcurrentNetworkNodes nodes, final Config config) {
     this(nodes, config, REFRESH_DELAY_MS, HTTP_CLIENT_TIMEOUT_MS);
   }
 
@@ -65,7 +69,7 @@ public class NetworkDiscovery extends AbstractVerticle {
 
   @Override
   public void stop() {
-    for (Discoverer discoverer : discoverers.values()) {
+    for (final Discoverer discoverer : discoverers.values()) {
       discoverer.cancel();
     }
     httpClient.ifPresent(client -> {
@@ -80,10 +84,10 @@ public class NetworkDiscovery extends AbstractVerticle {
    */
   private void updateDiscoverers() {
     // for each peer that we know, we start a Discoverer (on timer)
-    for (URL nodeUrl : nodes.nodeURLs()) {
-      String urlString = nodeUrl.toString();
+    for (final URL nodeUrl : nodes.nodeURLs()) {
+      final String urlString = nodeUrl.toString();
       if (!discoverers.containsKey(urlString)) {
-        Discoverer d = new Discoverer(nodeUrl, refreshDelayMs, nodes.url().equals(nodeUrl));
+        final Discoverer d = new Discoverer(nodeUrl, refreshDelayMs, nodes.url().equals(nodeUrl));
         discoverers.put(urlString, d);
         d.engageNextTimerTick();
       }
@@ -113,14 +117,14 @@ public class NetworkDiscovery extends AbstractVerticle {
     private long timerId;
     private final boolean self;
 
-    Discoverer(URL nodeUrl, long refreshDelayMs, boolean self) {
+    Discoverer(final URL nodeUrl, final long refreshDelayMs, final boolean self) {
       this.nodeUrl = nodeUrl;
       this.currentRefreshDelay = refreshDelayMs;
       this.self = self;
     }
 
     @Override
-    public void handle(Long timerId) {
+    public void handle(final Long timerId) {
       // This is called on timer event, in the event loop of the Verticle (NetworkDiscovery)
       // we call /partyInfo API on the peer and update NetworkDiscovery state if needed
 

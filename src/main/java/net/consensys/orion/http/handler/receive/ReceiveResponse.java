@@ -20,7 +20,7 @@ public class ReceiveResponse implements Serializable {
 
   public ReceiveResponse() {}
 
-  public ReceiveResponse(byte[] payload, byte[] privacyGroupId) {
+  public ReceiveResponse(final byte[] payload, final byte[] privacyGroupId) {
     this.payload = payload;
     this.privacyGroupId = privacyGroupId;
   }
@@ -29,7 +29,7 @@ public class ReceiveResponse implements Serializable {
     return payload;
   }
 
-  public void setPayload(byte[] payload) {
+  public void setPayload(final byte[] payload) {
     this.payload = payload;
   }
 
@@ -37,7 +37,7 @@ public class ReceiveResponse implements Serializable {
     return privacyGroupId;
   }
 
-  public void setPrivacyGroupId(byte[] privacyGroupId) {
+  public void setPrivacyGroupId(final byte[] privacyGroupId) {
     this.privacyGroupId = privacyGroupId;
   }
 }

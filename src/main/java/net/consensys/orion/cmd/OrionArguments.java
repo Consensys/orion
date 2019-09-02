@@ -28,7 +28,7 @@ class OrionArguments {
   private Optional<String> configFileName = Optional.empty();
   private Optional<String[]> keysToGenerate = Optional.empty();
 
-  OrionArguments(PrintStream out, PrintStream err, String[] args) {
+  OrionArguments(final PrintStream out, final PrintStream err, final String[] args) {
 
     boolean showUsage = false;
     // Process Arguments
@@ -45,7 +45,7 @@ class OrionArguments {
             showUsage = true;
             break;
           }
-          String keys = args[i];
+          final String keys = args[i];
           keysToGenerate = Optional.of(keys.split(","));
           break;
         case "--help":
@@ -74,7 +74,7 @@ class OrionArguments {
     }
   }
 
-  private void displayHelp(PrintStream out) {
+  private void displayHelp(final PrintStream out) {
     out.println("Usage: " + Orion.NAME + " [options] [config file]");
     out.println("where options include:");
     out.println("\t-g");
@@ -87,16 +87,16 @@ class OrionArguments {
     out.println("\t--version\tprint version information");
   }
 
-  private void displayVersion(PrintStream out, PrintStream err) {
-    try (InputStream versionAsStream = OrionArguments.class.getResourceAsStream("/version.txt")) {
+  private void displayVersion(final PrintStream out, final PrintStream err) {
+    try (final InputStream versionAsStream = OrionArguments.class.getResourceAsStream("/version.txt")) {
       if (versionAsStream == null) {
         out.println("(development)");
       } else {
-        BufferedReader buffer = new BufferedReader(new InputStreamReader(versionAsStream, UTF_8));
-        String contents = buffer.lines().collect(Collectors.joining("\n"));
+        final BufferedReader buffer = new BufferedReader(new InputStreamReader(versionAsStream, UTF_8));
+        final String contents = buffer.lines().collect(Collectors.joining("\n"));
         out.println(contents);
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       err.println("Read of Version file failed " + e.getMessage());
     }
   }
