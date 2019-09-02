@@ -27,9 +27,9 @@ public class PushToHistoryRequest implements Serializable {
 
   @JsonCreator
   public PushToHistoryRequest(
-      @JsonProperty("privacyGroupId") String privacyGroupId,
-      @JsonProperty("privacyMarkerTransactionHash") String privacyMarkerTransactionHash,
-      @JsonProperty("enclaveKey") String enclaveKey) {
+      @JsonProperty("privacyGroupId") final String privacyGroupId,
+      @JsonProperty("privacyMarkerTransactionHash") final String privacyMarkerTransactionHash,
+      @JsonProperty("enclaveKey") final String enclaveKey) {
 
     this.privacyGroupId = privacyGroupId;
     this.privacyMarkerTxHash = privacyMarkerTransactionHash;

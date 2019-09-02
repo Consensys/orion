@@ -186,8 +186,8 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
-  public Optional<String> push(EncryptedPayload payload) {
-    CompletableFuture<String> pushFuture = new CompletableFuture<>();
+  public Optional<String> push(final EncryptedPayload payload) {
+    final CompletableFuture<String> pushFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/push").handler(resp -> {
       if (resp.statusCode() == 200) {
         resp.bodyHandler((body) -> {
@@ -203,9 +203,9 @@ public class EthClientStub {
 
 
   public Optional<Boolean> pushToHistory(
-      String privacyGroupId,
-      String privacyMarkerTransactionHash,
-      String enclaveKey) {
+      final String privacyGroupId,
+      final String privacyMarkerTransactionHash,
+      final String enclaveKey) {
     PushToHistoryRequest pushToHistoryRequest =
         new PushToHistoryRequest(privacyGroupId, privacyMarkerTransactionHash, enclaveKey);
     CompletableFuture<Boolean> keyFuture = new CompletableFuture<>();

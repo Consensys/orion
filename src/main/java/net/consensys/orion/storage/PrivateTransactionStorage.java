@@ -37,29 +37,31 @@ public class PrivateTransactionStorage implements Storage<ArrayList<CommitmentPa
   }
 
   @Override
-  public AsyncResult<String> put(ArrayList<CommitmentPair> data) {
-    String key = generateDigest(data);
-    Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
-    Bytes dataBytes = Bytes.wrap(Serializer.serialize(HttpContentType.CBOR, data));
+  public AsyncResult<String> put(final ArrayList<CommitmentPair> data) {
+    final String key = generateDigest(data);
+    final Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
+    final Bytes dataBytes = Bytes.wrap(Serializer.serialize(HttpContentType.CBOR, data));
     return store.putAsync(keyBytes, dataBytes).thenSupply(() -> key);
   }
 
   @Override
-  public String generateDigest(ArrayList<CommitmentPair> data) {
+  public String generateDigest(final ArrayList<CommitmentPair> data) {
     return PREPEND + encodeBytes(Longs.toByteArray(data.hashCode()));
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public AsyncResult<Optional<ArrayList<CommitmentPair>>> get(String key) {
-    Bytes keyBytes = Bytes.wrap((PREPEND + key).getBytes(UTF_8));
+  public AsyncResult<Optional<ArrayList<CommitmentPair>>> get(final String key) {
+    final Bytes keyBytes = Bytes.wrap((PREPEND + key).getBytes(UTF_8));
     return store.getAsync(keyBytes).thenApply(
         maybeBytes -> Optional.ofNullable(maybeBytes).map(
             bytes -> Serializer.deserialize(HttpContentType.CBOR, ArrayList.class, bytes.toArrayUnsafe())));
   }
 
   @Override
-  public AsyncResult<Optional<ArrayList<CommitmentPair>>> update(String key, ArrayList<CommitmentPair> data) {
+  public AsyncResult<Optional<ArrayList<CommitmentPair>>> update(
+      final String key,
+      final ArrayList<CommitmentPair> data) {
     return get(key).thenApply((result) -> {
       Bytes keyBytes = Bytes.wrap((PREPEND + key).getBytes(UTF_8));
       Bytes dataBytes = Bytes.wrap(Serializer.serialize(HttpContentType.CBOR, data));

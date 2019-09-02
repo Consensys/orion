@@ -69,7 +69,7 @@ class PushTransactionToPrivacyGroupHistoryTest {
   private MemoryKeyStore memoryKeyStore;
 
   @BeforeEach
-  void setUpDualNode(@TempDirectory Path tempDir) throws Exception {
+  void setUpDualNode(@TempDirectory final Path tempDir) throws Exception {
     vertx = vertx();
 
     Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
