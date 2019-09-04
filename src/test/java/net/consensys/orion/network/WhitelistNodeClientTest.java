@@ -59,29 +59,29 @@ class WhitelistNodeClientTest {
   private static HttpClient client;
 
   @BeforeAll
-  static void setUp(@TempDirectory Path tempDir) throws Exception {
-    SelfSignedCertificate clientCert = SelfSignedCertificate.create("localhost");
-    Config config = generateAndLoadConfiguration(tempDir, writer -> {
+  static void setUp(@TempDirectory final Path tempDir) throws Exception {
+    final SelfSignedCertificate clientCert = SelfSignedCertificate.create("localhost");
+    final Config config = generateAndLoadConfiguration(tempDir, writer -> {
       writer.write("tlsclienttrust='whitelist'\n");
       writeClientCertToConfig(writer, clientCert);
     });
 
-    Path knownServersFile = config.tlsKnownServers();
+    final Path knownServersFile = config.tlsKnownServers();
 
-    SelfSignedCertificate serverCert = SelfSignedCertificate.create("localhost");
-    Router dummyRouter = Router.router(vertx);
+    final SelfSignedCertificate serverCert = SelfSignedCertificate.create("localhost");
+    final Router dummyRouter = Router.router(vertx);
     whitelistedServer = vertx
         .createHttpServer(new HttpServerOptions().setSsl(true).setPemKeyCertOptions(serverCert.keyCertOptions()))
         .requestHandler(dummyRouter::accept);
     startServer(whitelistedServer);
-    String fingerprint = certificateHexFingerprint(Paths.get(serverCert.keyCertOptions().getCertPath()));
+    final String fingerprint = certificateHexFingerprint(Paths.get(serverCert.keyCertOptions().getCertPath()));
     Files.write(
         knownServersFile,
         Arrays.asList("#First line", "localhost:" + whitelistedServer.actualPort() + " " + fingerprint));
 
     client = NodeHttpClientBuilder.build(vertx, config, 100);
 
-    ConcurrentNetworkNodes payload = new ConcurrentNetworkNodes(new URL("http://www.example.com"));
+    final ConcurrentNetworkNodes payload = new ConcurrentNetworkNodes(new URL("http://www.example.com"));
     dummyRouter.post("/partyinfo").handler(routingContext -> {
       routingContext.response().end(Buffer.buffer(Serializer.serialize(HttpContentType.CBOR, payload)));
     });
@@ -93,8 +93,8 @@ class WhitelistNodeClientTest {
     startServer(unknownServer);
   }
 
-  private static void startServer(HttpServer server) throws Exception {
-    CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
+  private static void startServer(final HttpServer server) throws Exception {
+    final CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
     server.listen(getFreePort(), result -> {
       if (result.succeeded()) {
         completion.complete();
@@ -107,7 +107,7 @@ class WhitelistNodeClientTest {
 
   @Test
   void testWhitelistedServer() throws Exception {
-    CompletableAsyncResult<Integer> statusCode = AsyncResult.incomplete();
+    final CompletableAsyncResult<Integer> statusCode = AsyncResult.incomplete();
     client
         .post(
             whitelistedServer.actualPort(),
@@ -120,7 +120,7 @@ class WhitelistNodeClientTest {
 
   @Test
   void testUnknownServer() {
-    CompletableAsyncResult<Integer> statusCode = AsyncResult.incomplete();
+    final CompletableAsyncResult<Integer> statusCode = AsyncResult.incomplete();
     client
         .post(
             unknownServer.actualPort(),
@@ -129,7 +129,7 @@ class WhitelistNodeClientTest {
             response -> statusCode.complete(response.statusCode()))
         .exceptionHandler(statusCode::completeExceptionally)
         .end();
-    CompletionException e = assertThrows(CompletionException.class, statusCode::get);
+    final CompletionException e = assertThrows(CompletionException.class, statusCode::get);
     assertTrue(e.getCause() instanceof SSLException);
   }
 

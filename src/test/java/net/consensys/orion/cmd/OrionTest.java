@@ -44,22 +44,23 @@ class OrionTest {
   private final Orion orion = new Orion();
 
   @Test
-  void generateUnlockedKeysWithArgumentProvided(@TempDirectory Path tempDir) throws Exception {
-    Path key1 = tempDir.resolve("testkey1").toAbsolutePath();
-    Path privateKey1 = tempDir.resolve("testkey1.key");
-    Path publicKey1 = tempDir.resolve("testkey1.pub");
+  void generateUnlockedKeysWithArgumentProvided(@TempDirectory final Path tempDir) throws Exception {
+    final Path key1 = tempDir.resolve("testkey1").toAbsolutePath();
+    final Path privateKey1 = tempDir.resolve("testkey1.key");
+    final Path publicKey1 = tempDir.resolve("testkey1.pub");
 
     // Test "--generatekeys" option
-    String[] args1 = {"--generatekeys", key1.toString()};
-    String input = "\n";
-    InputStream in = new ByteArrayInputStream(input.getBytes(UTF_8));
+    final String[] args1 = {"--generatekeys", key1.toString()};
+    final String input = "\n";
+    final InputStream in = new ByteArrayInputStream(input.getBytes(UTF_8));
     System.setIn(in);
     orion.run(System.out, System.err, args1);
 
     assertTrue(Files.exists(privateKey1));
     assertTrue(Files.exists(publicKey1));
 
-    StoredPrivateKey storedPrivateKey = Serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
+    final StoredPrivateKey storedPrivateKey =
+        Serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
     assertEquals(StoredPrivateKey.UNLOCKED, storedPrivateKey.type());
 
     Files.delete(privateKey1);
@@ -67,22 +68,23 @@ class OrionTest {
   }
 
   @Test
-  void generateLockedKeysWithArgumentProvided(@TempDirectory Path tempDir) throws Exception {
-    Path key1 = tempDir.resolve("testkey1").toAbsolutePath();
-    Path privateKey1 = tempDir.resolve("testkey1.key");
-    Path publicKey1 = tempDir.resolve("testkey1.pub");
+  void generateLockedKeysWithArgumentProvided(@TempDirectory final Path tempDir) throws Exception {
+    final Path key1 = tempDir.resolve("testkey1").toAbsolutePath();
+    final Path privateKey1 = tempDir.resolve("testkey1.key");
+    final Path publicKey1 = tempDir.resolve("testkey1.pub");
 
     // Test "--generatekeys" option
-    String[] args1 = {"--generatekeys", key1.toString()};
-    String input = "abc\n";
-    InputStream in = new ByteArrayInputStream(input.getBytes(UTF_8));
+    final String[] args1 = {"--generatekeys", key1.toString()};
+    final String input = "abc\n";
+    final InputStream in = new ByteArrayInputStream(input.getBytes(UTF_8));
     System.setIn(in);
     orion.run(System.out, System.err, args1);
 
     assertTrue(Files.exists(privateKey1));
     assertTrue(Files.exists(publicKey1));
 
-    StoredPrivateKey storedPrivateKey = Serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
+    final StoredPrivateKey storedPrivateKey =
+        Serializer.readFile(HttpContentType.JSON, privateKey1, StoredPrivateKey.class);
     assertEquals(StoredPrivateKey.ENCRYPTED, storedPrivateKey.type());
 
     Files.delete(privateKey1);
@@ -90,19 +92,19 @@ class OrionTest {
   }
 
   @Test
-  void generateMultipleKeys(@TempDirectory Path tempDir) throws Exception {
-    Path key1 = tempDir.resolve("testkey1").toAbsolutePath();
-    Path privateKey1 = tempDir.resolve("testkey1.key");
-    Path publicKey1 = tempDir.resolve("testkey1.pub");
-    Path key2 = tempDir.resolve("testkey2").toAbsolutePath();
-    Path privateKey2 = tempDir.resolve("testkey2.key");
-    Path publicKey2 = tempDir.resolve("testkey2.pub");
+  void generateMultipleKeys(@TempDirectory final Path tempDir) throws Exception {
+    final Path key1 = tempDir.resolve("testkey1").toAbsolutePath();
+    final Path privateKey1 = tempDir.resolve("testkey1.key");
+    final Path publicKey1 = tempDir.resolve("testkey1.pub");
+    final Path key2 = tempDir.resolve("testkey2").toAbsolutePath();
+    final Path privateKey2 = tempDir.resolve("testkey2.key");
+    final Path publicKey2 = tempDir.resolve("testkey2.pub");
 
     //Test "-g" option and multiple key files
-    String[] args1 = new String[] {"-g", key1.toString() + "," + key2.toString()};
+    final String[] args1 = new String[] {"-g", key1.toString() + "," + key2.toString()};
 
-    String input2 = "\n\n";
-    InputStream in2 = new ByteArrayInputStream(input2.getBytes(UTF_8));
+    final String input2 = "\n\n";
+    final InputStream in2 = new ByteArrayInputStream(input2.getBytes(UTF_8));
     System.setIn(in2);
 
     orion.run(System.out, System.err, args1);
@@ -121,22 +123,22 @@ class OrionTest {
 
   @Test
   void missingConfigFile() {
-    Orion orion = new Orion();
-    OrionStartException e =
+    final Orion orion = new Orion();
+    final OrionStartException e =
         assertThrows(OrionStartException.class, () -> orion.run(System.out, System.err, "someMissingFile.txt"));
     assertTrue(e.getMessage().startsWith("Could not open '"));
   }
 
   @SuppressWarnings("unchecked")
   @Test
-  void startupFails(@TempDirectory Path tempDir) {
-    VertxInternal vertx = Mockito.mock(VertxInternal.class);
-    HttpServer httpServer = Mockito.mock(HttpServer.class);
+  void startupFails(@TempDirectory final Path tempDir) {
+    final VertxInternal vertx = Mockito.mock(VertxInternal.class);
+    final HttpServer httpServer = Mockito.mock(HttpServer.class);
     Mockito.when(vertx.createHttpServer(Mockito.any())).thenReturn(httpServer);
     Mockito.when(httpServer.requestHandler(Mockito.any())).thenReturn(httpServer);
     Mockito.when(httpServer.exceptionHandler(Mockito.any())).thenReturn(httpServer);
     Mockito.when(httpServer.listen(Mockito.anyObject())).then(answer -> {
-      Handler<AsyncResult<HttpServer>> handler = answer.getArgumentAt(0, Handler.class);
+      final Handler<AsyncResult<HttpServer>> handler = answer.getArgumentAt(0, Handler.class);
       handler.handle(Future.failedFuture("Didn't work"));
       return httpServer;
     });
@@ -146,8 +148,8 @@ class OrionTest {
       return null;
     }).when(vertx).deployVerticle(Mockito.any(Verticle.class), Mockito.any(Handler.class));
 
-    Orion orion = new Orion(vertx);
-    Config config = Config.load("workdir=\"" + tempDir.resolve("data") + "\"\ntls=\"off\"\n");
+    final Orion orion = new Orion(vertx);
+    final Config config = Config.load("workdir=\"" + tempDir.resolve("data") + "\"\ntls=\"off\"\n");
     assertThrows(OrionStartException.class, () -> orion.run(System.out, System.err, config));
   }
 }

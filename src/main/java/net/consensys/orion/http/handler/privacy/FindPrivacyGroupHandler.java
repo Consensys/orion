@@ -105,7 +105,7 @@ public class FindPrivacyGroupHandler implements Handler<RoutingContext> {
           }
 
           final List<PrivacyGroup> listPrivacyGroups = new ArrayList<>();
-          for (CompletableFuture c : cfs) {
+          for (final CompletableFuture c : cfs) {
             try {
               final PrivacyGroup privacyGroup = (PrivacyGroup) c.get();
               if (privacyGroup.getPrivacyGroupId() != null) {
@@ -113,7 +113,7 @@ public class FindPrivacyGroupHandler implements Handler<RoutingContext> {
               } else {
                 log.info("Found a privacy group but it does not have a privacy group id");
               }
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (final InterruptedException | ExecutionException e) {
               log.error(e);
               routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING));
             }

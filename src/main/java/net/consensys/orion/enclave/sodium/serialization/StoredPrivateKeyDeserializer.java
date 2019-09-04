@@ -27,27 +27,27 @@ public final class StoredPrivateKeyDeserializer extends StdDeserializer<StoredPr
     this(null);
   }
 
-  public StoredPrivateKeyDeserializer(Class<?> vc) {
+  public StoredPrivateKeyDeserializer(final Class<?> vc) {
     super(vc);
   }
 
   @Override
-  public StoredPrivateKey deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-    JsonNode rootNode = p.getCodec().readTree(p);
-    JsonNode typeNode = rootNode.get("type");
+  public StoredPrivateKey deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
+    final JsonNode rootNode = p.getCodec().readTree(p);
+    final JsonNode typeNode = rootNode.get("type");
     if (typeNode == null) {
       throw new IOException("Unknown stored key format (missing 'type')");
     }
-    String type = typeNode.textValue();
-    JsonNode dataNode = rootNode.get("data");
+    final String type = typeNode.textValue();
+    final JsonNode dataNode = rootNode.get("data");
     if (dataNode == null) {
       throw new IOException("Invalid stored key format (missing 'data')");
     }
-    JsonNode bytesNode = dataNode.get("bytes");
+    final JsonNode bytesNode = dataNode.get("bytes");
     if (bytesNode == null) {
       throw new IOException("Invalid stored key format (missing 'data.bytes')");
     }
-    String encoded = bytesNode.textValue();
+    final String encoded = bytesNode.textValue();
     return new StoredPrivateKey(encoded, type);
   }
 }

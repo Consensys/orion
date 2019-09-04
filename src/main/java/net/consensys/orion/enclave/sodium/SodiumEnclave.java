@@ -45,23 +45,27 @@ public class SodiumEnclave implements Enclave {
   private final Box.PublicKey[] alwaysSendTo;
   private final Box.PublicKey[] nodeKeys;
 
-  public SodiumEnclave(KeyStore keyStore) {
+  public SodiumEnclave(final KeyStore keyStore) {
     this.keyStore = keyStore;
     this.alwaysSendTo = keyStore.alwaysSendTo();
     this.nodeKeys = keyStore.nodeKeys();
   }
 
   @Override
-  public EncryptedPayload encrypt(byte[] plaintext, Box.PublicKey senderKey, Box.PublicKey[] recipients, byte[] seed) {
+  public EncryptedPayload encrypt(
+      final byte[] plaintext,
+      final Box.PublicKey senderKey,
+      final Box.PublicKey[] recipients,
+      final byte[] seed) {
     // encrypt plaintext with a random key
-    SecretBox.Key payloadKey = SecretBox.Key.random();
+    final SecretBox.Key payloadKey = SecretBox.Key.random();
     // use a zero nonce, as the key is random
-    byte[] cipherText = SecretBox.encrypt(plaintext, payloadKey, ZERO_NONCE);
+    final byte[] cipherText = SecretBox.encrypt(plaintext, payloadKey, ZERO_NONCE);
 
     // encrypt payloadKey with public key of each recipient
-    Box.SecretKey senderSecretKey = privateKey(senderKey);
+    final Box.SecretKey senderSecretKey = privateKey(senderKey);
     final Box.PublicKey[] recipientsAndSender = addSenderToRecipients(recipients, senderKey);
-    Box.Nonce nonce = Box.Nonce.random();
+    final Box.Nonce nonce = Box.Nonce.random();
     final EncryptedKey[] encryptedKeys =
         encryptPayloadKeyForRecipients(payloadKey, recipientsAndSender, senderSecretKey, nonce);
 
@@ -78,9 +82,9 @@ public class SodiumEnclave implements Enclave {
 
   @Override
   public byte[] generatePrivacyGroupId(
-      Box.PublicKey[] recipientsAndSender,
-      byte[] seed,
-      PrivacyGroupPayload.Type type) {
+      final Box.PublicKey[] recipientsAndSender,
+      final byte[] seed,
+      final PrivacyGroupPayload.Type type) {
     final List<byte[]> recipientsAndSenderList = Arrays
         .stream(recipientsAndSender)
         .distinct()
@@ -93,15 +97,15 @@ public class SodiumEnclave implements Enclave {
       recipientsAndSenderList.add(seed);
     }
 
-    Bytes rlpEncoded = RLP.encodeList(listWriter -> recipientsAndSenderList.forEach(listWriter::writeByteArray));
+    final Bytes rlpEncoded = RLP.encodeList(listWriter -> recipientsAndSenderList.forEach(listWriter::writeByteArray));
 
     return Hash.keccak256(rlpEncoded).toArray();
   }
 
   @Override
-  public byte[] decrypt(EncryptedPayload ciphertextAndMetadata, Box.PublicKey identity) {
-    Box.SecretKey secretKey = privateKey(identity);
-    SecretBox.Key key = decryptPayloadKey(ciphertextAndMetadata, secretKey);
+  public byte[] decrypt(final EncryptedPayload ciphertextAndMetadata, final Box.PublicKey identity) {
+    final Box.SecretKey secretKey = privateKey(identity);
+    final SecretBox.Key key = decryptPayloadKey(ciphertextAndMetadata, secretKey);
     return SecretBox.decrypt(ciphertextAndMetadata.cipherText(), key, ZERO_NONCE);
   }
 
@@ -116,7 +120,7 @@ public class SodiumEnclave implements Enclave {
   }
 
   @Override
-  public Box.PublicKey readKey(String b64) {
+  public Box.PublicKey readKey(final String b64) {
     try {
       return Box.PublicKey.fromBytes(Base64.getDecoder().decode(b64.getBytes(UTF_8)));
     } catch (final IllegalArgumentException e) {
@@ -130,8 +134,8 @@ public class SodiumEnclave implements Enclave {
     return recipientsAndSender;
   }
 
-  private Box.SecretKey privateKey(Box.PublicKey identity) {
-    SecretKey secretKey = keyStore.privateKey(identity);
+  private Box.SecretKey privateKey(final Box.PublicKey identity) {
+    final SecretKey secretKey = keyStore.privateKey(identity);
     if (secretKey == null) {
       throw new EnclaveException(
           OrionErrorCode.ENCLAVE_NO_MATCHING_PRIVATE_KEY,
@@ -141,15 +145,15 @@ public class SodiumEnclave implements Enclave {
   }
 
   // Iterate through the encrypted keys to find one that decrypts successfully using our secret key.
-  private SecretBox.Key decryptPayloadKey(EncryptedPayload ciphertextAndMetadata, Box.SecretKey secretKey) {
+  private SecretBox.Key decryptPayloadKey(final EncryptedPayload ciphertextAndMetadata, final Box.SecretKey secretKey) {
     SodiumException problem = null;
 
     // Try each key until we find one that successfully decrypts or we run out of keys
     for (final EncryptedKey key : ciphertextAndMetadata.encryptedKeys()) {
-      byte[] clearText;
+      final byte[] clearText;
       try {
-        Box.PublicKey senderPublicKey = ciphertextAndMetadata.sender();
-        Box.Nonce nonce = Box.Nonce.fromBytes(ciphertextAndMetadata.nonce());
+        final Box.PublicKey senderPublicKey = ciphertextAndMetadata.sender();
+        final Box.Nonce nonce = Box.Nonce.fromBytes(ciphertextAndMetadata.nonce());
         clearText = Box.decrypt(key.getEncoded(), senderPublicKey, secretKey, nonce);
       } catch (final SodiumException e) {
         // The next next key might be the lucky one, so don't propagate just yet
@@ -166,7 +170,7 @@ public class SodiumEnclave implements Enclave {
   }
 
   /** Create mapping between encrypted keys and recipients */
-  private HashMap<Box.PublicKey, Integer> encryptedKeysMapping(Box.PublicKey[] recipients) {
+  private HashMap<Box.PublicKey, Integer> encryptedKeysMapping(final Box.PublicKey[] recipients) {
     final HashMap<Box.PublicKey, Integer> encryptedKeysMapping = new HashMap<>();
     for (int i = 0; i < recipients.length; i++) {
       encryptedKeysMapping.put(recipients[i], i);
@@ -175,20 +179,20 @@ public class SodiumEnclave implements Enclave {
   }
 
   private EncryptedKey[] encryptPayloadKeyForRecipients(
-      SecretBox.Key payloadKey,
-      Box.PublicKey[] recipients,
-      Box.SecretKey senderSecretKey,
-      Box.Nonce nonce) {
-    byte[] message = payloadKey.bytesArray();
+      final SecretBox.Key payloadKey,
+      final Box.PublicKey[] recipients,
+      final Box.SecretKey senderSecretKey,
+      final Box.Nonce nonce) {
+    final byte[] message = payloadKey.bytesArray();
     try {
       final EncryptedKey[] encryptedKeys = new EncryptedKey[recipients.length];
       for (int i = 0; i < recipients.length; i++) {
-        Box.PublicKey recipientPublicKey = recipients[i];
+        final Box.PublicKey recipientPublicKey = recipients[i];
 
-        byte[] encryptedKey;
+        final byte[] encryptedKey;
         try {
           encryptedKey = Box.encrypt(message, recipientPublicKey, senderSecretKey, nonce);
-        } catch (SodiumException e) {
+        } catch (final SodiumException e) {
           throw new EnclaveException(OrionErrorCode.ENCLAVE_ENCRYPT_COMBINE_KEYS, e);
         }
 

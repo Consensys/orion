@@ -60,14 +60,14 @@ public class SendHandler implements Handler<RoutingContext> {
   private final HttpClient httpClient;
 
   public SendHandler(
-      Vertx vertx,
-      Enclave enclave,
-      Storage<EncryptedPayload> storage,
-      Storage<PrivacyGroupPayload> privacyGroupStorage,
-      Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
-      ConcurrentNetworkNodes networkNodes,
-      HttpContentType contentType,
-      Config config) {
+      final Vertx vertx,
+      final Enclave enclave,
+      final Storage<EncryptedPayload> storage,
+      final Storage<PrivacyGroupPayload> privacyGroupStorage,
+      final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
+      final ConcurrentNetworkNodes networkNodes,
+      final HttpContentType contentType,
+      final Config config) {
     this.enclave = enclave;
     this.storage = storage;
     this.privacyGroupStorage = privacyGroupStorage;
@@ -79,7 +79,7 @@ public class SendHandler implements Handler<RoutingContext> {
   }
 
   @Override
-  public void handle(RoutingContext routingContext) {
+  public void handle(final RoutingContext routingContext) {
     final SendRequest sendRequest;
     if (contentType == JSON) {
       sendRequest = Serializer.deserialize(JSON, SendRequest.class, routingContext.getBody().getBytes());
@@ -97,7 +97,7 @@ public class SendHandler implements Handler<RoutingContext> {
 
     log.debug("reading public keys from SendRequest object");
     // read provided public keys
-    Box.PublicKey fromKey = sendRequest.from().map(enclave::readKey).orElseGet(() -> {
+    final Box.PublicKey fromKey = sendRequest.from().map(enclave::readKey).orElseGet(() -> {
       if (nodeKeys.isEmpty()) {
         throw new OrionException(OrionErrorCode.NO_SENDER_KEY);
       }
@@ -105,12 +105,13 @@ public class SendHandler implements Handler<RoutingContext> {
     });
 
     if (!sendRequest.privacyGroupId().isPresent()) {
-      List<Box.PublicKey> toKeys = Arrays.stream(sendRequest.to()).map(enclave::readKey).collect(Collectors.toList());
-      ArrayList<String> keys = new ArrayList<>(Arrays.stream(sendRequest.to()).collect(Collectors.toList()));
+      final List<Box.PublicKey> toKeys =
+          Arrays.stream(sendRequest.to()).map(enclave::readKey).collect(Collectors.toList());
+      final ArrayList<String> keys = new ArrayList<>(Arrays.stream(sendRequest.to()).collect(Collectors.toList()));
       if (sendRequest.from().isPresent()) {
         keys.add(sendRequest.from().get());
       }
-      PrivacyGroupPayload privacyGroupPayload = new PrivacyGroupPayload(
+      final PrivacyGroupPayload privacyGroupPayload = new PrivacyGroupPayload(
           keys.toArray(new String[0]),
           "legacy",
           "Privacy groups to support the creation of groups by privateFor and privateFrom",
@@ -118,7 +119,7 @@ public class SendHandler implements Handler<RoutingContext> {
           PrivacyGroupPayload.Type.LEGACY,
           null);
 
-      QueryPrivacyGroupPayload queryPrivacyGroupPayload =
+      final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
           new QueryPrivacyGroupPayload(keys.toArray(new String[0]), null);
       final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
 
@@ -129,7 +130,7 @@ public class SendHandler implements Handler<RoutingContext> {
           return key;
         } else {
           return privacyGroupStorage.put(privacyGroupPayload).thenApply((result) -> {
-            queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupStorage.generateDigest(privacyGroupPayload));
+            queryPrivacyGroupPayload.setPrivacyGroupToModify(privacyGroupStorage.generateDigest(privacyGroupPayload));
             return queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenApply((res) -> {
               send(routingContext, sendRequest, fromKey, toKeys, privacyGroupPayload);
               return result;
@@ -169,14 +170,14 @@ public class SendHandler implements Handler<RoutingContext> {
   }
 
   private void send(
-      RoutingContext routingContext,
-      SendRequest sendRequest,
-      Box.PublicKey fromKey,
-      List<Box.PublicKey> toKeys,
-      PrivacyGroupPayload privacyGroupPayload) {
+      final RoutingContext routingContext,
+      final SendRequest sendRequest,
+      final Box.PublicKey fromKey,
+      final List<Box.PublicKey> toKeys,
+      final PrivacyGroupPayload privacyGroupPayload) {
     // toKeys = toKeys + [nodeAlwaysSendTo] --> default pub key to always send to
     toKeys.addAll(Arrays.asList(enclave.alwaysSendTo()));
-    Box.PublicKey[] arrToKeys = toKeys.toArray(new Box.PublicKey[0]);
+    final Box.PublicKey[] arrToKeys = toKeys.toArray(new Box.PublicKey[0]);
 
     // convert payload from b64 to bytes
     final byte[] rawPayload = sendRequest.rawPayload();
@@ -186,7 +187,8 @@ public class SendHandler implements Handler<RoutingContext> {
     final EncryptedPayload encryptedPayload =
         enclave.encrypt(rawPayload, fromKey, arrToKeys, privacyGroupPayload.randomSeed());
 
-    List<Box.PublicKey> keys = toKeys.stream().filter(pKey -> !nodeKeys.contains(pKey)).collect(Collectors.toList());
+    final List<Box.PublicKey> keys =
+        toKeys.stream().filter(pKey -> !nodeKeys.contains(pKey)).collect(Collectors.toList());
 
     if (keys.stream().anyMatch(pKey -> networkNodes.urlForRecipient(pKey) == null)) {
       routingContext.fail(new OrionException(OrionErrorCode.NODE_MISSING_PEER_URL, "couldn't find peer URL"));
@@ -201,7 +203,7 @@ public class SendHandler implements Handler<RoutingContext> {
     log.debug("propagating payload");
 
     @SuppressWarnings("rawtypes")
-    CompletableFuture[] cfs = keys.stream().map(pKey -> {
+    final CompletableFuture[] cfs = keys.stream().map(pKey -> {
       URL recipientURL = networkNodes.urlForRecipient(pKey);
 
       CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
@@ -249,9 +251,9 @@ public class SendHandler implements Handler<RoutingContext> {
     STORE_GROUP, FIND_GROUP, PROPAGATE_ALL_PEERS
   }
 
-  private void handleFailure(RoutingContext routingContext, Throwable ex, ErrorType errorType) {
+  private void handleFailure(final RoutingContext routingContext, final Throwable ex, final ErrorType errorType) {
 
-    Throwable cause = ex.getCause();
+    final Throwable cause = ex.getCause();
     if (cause instanceof OrionException) {
       routingContext.fail(cause);
     } else {
@@ -271,9 +273,9 @@ public class SendHandler implements Handler<RoutingContext> {
     }
   }
 
-  private SendRequest binaryRequest(RoutingContext routingContext) {
-    String from = routingContext.request().getHeader("c11n-from");
-    String[] to = routingContext.request().getHeader("c11n-to").split(",");
+  private SendRequest binaryRequest(final RoutingContext routingContext) {
+    final String from = routingContext.request().getHeader("c11n-from");
+    final String[] to = routingContext.request().getHeader("c11n-to").split(",");
     return new SendRequest(routingContext.getBody().getBytes(), from, to);
   }
 }

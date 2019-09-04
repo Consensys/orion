@@ -35,32 +35,33 @@ public class QueryPrivacyGroupStorage implements Storage<QueryPrivacyGroupPayloa
 
   private final KeyValueStore store;
   private final Enclave enclave;
-  public byte[] bytes = new byte[20];
+  public final byte[] bytes = new byte[20];
 
-  public QueryPrivacyGroupStorage(KeyValueStore store, Enclave enclave) {
+  public QueryPrivacyGroupStorage(final KeyValueStore store, final Enclave enclave) {
     this.store = store;
     this.enclave = enclave;
-    SecureRandom random = new SecureRandom();
+    final SecureRandom random = new SecureRandom();
     random.nextBytes(bytes);
   }
 
   @Override
-  public AsyncResult<String> put(QueryPrivacyGroupPayload data) {
-    String key = generateDigest(data);
-    Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
-    Bytes dataBytes = Bytes.wrap(Serializer.serialize(HttpContentType.CBOR, data));
+  public AsyncResult<String> put(final QueryPrivacyGroupPayload data) {
+    final String key = generateDigest(data);
+    final Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
+    final Bytes dataBytes = Bytes.wrap(Serializer.serialize(HttpContentType.CBOR, data));
     return store.putAsync(keyBytes, dataBytes).thenSupply(() -> key);
   }
 
   @Override
-  public String generateDigest(QueryPrivacyGroupPayload data) {
-    Box.PublicKey[] publicKeys = Arrays.stream(data.addresses()).map(enclave::readKey).toArray(Box.PublicKey[]::new);
+  public String generateDigest(final QueryPrivacyGroupPayload data) {
+    final Box.PublicKey[] publicKeys =
+        Arrays.stream(data.addresses()).map(enclave::readKey).toArray(Box.PublicKey[]::new);
     return encodeBytes(enclave.generatePrivacyGroupId(publicKeys, bytes, PrivacyGroupPayload.Type.PANTHEON));
   }
 
   @Override
-  public AsyncResult<Optional<QueryPrivacyGroupPayload>> get(String key) {
-    Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
+  public AsyncResult<Optional<QueryPrivacyGroupPayload>> get(final String key) {
+    final Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
     return store.getAsync(keyBytes).thenApply(
         maybeBytes -> Optional.ofNullable(maybeBytes).map(
             bytes -> Serializer
@@ -68,25 +69,34 @@ public class QueryPrivacyGroupStorage implements Storage<QueryPrivacyGroupPayloa
   }
 
   @Override
-  public AsyncResult<Optional<QueryPrivacyGroupPayload>> update(String key, QueryPrivacyGroupPayload data) {
+  public AsyncResult<Optional<QueryPrivacyGroupPayload>> update(final String key, final QueryPrivacyGroupPayload data) {
     return get(key).thenApply((result) -> {
-      List<String> listPrivacyGroupIds;
-      QueryPrivacyGroupPayload queryPrivacyGroupPayload;
+      final List<String> listPrivacyGroupIds;
+      final QueryPrivacyGroupPayload queryPrivacyGroupPayload;
       if (result.isPresent()) {
-        if (data.isToDelete()) {
-          result.get().privacyGroupId().remove(data.privacyGroupToAppend());
-        } else {
-          result.get().privacyGroupId().add(data.privacyGroupToAppend());
-        }
-        listPrivacyGroupIds = result.get().privacyGroupId();
-        queryPrivacyGroupPayload = new QueryPrivacyGroupPayload(result.get().addresses(), listPrivacyGroupIds);
+        queryPrivacyGroupPayload = handleAlreadyPresentUpdate(data, result.get());
       } else {
-        listPrivacyGroupIds = Collections.singletonList(data.privacyGroupToAppend());
+        listPrivacyGroupIds = Collections.singletonList(data.privacyGroupToModify());
         queryPrivacyGroupPayload = new QueryPrivacyGroupPayload(data.addresses(), listPrivacyGroupIds);
       }
 
       put(queryPrivacyGroupPayload);
       return Optional.of(queryPrivacyGroupPayload);
     });
+  }
+
+  private QueryPrivacyGroupPayload handleAlreadyPresentUpdate(
+      final QueryPrivacyGroupPayload data,
+      final QueryPrivacyGroupPayload result) {
+    final List<String> listPrivacyGroupIds;
+    final QueryPrivacyGroupPayload queryPrivacyGroupPayload;
+    if (data.isToDelete()) {
+      result.privacyGroupId().remove(data.privacyGroupToModify());
+    } else if (!result.privacyGroupId().contains(data.privacyGroupToModify())) {
+      result.privacyGroupId().add(data.privacyGroupToModify());
+    }
+    listPrivacyGroupIds = result.privacyGroupId();
+    queryPrivacyGroupPayload = new QueryPrivacyGroupPayload(result.addresses(), listPrivacyGroupIds);
+    return queryPrivacyGroupPayload;
   }
 }

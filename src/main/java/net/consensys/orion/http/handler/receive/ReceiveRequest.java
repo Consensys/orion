@@ -23,20 +23,20 @@ public class ReceiveRequest implements Serializable {
   public final String to; // b64 encoded
 
   @JsonCreator
-  public ReceiveRequest(@JsonProperty("key") String key, @JsonProperty("to") String to) {
+  public ReceiveRequest(@JsonProperty("key") final String key, @JsonProperty("to") final String to) {
     this.key = key;
     this.to = to;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (!(o instanceof ReceiveRequest)) {
       return false;
     }
-    ReceiveRequest that = (ReceiveRequest) o;
+    final ReceiveRequest that = (ReceiveRequest) o;
     return Objects.equals(key, that.key) && Objects.equals(to, that.to);
   }
 

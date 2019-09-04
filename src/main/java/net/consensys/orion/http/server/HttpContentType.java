@@ -23,7 +23,7 @@ public enum HttpContentType {
 
   public final String httpHeaderValue;
 
-  HttpContentType(String httpHeaderValue) {
+  HttpContentType(final String httpHeaderValue) {
     this.httpHeaderValue = httpHeaderValue;
   }
 

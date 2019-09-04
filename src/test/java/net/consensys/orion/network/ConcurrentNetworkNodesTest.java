@@ -30,10 +30,10 @@ class ConcurrentNetworkNodesTest {
 
   @Test
   void roundTripSerialization() throws MalformedURLException {
-    URL u = new URL("http://nowhere:9090/");
-    List<URL> urls = Collections.singletonList(u);
-    Map<Box.PublicKey, URL> pks = Collections.singletonMap(Box.KeyPair.random().publicKey(), u);
-    ConcurrentNetworkNodes nodes = new ConcurrentNetworkNodes(new URL("http://some.server:8080/"), urls, pks);
+    final URL u = new URL("http://nowhere:9090/");
+    final List<URL> urls = Collections.singletonList(u);
+    final Map<Box.PublicKey, URL> pks = Collections.singletonMap(Box.KeyPair.random().publicKey(), u);
+    final ConcurrentNetworkNodes nodes = new ConcurrentNetworkNodes(new URL("http://some.server:8080/"), urls, pks);
     byte[] bytes = Serializer.serialize(HttpContentType.JSON, nodes);
     assertEquals(nodes, Serializer.deserialize(HttpContentType.JSON, ConcurrentNetworkNodes.class, bytes));
     bytes = Serializer.serialize(HttpContentType.CBOR, nodes);

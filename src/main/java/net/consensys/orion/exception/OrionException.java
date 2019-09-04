@@ -19,20 +19,20 @@ public class OrionException extends RuntimeException {
 
   private final OrionErrorCode code;
 
-  public OrionException(OrionErrorCode code) {
+  public OrionException(final OrionErrorCode code) {
     this.code = code;
   }
 
-  public OrionException(OrionErrorCode code, String message) {
+  public OrionException(final OrionErrorCode code, final String message) {
     this(code, message, null);
   }
 
-  public OrionException(OrionErrorCode code, @Nullable Throwable cause) {
+  public OrionException(final OrionErrorCode code, @Nullable final Throwable cause) {
     super(cause);
     this.code = code;
   }
 
-  public OrionException(OrionErrorCode code, String message, @Nullable Throwable cause) {
+  public OrionException(final OrionErrorCode code, final String message, @Nullable final Throwable cause) {
     super(message, cause);
     this.code = code;
   }

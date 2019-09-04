@@ -63,7 +63,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 abstract class HandlerTest {
 
   // http client
-  OkHttpClient httpClient = new OkHttpClient();
+  final OkHttpClient httpClient = new OkHttpClient();
   String nodeBaseUrl;
   String clientBaseUrl;
 
@@ -85,13 +85,13 @@ abstract class HandlerTest {
   protected Storage<ArrayList<CommitmentPair>> privateTransactionStorage;
 
   @BeforeEach
-  void setUp(@TempDirectory Path tempDir) throws Exception {
+  void setUp(@TempDirectory final Path tempDir) throws Exception {
     // Setup ports for Public and Private API Servers
     setupPorts();
 
     // Initialize the base HTTP url in two forms: String and OkHttp's HttpUrl object to allow for simpler composition
     // of complex URLs with path parameters, query strings, etc.
-    HttpUrl nodeHTTP = new HttpUrl.Builder().scheme("http").host("localhost").port(nodeHTTPServerPort).build();
+    final HttpUrl nodeHTTP = new HttpUrl.Builder().scheme("http").host("localhost").port(nodeHTTPServerPort).build();
     nodeBaseUrl = nodeHTTP.toString();
 
     // orion dependencies, reset them all between tests
@@ -99,17 +99,17 @@ abstract class HandlerTest {
     networkNodes = new ConcurrentNetworkNodes(nodeHTTP.url());
     enclave = buildEnclave(tempDir);
 
-    Path path = tempDir.resolve("routerdb");
+    final Path path = tempDir.resolve("routerdb");
     storage = MapDBKeyValueStore.open(path);
     // create our vertx object
     vertx = Vertx.vertx();
-    StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
+    final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
     payloadStorage = new EncryptedPayloadStorage(storage, keyBuilder);
     queryPrivacyGroupStorage = new QueryPrivacyGroupStorage(storage, enclave);
     privacyGroupStorage = new PrivacyGroupStorage(storage, enclave);
+    final Router publicRouter = Router.router(vertx);
+    final Router privateRouter = Router.router(vertx);
     privateTransactionStorage = new PrivateTransactionStorage(storage);
-    Router publicRouter = Router.router(vertx);
-    Router privateRouter = Router.router(vertx);
     Orion.configureRoutes(
         vertx,
         networkNodes,
@@ -126,11 +126,11 @@ abstract class HandlerTest {
     setupClientServer(privateRouter);
   }
 
-  private void setupNodeServer(Router router) throws Exception {
-    HttpServerOptions publicServerOptions = new HttpServerOptions();
+  private void setupNodeServer(final Router router) throws Exception {
+    final HttpServerOptions publicServerOptions = new HttpServerOptions();
     publicServerOptions.setPort(nodeHTTPServerPort);
 
-    CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
+    final CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
     nodeHttpServer = vertx.createHttpServer(publicServerOptions).requestHandler(router::accept).listen(result -> {
       if (result.succeeded()) {
         completion.complete();
@@ -141,14 +141,15 @@ abstract class HandlerTest {
     completion.join();
   }
 
-  private void setupClientServer(Router router) throws Exception {
-    HttpUrl clientHTTP = new HttpUrl.Builder().scheme("http").host("localhost").port(clientHTTPServerPort).build();
+  private void setupClientServer(final Router router) throws Exception {
+    final HttpUrl clientHTTP =
+        new HttpUrl.Builder().scheme("http").host("localhost").port(clientHTTPServerPort).build();
     clientBaseUrl = clientHTTP.toString();
 
-    HttpServerOptions privateServerOptions = new HttpServerOptions();
+    final HttpServerOptions privateServerOptions = new HttpServerOptions();
     privateServerOptions.setPort(clientHTTPServerPort);
 
-    CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
+    final CompletableAsyncCompletion completion = AsyncCompletion.incomplete();
     clientHttpServer = vertx.createHttpServer(privateServerOptions).requestHandler(router::accept).listen(result -> {
       if (result.succeeded()) {
         completion.complete();
@@ -161,11 +162,11 @@ abstract class HandlerTest {
 
   private void setupPorts() throws IOException {
     // get a free httpServerPort for Public API
-    ServerSocket socket1 = new ServerSocket(0);
+    final ServerSocket socket1 = new ServerSocket(0);
     nodeHTTPServerPort = socket1.getLocalPort();
 
     // get a free httpServerPort for Private API
-    ServerSocket socket2 = new ServerSocket(0);
+    final ServerSocket socket2 = new ServerSocket(0);
     clientHTTPServerPort = socket2.getLocalPort();
 
     socket1.close();
@@ -180,20 +181,24 @@ abstract class HandlerTest {
     vertx.close();
   }
 
-  protected Enclave buildEnclave(Path tempDir) {
+  protected Enclave buildEnclave(final Path tempDir) {
     return new StubEnclave();
   }
 
-  Request buildPrivateAPIRequest(String path, HttpContentType contentType, Object payload) {
+  Request buildPrivateAPIRequest(final String path, final HttpContentType contentType, final Object payload) {
     return buildPostRequest(clientBaseUrl, path, contentType, Serializer.serialize(contentType, payload));
   }
 
-  Request buildPublicAPIRequest(String path, HttpContentType contentType, Object payload) {
+  Request buildPublicAPIRequest(final String path, final HttpContentType contentType, final Object payload) {
     return buildPostRequest(nodeBaseUrl, path, contentType, Serializer.serialize(contentType, payload));
   }
 
-  private Request buildPostRequest(String baseurl, String path, HttpContentType contentType, byte[] payload) {
-    RequestBody body = RequestBody.create(MediaType.parse(contentType.httpHeaderValue), payload);
+  private Request buildPostRequest(
+      final String baseurl,
+      String path,
+      final HttpContentType contentType,
+      final byte[] payload) {
+    final RequestBody body = RequestBody.create(MediaType.parse(contentType.httpHeaderValue), payload);
 
     if (path.startsWith("/")) {
       path = path.substring(1, path.length());

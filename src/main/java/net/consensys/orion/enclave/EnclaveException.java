@@ -17,11 +17,11 @@ import net.consensys.orion.exception.OrionException;
 
 public class EnclaveException extends OrionException {
 
-  public EnclaveException(OrionErrorCode code, String message) {
+  public EnclaveException(final OrionErrorCode code, final String message) {
     super(code, message);
   }
 
-  public EnclaveException(OrionErrorCode code, Throwable cause) {
+  public EnclaveException(final OrionErrorCode code, final Throwable cause) {
     super(code, cause);
   }
 }

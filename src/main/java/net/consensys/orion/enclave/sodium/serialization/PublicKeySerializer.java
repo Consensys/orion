@@ -26,7 +26,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 public final class PublicKeySerializer extends JsonSerializer<Box.PublicKey> {
 
   @Override
-  public void serialize(PublicKey key, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+  public void serialize(final PublicKey key, final JsonGenerator gen, final SerializerProvider serializers)
+      throws IOException {
     gen.writeString(encodeBytes(key.bytesArray()));
   }
 }

@@ -48,13 +48,13 @@ public class FileKeyStore implements KeyStore {
    * @param config The configuration.
    * @throws IOException If an I/O error occurs loading any keys.
    */
-  public FileKeyStore(Config config) throws IOException {
+  public FileKeyStore(final Config config) throws IOException {
     cache = loadKeyPairsFromConfig(config);
     alwaysSendTo = loadPublicKeysFromConfig(config.alwaysSendTo());
     nodeKeys = loadPublicKeysFromConfig(config.publicKeys());
   }
 
-  private Map<Box.PublicKey, Box.SecretKey> loadKeyPairsFromConfig(Config config) throws IOException {
+  private Map<Box.PublicKey, Box.SecretKey> loadKeyPairsFromConfig(final Config config) throws IOException {
     final Optional<Path> passwords = config.passwords();
     final List<String> passwordList;
     if (passwords.isPresent()) {
@@ -63,13 +63,13 @@ public class FileKeyStore implements KeyStore {
       passwordList = Collections.emptyList();
     }
 
-    List<Path> publicKeys = config.publicKeys();
-    List<Path> privateKeys = config.privateKeys();
+    final List<Path> publicKeys = config.publicKeys();
+    final List<Path> privateKeys = config.privateKeys();
     if (publicKeys.size() != privateKeys.size()) {
       throw new IllegalStateException("Config should have validated that key sets have the same size");
     }
 
-    Map<Box.PublicKey, Box.SecretKey> keys = new HashMap<>();
+    final Map<Box.PublicKey, Box.SecretKey> keys = new HashMap<>();
     for (int i = 0; i < publicKeys.size(); i++) {
       final Path publicKeyFile = publicKeys.get(i);
       final Path privateKeyFile = privateKeys.get(i);
@@ -80,27 +80,27 @@ public class FileKeyStore implements KeyStore {
     return keys;
   }
 
-  private Box.PublicKey[] loadPublicKeysFromConfig(List<Path> paths) throws IOException {
-    Box.PublicKey[] keys = new Box.PublicKey[paths.size()];
+  private Box.PublicKey[] loadPublicKeysFromConfig(final List<Path> paths) throws IOException {
+    final Box.PublicKey[] keys = new Box.PublicKey[paths.size()];
     int i = 0;
-    for (Path path : paths) {
+    for (final Path path : paths) {
       keys[i++] = readPublicKey(path);
     }
     return keys;
   }
 
-  private Box.SecretKey readPrivateKey(Path privateKeyFile, @Nullable String password) throws IOException {
+  private Box.SecretKey readPrivateKey(final Path privateKeyFile, @Nullable final String password) throws IOException {
     final StoredPrivateKey storedPrivateKey;
     try {
       storedPrivateKey = Serializer.readFile(HttpContentType.JSON, privateKeyFile, StoredPrivateKey.class);
-    } catch (IOException ex) {
+    } catch (final IOException ex) {
       throw new IOException("Failed to read private key file '" + privateKeyFile.toAbsolutePath() + "'", ex);
     }
     return storedPrivateKey.toSecretKey(password);
   }
 
-  private Box.PublicKey readPublicKey(Path publicKeyFile) throws IOException {
-    try (BufferedReader br = Files.newBufferedReader(publicKeyFile, UTF_8)) {
+  private Box.PublicKey readPublicKey(final Path publicKeyFile) throws IOException {
+    try (final BufferedReader br = Files.newBufferedReader(publicKeyFile, UTF_8)) {
       final String base64Encoded = br.readLine();
       final byte[] decoded = decodeBytes(base64Encoded);
       return Box.PublicKey.fromBytes(decoded);
@@ -109,7 +109,7 @@ public class FileKeyStore implements KeyStore {
     }
   }
 
-  private List<String> readPasswords(Path passwords) throws IOException {
+  private List<String> readPasswords(final Path passwords) throws IOException {
     try {
       return Files.readAllLines(passwords);
     } catch (final IOException ex) {
@@ -119,7 +119,7 @@ public class FileKeyStore implements KeyStore {
 
   @Override
   @Nullable
-  public Box.SecretKey privateKey(Box.PublicKey publicKey) {
+  public Box.SecretKey privateKey(final Box.PublicKey publicKey) {
     return cache.get(publicKey);
   }
 
@@ -130,7 +130,7 @@ public class FileKeyStore implements KeyStore {
    * @return Return the public key part of the key pair.
    * @throws IOException If an I/O error occurs.
    */
-  public Box.PublicKey generateKeyPair(Path basePath) throws IOException {
+  public Box.PublicKey generateKeyPair(final Path basePath) throws IOException {
     return generateKeyPair(basePath, null);
   }
 
@@ -142,7 +142,7 @@ public class FileKeyStore implements KeyStore {
    * @return Return the public key part of the key pair.
    * @throws IOException If an I/O error occurs.
    */
-  public Box.PublicKey generateKeyPair(Path basePath, @Nullable String password) throws IOException {
+  public Box.PublicKey generateKeyPair(final Path basePath, @Nullable final String password) throws IOException {
     final Box.KeyPair keyPair = keyPair();
     final Path publicFile = basePath.resolveSibling(basePath.getFileName() + ".pub");
     final Path privateFile = basePath.resolveSibling(basePath.getFileName() + ".key");
@@ -161,19 +161,19 @@ public class FileKeyStore implements KeyStore {
     }
   }
 
-  private void storePrivateKey(StoredPrivateKey privKey, Path privateFile) throws IOException {
+  private void storePrivateKey(final StoredPrivateKey privKey, final Path privateFile) throws IOException {
     try {
       Serializer.writeFile(HttpContentType.JSON, privateFile, privKey);
-    } catch (IOException ex) {
+    } catch (final IOException ex) {
       throw new IOException("Failed writing private key to " + privateFile, ex);
     }
   }
 
-  private void storePublicKey(Box.PublicKey publicKey, Path publicFile) throws IOException {
-    try (Writer fw = Files.newBufferedWriter(publicFile, UTF_8)) {
+  private void storePublicKey(final Box.PublicKey publicKey, final Path publicFile) throws IOException {
+    try (final Writer fw = Files.newBufferedWriter(publicFile, UTF_8)) {
       try {
         fw.write(encodeBytes(publicKey.bytesArray()));
-      } catch (IOException ex) {
+      } catch (final IOException ex) {
         throw new IOException("Failed writing public key to " + publicFile, ex);
       }
     }

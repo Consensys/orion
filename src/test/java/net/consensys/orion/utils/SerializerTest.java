@@ -29,33 +29,33 @@ class SerializerTest {
 
   @Test
   void jsonSerialization() {
-    DummyObject dummyObjectOriginal = new DummyObject();
-    byte[] bytes = Serializer.serialize(HttpContentType.JSON, dummyObjectOriginal);
-    DummyObject dummyObject = Serializer.deserialize(HttpContentType.JSON, DummyObject.class, bytes);
+    final DummyObject dummyObjectOriginal = new DummyObject();
+    final byte[] bytes = Serializer.serialize(HttpContentType.JSON, dummyObjectOriginal);
+    final DummyObject dummyObject = Serializer.deserialize(HttpContentType.JSON, DummyObject.class, bytes);
     assertEquals(dummyObjectOriginal, dummyObject);
   }
 
   @Test
   void cborSerialization() {
-    DummyObject dummyObjectOriginal = new DummyObject();
-    byte[] bytes = Serializer.serialize(HttpContentType.CBOR, dummyObjectOriginal);
-    DummyObject dummyObject = Serializer.deserialize(HttpContentType.CBOR, DummyObject.class, bytes);
+    final DummyObject dummyObjectOriginal = new DummyObject();
+    final byte[] bytes = Serializer.serialize(HttpContentType.CBOR, dummyObjectOriginal);
+    final DummyObject dummyObject = Serializer.deserialize(HttpContentType.CBOR, DummyObject.class, bytes);
     assertEquals(dummyObjectOriginal, dummyObject);
   }
 
   @Test
   void sodiumEncryptedPayloadSerialization() {
-    EncryptedKey[] encryptedKeys = new EncryptedKey[0];
-    byte[] nonce = {};
-    Box.PublicKey sender = Box.KeyPair.random().publicKey();
+    final EncryptedKey[] encryptedKeys = new EncryptedKey[0];
+    final byte[] nonce = {};
+    final Box.PublicKey sender = Box.KeyPair.random().publicKey();
 
     // generate random byte content
-    byte[] toEncrypt = new byte[342];
+    final byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
 
-    EncryptedPayload original = new EncryptedPayload(sender, nonce, encryptedKeys, toEncrypt, new byte[0]);
+    final EncryptedPayload original = new EncryptedPayload(sender, nonce, encryptedKeys, toEncrypt, new byte[0]);
 
-    EncryptedPayload processed = Serializer.deserialize(
+    final EncryptedPayload processed = Serializer.deserialize(
         HttpContentType.CBOR,
         EncryptedPayload.class,
         Serializer.serialize(HttpContentType.CBOR, original));
@@ -64,8 +64,8 @@ class SerializerTest {
   }
 
   static class DummyObject implements Serializable {
-    public String name;
-    public int age;
+    public final String name;
+    public final int age;
 
     DummyObject() {
       this.name = "john";
@@ -73,14 +73,14 @@ class SerializerTest {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
       if (this == o) {
         return true;
       }
       if (o == null || getClass() != o.getClass()) {
         return false;
       }
-      DummyObject that = (DummyObject) o;
+      final DummyObject that = (DummyObject) o;
       return age == that.age && Objects.equals(name, that.name);
     }
 

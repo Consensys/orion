@@ -58,11 +58,11 @@ class SingleNodeSendTest {
   private HttpClient httpClient;
 
   @BeforeAll
-  static void setUpSingleNode(@TempDirectory Path tempDir) throws Exception {
-    Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
-    Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
-    Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
-    Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
+  static void setUpSingleNode(@TempDirectory final Path tempDir) throws Exception {
+    final Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
+    final Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
+    final Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
+    final Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
 
     config = NodeUtils.nodeConfig(
         tempDir,
@@ -149,18 +149,21 @@ class SingleNodeSendTest {
   }
 
   /** Verifies the Orion error JSON matches the desired Orion code. */
-  private void assertError(OrionErrorCode expected, String actual) {
+  private void assertError(final OrionErrorCode expected, final String actual) {
     assertEquals(String.format("{\"error\":\"%s\"}", expected.code()), actual);
   }
 
-  private String sendTransactionExpectingError(EthClientStub sender, String senderKey, String... recipientsKey) {
+  private String sendTransactionExpectingError(
+      final EthClientStub sender,
+      final String senderKey,
+      final String... recipientsKey) {
     return sender.sendExpectingError(originalPayload, senderKey, recipientsKey).orElseThrow(AssertionFailedError::new);
   }
 
   private String sendPrivacyGroupTransactionExpectingError(
-      EthClientStub sender,
-      String senderKey,
-      String privacyGroupId) {
+      final EthClientStub sender,
+      final String senderKey,
+      final String privacyGroupId) {
     return sender.sendPrivacyExpectingError(originalPayload, senderKey, privacyGroupId).orElseThrow(
         AssertionFailedError::new);
   }

@@ -25,14 +25,14 @@ public class QueryPrivacyGroupPayload implements Serializable {
 
   private final String[] addresses;
   private final List<String> privacyGroupId;
-  private String privacyGroupToAppend = null;
+  private String privacyGroupToModify = null;
 
   private boolean toDelete = false;
 
   @JsonCreator
   public QueryPrivacyGroupPayload(
-      @JsonProperty("addresses") String[] addresses,
-      @JsonProperty("privacyGroupId") List<String> privacyGroupId) {
+      @JsonProperty("addresses") final String[] addresses,
+      @JsonProperty("privacyGroupId") final List<String> privacyGroupId) {
     this.addresses = addresses;
     this.privacyGroupId = privacyGroupId;
   }
@@ -47,14 +47,14 @@ public class QueryPrivacyGroupPayload implements Serializable {
     return privacyGroupId;
   }
 
-  @JsonProperty("privacyGroupToAppend")
-  public String privacyGroupToAppend() {
-    return privacyGroupToAppend;
+  @JsonProperty("privacyGroupToModify")
+  public String privacyGroupToModify() {
+    return privacyGroupToModify;
   }
 
-  @JsonSetter("privacyGroupToAppend")
-  public void setPrivacyGroupToAppend(String privacyGroupToAppend) {
-    this.privacyGroupToAppend = privacyGroupToAppend;
+  @JsonSetter("privacyGroupToModify")
+  public void setPrivacyGroupToModify(final String privacyGroupToModify) {
+    this.privacyGroupToModify = privacyGroupToModify;
   }
 
 
@@ -62,30 +62,29 @@ public class QueryPrivacyGroupPayload implements Serializable {
     return toDelete;
   }
 
-  public void setToDelete(boolean toDelete) {
+  public void setToDelete(final boolean toDelete) {
     this.toDelete = toDelete;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    QueryPrivacyGroupPayload that = (QueryPrivacyGroupPayload) o;
+    final QueryPrivacyGroupPayload that = (QueryPrivacyGroupPayload) o;
     return Arrays.equals(addresses, that.addresses)
         && Objects.equals(privacyGroupId, that.privacyGroupId)
-        && Objects.equals(privacyGroupToAppend, that.privacyGroupToAppend);
-
+        && Objects.equals(privacyGroupToModify, that.privacyGroupToModify);
   }
 
   @Override
   public int hashCode() {
     int result = Arrays.hashCode(addresses);
     result = 31 * result + privacyGroupId.hashCode();
-    result = 31 * result + privacyGroupToAppend.hashCode();
+    result = 31 * result + privacyGroupToModify.hashCode();
     return result;
   }
 }

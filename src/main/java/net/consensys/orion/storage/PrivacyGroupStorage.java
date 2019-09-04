@@ -21,8 +21,6 @@ import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
-import net.consensys.orion.exception.OrionErrorCode;
-import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
 
@@ -35,36 +33,42 @@ public class PrivacyGroupStorage implements Storage<PrivacyGroupPayload> {
   private final KeyValueStore store;
   private final Enclave enclave;
 
-  public PrivacyGroupStorage(KeyValueStore store, Enclave enclave) {
+  public PrivacyGroupStorage(final KeyValueStore store, final Enclave enclave) {
     this.store = store;
     this.enclave = enclave;
   }
 
   @Override
-  public AsyncResult<String> put(PrivacyGroupPayload data) {
-    String key = generateDigest(data);
-    Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
-    Bytes dataBytes = Bytes.wrap(Serializer.serialize(HttpContentType.CBOR, data));
+  public AsyncResult<String> put(final PrivacyGroupPayload data) {
+    final String key = generateDigest(data);
+    final Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
+    final Bytes dataBytes = Bytes.wrap(Serializer.serialize(HttpContentType.CBOR, data));
     return store.putAsync(keyBytes, dataBytes).thenSupply(() -> key);
   }
 
   @Override
-  public String generateDigest(PrivacyGroupPayload data) {
-    Box.PublicKey[] addresses = Arrays.stream(data.addresses()).map(enclave::readKey).toArray(Box.PublicKey[]::new);
+  public String generateDigest(final PrivacyGroupPayload data) {
+    final Box.PublicKey[] addresses =
+        Arrays.stream(data.addresses()).map(enclave::readKey).toArray(Box.PublicKey[]::new);
     return encodeBytes(enclave.generatePrivacyGroupId(addresses, data.randomSeed(), data.type()));
   }
 
 
   @Override
-  public AsyncResult<Optional<PrivacyGroupPayload>> get(String key) {
-    Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
+  public AsyncResult<Optional<PrivacyGroupPayload>> get(final String key) {
+    final Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
     return store.getAsync(keyBytes).thenApply(
         maybeBytes -> Optional.ofNullable(maybeBytes).map(
             bytes -> Serializer.deserialize(HttpContentType.CBOR, PrivacyGroupPayload.class, bytes.toArrayUnsafe())));
   }
 
   @Override
-  public AsyncResult<Optional<PrivacyGroupPayload>> update(String key, PrivacyGroupPayload data) {
-    throw new OrionException(OrionErrorCode.METHOD_UNIMPLEMENTED);
+  public AsyncResult<Optional<PrivacyGroupPayload>> update(final String key, final PrivacyGroupPayload data) {
+    return get(key).thenApply((result) -> {
+      final Bytes keyBytes = Bytes.wrap(key.getBytes(UTF_8));
+      final Bytes dataBytes = Bytes.wrap(Serializer.serialize(HttpContentType.CBOR, data));
+      store.putAsync(keyBytes, dataBytes);
+      return result;
+    });
   }
 }

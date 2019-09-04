@@ -52,15 +52,15 @@ class PrivacyGroupStorageTest {
   private Storage<PrivacyGroupPayload> payloadStorage;
 
   @BeforeEach
-  void setup(@TempDirectory Path tempDir) throws SQLException {
+  void setup(@TempDirectory final Path tempDir) throws SQLException {
     memoryKeyStore = new MemoryKeyStore();
-    Box.PublicKey defaultNodeKey = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey defaultNodeKey = memoryKeyStore.generateKeyPair();
     memoryKeyStore.addNodeKey(defaultNodeKey);
     enclave = new SodiumEnclave(memoryKeyStore);
 
-    String jdbcUrl = "jdbc:h2:" + tempDir.resolve("node2").toString();
-    try (Connection conn = DriverManager.getConnection(jdbcUrl)) {
-      Statement st = conn.createStatement();
+    final String jdbcUrl = "jdbc:h2:" + tempDir.resolve("node2").toString();
+    try (final Connection conn = DriverManager.getConnection(jdbcUrl)) {
+      final Statement st = conn.createStatement();
       st.executeUpdate("create table if not exists store(key char(60), value binary, primary key(key))");
     }
     final JpaEntityManagerProvider jpaEntityManagerProvider = new JpaEntityManagerProvider(jdbcUrl);
@@ -70,16 +70,17 @@ class PrivacyGroupStorageTest {
 
   @Test
   void putAndGet() throws InterruptedException {
-    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
 
-    String[] toEncrypt = new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
+    final String[] toEncrypt =
+        new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
 
     // generate random byte content
-    byte[] seed = new byte[20];
+    final byte[] seed = new byte[20];
     new Random().nextBytes(seed);
 
-    PrivacyGroupPayload privacyGroupPayload1 = new PrivacyGroupPayload(
+    final PrivacyGroupPayload privacyGroupPayload1 = new PrivacyGroupPayload(
         toEncrypt,
         "name",
         "des",
@@ -87,8 +88,8 @@ class PrivacyGroupStorageTest {
         PrivacyGroupPayload.Type.PANTHEON,
         seed);
 
-    String key1 = payloadStorage.put(privacyGroupPayload1).get();
-    Optional<PrivacyGroupPayload> optionalPrivacyGroupPayload = payloadStorage.get(key1).get();
+    final String key1 = payloadStorage.put(privacyGroupPayload1).get();
+    final Optional<PrivacyGroupPayload> optionalPrivacyGroupPayload = payloadStorage.get(key1).get();
     assertNotNull(optionalPrivacyGroupPayload);
     assertTrue(optionalPrivacyGroupPayload.isPresent());
     assertEquals(optionalPrivacyGroupPayload.get().state(), PrivacyGroupPayload.State.ACTIVE);
@@ -96,16 +97,17 @@ class PrivacyGroupStorageTest {
 
   @Test
   void storeTwice() throws InterruptedException {
-    Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
-    Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
 
-    String[] toEncrypt = new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
+    final String[] toEncrypt =
+        new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
 
     // generate random byte content
-    byte[] seed = new byte[20];
+    final byte[] seed = new byte[20];
     new Random().nextBytes(seed);
 
-    PrivacyGroupPayload privacyGroupPayload1 = new PrivacyGroupPayload(
+    final PrivacyGroupPayload privacyGroupPayload1 = new PrivacyGroupPayload(
         toEncrypt,
         "name",
         "des",
@@ -113,9 +115,9 @@ class PrivacyGroupStorageTest {
         PrivacyGroupPayload.Type.PANTHEON,
         seed);
 
-    String key1 = payloadStorage.put(privacyGroupPayload1).get();
+    final String key1 = payloadStorage.put(privacyGroupPayload1).get();
 
-    PrivacyGroupPayload privacyGroupPayload2 = new PrivacyGroupPayload(
+    final PrivacyGroupPayload privacyGroupPayload2 = new PrivacyGroupPayload(
         toEncrypt,
         "name",
         "des",
@@ -123,7 +125,7 @@ class PrivacyGroupStorageTest {
         PrivacyGroupPayload.Type.PANTHEON,
         seed);
 
-    String key2 = payloadStorage.put(privacyGroupPayload2).get();
+    final String key2 = payloadStorage.put(privacyGroupPayload2).get();
     assertEquals(key1, key2);
   }
 }

@@ -46,10 +46,10 @@ class OrionArgumentsTest {
 
   @Test
   void generateKeysArgumentWithNoKeyNamesProvided() {
-    String errorMsg = String.format("Error: Missing key names to generate.%n");
-    String[] args = {"-g"};
+    final String errorMsg = String.format("Error: Missing key names to generate.%n");
+    final String[] args = {"-g"};
 
-    OrionArguments arguments = new OrionArguments(outStream, errStream, args);
+    final OrionArguments arguments = new OrionArguments(outStream, errStream, args);
 
     assertEquals(errorMsg, errContent.toString());
     assertEquals(usageOut, outContent.toString());
@@ -58,9 +58,9 @@ class OrionArgumentsTest {
 
   @Test
   void helpOutput() {
-    String[] args = {"--help"};
+    final String[] args = {"--help"};
 
-    OrionArguments arguments = new OrionArguments(outStream, errStream, args);
+    final OrionArguments arguments = new OrionArguments(outStream, errStream, args);
 
     assertEquals(usageOut, outContent.toString());
     assertTrue(arguments.argumentExit());
@@ -68,10 +68,10 @@ class OrionArgumentsTest {
 
   @Test
   void versionArgument() {
-    String[] args = {"-v"};
+    final String[] args = {"-v"};
 
-    OrionArguments arguments = new OrionArguments(outStream, errStream, args);
-    InputStream versionFile = OrionArguments.class.getResourceAsStream("/version.txt");
+    final OrionArguments arguments = new OrionArguments(outStream, errStream, args);
+    final InputStream versionFile = OrionArguments.class.getResourceAsStream("/version.txt");
     String version = "(development)";
     if (versionFile != null) {
       version = new BufferedReader(new InputStreamReader(versionFile, UTF_8)).lines().collect(Collectors.joining("\n"));
@@ -82,10 +82,10 @@ class OrionArgumentsTest {
 
   @Test
   void invalidOption() {
-    String errorMsg = "Invalid option: -x\n";
-    String[] args = {"-x"};
+    final String errorMsg = "Invalid option: -x\n";
+    final String[] args = {"-x"};
 
-    OrionArguments arguments = new OrionArguments(outStream, errStream, args);
+    final OrionArguments arguments = new OrionArguments(outStream, errStream, args);
 
     assertEquals(errorMsg, errContent.toString());
     assertEquals(usageOut, outContent.toString());
@@ -94,10 +94,10 @@ class OrionArgumentsTest {
 
   @Test
   void validAndInvalidOptions() {
-    String errorMsg = "Invalid option: -x\n";
-    String[] args = {"-x", "-g", "keys"};
+    final String errorMsg = "Invalid option: -x\n";
+    final String[] args = {"-x", "-g", "keys"};
 
-    OrionArguments arguments = new OrionArguments(outStream, errStream, args);
+    final OrionArguments arguments = new OrionArguments(outStream, errStream, args);
 
     assertEquals(errorMsg, errContent.toString());
     assertEquals(usageOut, outContent.toString());
@@ -106,9 +106,9 @@ class OrionArgumentsTest {
 
   @Test
   void configFileParam() {
-    String[] args = {"config.conf"};
+    final String[] args = {"config.conf"};
 
-    OrionArguments arguments = new OrionArguments(outStream, errStream, args);
+    final OrionArguments arguments = new OrionArguments(outStream, errStream, args);
     assertTrue(arguments.configFileName().isPresent());
     assertEquals("config.conf", arguments.configFileName().get());
   }

@@ -36,13 +36,13 @@ public class Serializer {
 
   private Serializer() {}
 
-  private static ObjectMapper setupObjectMapper(ObjectMapper objectMapper) {
+  private static ObjectMapper setupObjectMapper(final ObjectMapper objectMapper) {
     objectMapper.setSerializationInclusion(Include.NON_NULL);
     objectMapper.registerModule(new Jdk8Module());
     return objectMapper;
   }
 
-  public static byte[] serialize(HttpContentType contentType, Object obj) {
+  public static byte[] serialize(final HttpContentType contentType, final Object obj) {
     try {
       switch (contentType) {
         case ORION:
@@ -61,7 +61,7 @@ public class Serializer {
     }
   }
 
-  public static <T> T deserialize(HttpContentType contentType, Class<T> valueType, byte[] bytes) {
+  public static <T> T deserialize(final HttpContentType contentType, final Class<T> valueType, final byte[] bytes) {
     try {
       switch (contentType) {
         case ORION:
@@ -80,31 +80,33 @@ public class Serializer {
     }
   }
 
-  public static void writeFile(HttpContentType contentType, Path file, Object obj) throws IOException {
+  public static void writeFile(final HttpContentType contentType, final Path file, final Object obj)
+      throws IOException {
     getMapperOrThrows(contentType).writeValue(file.toFile(), obj);
   }
 
-  public static <T> T readFile(HttpContentType contentType, Path file, Class<T> valueType) throws IOException {
+  public static <T> T readFile(final HttpContentType contentType, final Path file, final Class<T> valueType)
+      throws IOException {
     return getMapperOrThrows(contentType).readValue(file.toFile(), valueType);
   }
 
-  public static <T> T roundTrip(HttpContentType contentType, Class<T> valueType, Object obj) {
+  public static <T> T roundTrip(final HttpContentType contentType, final Class<T> valueType, final Object obj) {
     return deserialize(contentType, valueType, serialize(contentType, obj));
   }
 
-  public static byte[] toByteArray(Object obj) {
-    byte[] toReturn;
-    try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-      ObjectOutputStream out = new ObjectOutputStream(outputStream);
+  public static byte[] toByteArray(final Object obj) {
+    final byte[] toReturn;
+    try (final ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+      final ObjectOutputStream out = new ObjectOutputStream(outputStream);
       out.writeObject(obj);
       toReturn = outputStream.toByteArray();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new OrionException(OBJECT_JSON_SERIALIZATION, e.getMessage());
     }
     return toReturn;
   }
 
-  private static ObjectMapper getMapperOrThrows(HttpContentType contentType) {
+  private static ObjectMapper getMapperOrThrows(final HttpContentType contentType) {
     switch (contentType) {
       case ORION:
         return jsonObjectMapper;

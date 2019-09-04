@@ -46,20 +46,20 @@ public class Config {
 
   private static final Schema SCHEMA = configSchema();
 
-  public static Config load(Path configFile) throws IOException {
+  public static Config load(final Path configFile) throws IOException {
     return load(Configuration.fromToml(configFile, SCHEMA));
   }
 
-  public static Config load(String config) {
+  public static Config load(final String config) {
     return load(Configuration.fromToml(config, SCHEMA));
   }
 
-  public static Config load(InputStream is) throws IOException {
+  public static Config load(final InputStream is) throws IOException {
     return load(Configuration.fromToml(is, SCHEMA));
   }
 
-  private static Config load(Configuration configuration) {
-    List<ConfigurationError> errors = configuration.errors();
+  private static Config load(final Configuration configuration) {
+    final List<ConfigurationError> errors = configuration.errors();
     if (!errors.isEmpty()) {
       String errorString = errors.stream().limit(5).map(ConfigurationError::toString).collect(Collectors.joining("\n"));
       if (errors.size() > 5) {
@@ -77,7 +77,7 @@ public class Config {
   private final Configuration configuration;
   private final Path workDir;
 
-  private Config(Configuration configuration) {
+  private Config(final Configuration configuration) {
     this.configuration = configuration;
     this.workDir = Paths.get(configuration.getString("workdir"));
   }
@@ -373,7 +373,7 @@ public class Config {
    * @return TLS client certificate file
    */
   public Path tlsClientCert() {
-    String key = "tlsclientcert";
+    final String key = "tlsclientcert";
     return getPath(key);
   }
 
@@ -443,27 +443,27 @@ public class Config {
     return getPath("tlsknownservers");
   }
 
-  private Optional<URL> getURL(String key) {
+  private Optional<URL> getURL(final String key) {
     try {
       if (!configuration.contains(key)) {
         return Optional.empty();
       }
       return Optional.of(new URL(configuration.getString(key)));
-    } catch (MalformedURLException e) {
+    } catch (final MalformedURLException e) {
       throw new IllegalStateException("key '" + key + "' should have been validated, yet it's invalid", e);
     }
   }
 
-  private Path getPath(String key) {
+  private Path getPath(final String key) {
     return workDir.resolve(configuration.getString(key));
   }
 
-  private List<Path> getListOfPath(String key) {
+  private List<Path> getListOfPath(final String key) {
     return configuration.getListOfString(key).stream().map(workDir::resolve).collect(Collectors.toList());
   }
 
   private static Schema configSchema() {
-    SchemaBuilder schemaBuilder = SchemaBuilder.create();
+    final SchemaBuilder schemaBuilder = SchemaBuilder.create();
 
     schemaBuilder.addString(
         "nodeurl",
@@ -667,11 +667,11 @@ public class Config {
   }
 
   private static List<ConfigurationError> validateStorage(
-      String key,
-      @Nullable DocumentPosition position,
-      @Nullable String value) {
+      final String key,
+      @Nullable final DocumentPosition position,
+      @Nullable final String value) {
     assert (value != null);
-    String storageType = value.split(":", 2)[0];
+    final String storageType = value.split(":", 2)[0];
     if (!Arrays.asList("mapdb", "leveldb", "sql", "memory").contains(storageType)) {
       return singleError(
           position,
@@ -680,8 +680,8 @@ public class Config {
     return noErrors();
   }
 
-  private static List<ConfigurationError> validateConfiguration(Configuration config) {
-    List<ConfigurationError> errors = new ArrayList<>();
+  private static List<ConfigurationError> validateConfiguration(final Configuration config) {
+    final List<ConfigurationError> errors = new ArrayList<>();
 
     // nodeport and client port must be different (unless they are 0 and defaulted).
     if (config.contains("nodeport")

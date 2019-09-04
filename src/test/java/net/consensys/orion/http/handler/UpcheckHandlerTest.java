@@ -22,18 +22,18 @@ class UpcheckHandlerTest extends HandlerTest {
 
   @Test
   void publicUpcheck() throws Exception {
-    Request request = new Request.Builder().get().url(nodeBaseUrl + "/upcheck").build();
+    final Request request = new Request.Builder().get().url(nodeBaseUrl + "/upcheck").build();
 
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
     assertEquals("I'm up!", resp.body().string());
   }
 
   @Test
   void privateUpcheck() throws Exception {
-    Request request = new Request.Builder().get().url(clientBaseUrl + "/upcheck").build();
+    final Request request = new Request.Builder().get().url(clientBaseUrl + "/upcheck").build();
 
-    Response resp = httpClient.newCall(request).execute();
+    final Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
     assertEquals("I'm up!", resp.body().string());
   }

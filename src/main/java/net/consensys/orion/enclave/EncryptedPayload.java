@@ -39,23 +39,23 @@ public class EncryptedPayload implements Serializable {
   private final byte[] privacyGroupId;
 
   public EncryptedPayload(
-      Box.PublicKey sender,
-      byte[] nonce,
-      EncryptedKey[] encryptedKeys,
-      byte[] cipherText,
-      byte[] privacyGroupId) {
+      final Box.PublicKey sender,
+      final byte[] nonce,
+      final EncryptedKey[] encryptedKeys,
+      final byte[] cipherText,
+      final byte[] privacyGroupId) {
     this(sender, nonce, encryptedKeys, cipherText, Collections.emptyMap(), privacyGroupId);
   }
 
   @JsonCreator
   public EncryptedPayload(
-      @JsonProperty("sender") @JsonDeserialize(using = PublicKeyDeserializer.class) Box.PublicKey sender,
-      @JsonProperty("nonce") byte[] nonce,
-      @JsonProperty("encryptedKeys") EncryptedKey[] encryptedKeys,
-      @JsonProperty("cipherText") byte[] cipherText,
+      @JsonProperty("sender") @JsonDeserialize(using = PublicKeyDeserializer.class) final Box.PublicKey sender,
+      @JsonProperty("nonce") final byte[] nonce,
+      @JsonProperty("encryptedKeys") final EncryptedKey[] encryptedKeys,
+      @JsonProperty("cipherText") final byte[] cipherText,
       @JsonProperty("encryptedKeyOwners") @JsonDeserialize(
-          keyUsing = PublicKeyMapKeyDeserializer.class) Map<Box.PublicKey, Integer> encryptedKeyOwners,
-      @JsonProperty("privacyGroupId") byte[] privacyGroupId) {
+          keyUsing = PublicKeyMapKeyDeserializer.class) final Map<Box.PublicKey, Integer> encryptedKeyOwners,
+      @JsonProperty("privacyGroupId") final byte[] privacyGroupId) {
     this.sender = sender;
     this.nonce = nonce;
     this.encryptedKeys = encryptedKeys;
@@ -90,7 +90,7 @@ public class EncryptedPayload implements Serializable {
     return privacyGroupId;
   }
 
-  public EncryptedPayload stripFor(Box.PublicKey key) {
+  public EncryptedPayload stripFor(final Box.PublicKey key) {
     final Integer toKeepIdx = encryptedKeyOwners.get(key);
 
     if (toKeepIdx == null || toKeepIdx < 0 || toKeepIdx >= encryptedKeys.length) {
@@ -108,14 +108,14 @@ public class EncryptedPayload implements Serializable {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    EncryptedPayload that = (EncryptedPayload) o;
+    final EncryptedPayload that = (EncryptedPayload) o;
     return Objects.equals(sender, that.sender)
         && Arrays.equals(nonce, that.nonce)
         && Arrays.equals(encryptedKeys, that.encryptedKeys)

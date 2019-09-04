@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 public final class PublicKeyDeserializer extends JsonDeserializer<Box.PublicKey> {
 
   @Override
-  public Box.PublicKey deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+  public Box.PublicKey deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
     return Box.PublicKey.fromBytes(decodeBytes(p.getValueAsString()));
   }
 }

@@ -14,7 +14,7 @@ package net.consensys.orion.config;
 
 public class ConfigException extends RuntimeException {
 
-  ConfigException(String message) {
+  ConfigException(final String message) {
     super(message);
   }
 }

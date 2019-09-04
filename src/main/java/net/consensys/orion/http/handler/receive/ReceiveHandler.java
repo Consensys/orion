@@ -42,17 +42,20 @@ public class ReceiveHandler implements Handler<RoutingContext> {
   private final Storage<EncryptedPayload> storage;
   private final HttpContentType contentType;
 
-  public ReceiveHandler(Enclave enclave, Storage<EncryptedPayload> storage, HttpContentType contentType) {
+  public ReceiveHandler(
+      final Enclave enclave,
+      final Storage<EncryptedPayload> storage,
+      final HttpContentType contentType) {
     this.enclave = enclave;
     this.storage = storage;
     this.contentType = contentType;
   }
 
   @Override
-  public void handle(RoutingContext routingContext) {
+  public void handle(final RoutingContext routingContext) {
     log.trace("receive handler called");
-    ReceiveRequest receiveRequest;
-    String key;
+    final ReceiveRequest receiveRequest;
+    final String key;
     Box.PublicKey to = null;
     if (contentType == JSON || contentType == ORION) {
       receiveRequest = Serializer.deserialize(JSON, ReceiveRequest.class, routingContext.getBody().getBytes());
@@ -67,7 +70,7 @@ public class ReceiveHandler implements Handler<RoutingContext> {
     if (to == null) {
       to = enclave.nodeKeys()[0];
     }
-    Box.PublicKey recipient = to;
+    final Box.PublicKey recipient = to;
 
     storage.get(key).thenAccept(encryptedPayload -> {
       if (!encryptedPayload.isPresent()) {
@@ -76,18 +79,19 @@ public class ReceiveHandler implements Handler<RoutingContext> {
         return;
       }
 
-      byte[] decryptedPayload;
+      final byte[] decryptedPayload;
       try {
         decryptedPayload = enclave.decrypt(encryptedPayload.get(), recipient);
-      } catch (EnclaveException e) {
+      } catch (final EnclaveException e) {
         log.info("unable to decrypt payload with key {}", key);
         routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_KEY_CANNOT_DECRYPT_PAYLOAD, e));
         return;
       }
 
       // configureRoutes a ReceiveResponse
-      Buffer toReturn;
-      ReceiveResponse receiveResponse = new ReceiveResponse(decryptedPayload, encryptedPayload.get().privacyGroupId());
+      final Buffer toReturn;
+      final ReceiveResponse receiveResponse =
+          new ReceiveResponse(decryptedPayload, encryptedPayload.get().privacyGroupId());
       if (contentType == ORION) {
         toReturn = Buffer.buffer(Serializer.serialize(JSON, receiveResponse));
       } else if (contentType == JSON) {
