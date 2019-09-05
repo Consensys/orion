@@ -13,8 +13,10 @@
 package net.consensys.orion.acceptance;
 
 import static net.consensys.cava.io.Base64.decodeBytes;
+import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
+import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupRequest;
 import net.consensys.orion.http.handler.privacy.FindPrivacyGroupRequest;
 import net.consensys.orion.http.handler.privacy.ModifyPrivacyGroupRequest;
@@ -22,8 +24,10 @@ import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
 import net.consensys.orion.http.handler.receive.ReceiveRequest;
 import net.consensys.orion.http.handler.receive.ReceiveResponse;
+import net.consensys.orion.http.handler.tx.PushToHistoryRequest;
 import net.consensys.orion.utils.Serializer;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -187,6 +191,43 @@ public class EthClientStub {
       }
     }).exceptionHandler(keyFuture::completeExceptionally).putHeader("Content-Type", "application/json").end(
         Buffer.buffer(Serializer.serialize(JSON, deleteGroupRequest)));
+    return Optional.ofNullable(keyFuture.join());
+  }
+
+  public Optional<String> push(final EncryptedPayload payload) {
+    final CompletableFuture<String> pushFuture = new CompletableFuture<>();
+    httpClient.post(clientPort, "localhost", "/push").handler(resp -> {
+      if (resp.statusCode() == 200) {
+        resp.bodyHandler((body) -> {
+          pushFuture.complete(new String(body.getBytes(), StandardCharsets.UTF_8));
+        });
+      } else {
+        pushFuture.complete(null);
+      }
+    }).exceptionHandler(pushFuture::completeExceptionally).putHeader("Content-Type", "application/cbor").end(
+        Buffer.buffer(Serializer.serialize(CBOR, payload)));
+    return Optional.ofNullable(pushFuture.join());
+  }
+
+
+  public Optional<Boolean> pushToHistory(
+      final String privacyGroupId,
+      final String privacyMarkerTransactionHash,
+      final String enclaveKey) {
+    PushToHistoryRequest pushToHistoryRequest =
+        new PushToHistoryRequest(privacyGroupId, privacyMarkerTransactionHash, enclaveKey);
+    CompletableFuture<Boolean> keyFuture = new CompletableFuture<>();
+    httpClient.post(clientPort, "localhost", "/pushToHistory").handler(resp -> {
+      if (resp.statusCode() == 200) {
+        resp.bodyHandler((body) -> {
+          Boolean res = deserialize(body, Boolean.class);
+          keyFuture.complete(res);
+        });
+      } else {
+        keyFuture.complete(null);
+      }
+    }).exceptionHandler(keyFuture::completeExceptionally).putHeader("Content-Type", "application/json").end(
+        Buffer.buffer(Serializer.serialize(JSON, pushToHistoryRequest)));
     return Optional.ofNullable(keyFuture.join());
   }
 

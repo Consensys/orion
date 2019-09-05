@@ -139,6 +139,15 @@ public class NodeUtils {
     return sender.send(originalPayload, senderKey, privacyGroupId).orElseThrow(AssertionFailedError::new);
   }
 
+  public static Boolean pushToHistory(
+      final EthClientStub sender,
+      final String privacyGroupId,
+      final String privacyMarkerTransactionHash,
+      final String enclaveKey) {
+    return sender.pushToHistory(privacyGroupId, privacyMarkerTransactionHash, enclaveKey).orElseThrow(
+        AssertionFailedError::new);
+  }
+
   public static PrivacyGroup createPrivacyGroupTransaction(
       final EthClientStub sender,
       final String[] addresses,
