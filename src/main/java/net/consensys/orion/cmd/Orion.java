@@ -27,7 +27,6 @@ import net.consensys.cava.kv.MapDBKeyValueStore;
 import net.consensys.cava.net.tls.VertxTrustOptions;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.config.ConfigException;
-import net.consensys.orion.enclave.CommitmentPair;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
@@ -44,7 +43,6 @@ import net.consensys.orion.http.handler.push.PushPrivacyGroupHandler;
 import net.consensys.orion.http.handler.receive.ReceiveHandler;
 import net.consensys.orion.http.handler.send.SendHandler;
 import net.consensys.orion.http.handler.set.SetPrivacyGroupHandler;
-import net.consensys.orion.http.handler.tx.PushToHistoryHandler;
 import net.consensys.orion.http.handler.upcheck.UpcheckHandler;
 import net.consensys.orion.http.server.vertx.HttpErrorHandler;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
@@ -53,7 +51,6 @@ import net.consensys.orion.storage.EncryptedPayloadStorage;
 import net.consensys.orion.storage.JpaEntityManagerProvider;
 import net.consensys.orion.storage.OrionSQLKeyValueStore;
 import net.consensys.orion.storage.PrivacyGroupStorage;
-import net.consensys.orion.storage.PrivateTransactionStorage;
 import net.consensys.orion.storage.QueryPrivacyGroupStorage;
 import net.consensys.orion.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.storage.Storage;
@@ -70,7 +67,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Security;
-import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
@@ -137,7 +133,6 @@ public class Orion {
       final Storage<EncryptedPayload> storage,
       final Storage<PrivacyGroupPayload> privacyGroupStorage,
       final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
-      final Storage<ArrayList<CommitmentPair>> privateTransactionStorage,
       final Router nodeRouter,
       final Router clientRouter,
       final Config config) {
@@ -212,9 +207,6 @@ public class Orion {
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .consumes(APPLICATION_OCTET_STREAM.httpHeaderValue)
         .handler(new ReceiveHandler(enclave, storage, APPLICATION_OCTET_STREAM));
-
-    clientRouter.post("/pushToHistory").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
-        new PushToHistoryHandler(storage, privateTransactionStorage, privacyGroupStorage));
 
     clientRouter.post("/addToPrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
         new AddToPrivacyGroupHandler(
@@ -420,7 +412,6 @@ public class Orion {
     final EncryptedPayloadStorage encryptedStorage = new EncryptedPayloadStorage(storage, keyBuilder);
     final QueryPrivacyGroupStorage queryPrivacyGroupStorage = new QueryPrivacyGroupStorage(storage, enclave);
     final PrivacyGroupStorage privacyGroupStorage = new PrivacyGroupStorage(storage, enclave);
-    final PrivateTransactionStorage privateTransactionStorage = new PrivateTransactionStorage(storage);
     configureRoutes(
         vertx,
         networkNodes,
@@ -428,7 +419,6 @@ public class Orion {
         encryptedStorage,
         privacyGroupStorage,
         queryPrivacyGroupStorage,
-        privateTransactionStorage,
         nodeRouter,
         clientRouter,
         config);

@@ -39,6 +39,7 @@ public class PushHandler implements Handler<RoutingContext> {
     storage.put(pushRequest).thenAccept((digest) -> {
       log.debug("stored payload. resulting digest: {}", digest);
       routingContext.response().end(digest);
-    }).exceptionally(routingContext::fail);
+    }).exceptionally(e -> routingContext.fail(e));
+
   }
 }
