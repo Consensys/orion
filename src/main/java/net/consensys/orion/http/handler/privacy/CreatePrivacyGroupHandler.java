@@ -159,7 +159,7 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
         final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
             new QueryPrivacyGroupPayload(privacyGroupPayload.addresses(), null);
 
-        queryPrivacyGroupPayload.setPrivacyGroupToModify(privacyGroupId);
+        queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupId);
         final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
 
         log.info("Stored privacy group. resulting digest: {}", key);

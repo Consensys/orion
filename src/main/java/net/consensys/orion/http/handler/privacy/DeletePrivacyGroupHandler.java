@@ -145,7 +145,7 @@ public class DeletePrivacyGroupHandler implements Handler<RoutingContext> {
                 new QueryPrivacyGroupPayload(privacyGroupPayload.addresses(), null);
 
             queryPrivacyGroupPayload.setToDelete(true);
-            queryPrivacyGroupPayload.setPrivacyGroupToModify(privacyGroupStorage.generateDigest(privacyGroupPayload));
+            queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupStorage.generateDigest(privacyGroupPayload));
             final String k = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
 
             log.info("Deleting privacy group. resulting digest: {}", k);
