@@ -71,17 +71,17 @@ public class QueryPrivacyGroupStorage implements Storage<QueryPrivacyGroupPayloa
   @Override
   public AsyncResult<Optional<QueryPrivacyGroupPayload>> update(final String key, final QueryPrivacyGroupPayload data) {
     return get(key).thenApply((result) -> {
-        final List<String> listPrivacyGroupIds;
-        final QueryPrivacyGroupPayload queryPrivacyGroupPayload;
-        if (result.isPresent()) {
-            queryPrivacyGroupPayload = handleAlreadyPresentUpdate(data, result.get());
-        } else {
-            listPrivacyGroupIds = Collections.singletonList(data.privacyGroupToAppend());
-            queryPrivacyGroupPayload = new QueryPrivacyGroupPayload(data.addresses(), listPrivacyGroupIds);
-        }
+      final List<String> listPrivacyGroupIds;
+      final QueryPrivacyGroupPayload queryPrivacyGroupPayload;
+      if (result.isPresent()) {
+        queryPrivacyGroupPayload = handleAlreadyPresentUpdate(data, result.get());
+      } else {
+        listPrivacyGroupIds = Collections.singletonList(data.privacyGroupToAppend());
+        queryPrivacyGroupPayload = new QueryPrivacyGroupPayload(data.addresses(), listPrivacyGroupIds);
+      }
 
-        put(queryPrivacyGroupPayload);
-        return Optional.of(queryPrivacyGroupPayload);
+      put(queryPrivacyGroupPayload);
+      return Optional.of(queryPrivacyGroupPayload);
     });
   }
 
