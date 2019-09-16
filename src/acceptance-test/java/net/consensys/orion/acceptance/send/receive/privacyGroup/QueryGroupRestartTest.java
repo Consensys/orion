@@ -88,7 +88,7 @@ public class QueryGroupRestartTest {
   }
 
   @Test
-  void dualSendLegacyDoesNotDuplicateGroup() {
+  void nodeRestartDoesNotBreakFindPrivacyGroup() {
     final EthClientStub ethClientStub = NodeUtils.client(clientPort, httpClient);
 
     createPrivacyGroupTransaction(ethClientStub, new String[] {PK_1_B_64}, PK_1_B_64, "Test", "Test");
