@@ -76,7 +76,7 @@ public class QueryPrivacyGroupStorage implements Storage<QueryPrivacyGroupPayloa
       if (result.isPresent()) {
         queryPrivacyGroupPayload = handleAlreadyPresentUpdate(data, result.get());
       } else {
-        listPrivacyGroupIds = Collections.singletonList(data.privacyGroupToModify());
+        listPrivacyGroupIds = Collections.singletonList(data.privacyGroupToAppend());
         queryPrivacyGroupPayload = new QueryPrivacyGroupPayload(data.addresses(), listPrivacyGroupIds);
       }
 
@@ -91,9 +91,9 @@ public class QueryPrivacyGroupStorage implements Storage<QueryPrivacyGroupPayloa
     final List<String> listPrivacyGroupIds;
     final QueryPrivacyGroupPayload queryPrivacyGroupPayload;
     if (data.isToDelete()) {
-      result.privacyGroupId().remove(data.privacyGroupToModify());
-    } else if (!result.privacyGroupId().contains(data.privacyGroupToModify())) {
-      result.privacyGroupId().add(data.privacyGroupToModify());
+      result.privacyGroupId().remove(data.privacyGroupToAppend());
+    } else if (!result.privacyGroupId().contains(data.privacyGroupToAppend())) {
+      result.privacyGroupId().add(data.privacyGroupToAppend());
     }
     listPrivacyGroupIds = result.privacyGroupId();
     queryPrivacyGroupPayload = new QueryPrivacyGroupPayload(result.addresses(), listPrivacyGroupIds);

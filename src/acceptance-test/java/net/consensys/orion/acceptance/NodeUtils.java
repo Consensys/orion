@@ -163,14 +163,4 @@ public class NodeUtils {
   public static void assertTransaction(final byte[] receivedPayload) {
     assertArrayEquals(originalPayload, receivedPayload);
   }
-
-  public static PrivacyGroup addToPrivacyGroup(
-      final EthClientStub sender,
-      final String address,
-      final String from,
-      final String privacyGroupId) {
-    return sender.modifyPrivacyGroup(address, from, privacyGroupId, "/addToPrivacyGroup").orElseThrow(
-        AssertionFailedError::new);
-  }
-
 }
