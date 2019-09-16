@@ -267,6 +267,9 @@ class DualNodesPrivacyGroupsTest {
         Arrays.stream(deleteNodeSecondPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(Collectors.toList());
     assertFalse(listSecond.contains(firstPrivacyGroupId));
     assertTrue(listSecond.contains(secondPrivacyGroupId));
+
+    // delete the second privacy group
+    deletePrivacyGroupTransaction(firstNode, secondPrivacyGroupId, PK_1_B_64);
   }
 
   @Test
