@@ -25,23 +25,20 @@ import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
 
-import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 public class QueryPrivacyGroupStorage implements Storage<QueryPrivacyGroupPayload> {
+  private static final byte[] BYTES = Bytes.fromHexString("5375ba871e5c3d0f1d055b5da0ac02ea035bed38").toArrayUnsafe();
 
   private final KeyValueStore store;
   private final Enclave enclave;
-  public final byte[] bytes = new byte[20];
 
   public QueryPrivacyGroupStorage(final KeyValueStore store, final Enclave enclave) {
     this.store = store;
     this.enclave = enclave;
-    final SecureRandom random = new SecureRandom();
-    random.nextBytes(bytes);
   }
 
   @Override
@@ -56,7 +53,7 @@ public class QueryPrivacyGroupStorage implements Storage<QueryPrivacyGroupPayloa
   public String generateDigest(final QueryPrivacyGroupPayload data) {
     final Box.PublicKey[] publicKeys =
         Arrays.stream(data.addresses()).map(enclave::readKey).toArray(Box.PublicKey[]::new);
-    return encodeBytes(enclave.generatePrivacyGroupId(publicKeys, bytes, PrivacyGroupPayload.Type.PANTHEON));
+    return encodeBytes(enclave.generatePrivacyGroupId(publicKeys, BYTES, PrivacyGroupPayload.Type.PANTHEON));
   }
 
   @Override
