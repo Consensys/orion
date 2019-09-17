@@ -94,9 +94,8 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
 
     final PrivacyGroupPayload privacyGroupPayload = new PrivacyGroupPayload(
         privacyGroupRequest.addresses(),
-        privacyGroupRequest.name() == null || privacyGroupRequest.name().isBlank() ? "Default Name"
-            : privacyGroupRequest.name(),
-        privacyGroupRequest.description() == null || privacyGroupRequest.description().isBlank() ? "Default Description"
+        privacyGroupRequest.name() == null || privacyGroupRequest.name().isBlank() ? "" : privacyGroupRequest.name(),
+        privacyGroupRequest.description() == null || privacyGroupRequest.description().isBlank() ? ""
             : privacyGroupRequest.description(),
         PrivacyGroupPayload.State.ACTIVE,
         PrivacyGroupPayload.Type.PANTHEON,
