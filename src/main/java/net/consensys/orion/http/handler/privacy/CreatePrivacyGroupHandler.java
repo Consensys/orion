@@ -87,7 +87,8 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
 
 
     queryPrivacyGroupStorage.get(queryDuplicateGroupKey).thenAccept((duplicateResult) -> {
-      if (duplicateResult.isPresent()) {
+      if (duplicateResult.isPresent() && duplicateResult.get().privacyGroupId().size() != 0) {
+        System.out.println("Privacy group ID: " + duplicateResult.get().privacyGroupId().get(0));
         routingContext.fail(
             new OrionException(OrionErrorCode.CREATE_GROUP_INCLUDE_SELF, "duplicate privacy groups are not allowed"));
         return;

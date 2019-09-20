@@ -55,6 +55,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.assertj.core.internal.bytebuddy.utility.RandomString;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -79,12 +80,12 @@ class DualNodesPrivacyGroupsTest {
 
   @BeforeEach
   void setUpDualNodes(@TempDirectory final Path tempDir) throws Exception {
-
     final Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
     final Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
     final Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
     final Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
-    final String jdbcUrl = "jdbc:h2:" + tempDir.resolve("node2").toString();
+
+    final String jdbcUrl = "jdbc:h2:" + tempDir.resolve(RandomString.make(10)).toString();
     try (final Connection conn = DriverManager.getConnection(jdbcUrl)) {
       final Statement st = conn.createStatement();
       st.executeUpdate("create table if not exists store(key char(60), value binary, primary key(key))");
@@ -102,7 +103,7 @@ class DualNodesPrivacyGroupsTest {
         "off",
         "tofu",
         "tofu",
-        "leveldb:database/node1");
+        "leveldb:database/" + RandomString.make(10));
     secondNodeConfig = NodeUtils.nodeConfig(
         tempDir,
         0,
