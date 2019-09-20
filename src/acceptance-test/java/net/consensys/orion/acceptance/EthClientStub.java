@@ -41,7 +41,7 @@ public class EthClientStub {
     this.clientPort = clientPort;
   }
 
-  boolean upCheck() {
+  public boolean upCheck() {
     final CompletableFuture<Integer> statusCodeFuture = new CompletableFuture<>();
     httpClient
         .get(clientPort, "localhost", "/upcheck")
