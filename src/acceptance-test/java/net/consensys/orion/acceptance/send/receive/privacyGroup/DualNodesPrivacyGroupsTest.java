@@ -298,4 +298,21 @@ class DualNodesPrivacyGroupsTest {
     // try to delete the group again
     assertThrows(AssertionFailedError.class, () -> deletePrivacyGroupTransaction(firstNode, privacyGroupId, PK_1_B_64));
   }
+
+  @Test
+  void createDuplicateGroup() {
+    final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
+
+    final String name = "testName";
+    final String description = "testDescription";
+    final String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
+
+    // create a privacy group
+    createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, name, description);
+
+    // assert that creating a duplicate results in an error
+    assertThrows(
+        AssertionFailedError.class,
+        () -> createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, name, description));
+  }
 }

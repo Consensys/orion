@@ -77,110 +77,123 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
 
     if (!Arrays.asList(privacyGroupRequest.addresses()).contains(privacyGroupRequest.from())) {
       routingContext.fail(
-          new OrionException(OrionErrorCode.CREATE_GROUP_INCLUDE_SELF, "the list of addresses should include self "));
+          new OrionException(OrionErrorCode.CREATE_GROUP_INCLUDE_SELF, "the list of addresses should include self"));
       return;
     }
 
-    final byte[] bytes;
-    if (privacyGroupRequest.getSeed().isPresent()) {
-      bytes = privacyGroupRequest.getSeed().get();
-    } else {
-      final SecureRandom random = new SecureRandom();
-      bytes = new byte[20];
-      random.nextBytes(bytes);
-    }
+    final QueryPrivacyGroupPayload queryDuplicatePrivacyGroupPayload =
+        new QueryPrivacyGroupPayload(privacyGroupRequest.addresses(), null);
+    final String queryDuplicateGroupKey = queryPrivacyGroupStorage.generateDigest(queryDuplicatePrivacyGroupPayload);
 
-    log.info("Creating privacy group for {}", Arrays.toString(privacyGroupRequest.addresses()));
 
-    final PrivacyGroupPayload privacyGroupPayload = new PrivacyGroupPayload(
-        privacyGroupRequest.addresses(),
-        privacyGroupRequest.name() == null || privacyGroupRequest.name().isBlank() ? "" : privacyGroupRequest.name(),
-        privacyGroupRequest.description() == null || privacyGroupRequest.description().isBlank() ? ""
-            : privacyGroupRequest.description(),
-        PrivacyGroupPayload.State.ACTIVE,
-        PrivacyGroupPayload.Type.PANTHEON,
-        bytes);
-    final String privacyGroupId = privacyGroupStorage.generateDigest(privacyGroupPayload);
-
-    final List<Box.PublicKey> addressListToForward = Arrays
-        .stream(privacyGroupRequest.addresses())
-        .filter(key -> !key.equals(privacyGroupRequest.from())) // don't forward to self
-        .distinct()
-        .map(enclave::readKey)
-        .collect(Collectors.toList());
-
-    if (addressListToForward.stream().anyMatch(pKey -> networkNodes.urlForRecipient(pKey) == null)) {
-      routingContext.fail(new OrionException(OrionErrorCode.NODE_MISSING_PEER_URL, "couldn't find peer URL "));
-      return;
-    }
-    // propagate payload
-    log.debug("propagating payload");
-
-    @SuppressWarnings("rawtypes")
-    final CompletableFuture[] cfs = addressListToForward.stream().map(pKey -> {
-      URL recipientURL = networkNodes.urlForRecipient(pKey);
-
-      log.info("Propagating create request to {} with URL {}", pKey, recipientURL.toString());
-
-      final CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
-
-      // serialize payload, stripping non-relevant encryptedKeys, and configureRoutes payload
-      final byte[] payload = Serializer.serialize(HttpContentType.CBOR, privacyGroupPayload);
-
-      // execute request
-      httpClient
-          .post(recipientURL.getPort(), recipientURL.getHost(), "/pushPrivacyGroup")
-          .putHeader("Content-Type", "application/cbor")
-          .handler(response -> response.bodyHandler(responseBody -> {
-            log.info("{} with URL {} responded with {}", pKey, recipientURL.toString(), response.statusCode());
-            if (response.statusCode() != 200 || !privacyGroupId.equals(responseBody.toString())) {
-              responseFuture.completeExceptionally(new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS));
-            } else {
-              responseFuture.complete(true);
-            }
-          }))
-          .exceptionHandler(
-              ex -> responseFuture.completeExceptionally(new OrionException(OrionErrorCode.NODE_PUSHING_TO_PEER, ex)))
-          .end(Buffer.buffer(payload));
-
-      return responseFuture;
-    }).toArray(CompletableFuture[]::new);
-
-    CompletableFuture.allOf(cfs).whenComplete((all, ex) -> {
-      if (ex != null) {
-        handleFailure(routingContext, ex);
+    queryPrivacyGroupStorage.get(queryDuplicateGroupKey).thenAccept((duplicateResult) -> {
+      if (duplicateResult.isPresent()) {
+        routingContext.fail(
+            new OrionException(OrionErrorCode.CREATE_GROUP_INCLUDE_SELF, "duplicate privacy groups are not allowed"));
         return;
       }
-      log.info("Storing privacy group {}", privacyGroupId);
 
-      privacyGroupStorage.put(privacyGroupPayload).thenAccept((result) -> {
+      final byte[] bytes;
+      if (privacyGroupRequest.getSeed().isPresent()) {
+        bytes = privacyGroupRequest.getSeed().get();
+      } else {
+        final SecureRandom random = new SecureRandom();
+        bytes = new byte[20];
+        random.nextBytes(bytes);
+      }
 
-        final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
-            new QueryPrivacyGroupPayload(privacyGroupPayload.addresses(), null);
+      log.info("Creating privacy group for {}", Arrays.toString(privacyGroupRequest.addresses()));
 
-        queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupId);
-        final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
+      final PrivacyGroupPayload privacyGroupPayload = new PrivacyGroupPayload(
+          privacyGroupRequest.addresses(),
+          privacyGroupRequest.name() == null || privacyGroupRequest.name().isBlank() ? "" : privacyGroupRequest.name(),
+          privacyGroupRequest.description() == null || privacyGroupRequest.description().isBlank() ? ""
+              : privacyGroupRequest.description(),
+          PrivacyGroupPayload.State.ACTIVE,
+          PrivacyGroupPayload.Type.PANTHEON,
+          bytes);
+      final String privacyGroupId = privacyGroupStorage.generateDigest(privacyGroupPayload);
 
-        log.info("Stored privacy group. resulting digest: {}", key);
+      final List<Box.PublicKey> addressListToForward = Arrays
+          .stream(privacyGroupRequest.addresses())
+          .filter(key -> !key.equals(privacyGroupRequest.from())) // don't forward to self
+          .distinct()
+          .map(enclave::readKey)
+          .collect(Collectors.toList());
 
-        queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenAccept((res) -> {
+      if (addressListToForward.stream().anyMatch(pKey -> networkNodes.urlForRecipient(pKey) == null)) {
+        routingContext.fail(new OrionException(OrionErrorCode.NODE_MISSING_PEER_URL, "couldn't find peer URL "));
+        return;
+      }
+      // propagate payload
+      log.debug("propagating payload");
 
-          final PrivacyGroup group = new PrivacyGroup(
-              privacyGroupId,
-              PrivacyGroupPayload.Type.PANTHEON,
-              privacyGroupRequest.name(),
-              privacyGroupRequest.description(),
-              privacyGroupRequest.addresses());
-          log.info("Storing privacy group {} complete", privacyGroupId);
+      @SuppressWarnings("rawtypes")
+      final CompletableFuture[] cfs = addressListToForward.stream().map(pKey -> {
+        URL recipientURL = networkNodes.urlForRecipient(pKey);
 
-          final Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, group));
-          routingContext.response().end(toReturn);
+        log.info("Propagating create request to {} with URL {}", pKey, recipientURL.toString());
+
+        final CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
+
+        // serialize payload, stripping non-relevant encryptedKeys, and configureRoutes payload
+        final byte[] payload = Serializer.serialize(HttpContentType.CBOR, privacyGroupPayload);
+
+        // execute request
+        httpClient
+            .post(recipientURL.getPort(), recipientURL.getHost(), "/pushPrivacyGroup")
+            .putHeader("Content-Type", "application/cbor")
+            .handler(response -> response.bodyHandler(responseBody -> {
+              log.info("{} with URL {} responded with {}", pKey, recipientURL.toString(), response.statusCode());
+              if (response.statusCode() != 200 || !privacyGroupId.equals(responseBody.toString())) {
+                responseFuture.completeExceptionally(new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS));
+              } else {
+                responseFuture.complete(true);
+              }
+            }))
+            .exceptionHandler(
+                ex -> responseFuture.completeExceptionally(new OrionException(OrionErrorCode.NODE_PUSHING_TO_PEER, ex)))
+            .end(Buffer.buffer(payload));
+
+        return responseFuture;
+      }).toArray(CompletableFuture[]::new);
+
+      CompletableFuture.allOf(cfs).whenComplete((all, ex) -> {
+        if (ex != null) {
+          handleFailure(routingContext, ex);
+          return;
+        }
+        log.info("Storing privacy group {}", privacyGroupId);
+
+        privacyGroupStorage.put(privacyGroupPayload).thenAccept((result) -> {
+
+          final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
+              new QueryPrivacyGroupPayload(privacyGroupPayload.addresses(), null);
+
+          queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupId);
+          final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
+
+          log.info("Stored privacy group. resulting digest: {}", key);
+
+          queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenAccept((res) -> {
+
+            final PrivacyGroup group = new PrivacyGroup(
+                privacyGroupId,
+                PrivacyGroupPayload.Type.PANTHEON,
+                privacyGroupRequest.name(),
+                privacyGroupRequest.description(),
+                privacyGroupRequest.addresses());
+            log.info("Storing privacy group {} complete", privacyGroupId);
+
+            final Buffer toReturn = Buffer.buffer(Serializer.serialize(JSON, group));
+            routingContext.response().end(toReturn);
+
+          }).exceptionally(
+              e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
 
         }).exceptionally(
             e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
-
-      }).exceptionally(
-          e -> routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP, e)));
+      });
     });
   }
 
