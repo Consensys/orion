@@ -14,7 +14,7 @@ jobs:
     environment:
       TERM: dumb
       JAVA_TOOL_OPTIONS: -Xmx2048m
-      GRADLE_OPTS: -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2
+      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2
       GRADLE_MAX_TEST_FORKS: 2
       POSTGRES_USER: test
       POSTGRES_PASSWORD: test
@@ -36,15 +36,15 @@ jobs:
 
       - run:
           name: Spotless checks
-          command: ./gradlew spotlesscheck
+          command: ./gradlew -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD  spotlesscheck
 
       - run:
           name: Downloading dependencies
-          command: ./gradlew dependencies checkLicenses
+          command: ./gradlew -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD  dependencies checkLicenses
 
       - run:
           name: Compiling
-          command: ./gradlew assemble
+          command: ./gradlew -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD  assemble
 
       - store_artifacts:
           name: Uploading artifacts
@@ -54,7 +54,7 @@ jobs:
 
       - run:
           name: Running unit tests
-          command: ./gradlew --stacktrace test
+          command: ./gradlew -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD  --stacktrace test
 
       - run:
           name: Waiting for Postgres to be ready
@@ -69,7 +69,7 @@ jobs:
 
       - run:
           name: Running acceptance tests
-          command: ./gradlew --stacktrace acceptanceTest
+          command: ./gradlew -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD  --stacktrace acceptanceTest
 
       - run:
           name: Collecting test results
