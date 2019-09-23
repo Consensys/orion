@@ -52,6 +52,7 @@ import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -80,18 +81,18 @@ class SendHandlerTest extends HandlerTest {
     assertEquals(500, resp.code());
   }
 
-//  @Test
-//  void emptyPayload() throws Exception {
-//    final RequestBody body = RequestBody.create(null, new byte[0]);
-//    final Request request = new Request.Builder().post(body).url(clientBaseUrl + "/send").build();
-//
-//    // execute request
-//    final Response resp = httpClient.newCall(request).execute();
-//
-//    // produces 404 because no content = no content-type = no matching with a "consumes(CBOR)"
-//    // route.
-//    assertEquals(404, resp.code());
-//  }
+  @Test
+  void emptyPayload() throws Exception {
+    final RequestBody body = RequestBody.create(null, new byte[0]);
+    final Request request = new Request.Builder().post(body).url(clientBaseUrl + "/send").build();
+
+    // execute request
+    final Response resp = httpClient.newCall(request).execute();
+
+    // produces 404 because no content = no content-type = no matching with a "consumes(CBOR)"
+    // route.
+    assertEquals(404, resp.code());
+  }
 
   @Test
   void sendFailsWhenBadResponseFromPeer() throws Exception {
@@ -138,92 +139,92 @@ class SendHandlerTest extends HandlerTest {
     assertEquals(500, resp.code());
   }
 
-//  @Test
-//  void sendToSinglePeer() throws Exception {
-//    // note: we need to do this as the fakePeers need to know in advance the digest to return.
-//    // not possible with libSodium due to random nonce
-//
-//    // generate random byte content
-//    final byte[] toEncrypt = new byte[342];
-//    new Random().nextBytes(toEncrypt);
-//
-//    // encrypt it here to compute digest
-//    final EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
-//    final String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
-//
-//    // create fake peer
-//    final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
-//    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
-//
-//    // configureRoutes our sendRequest
-//    final Map<String, Object> sendRequest = buildRequest(Collections.singletonList(fakePeer), toEncrypt);
-//    final Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
-//
-//    // execute request
-//    final Response resp = httpClient.newCall(request).execute();
-//
-//    // ensure we got a 200 OK
-//    assertEquals(200, resp.code());
-//
-//    // ensure peer actually got the EncryptedPayload
-//    final RecordedRequest recordedRequest = fakePeer.server.takeRequest();
-//
-//    // check method and path
-//    assertEquals("/push", recordedRequest.getPath());
-//    assertEquals("POST", recordedRequest.getMethod());
-//
-//    // check header
-//    assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
-//
-//    // ensure cipher text is same.
-//    final EncryptedPayload receivedPayload =
-//        Serializer.deserialize(CBOR, EncryptedPayload.class, recordedRequest.getBody().readByteArray());
-//    assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
-//  }
+  @Test
+  void sendToSinglePeer() throws Exception {
+    // note: we need to do this as the fakePeers need to know in advance the digest to return.
+    // not possible with libSodium due to random nonce
 
-//  @Test
-//  void sendEmptyTo() throws Exception {
-//    // note: we need to do this as the fakePeers need to know in advance the digest to return.
-//    // not possible with libSodium due to random nonce
-//
-//    // generate random byte content
-//    final byte[] toEncrypt = new byte[342];
-//    new Random().nextBytes(toEncrypt);
-//
-//    // encrypt it here to compute digest
-//    final EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
-//    final String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
-//
-//    // create fake peer
-//    final Box.PublicKey sender = memoryKeyStore.generateKeyPair();
-//    final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), sender);
-//    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
-//
-//    // configureRoutes our sendRequest
-//    final Map<String, Object> sendRequest = buildRequest(new String[0], toEncrypt, encodeBytes(sender.bytesArray()));
-//    final Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
-//
-//    // execute request
-//    final Response resp = httpClient.newCall(request).execute();
-//
-//    // ensure we got a 200 OK
-//    assertEquals(200, resp.code());
-//
-//    // ensure peer actually got the EncryptedPayload
-//    final RecordedRequest recordedRequest = fakePeer.server.takeRequest();
-//
-//    // check method and path
-//    assertEquals("/push", recordedRequest.getPath());
-//    assertEquals("POST", recordedRequest.getMethod());
-//
-//    // check header
-//    assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
-//
-//    // ensure cipher text is same.
-//    final EncryptedPayload receivedPayload =
-//        Serializer.deserialize(CBOR, EncryptedPayload.class, recordedRequest.getBody().readByteArray());
-//    assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
-//  }
+    // generate random byte content
+    final byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    // encrypt it here to compute digest
+    final EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
+    final String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
+
+    // create fake peer
+    final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
+    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+
+    // configureRoutes our sendRequest
+    final Map<String, Object> sendRequest = buildRequest(Collections.singletonList(fakePeer), toEncrypt);
+    final Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
+
+    // execute request
+    final Response resp = httpClient.newCall(request).execute();
+
+    // ensure we got a 200 OK
+    assertEquals(200, resp.code());
+
+    // ensure peer actually got the EncryptedPayload
+    final RecordedRequest recordedRequest = fakePeer.server.takeRequest();
+
+    // check method and path
+    assertEquals("/push", recordedRequest.getPath());
+    assertEquals("POST", recordedRequest.getMethod());
+
+    // check header
+    assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
+
+    // ensure cipher text is same.
+    final EncryptedPayload receivedPayload =
+        Serializer.deserialize(CBOR, EncryptedPayload.class, recordedRequest.getBody().readByteArray());
+    assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
+  }
+
+  @Test
+  void sendEmptyTo() throws Exception {
+    // note: we need to do this as the fakePeers need to know in advance the digest to return.
+    // not possible with libSodium due to random nonce
+
+    // generate random byte content
+    final byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    // encrypt it here to compute digest
+    final EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
+    final String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
+
+    // create fake peer
+    final Box.PublicKey sender = memoryKeyStore.generateKeyPair();
+    final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), sender);
+    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+
+    // configureRoutes our sendRequest
+    final Map<String, Object> sendRequest = buildRequest(new String[0], toEncrypt, encodeBytes(sender.bytesArray()));
+    final Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
+
+    // execute request
+    final Response resp = httpClient.newCall(request).execute();
+
+    // ensure we got a 200 OK
+    assertEquals(200, resp.code());
+
+    // ensure peer actually got the EncryptedPayload
+    final RecordedRequest recordedRequest = fakePeer.server.takeRequest();
+
+    // check method and path
+    assertEquals("/push", recordedRequest.getPath());
+    assertEquals("POST", recordedRequest.getMethod());
+
+    // check header
+    assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
+
+    // ensure cipher text is same.
+    final EncryptedPayload receivedPayload =
+        Serializer.deserialize(CBOR, EncryptedPayload.class, recordedRequest.getBody().readByteArray());
+    assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
+  }
 
   @Test
   void sendApiOnlyWorksOnPrivatePort() throws Exception {
@@ -303,19 +304,19 @@ class SendHandlerTest extends HandlerTest {
     }
   }
 
-//  @Test
-//  void sendWithInvalidContentType() throws Exception {
-//    final String b64String = encodeBytes("foo".getBytes(UTF_8));
-//
-//    final Map<String, Object> sendRequest =
-//        buildRequest(new String[] {b64String}, b64String.getBytes(UTF_8), b64String);
-//    // CBOR type is not available
-//    final Request request = buildPrivateAPIRequest("/send", HttpContentType.CBOR, sendRequest);
-//    final Response resp = httpClient.newCall(request).execute();
-//
-//    // produces 404 because there is no route for the content type in the request.
-//    assertEquals(404, resp.code());
-//  }
+  @Test
+  void sendWithInvalidContentType() throws Exception {
+    final String b64String = encodeBytes("foo".getBytes(UTF_8));
+
+    final Map<String, Object> sendRequest =
+        buildRequest(new String[] {b64String}, b64String.getBytes(UTF_8), b64String);
+    // CBOR type is not available
+    final Request request = buildPrivateAPIRequest("/send", HttpContentType.CBOR, sendRequest);
+    final Response resp = httpClient.newCall(request).execute();
+
+    // produces 404 because there is no route for the content type in the request.
+    assertEquals(404, resp.code());
+  }
 
   @Test
   void sendingWithARawBody() throws Exception {
@@ -382,45 +383,45 @@ class SendHandlerTest extends HandlerTest {
     }
   }
 
-//  @Test
-//  void sendRawApiOnlyWorksOnPrivatePort() throws Exception {
-//    // note: this closely mirrors the test "testPropagatedToMultiplePeers",
-//    // using the raw version of the API.
-//
-//    final byte[] toEncrypt = new byte[342];
-//    new Random().nextBytes(toEncrypt);
-//
-//    // encrypt it here to compute digest
-//    final EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
-//    final String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
-//
-//    // create fake peers
-//    final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
-//    // add peer push URL to networkNodes
-//    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
-//
-//    // configureRoutes the binary sendRequest
-//    final RequestBody body =
-//        RequestBody.create(MediaType.parse(HttpContentType.APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
-//    final Box.PublicKey sender = memoryKeyStore.generateKeyPair();
-//
-//    final String from = encodeBytes(sender.bytesArray());
-//
-//    final Request request = new Request.Builder()
-//        .post(body)
-//        .url(nodeBaseUrl + "sendraw")
-//        .addHeader("c11n-from", from)
-//        .addHeader("c11n-to", encodeBytes(fakePeer.publicKey.bytesArray()))
-//        .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
-//        .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
-//        .build();
-//
-//    // execute request
-//    final Response resp = httpClient.newCall(request).execute();
-//
-//    // ensure we got a 200 OK
-//    assertEquals(404, resp.code());
-//  }
+  @Test
+  void sendRawApiOnlyWorksOnPrivatePort() throws Exception {
+    // note: this closely mirrors the test "testPropagatedToMultiplePeers",
+    // using the raw version of the API.
+
+    final byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    // encrypt it here to compute digest
+    final EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
+    final String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
+
+    // create fake peers
+    final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
+    // add peer push URL to networkNodes
+    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+
+    // configureRoutes the binary sendRequest
+    final RequestBody body =
+        RequestBody.create(MediaType.parse(HttpContentType.APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
+    final Box.PublicKey sender = memoryKeyStore.generateKeyPair();
+
+    final String from = encodeBytes(sender.bytesArray());
+
+    final Request request = new Request.Builder()
+        .post(body)
+        .url(nodeBaseUrl + "sendraw")
+        .addHeader("c11n-from", from)
+        .addHeader("c11n-to", encodeBytes(fakePeer.publicKey.bytesArray()))
+        .addHeader("Content-Type", APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .addHeader("Accept", APPLICATION_OCTET_STREAM.httpHeaderValue)
+        .build();
+
+    // execute request
+    final Response resp = httpClient.newCall(request).execute();
+
+    // ensure we got a 200 OK
+    assertEquals(404, resp.code());
+  }
 
   @Test
   void sendWithInvalidBody() throws Exception {
@@ -433,91 +434,91 @@ class SendHandlerTest extends HandlerTest {
     // checks if the failure reason was with de-serialisation
     assertError(OrionErrorCode.OBJECT_JSON_DESERIALIZATION, resp);
   }
-//
-//  @Test
-//  void sendWithNoFrom() throws Exception {
-//    // note: we need to do this as the fakePeers need to know in advance the digest to return.
-//    // not possible with libSodium due to random nonce
-//
-//    // generate random byte content
-//    final byte[] toEncrypt = new byte[342];
-//    new Random().nextBytes(toEncrypt);
-//
-//    // encrypt it here to compute digest
-//    final EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
-//    final String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
-//
-//    // create fake peer
-//    final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
-//    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
-//
-//    // configureRoutes our sendRequest
-//    final String payload = encodeBytes(toEncrypt);
-//
-//    final String[] to = new String[] {encodeBytes(fakePeer.publicKey.bytesArray())};
-//
-//    final Map<String, Object> sendRequest = buildRequest(to, payload.getBytes(UTF_8), null);
-//    final Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
-//
-//    // execute request
-//    final Response resp = httpClient.newCall(request).execute();
-//
-//    // ensure we got an error back.
-//    assertEquals(500, resp.code());
-//
-//    assertError(OrionErrorCode.NO_SENDER_KEY, resp);
-//  }
 
-//  @Test
-//  void validPrivacyGroupIdToSinglePeer() throws Exception {
-//    // note: we need to do this as the fakePeers need to know in advance the digest to return.
-//    // not possible with libSodium due to random nonce
-//
-//    // generate keys and the privacy group
-//    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
-//    final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
-//    final byte[] privacyGroupId = enclave
-//        .generatePrivacyGroupId(new Box.PublicKey[] {recipientKey, senderKey}, null, PrivacyGroupPayload.Type.PANTHEON);
-//
-//    // generate random byte content
-//    final byte[] toEncrypt = new byte[342];
-//    new Random().nextBytes(toEncrypt);
-//
-//    // encrypt it here to compute digest
-//    final EncryptedPayload encryptedPayload =
-//        enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {recipientKey}, null);
-//    final String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
-//
-//    // create fake peer
-//    final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
-//    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
-//
-//    // configureRoutes our sendRequest
-//    final Map<String, Object> sendRequest = buildRequest(Collections.singletonList(fakePeer), toEncrypt);
-//    final Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
-//
-//    // execute request
-//    final Response resp = httpClient.newCall(request).execute();
-//
-//    // ensure we got a 200 OK
-//    assertEquals(200, resp.code());
-//
-//    // ensure peer actually got the EncryptedPayload
-//    final RecordedRequest recordedRequest = fakePeer.server.takeRequest();
-//
-//    // check method and path
-//    assertEquals("/push", recordedRequest.getPath());
-//    assertEquals("POST", recordedRequest.getMethod());
-//
-//    // check header
-//    assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
-//
-//    // ensure cipher text is same.
-//    final EncryptedPayload receivedPayload =
-//        Serializer.deserialize(CBOR, EncryptedPayload.class, recordedRequest.getBody().readByteArray());
-//    assertArrayEquals(privacyGroupId, encryptedPayload.privacyGroupId());
-//    assertArrayEquals(receivedPayload.privacyGroupId(), encryptedPayload.privacyGroupId());
-//  }
+  @Test
+  void sendWithNoFrom() throws Exception {
+    // note: we need to do this as the fakePeers need to know in advance the digest to return.
+    // not possible with libSodium due to random nonce
+
+    // generate random byte content
+    final byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    // encrypt it here to compute digest
+    final EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
+    final String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
+
+    // create fake peer
+    final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
+    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+
+    // configureRoutes our sendRequest
+    final String payload = encodeBytes(toEncrypt);
+
+    final String[] to = new String[] {encodeBytes(fakePeer.publicKey.bytesArray())};
+
+    final Map<String, Object> sendRequest = buildRequest(to, payload.getBytes(UTF_8), null);
+    final Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
+
+    // execute request
+    final Response resp = httpClient.newCall(request).execute();
+
+    // ensure we got an error back.
+    assertEquals(500, resp.code());
+
+    assertError(OrionErrorCode.NO_SENDER_KEY, resp);
+  }
+
+  @Test
+  void validPrivacyGroupIdToSinglePeer() throws Exception {
+    // note: we need to do this as the fakePeers need to know in advance the digest to return.
+    // not possible with libSodium due to random nonce
+
+    // generate keys and the privacy group
+    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
+    final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    final byte[] privacyGroupId = enclave
+        .generatePrivacyGroupId(new Box.PublicKey[] {recipientKey, senderKey}, null, PrivacyGroupPayload.Type.PANTHEON);
+
+    // generate random byte content
+    final byte[] toEncrypt = new byte[342];
+    new Random().nextBytes(toEncrypt);
+
+    // encrypt it here to compute digest
+    final EncryptedPayload encryptedPayload =
+        enclave.encrypt(toEncrypt, senderKey, new Box.PublicKey[] {recipientKey}, null);
+    final String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
+
+    // create fake peer
+    final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest));
+    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+
+    // configureRoutes our sendRequest
+    final Map<String, Object> sendRequest = buildRequest(Collections.singletonList(fakePeer), toEncrypt);
+    final Request request = buildPrivateAPIRequest("/send", HttpContentType.JSON, sendRequest);
+
+    // execute request
+    final Response resp = httpClient.newCall(request).execute();
+
+    // ensure we got a 200 OK
+    assertEquals(200, resp.code());
+
+    // ensure peer actually got the EncryptedPayload
+    final RecordedRequest recordedRequest = fakePeer.server.takeRequest();
+
+    // check method and path
+    assertEquals("/push", recordedRequest.getPath());
+    assertEquals("POST", recordedRequest.getMethod());
+
+    // check header
+    assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
+
+    // ensure cipher text is same.
+    final EncryptedPayload receivedPayload =
+        Serializer.deserialize(CBOR, EncryptedPayload.class, recordedRequest.getBody().readByteArray());
+    assertArrayEquals(privacyGroupId, encryptedPayload.privacyGroupId());
+    assertArrayEquals(receivedPayload.privacyGroupId(), encryptedPayload.privacyGroupId());
+  }
 
   @Test
   void sendToPrivacyGroupId() throws Exception {
