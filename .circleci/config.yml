@@ -172,7 +172,7 @@ workflows:
   version: 2
   pipeline:
     jobs:
-      - build:
+      - build
       - upload-distribution:
           requires:
             - build
