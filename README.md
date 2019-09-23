@@ -29,6 +29,7 @@ Instructions for how to get started with developing on the Orion codebase. Pleas
 [contribution guidelines](CONTRIBUTING.md) for more detail on how to submit a pull request (PR).
 
 * [Machine Setup](docs/development/machine_setup.md)
+* [Oracle Maven Repo Credentials for JDBC Driver](docs/development/oracle_jdbc.md)
 * [Checking Out and Building](docs/development/building.md)
 * [Running Developer Builds](documentation/development/running_developer_builds.md)
 * [Code Coverage](docs/development/code-coverage.md)

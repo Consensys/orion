@@ -38,6 +38,7 @@ ext.acceptedLicenses = [
   'Eclipse Public License 2.0',
   'The MIT License',
   'Unicode/ICU License',
+  'Oracle Technology Network License Agreement - Oracle Maven Repository',
 ]*.toLowerCase()
 
 /**
@@ -77,6 +78,10 @@ downloadLicenses {
   ext.mit = license(
     'The MIT License',
     'https://opensource.org/licenses/MIT')
+  ext.otn = license(
+    'Oracle Technology Network License Agreement - Oracle Maven Repository',
+    'https://www.oracle.com/webapps/maven/register/license.html'
+    )
 
   aliases = [
     (apache2): [
@@ -135,6 +140,9 @@ downloadLicenses {
       'MIT license',
       'MIT License',
     ],
+    (otn): [
+      'Oracle Technology Network License Agreement - Oracle Maven Repository'
+    ]
   ]
 
   licenses = [
@@ -149,7 +157,11 @@ downloadLicenses {
     (group('org.checkerframework')): mit,
 
     // Explicitly declare CDDL1.1 license for javax.xml.bind APIs
-    (group('javax.xml.bind')): cddl1_1
+    (group('javax.xml.bind')): cddl1_1,
+
+    // Oracle JDBC Driver license
+    (group('com.oracle.jdbc')): otn
+
   ]
 }
 

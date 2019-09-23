@@ -14,7 +14,7 @@ jobs:
     environment:
       TERM: dumb
       JAVA_TOOL_OPTIONS: -Xmx2048m
-      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2
+      GRADLE_OPTS: -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2
       GRADLE_MAX_TEST_FORKS: 2
       POSTGRES_USER: test
       POSTGRES_PASSWORD: test
@@ -172,10 +172,12 @@ workflows:
   version: 2
   pipeline:
     jobs:
-      - build
+      - build:
+          context: orion
       - upload-distribution:
           requires:
             - build
+          context: orion
           filters:
             branches:
               only: master
