@@ -36,7 +36,7 @@ jobs:
 
       - run:
           name: context environment variables
-          command: echo "ORACLEMAVENUSER=$ORACLEMAVENUSER"
+          command: echo "ORACLEMAVENUSER=${ORACLEMAVENUSER}"
       - run:
           name: Spotless checks
           command: ./gradlew -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD  spotlesscheck
