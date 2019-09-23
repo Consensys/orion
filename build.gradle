@@ -237,6 +237,7 @@ openjpa {
 
 //////
 // Dependencies
+println "Oracle Maven User: ${oracleMavenUser}"
 repositories {
   jcenter()
   maven { url "https://consensys.bintray.com/consensys" }
