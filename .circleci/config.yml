@@ -35,19 +35,16 @@ jobs:
           - v1-dependencies-
 
       - run:
-          name: context environment variables
-          command: echo "ORACLEMAVENUSER=${ORACLEMAVENUSER}"
-      - run:
           name: Spotless checks
-          command: ./gradlew -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD  spotlesscheck
+          command: ./gradlew spotlesscheck
 
       - run:
           name: Downloading dependencies
-          command: ./gradlew -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD  dependencies checkLicenses
+          command: ./gradlew dependencies checkLicenses
 
       - run:
           name: Compiling
-          command: ./gradlew -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD  assemble
+          command: ./gradlew assemble
 
       - store_artifacts:
           name: Uploading artifacts
@@ -57,7 +54,7 @@ jobs:
 
       - run:
           name: Running unit tests
-          command: ./gradlew -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD  --stacktrace test
+          command: ./gradlew --stacktrace test
 
       - run:
           name: Waiting for Postgres to be ready
@@ -72,7 +69,7 @@ jobs:
 
       - run:
           name: Running acceptance tests
-          command: ./gradlew -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD    --stacktrace acceptanceTest
+          command: ./gradlew --stacktrace acceptanceTest
 
       - run:
           name: Collecting test results
