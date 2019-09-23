@@ -173,11 +173,9 @@ workflows:
   pipeline:
     jobs:
       - build:
-          context: orion
       - upload-distribution:
           requires:
             - build
-          context: orion
           filters:
             branches:
               only: master
