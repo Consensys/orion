@@ -35,6 +35,9 @@ jobs:
           - v1-dependencies-
 
       - run:
+          name: context environment variables
+          command: echo "ORACLEMAVENUSER=$ORACLEMAVENUSER"
+      - run:
           name: Spotless checks
           command: ./gradlew -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD  spotlesscheck
 
@@ -69,7 +72,7 @@ jobs:
 
       - run:
           name: Running acceptance tests
-          command: ./gradlew -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD  --stacktrace acceptanceTest
+          command: ./gradlew -PoracleMavenUser=$ORACLEMAVENUSER -PoracleMavenPassword=$ORACLEMAVENPASSWORD    --stacktrace acceptanceTest
 
       - run:
           name: Collecting test results
