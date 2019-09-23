@@ -237,7 +237,6 @@ openjpa {
 
 //////
 // Dependencies
-println "Oracle Maven User: ${oracleMavenUser}"
 repositories {
   jcenter()
   maven { url "https://consensys.bintray.com/consensys" }
@@ -293,9 +292,12 @@ dependencies {
   compile 'javax.xml.bind:jaxb-api'
 
   //Oracle JDBC
-  compile('com.oracle.jdbc:ojdbc10') { transitive = false }
+  if(project.hasProperty("oracleMavenUser")) {
+    compile('com.oracle.jdbc:ojdbc10') { transitive = false }
 
-  compile('com.oracle.jdbc:ucp') { transitive = false //because ucp pom declares both ojdbc8 and ojdbc10 incorrectly
+    compile('com.oracle.jdbc:ucp') {
+      transitive = false //because ucp pom declares both ojdbc8 and ojdbc10 incorrectly
+    }
   }
 
   // testing
