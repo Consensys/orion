@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
@@ -53,7 +54,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.assertj.core.internal.bytebuddy.utility.RandomString;
 import org.h2.store.fs.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -99,9 +99,9 @@ abstract class HandlerTest {
     enclave = buildEnclave(tempDir);
 
     final Path path = tempDir.resolve("routerdb");
-    Files.walk(tempDir).forEach(f -> {
-      FileUtils.deleteRecursive(f.toAbsolutePath().toString(), false);
-    });
+    try (Stream<Path> existingPaths = Files.walk(tempDir)) {
+      existingPaths.forEach(f -> FileUtils.deleteRecursive(f.toAbsolutePath().toString(), false));
+    }
 
     storage = MapDBKeyValueStore.open(path);
     // create our vertx object
@@ -175,10 +175,9 @@ abstract class HandlerTest {
   }
 
   @AfterEach
-  void tearDown(@TempDirectory final Path tempDir) throws Exception {
+  void tearDown() throws Exception {
     nodeHttpServer.close();
     clientHttpServer.close();
-
     storage.close();
     vertx.close();
   }

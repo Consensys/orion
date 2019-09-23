@@ -54,6 +54,7 @@ class SendHandlerWithNodeKeysTest extends SendHandlerTest {
   }
 
   @Test
+  @Override
   void sendWithNoFrom() throws Exception {
     // generate random byte content
     final byte[] toEncrypt = new byte[342];

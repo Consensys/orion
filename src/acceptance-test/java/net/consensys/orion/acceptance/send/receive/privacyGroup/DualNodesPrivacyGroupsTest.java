@@ -80,11 +80,11 @@ class DualNodesPrivacyGroupsTest {
 
   @BeforeEach
   void setUpDualNodes(@TempDirectory final Path tempDir) throws Exception {
+
     final Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
     final Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
     final Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
     final Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
-
     final String jdbcUrl = "jdbc:h2:" + tempDir.resolve(RandomString.make(10)).toString();
     try (final Connection conn = DriverManager.getConnection(jdbcUrl)) {
       final Statement st = conn.createStatement();
