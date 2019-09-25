@@ -335,6 +335,7 @@ distributions {
   main {
     contents {
       from("./LICENSE") { into "." }
+      from("./database") { into "database" }
     }
   }
 }
