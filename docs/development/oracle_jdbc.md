@@ -3,10 +3,14 @@
 * You need to provide your Oracle account credentials to access Oracle Maven repository.
 If you don't have Oracle credentials, you can create one at 
 https://profile.oracle.com/myprofile/account/create-account.jspx
-* Create (or update) gradle.properties in project root folder and add following
-gradle properties (or create environment variables with same name and values):
+* Create (or update) `gradle.properties` in project root folder and add following
+gradle properties 
 ```
 oracleMavenUser=YourOracleAccountEmail
 oracleMavenPassword=YourOracleAccountPassword
 ```
-* 
+* Instead of modifying `gradle.properties`, following environment variables can also be used
+```
+ORG_GRADLE_PROJECT_oracleMavenUser
+ORG_GRADLE_PROJECT_oracleMavenPassword	
+```
