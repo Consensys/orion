@@ -354,12 +354,16 @@ distributions {
   main {
     contents {
       from("./LICENSE") { into "." }
+      from("build/reports/license/license-dependency.html") { into "." }
       from("./database") { into "database" }
     }
   }
 }
 
+installDist { dependsOn checkLicenses }
+
 distTar {
+  dependsOn checkLicenses
   doFirst {
     delete fileTree(dir:'build/distributions', include: '*.tar.gz')
   }
@@ -368,6 +372,7 @@ distTar {
 }
 
 distZip {
+  dependsOn checkLicenses
   doFirst {
     delete fileTree(dir:'build/distributions', include: '*.zip')
   }
