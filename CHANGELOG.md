@@ -13,7 +13,6 @@ From v1.4, Orion requires Java 11. Orion on Java 8 is no longer supported.
 - Documentation updates include: 
   - Added content on configuring [Oracle](https://docs.orion.pegasys.tech/en/latest/Configuring-Orion/Using-Oracle/) and [PostgreSQL](https://docs.orion.pegasys.tech/en/latest/Configuring-Orion/Using-PostgreSQL/) databases
   - Added content on generating [certificates using OpenSSL](https://docs.orion.pegasys.tech/en/latest/Configuring-Orion/TLS/#generating-certificates-using-openssl)
-  - Added content on [high availability]()
 
 ### Technical Improvements 
 
