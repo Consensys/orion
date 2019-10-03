@@ -2,7 +2,29 @@
 
 ## Java 11
 
-Orion is supported on Java 11+.  Java 8 support is deprecated and will be removed in a future release.
+From v1.4, Orion requires Java 11. Orion on Java 8 is no longer supported. 
+
+## 1.4 
+
+### Additions and Improvements 
+
+- Added Oracle DB support [\#284](https://github.com/PegaSysEng/orion/pull/284) 
+- Added PostgreSQL DB support [\#276](https://github.com/PegaSysEng/orion/pull/276)
+- Documentation updates include: 
+  - Added content on configuring [Oracle](https://docs.orion.pegasys.tech/en/latest/Configuring-Orion/Using-Oracle/) and [PostgreSQL](https://docs.orion.pegasys.tech/en/latest/Configuring-Orion/Using-PostgreSQL/) databases
+  - Added content on generating [certificates using OpenSSL](https://docs.orion.pegasys.tech/en/latest/Configuring-Orion/TLS/#generating-certificates-using-openssl)
+
+### Technical Improvements 
+
+- Add license report to distribution packages [\#293](https://github.com/PegaSysEng/orion/pull/293) 
+- Include database ddl files in orion distribution [\#292](https://github.com/PegaSysEng/orion/pull/292) 
+- Include Oracle JDBC driver in package [\#291](https://github.com/PegaSysEng/orion/pull/291) 
+- Default to empty name and description for new privacy groups [\#289](https://github.com/PegaSysEng/orion/pull/289) 
+- Random prefix storage fix [\#288](https://github.com/PegaSysEng/orion/pull/288)
+- Make everything final [\#285](https://github.com/PegaSysEng/orion/pull/285) 
+- Fix spotless problems in AT/OrionFactory [\#280](https://github.com/PegaSysEng/orion/pull/280) 
+- Create acceptanceTests for multi-key per node usage [\#279](https://github.com/PegaSysEng/orion/pull/279) 
+- Fix PermTrustOption setup [\#278](https://github.com/PegaSysEng/orion/pull/278) 
 
 ## 1.3.2 
 
