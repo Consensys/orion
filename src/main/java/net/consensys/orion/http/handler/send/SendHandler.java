@@ -15,6 +15,7 @@ package net.consensys.orion.http.handler.send;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
 import net.consensys.cava.crypto.sodium.Box;
+import net.consensys.cava.crypto.sodium.Box.PublicKey;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
@@ -55,7 +56,7 @@ public class SendHandler implements Handler<RoutingContext> {
   private final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
   private final List<Box.PublicKey> nodeKeys;
   private final ConcurrentNetworkNodes networkNodes;
-  private final HttpContentType contentType;
+  private final SendRequestParser parser;
 
   private final HttpClient httpClient;
 
@@ -66,7 +67,7 @@ public class SendHandler implements Handler<RoutingContext> {
       final Storage<PrivacyGroupPayload> privacyGroupStorage,
       final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
       final ConcurrentNetworkNodes networkNodes,
-      final HttpContentType contentType,
+      final SendRequestParser parser,
       final Config config) {
     this.enclave = enclave;
     this.storage = storage;
@@ -74,102 +75,101 @@ public class SendHandler implements Handler<RoutingContext> {
     this.queryPrivacyGroupStorage = queryPrivacyGroupStorage;
     this.nodeKeys = Arrays.asList(enclave.nodeKeys());
     this.networkNodes = networkNodes;
-    this.contentType = contentType;
+    this.parser = parser;
     this.httpClient = NodeHttpClientBuilder.build(vertx, config, 1500);
   }
 
   @Override
   public void handle(final RoutingContext routingContext) {
-    final SendRequest sendRequest;
-    if (contentType == JSON) {
-      sendRequest = Serializer.deserialize(JSON, SendRequest.class, routingContext.getBody().getBytes());
-    } else {
-      sendRequest = binaryRequest(routingContext);
-    }
-    log.debug(sendRequest);
+    final SendRequest sendRequest = parser.parse(routingContext);
+    final PublicKey fromKey = readPublicKey(sendRequest);
 
-    if ((sendRequest.to() == null || sendRequest.to().length == 0) && !sendRequest.privacyGroupId().isPresent()) {
-      sendRequest.setTo(new String[] {sendRequest.from().orElse(null)});
+    if (sendRequest.privacyGroupId().isEmpty()) {
+      handleLegacySendRequest(routingContext, sendRequest, fromKey);
+    } else if (sendRequest.privacyGroupId().isPresent()) {
+      handlePrivacyGroupSendRequest(routingContext, sendRequest, fromKey);
     }
-    if (!sendRequest.isValid()) {
-      throw new OrionException(OrionErrorCode.INVALID_PAYLOAD);
-    }
+  }
 
+  private PublicKey readPublicKey(SendRequest sendRequest) {
     log.debug("reading public keys from SendRequest object");
     // read provided public keys
-    final Box.PublicKey fromKey = sendRequest.from().map(enclave::readKey).orElseGet(() -> {
+    return sendRequest.from().map(enclave::readKey).orElseGet(() -> {
       if (nodeKeys.isEmpty()) {
         throw new OrionException(OrionErrorCode.NO_SENDER_KEY);
       }
       return nodeKeys.get(0);
     });
+  }
 
-    if (!sendRequest.privacyGroupId().isPresent()) {
-      final List<Box.PublicKey> toKeys =
-          Arrays.stream(sendRequest.to()).map(enclave::readKey).collect(Collectors.toList());
-      final ArrayList<String> keys = new ArrayList<>(Arrays.stream(sendRequest.to()).collect(Collectors.toList()));
-      if (sendRequest.from().isPresent()) {
-        keys.add(sendRequest.from().get());
-      }
-      final PrivacyGroupPayload privacyGroupPayload = new PrivacyGroupPayload(
-          keys.toArray(new String[0]),
-          "legacy",
-          "Privacy groups to support the creation of groups by privateFor and privateFrom",
-          PrivacyGroupPayload.State.ACTIVE,
-          PrivacyGroupPayload.Type.LEGACY,
-          null);
+  private void handleLegacySendRequest(RoutingContext routingContext, SendRequest sendRequest, PublicKey fromKey) {
+    final List<PublicKey> toKeys = Arrays.stream(sendRequest.to()).map(enclave::readKey).collect(Collectors.toList());
+    final ArrayList<String> keys = new ArrayList<>(Arrays.stream(sendRequest.to()).collect(Collectors.toList()));
+    if (sendRequest.from().isPresent()) {
+      keys.add(sendRequest.from().get());
+    }
+    final PrivacyGroupPayload privacyGroupPayload = new PrivacyGroupPayload(
+        keys.toArray(new String[0]),
+        "legacy",
+        "Privacy groups to support the creation of groups by privateFor and privateFrom",
+        PrivacyGroupPayload.State.ACTIVE,
+        PrivacyGroupPayload.Type.LEGACY,
+        null);
 
-      final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
-          new QueryPrivacyGroupPayload(keys.toArray(new String[0]), null);
-      final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
+    final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
+        new QueryPrivacyGroupPayload(keys.toArray(new String[0]), null);
+    final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
 
-
-      queryPrivacyGroupStorage.get(key).thenApply(privacyGroup -> {
-        if (privacyGroup.isPresent()) {
-          send(routingContext, sendRequest, fromKey, toKeys, privacyGroupPayload);
-          return key;
-        } else {
-          return privacyGroupStorage.put(privacyGroupPayload).thenApply((result) -> {
-            queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupStorage.generateDigest(privacyGroupPayload));
-            return queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenApply((res) -> {
-              send(routingContext, sendRequest, fromKey, toKeys, privacyGroupPayload);
-              return result;
-            }).exceptionally(e -> {
-              handleFailure(routingContext, e, ErrorType.FIND_GROUP);
-              return null;
-            });
+    queryPrivacyGroupStorage.get(key).thenApply(privacyGroup -> {
+      if (privacyGroup.isPresent()) {
+        sendPayloadToParticipants(routingContext, sendRequest, fromKey, toKeys, privacyGroupPayload);
+        return key;
+      } else {
+        return privacyGroupStorage.put(privacyGroupPayload).thenApply((result) -> {
+          queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupStorage.generateDigest(privacyGroupPayload));
+          return queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenApply((res) -> {
+            sendPayloadToParticipants(routingContext, sendRequest, fromKey, toKeys, privacyGroupPayload);
+            return result;
           }).exceptionally(e -> {
             handleFailure(routingContext, e, ErrorType.FIND_GROUP);
             return null;
           });
-        }
-      }).exceptionally(e -> {
-        handleFailure(routingContext, e, ErrorType.FIND_GROUP);
-        return null;
-      });
-    } else if (sendRequest.privacyGroupId().isPresent()) {
-      privacyGroupStorage.get(sendRequest.privacyGroupId().get()).thenApply((result) -> {
-        if (result.get().state().equals(PrivacyGroupPayload.State.ACTIVE)) {
-          List<Box.PublicKey> toKeys =
-              Arrays.stream(result.get().addresses()).map(enclave::readKey).collect(Collectors.toList());
-          toKeys.remove(fromKey);
-          send(routingContext, sendRequest, fromKey, toKeys, result.get());
-          return result;
-        } else {
-          handleFailure(
-              routingContext,
-              new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, "privacy group not found"),
-              ErrorType.FIND_GROUP);
-          return result;
-        }
-      }).exceptionally(e -> {
-        handleFailure(routingContext, e, ErrorType.FIND_GROUP);
-        return Optional.empty();
-      });
-    }
+        }).exceptionally(e -> {
+          handleFailure(routingContext, e, ErrorType.FIND_GROUP);
+          return null;
+        });
+      }
+    }).exceptionally(e -> {
+      handleFailure(routingContext, e, ErrorType.FIND_GROUP);
+      return null;
+    });
   }
 
-  private void send(
+  private void handlePrivacyGroupSendRequest(
+      RoutingContext routingContext,
+      SendRequest sendRequest,
+      PublicKey fromKey) {
+    privacyGroupStorage.get(sendRequest.privacyGroupId().get()).thenApply((result) -> {
+      if (result.get().state().equals(PrivacyGroupPayload.State.ACTIVE)) {
+        List<PublicKey> toKeys =
+            Arrays.stream(result.get().addresses()).map(enclave::readKey).collect(Collectors.toList());
+        toKeys.remove(fromKey);
+        sendPayloadToParticipants(routingContext, sendRequest, fromKey, toKeys, result.get());
+        return result;
+      } else {
+        handleFailure(
+            routingContext,
+            new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, "privacy group not found"),
+            ErrorType.FIND_GROUP);
+        return result;
+      }
+    }).exceptionally(e -> {
+      handleFailure(routingContext, e, ErrorType.FIND_GROUP);
+      return Optional.empty();
+    });
+  }
+
+  private void sendPayloadToParticipants(
       final RoutingContext routingContext,
       final SendRequest sendRequest,
       final Box.PublicKey fromKey,
@@ -237,7 +237,7 @@ public class SendHandler implements Handler<RoutingContext> {
       storage.put(encryptedPayload).thenAccept((result) -> {
 
         final Buffer responseData;
-        if (contentType == JSON) {
+        if (parser.getContentType() == JSON) {
           responseData = Buffer.buffer(Serializer.serialize(JSON, Collections.singletonMap("key", digest)));
         } else {
           responseData = Buffer.buffer(digest);
@@ -248,11 +248,10 @@ public class SendHandler implements Handler<RoutingContext> {
   }
 
   enum ErrorType {
-    STORE_GROUP, FIND_GROUP, PROPAGATE_ALL_PEERS
+    STORE_GROUP, FIND_GROUP, PROPAGATE_ALL_PEERS,
   }
 
   private void handleFailure(final RoutingContext routingContext, final Throwable ex, final ErrorType errorType) {
-
     final Throwable cause = ex.getCause();
     if (cause instanceof OrionException) {
       routingContext.fail(cause);
@@ -269,13 +268,9 @@ public class SendHandler implements Handler<RoutingContext> {
         case PROPAGATE_ALL_PEERS:
           log.warn("propagating the payload failed");
           routingContext.fail(new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS, ex));
+          break;
       }
     }
   }
 
-  private SendRequest binaryRequest(final RoutingContext routingContext) {
-    final String from = routingContext.request().getHeader("c11n-from");
-    final String[] to = routingContext.request().getHeader("c11n-to").split(",");
-    return new SendRequest(routingContext.getBody().getBytes(), from, to);
-  }
 }

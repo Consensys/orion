@@ -41,6 +41,7 @@ import net.consensys.orion.http.handler.push.PushHandler;
 import net.consensys.orion.http.handler.push.PushPrivacyGroupHandler;
 import net.consensys.orion.http.handler.receive.ReceiveHandler;
 import net.consensys.orion.http.handler.send.SendHandler;
+import net.consensys.orion.http.handler.send.SendRequestParser;
 import net.consensys.orion.http.handler.upcheck.UpcheckHandler;
 import net.consensys.orion.http.server.vertx.HttpErrorHandler;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
@@ -176,7 +177,7 @@ public class Orion {
             privacyGroupStorage,
             queryPrivacyGroupStorage,
             networkNodes,
-            JSON,
+            new SendRequestParser(JSON),
             config));
     clientRouter
         .post("/sendraw")
@@ -190,7 +191,7 @@ public class Orion {
                 privacyGroupStorage,
                 queryPrivacyGroupStorage,
                 networkNodes,
-                APPLICATION_OCTET_STREAM,
+                new SendRequestParser(APPLICATION_OCTET_STREAM),
                 config));
 
     clientRouter.post("/receive").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
