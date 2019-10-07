@@ -27,15 +27,17 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.base.Strings;
 
 public class SendRequest implements Serializable {
+  @JsonProperty("from")
   private final String from; // b64 encoded
+  @JsonProperty("to")
   private String[] to; // b64 encoded
+  @JsonProperty("payload")
   private final byte[] rawPayload;
   private String privacyGroupId = null;
 
   public Optional<String> privacyGroupId() {
     return Optional.ofNullable(privacyGroupId);
   }
-
 
   public Optional<String> from() {
     return Optional.ofNullable(from);
