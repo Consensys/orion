@@ -309,6 +309,8 @@ dependencies {
   // mock http server (unit test purposes)
   testCompile 'com.squareup.okhttp3:mockwebserver'
   testCompile 'org.assertj:assertj-core'
+  testCompile 'io.vertx:vertx-unit'
+  testCompile 'io.vertx:vertx-junit5'
 
   // performance testing
   performanceCompile 'org.scala-lang:scala-library'

@@ -28,6 +28,7 @@ import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.helpers.StubEnclave;
+import net.consensys.orion.http.handler.send.DistributePayloadManager;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.storage.EncryptedPayloadStorage;
@@ -79,6 +80,7 @@ abstract class HandlerTest {
   protected Storage<EncryptedPayload> payloadStorage;
   protected Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
   protected Storage<PrivacyGroupPayload> privacyGroupStorage;
+  protected DistributePayloadManager distributePayloadManager;
 
   @BeforeEach
   void setUp(@TempDirectory final Path tempDir) throws Exception {
@@ -103,6 +105,14 @@ abstract class HandlerTest {
     payloadStorage = new EncryptedPayloadStorage(storage, keyBuilder);
     queryPrivacyGroupStorage = new QueryPrivacyGroupStorage(storage, enclave);
     privacyGroupStorage = new PrivacyGroupStorage(storage, enclave);
+    distributePayloadManager = new DistributePayloadManager(
+        vertx,
+        config,
+        enclave,
+        payloadStorage,
+        privacyGroupStorage,
+        queryPrivacyGroupStorage,
+        networkNodes);
     final Router publicRouter = Router.router(vertx);
     final Router privateRouter = Router.router(vertx);
     Orion.configureRoutes(
@@ -112,6 +122,7 @@ abstract class HandlerTest {
         payloadStorage,
         privacyGroupStorage,
         queryPrivacyGroupStorage,
+        distributePayloadManager,
         publicRouter,
         privateRouter,
         config);

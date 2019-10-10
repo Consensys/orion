@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.base.Strings;
 
 public class SendRequest implements Serializable {
+
   @JsonProperty("from")
   private final String from; // b64 encoded
   @JsonProperty("to")

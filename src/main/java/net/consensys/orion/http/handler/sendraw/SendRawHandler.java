@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 ConsenSys AG.
+ * Copyright 2019 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -10,34 +10,29 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package net.consensys.orion.http.handler.send;
+package net.consensys.orion.http.handler.sendraw;
 
-import static net.consensys.orion.http.server.HttpContentType.JSON;
-
-import net.consensys.orion.utils.Serializer;
+import net.consensys.orion.http.handler.send.DistributePayloadManager;
+import net.consensys.orion.http.handler.send.SendRequest;
 
 import io.vertx.core.Handler;
-import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 
-/**
- * Send a base64 encoded payload to encrypt.
- */
-public class SendHandler implements Handler<RoutingContext> {
+public class SendRawHandler implements Handler<RoutingContext> {
 
   private final DistributePayloadManager distributePayloadManager;
 
-  public SendHandler(DistributePayloadManager distributePayloadManager) {
+  public SendRawHandler(DistributePayloadManager distributePayloadManager) {
     this.distributePayloadManager = distributePayloadManager;
   }
 
   @Override
-  public void handle(final RoutingContext routingContext) {
+  public void handle(RoutingContext routingContext) {
     final SendRequest sendRequest = parseRequest(routingContext);
 
     distributePayloadManager.processSendRequest(sendRequest, res -> {
       if (res.succeeded()) {
-        routingContext.response().end(Json.encodeToBuffer(res.result()));
+        routingContext.response().end(res.result().getKey());
       } else {
         routingContext.fail(res.cause());
       }
@@ -45,7 +40,10 @@ public class SendHandler implements Handler<RoutingContext> {
   }
 
   private SendRequest parseRequest(RoutingContext routingContext) {
-    return Serializer.deserialize(JSON, SendRequest.class, routingContext.getBody().getBytes());
-  }
+    final String from = routingContext.request().getHeader("c11n-from");
+    final String toList = routingContext.request().getHeader("c11n-to");
+    final String[] to = toList != null ? toList.split(",") : new String[0];
 
+    return new SendRequest(routingContext.getBody().getBytes(), from, to);
+  }
 }
