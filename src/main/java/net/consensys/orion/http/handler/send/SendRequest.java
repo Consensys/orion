@@ -83,6 +83,10 @@ public class SendRequest implements Serializable {
     this.rawPayload = rawPayload;
     this.from = from;
     this.to = to;
+
+    if ((to == null || to.length == 0) && privacyGroupId().isEmpty()) {
+      setTo(new String[]{from().orElse(null)});
+    }
   }
 
   @JsonIgnore
@@ -103,7 +107,8 @@ public class SendRequest implements Serializable {
       return false;
     }
     final SendRequest that = (SendRequest) o;
-    return Arrays.equals(rawPayload, that.rawPayload) && Objects.equals(from, that.from) && Arrays.equals(to, that.to);
+    return Arrays.equals(rawPayload, that.rawPayload) && Objects.equals(from, that.from) && Arrays
+        .equals(to, that.to);
   }
 
   @Override
