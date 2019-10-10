@@ -24,12 +24,12 @@ public class SendRawHandler implements Handler<RoutingContext> {
 
   private final DistributePayloadManager distributePayloadManager;
 
-  public SendRawHandler(DistributePayloadManager distributePayloadManager) {
+  public SendRawHandler(final DistributePayloadManager distributePayloadManager) {
     this.distributePayloadManager = distributePayloadManager;
   }
 
   @Override
-  public void handle(RoutingContext routingContext) {
+  public void handle(final RoutingContext routingContext) {
     final SendRequest sendRequest = parseRequest(routingContext);
 
     distributePayloadManager.processSendRequest(sendRequest, res -> {
@@ -41,7 +41,7 @@ public class SendRawHandler implements Handler<RoutingContext> {
     });
   }
 
-  private SendRequest parseRequest(RoutingContext routingContext) {
+  private SendRequest parseRequest(final RoutingContext routingContext) {
     final String from = routingContext.request().getHeader("c11n-from");
     final String toList = routingContext.request().getHeader("c11n-to");
     final String[] to = toList != null ? toList.split(",") : new String[0];

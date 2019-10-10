@@ -23,14 +23,11 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 
-/**
- * Send a base64 encoded payload to encrypt.
- */
 public class SendHandler implements Handler<RoutingContext> {
 
   private final DistributePayloadManager distributePayloadManager;
 
-  public SendHandler(DistributePayloadManager distributePayloadManager) {
+  public SendHandler(final DistributePayloadManager distributePayloadManager) {
     this.distributePayloadManager = distributePayloadManager;
   }
 
@@ -47,8 +44,9 @@ public class SendHandler implements Handler<RoutingContext> {
     });
   }
 
-  private SendRequest parseRequest(RoutingContext routingContext) {
-    SendRequest sendRequest = Serializer.deserialize(JSON, SendRequest.class, routingContext.getBody().getBytes());
+  private SendRequest parseRequest(final RoutingContext routingContext) {
+    final SendRequest sendRequest =
+        Serializer.deserialize(JSON, SendRequest.class, routingContext.getBody().getBytes());
 
     if (!sendRequest.isValid()) {
       throw new OrionException(OrionErrorCode.INVALID_PAYLOAD);

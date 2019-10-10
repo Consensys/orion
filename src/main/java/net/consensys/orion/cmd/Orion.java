@@ -133,7 +133,7 @@ public class Orion {
       final Storage<EncryptedPayload> storage,
       final Storage<PrivacyGroupPayload> privacyGroupStorage,
       final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
-      DistributePayloadManager distributePayloadManager,
+      final DistributePayloadManager distributePayloadManager,
       final Router nodeRouter,
       final Router clientRouter,
       final Config config) {

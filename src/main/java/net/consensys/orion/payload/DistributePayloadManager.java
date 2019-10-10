@@ -60,13 +60,13 @@ public class DistributePayloadManager {
   private final HttpClient httpClient;
 
   public DistributePayloadManager(
-      Vertx vertx,
-      Config config,
-      Enclave enclave,
-      Storage<EncryptedPayload> storage,
-      Storage<PrivacyGroupPayload> privacyGroupStorage,
-      Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
-      ConcurrentNetworkNodes networkNodes) {
+      final Vertx vertx,
+      final Config config,
+      final Enclave enclave,
+      final Storage<EncryptedPayload> storage,
+      final Storage<PrivacyGroupPayload> privacyGroupStorage,
+      final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
+      final ConcurrentNetworkNodes networkNodes) {
     this(
         enclave,
         storage,
@@ -78,12 +78,12 @@ public class DistributePayloadManager {
 
   @VisibleForTesting
   DistributePayloadManager(
-      Enclave enclave,
-      Storage<EncryptedPayload> storage,
-      Storage<PrivacyGroupPayload> privacyGroupStorage,
-      Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
-      ConcurrentNetworkNodes networkNodes,
-      HttpClient httpClient) {
+      final Enclave enclave,
+      final Storage<EncryptedPayload> storage,
+      final Storage<PrivacyGroupPayload> privacyGroupStorage,
+      final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
+      final ConcurrentNetworkNodes networkNodes,
+      final HttpClient httpClient) {
     this.enclave = enclave;
     this.storage = storage;
     this.privacyGroupStorage = privacyGroupStorage;
@@ -94,7 +94,7 @@ public class DistributePayloadManager {
     this.nodeKeys = Arrays.asList(enclave.nodeKeys());
   }
 
-  public void processSendRequest(SendRequest sendRequest, Handler<AsyncResult<SendResponse>> handler) {
+  public void processSendRequest(final SendRequest sendRequest, final Handler<AsyncResult<SendResponse>> handler) {
 
     final PublicKey fromKey;
     try {
@@ -122,7 +122,7 @@ public class DistributePayloadManager {
         });
   }
 
-  private Future<PrivacyGroupPayload> handleLegacySendRequest(SendRequest sendRequest) {
+  private Future<PrivacyGroupPayload> handleLegacySendRequest(final SendRequest sendRequest) {
     final Future<PrivacyGroupPayload> future = Future.future();
 
     try {
@@ -173,7 +173,7 @@ public class DistributePayloadManager {
     return future;
   }
 
-  private Future<PrivacyGroupPayload> handlePrivacyGroupSendRequest(SendRequest sendRequest) {
+  private Future<PrivacyGroupPayload> handlePrivacyGroupSendRequest(final SendRequest sendRequest) {
     final Future<PrivacyGroupPayload> future = Future.future();
 
     try {
@@ -199,7 +199,7 @@ public class DistributePayloadManager {
 
   private Future<String> sendPayloadToParticipants(
       final SendRequest sendRequest,
-      PublicKey fromKey,
+      final PublicKey fromKey,
       final PrivacyGroupPayload privacyGroupPayload) {
     final Future<String> future = Future.future();
 
@@ -230,13 +230,10 @@ public class DistributePayloadManager {
         throw new OrionException(OrionErrorCode.NODE_MISSING_PEER_URL, "couldn't find peer URL");
       }
 
-      // storing payload
       log.debug("Generate payload digest");
       final String digest = storage.generateDigest(encryptedPayload);
 
-      // propagate payload
       log.debug("propagating payload");
-
       @SuppressWarnings("rawtypes")
       final CompletableFuture[] cfs = keys.stream().map(pKey -> {
         URL recipientURL = networkNodes.urlForRecipient(pKey);
@@ -280,7 +277,7 @@ public class DistributePayloadManager {
     return future;
   }
 
-  private PublicKey readPublicKey(SendRequest sendRequest) {
+  private PublicKey readPublicKey(final SendRequest sendRequest) {
     log.debug("reading public keys from SendRequest object");
     // read provided public keys
     return sendRequest.from().map(enclave::readKey).orElseGet(() -> {

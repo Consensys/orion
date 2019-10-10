@@ -44,15 +44,15 @@ public class OrionException extends RuntimeException {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    OrionException that = (OrionException) o;
-    return code == that.code;
+    final OrionException that = (OrionException) o;
+    return Objects.equal(this.code, that.code);
   }
 
   @Override

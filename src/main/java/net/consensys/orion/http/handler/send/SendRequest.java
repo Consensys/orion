@@ -84,8 +84,8 @@ public class SendRequest implements Serializable {
     this.from = from;
     this.to = to;
 
-    if ((to == null || to.length == 0) && privacyGroupId().isEmpty()) {
-      setTo(new String[] {from().orElse(null)});
+    if (from != null && (to == null || to.length == 0) && privacyGroupId().isEmpty()) {
+      this.to = new String[] {from().orElse(null)};
     }
   }
 
@@ -131,9 +131,5 @@ public class SendRequest implements Serializable {
 
   public byte[] rawPayload() {
     return rawPayload;
-  }
-
-  public void setTo(final String[] to) {
-    this.to = to;
   }
 }

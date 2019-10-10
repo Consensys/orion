@@ -131,7 +131,7 @@ class SingleNodeSendTest {
 
     final String response = sendPrivacyGroupTransactionExpectingError(orionNode, PK_1_B_64, "");
 
-    assertError(OrionErrorCode.INVALID_PAYLOAD, response);
+    assertError(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, response);
   }
 
   /** Try sending to invalid privacy group. */
