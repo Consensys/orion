@@ -64,7 +64,7 @@ public class SendRequest implements Serializable {
   }
 
   @JsonSetter("privacyGroupId")
-  void setPrivacyGroupId(final String privacyGroupId) {
+  public void setPrivacyGroupId(final String privacyGroupId) {
     this.privacyGroupId = privacyGroupId;
   }
 

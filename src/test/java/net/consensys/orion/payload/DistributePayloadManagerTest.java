@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package net.consensys.orion.http.handler.send;
+package net.consensys.orion.payload;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.consensys.cava.crypto.Hash.sha2_512_256;
@@ -42,6 +42,8 @@ import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.helpers.FakePeer;
 import net.consensys.orion.helpers.StubEnclave;
+import net.consensys.orion.http.handler.send.SendRequest;
+import net.consensys.orion.http.handler.send.SendResponse;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.storage.EncryptedPayloadStorage;
 import net.consensys.orion.storage.PrivacyGroupStorage;

@@ -14,6 +14,9 @@ package net.consensys.orion.http.handler.send;
 
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
+import net.consensys.orion.exception.OrionErrorCode;
+import net.consensys.orion.exception.OrionException;
+import net.consensys.orion.payload.DistributePayloadManager;
 import net.consensys.orion.utils.Serializer;
 
 import io.vertx.core.Handler;
@@ -45,7 +48,13 @@ public class SendHandler implements Handler<RoutingContext> {
   }
 
   private SendRequest parseRequest(RoutingContext routingContext) {
-    return Serializer.deserialize(JSON, SendRequest.class, routingContext.getBody().getBytes());
+    SendRequest sendRequest = Serializer.deserialize(JSON, SendRequest.class, routingContext.getBody().getBytes());
+
+    if (!sendRequest.isValid()) {
+      throw new OrionException(OrionErrorCode.INVALID_PAYLOAD);
+    }
+
+    return sendRequest;
   }
 
 }
