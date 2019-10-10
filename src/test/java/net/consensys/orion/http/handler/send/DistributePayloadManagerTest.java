@@ -337,10 +337,10 @@ class DistributePayloadManagerTest {
 
   private void assertThatPayloadWasStored(SendResponse response) {
     assertThat(response.getKey()).isNotBlank();
-    payloadStorage.get(response.getKey()).handle(((payload, ex) -> {
+    payloadStorage.get(response.getKey()).handle((payload, ex) -> {
       assertThat(payload).isNotEmpty();
       return null;
-    }));
+    });
   }
 
   private void assertThatPushedPayloadToPeer(EncryptedPayload encryptedPayload, FakePeer fakePeer) {
