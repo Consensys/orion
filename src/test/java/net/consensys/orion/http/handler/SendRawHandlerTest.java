@@ -35,6 +35,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -56,12 +57,8 @@ class SendRawHandlerTest extends HandlerTest {
     // note: this closely mirrors the test "testPropagatedToMultiplePeers",
     // using the raw version of the API.
 
-    final byte[] toEncrypt = new byte[342];
-    new Random().nextBytes(toEncrypt);
-
-    // encrypt it here to compute digest
-    final EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
-    final String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
+    final byte[] toEncrypt = randomBytes();
+    final String digest = encryptAndCalculateDigest(toEncrypt);
 
     // create fake peers
     final List<FakePeer> fakePeers = new ArrayList<>(5);
@@ -103,12 +100,8 @@ class SendRawHandlerTest extends HandlerTest {
     // note: this closely mirrors the test "testPropagatedToMultiplePeers",
     // using the raw version of the API.
 
-    final byte[] toEncrypt = new byte[342];
-    new Random().nextBytes(toEncrypt);
-
-    // encrypt it here to compute digest
-    final EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
-    final String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
+    final byte[] toEncrypt = randomBytes();
+    final String digest = encryptAndCalculateDigest(toEncrypt);
 
     // create fake peers
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), memoryKeyStore);
@@ -133,14 +126,13 @@ class SendRawHandlerTest extends HandlerTest {
 
     final Response resp = httpClient.newCall(request).execute();
 
-    // ensure we got a 404 OK
+    // ensure we got a 404 Not Found
     assertEquals(404, resp.code());
   }
 
   @Test
   public void sendingWithoutToHeaderSucceeds() throws Exception {
-    final byte[] toEncrypt = new byte[342];
-    new Random().nextBytes(toEncrypt);
+    final byte[] toEncrypt = randomBytes();
 
     final RequestBody body =
         RequestBody.create(MediaType.parse(HttpContentType.APPLICATION_OCTET_STREAM.httpHeaderValue), toEncrypt);
@@ -158,5 +150,17 @@ class SendRawHandlerTest extends HandlerTest {
     final Response resp = httpClient.newCall(request).execute();
 
     assertEquals(200, resp.code());
+  }
+
+  @NotNull
+  private String encryptAndCalculateDigest(final byte[] toEncrypt) {
+    final EncryptedPayload encryptedPayload = enclave.encrypt(toEncrypt, null, null, null);
+    return encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
+  }
+
+  private byte[] randomBytes() {
+    final byte[] toEncrypt = new byte[5];
+    new Random().nextBytes(toEncrypt);
+    return toEncrypt;
   }
 }

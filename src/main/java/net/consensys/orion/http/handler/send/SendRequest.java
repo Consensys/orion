@@ -84,7 +84,7 @@ public class SendRequest implements Serializable {
     this.from = from;
     this.to = to;
 
-    if (from != null && (to == null || to.length == 0) && privacyGroupId().isEmpty()) {
+    if (from != null && (to == null || to.length == 0)) {
       this.to = new String[] {from().orElse(null)};
     }
   }

@@ -56,7 +56,6 @@ import net.consensys.orion.utils.Serializer;
 import java.nio.file.Path;
 import java.security.Security;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -92,9 +91,9 @@ class DistributePayloadManagerTest {
 
   @BeforeEach
   public void beforeEach(@TempDirectory final Path tempDir) throws Exception {
-    Config config = Config.load("tls='off'\nworkdir=\"" + tempDir + "\"");
-    Path path = tempDir.resolve("routerdb");
-    StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
+    final Config config = Config.load("tls='off'\nworkdir=\"" + tempDir + "\"");
+    final Path path = tempDir.resolve("routerdb");
+    final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
 
     vertx = Vertx.vertx();
     storage = MapDBKeyValueStore.open(path);
@@ -125,7 +124,7 @@ class DistributePayloadManagerTest {
     final FakePeer fakePeer = new FakePeer(new MockResponse().setResponseCode(500), memoryKeyStore);
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    final SendRequest request = buildLegacyRequest(Arrays.asList(fakePeer), "foo".getBytes(UTF_8));
+    final SendRequest request = buildLegacyRequest(Collections.singletonList(fakePeer), "foo".getBytes(UTF_8));
     final OrionException expectedException = new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS);
 
     distributePayloadManager.processSendRequest(request, testContext.failing(ex -> testContext.verify(() -> {
@@ -139,7 +138,7 @@ class DistributePayloadManagerTest {
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody("not the best digest"), memoryKeyStore);
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    final SendRequest request = buildLegacyRequest(Arrays.asList(fakePeer), "foo".getBytes(UTF_8));
+    final SendRequest request = buildLegacyRequest(Collections.singletonList(fakePeer), "foo".getBytes(UTF_8));
     final OrionException expectedException = new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS);
 
     distributePayloadManager.processSendRequest(request, testContext.failing(ex -> testContext.verify(() -> {
@@ -159,7 +158,7 @@ class DistributePayloadManagerTest {
   }
 
   @Test
-  public void sendRequestWithNoFromFailsIfEnclaveIsEmpty(VertxTestContext testContext) throws Exception {
+  public void sendRequestWithNoFromFailsIfEnclaveIsEmpty(VertxTestContext testContext) {
     final SendRequest request = buildLegacyRequest(null, Collections.emptyList(), "foo".getBytes(UTF_8));
     final OrionException expectedException = new OrionException(OrionErrorCode.NO_SENDER_KEY);
 
@@ -172,7 +171,7 @@ class DistributePayloadManagerTest {
   }
 
   @Test
-  public void sendRequestWithNoFromUsesNodeKeyIfAvailable(VertxTestContext testContext) throws Exception {
+  public void sendRequestWithNoFromUsesNodeKeyIfAvailable(VertxTestContext testContext) {
     final SendRequest request = buildLegacyRequest(null, Collections.emptyList(), "foo".getBytes(UTF_8));
     final Box.PublicKey sender = memoryKeyStore.generateKeyPair();
 
@@ -210,7 +209,7 @@ class DistributePayloadManagerTest {
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), memoryKeyStore);
     networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
 
-    final SendRequest request = buildLegacyRequest(Arrays.asList(fakePeer), toEncrypt);
+    final SendRequest request = buildLegacyRequest(Collections.singletonList(fakePeer), toEncrypt);
 
     distributePayloadManager.processSendRequest(request, testContext.succeeding(response -> testContext.verify(() -> {
       assertThatPayloadWasStored(response);
