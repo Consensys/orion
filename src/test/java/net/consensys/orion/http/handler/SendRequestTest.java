@@ -14,6 +14,7 @@ package net.consensys.orion.http.handler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.consensys.cava.io.Base64.encodeBytes;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -58,13 +59,15 @@ class SendRequestTest {
   @Test
   void emptyToAddresses() {
     final SendRequest request = new SendRequest("something".getBytes(UTF_8), "foo", new String[0]);
-    assertFalse(request.isValid());
+    assertThat(request.to()).contains("foo");
+    assertTrue(request.isValid());
   }
 
   @Test
   void nullToAddresses() {
     final SendRequest request = new SendRequest("something".getBytes(UTF_8), "foo", null);
-    assertFalse(request.isValid());
+    assertThat(request.to()).contains("foo");
+    assertTrue(request.isValid());
   }
 
   @Test

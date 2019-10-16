@@ -14,6 +14,8 @@ package net.consensys.orion.exception;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Objects;
+
 /** Base exception class encapsulating the Orion error codes. */
 public class OrionException extends RuntimeException {
 
@@ -39,5 +41,22 @@ public class OrionException extends RuntimeException {
 
   public OrionErrorCode code() {
     return code;
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final OrionException that = (OrionException) o;
+    return Objects.equal(this.code, that.code);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(code);
   }
 }

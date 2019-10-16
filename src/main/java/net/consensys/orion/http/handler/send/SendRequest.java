@@ -27,15 +27,18 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.base.Strings;
 
 public class SendRequest implements Serializable {
+
+  @JsonProperty("from")
   private final String from; // b64 encoded
+  @JsonProperty("to")
   private String[] to; // b64 encoded
+  @JsonProperty("payload")
   private final byte[] rawPayload;
   private String privacyGroupId = null;
 
   public Optional<String> privacyGroupId() {
     return Optional.ofNullable(privacyGroupId);
   }
-
 
   public Optional<String> from() {
     return Optional.ofNullable(from);
@@ -61,7 +64,7 @@ public class SendRequest implements Serializable {
   }
 
   @JsonSetter("privacyGroupId")
-  void setPrivacyGroupId(final String privacyGroupId) {
+  public void setPrivacyGroupId(final String privacyGroupId) {
     this.privacyGroupId = privacyGroupId;
   }
 
@@ -80,6 +83,10 @@ public class SendRequest implements Serializable {
     this.rawPayload = rawPayload;
     this.from = from;
     this.to = to;
+
+    if (from != null && (to == null || to.length == 0)) {
+      this.to = new String[] {from().orElse(null)};
+    }
   }
 
   @JsonIgnore
@@ -124,9 +131,5 @@ public class SendRequest implements Serializable {
 
   public byte[] rawPayload() {
     return rawPayload;
-  }
-
-  public void setTo(final String[] to) {
-    this.to = to;
   }
 }

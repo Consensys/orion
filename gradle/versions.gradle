@@ -44,6 +44,8 @@ dependencyManagement {
 
     dependency 'io.vertx:vertx-core:3.7.0'
     dependency 'io.vertx:vertx-web:3.7.0'
+    dependency 'io.vertx:vertx-unit:3.7.0'
+    dependency 'io.vertx:vertx-junit5:3.7.0'
 
     dependency 'javax.xml.bind:jaxb-api:2.3.0'
 
