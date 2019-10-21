@@ -38,7 +38,7 @@ ext.acceptedLicenses = [
   'Eclipse Public License 2.0',
   'The MIT License',
   'Unicode/ICU License',
-  'Oracle Technology Network License Agreement - Oracle Maven Repository',
+  'Oracle Free Use Terms and Conditions (FUTC)',
 ]*.toLowerCase()
 
 /**
@@ -79,8 +79,8 @@ downloadLicenses {
     'The MIT License',
     'https://opensource.org/licenses/MIT')
   ext.otn = license(
-    'Oracle Technology Network License Agreement - Oracle Maven Repository',
-    'https://www.oracle.com/webapps/maven/register/license.html'
+    'Oracle Free Use Terms and Conditions (FUTC)',
+    'https://repo1.maven.org/maven2/com/oracle/ojdbc/ojdbc10/19.3.0.0/ojdbc10-19.3.0.0.pom'
     )
 
   aliases = [
@@ -141,7 +141,7 @@ downloadLicenses {
       'MIT License',
     ],
     (otn): [
-      'Oracle Technology Network License Agreement - Oracle Maven Repository'
+      'Oracle Free Use Terms and Conditions (FUTC)'
     ]
   ]
 
@@ -160,7 +160,7 @@ downloadLicenses {
     (group('javax.xml.bind')): cddl1_1,
 
     // Oracle JDBC Driver license
-    (group('com.oracle.jdbc')): otn
+    (group('com.oracle.ojdbc')): otn
 
   ]
 }
