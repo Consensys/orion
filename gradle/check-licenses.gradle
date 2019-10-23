@@ -80,7 +80,7 @@ downloadLicenses {
     'https://opensource.org/licenses/MIT')
   ext.otn = license(
     'Oracle Free Use Terms and Conditions (FUTC)',
-    'https://repo1.maven.org/maven2/com/oracle/ojdbc/ojdbc10/19.3.0.0/ojdbc10-19.3.0.0.pom'
+    'https://gist.githubusercontent.com/pegasys-admin/54b5ab9e846d0f90429ddf4881214d5e/raw/4e038c4302679956f8dfe6d5bf5de183c9af7054/oracle_futc.txt'
     )
 
   aliases = [
