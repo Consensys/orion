@@ -261,7 +261,10 @@ dependencies {
 
   // storage
   compile 'org.fusesource.leveldbjni:leveldbjni-all'
-  compile 'org.mapdb:mapdb'
+  compile('org.mapdb:mapdb') {
+    exclude group: 'net.jpountz.lz4', module: 'lz4'
+  }
+  compile 'org.lz4:lz4-java'
   compile 'com.jolbox:bonecp'
   compile 'org.apache.openjpa:openjpa'
   compile 'org.postgresql:postgresql'
