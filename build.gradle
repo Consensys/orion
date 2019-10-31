@@ -239,19 +239,8 @@ openjpa {
 // Dependencies
 repositories {
   jcenter()
+  maven { url "https://repo1.maven.org/maven2/" }
   maven { url "https://consensys.bintray.com/consensys" }
-  //for Oracle JDBC Driver
-  maven {
-    //following url is a workaround, the actual maven repo url is meant to be https://maven.oracle.com which
-    //gradle unable to handle due to circular redirect
-    // The Oracle jdbc jars should get downloaded at: ~/.gradle/caches/modules-2/files-2.1/com.oracle.jdbc
-    url "https://www.oracle.com/content/secure/maven/content"
-    content { includeGroup "com.oracle.jdbc" }
-    credentials {
-      username project.properties.oracleMavenUser
-      password project.properties.oracleMavenPassword
-    }
-  }
 }
 
 dependencies {
@@ -272,7 +261,10 @@ dependencies {
 
   // storage
   compile 'org.fusesource.leveldbjni:leveldbjni-all'
-  compile 'org.mapdb:mapdb'
+  compile('org.mapdb:mapdb') {
+    exclude group: 'net.jpountz.lz4', module: 'lz4'
+  }
+  compile 'org.lz4:lz4-java'
   compile 'com.jolbox:bonecp'
   compile 'org.apache.openjpa:openjpa'
   compile 'org.postgresql:postgresql'
@@ -292,12 +284,7 @@ dependencies {
   compile 'javax.xml.bind:jaxb-api'
 
   //Oracle JDBC
-  if(project.hasProperty("oracleMavenUser")) {
-    compile('com.oracle.jdbc:ojdbc10') { transitive = false }
-
-    compile('com.oracle.jdbc:ucp') { transitive = false //because ucp pom declares both ojdbc8 and ojdbc10 incorrectly
-    }
-  }
+  compile('com.oracle.ojdbc:ojdbc10')
 
   // testing
   testCompile 'com.h2database:h2'
