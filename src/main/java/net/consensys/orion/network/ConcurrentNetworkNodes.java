@@ -36,16 +36,31 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
   @JsonSerialize(keyUsing = PublicKeyMapKeySerializer.class)
   private final ConcurrentHashMap<Box.PublicKey, URL> nodePKs;
 
+  @JsonCreator
+  public ConcurrentNetworkNodes(
+      @JsonProperty("url") final URL url,
+      @JsonProperty("nodeURLs") final List<URL> nodeURLs,
+      @JsonProperty("nodePKs") @JsonDeserialize(
+          keyUsing = PublicKeyMapKeyDeserializer.class) final Map<Box.PublicKey, URL> nodePKs) {
+    this.url = url;
+    this.nodeURLs = new CopyOnWriteArrayList<>(nodeURLs);
+    this.nodePKs = new ConcurrentHashMap<>(nodePKs);
+  }
+
   public ConcurrentNetworkNodes(final Config config, final Box.PublicKey[] publicKeys) {
     nodeURLs = new CopyOnWriteArrayList<>(config.otherNodes());
     nodePKs = new ConcurrentHashMap<>();
     config.nodeUrl().ifPresent(url -> setNodeUrl(url, publicKeys));
   }
 
+  public ConcurrentNetworkNodes(final URL url) {
+    this(url, new CopyOnWriteArrayList<>(), new ConcurrentHashMap<>());
+  }
+
   /**
    * Set the url of the node we are running on. This is useful to do when we are running using default ports, and the
    * construction of this class will be performed before we have settled on what port Orion will be running on.
-   * 
+   *
    * @param url URL of the node.
    * @param publicKeys PublicKeys used by the node.
    */
@@ -58,30 +73,15 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
     }
   }
 
-  @JsonCreator
-  public ConcurrentNetworkNodes(
-      @JsonProperty("url") final URL url,
-      @JsonProperty("nodeURLs") final List<URL> nodeURLs,
-      @JsonProperty("nodePKs") @JsonDeserialize(
-          keyUsing = PublicKeyMapKeyDeserializer.class) final Map<Box.PublicKey, URL> nodePKs) {
-    this.url = url;
-    this.nodeURLs = new CopyOnWriteArrayList<>(nodeURLs);
-    this.nodePKs = new ConcurrentHashMap<>(nodePKs);
-  }
-
-  public ConcurrentNetworkNodes(final URL url) {
-    this(url, new CopyOnWriteArrayList<>(), new ConcurrentHashMap<>());
-  }
-
   /**
-   * Add a node's URL and PublcKey to the nodeURLs and nodePKs lists
+   * Add a node's URL and public keys to the nodeURLs and nodePKs lists
    *
-   * @param nodePk PublicKey of new node
+   * @param nodesPks List of PublicKeys of new node
    * @param node URL of new node
    */
-  public void addNode(final Box.PublicKey nodePk, final URL node) {
-    this.nodeURLs.add(node);
-    this.nodePKs.put(nodePk, node);
+  public void addNode(final List<Box.PublicKey> nodesPks, final URL node) {
+    this.nodeURLs.addIfAbsent(node);
+    nodesPks.forEach(nodePk -> this.nodePKs.putIfAbsent(nodePk, node));
   }
 
   /**
@@ -90,7 +90,7 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
    * @param node URL of new node
    */
   public void addNodeUrl(final URL node) {
-    this.nodeURLs.add(node);
+    this.nodeURLs.addIfAbsent(node);
   }
 
   @Override
@@ -125,10 +125,9 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
       if (nodePKs.putIfAbsent(entry.getKey(), entry.getValue()) == null) {
         // putIfAbsent returns null if there was no mapping associated with the provided key
         thisChanged = true;
-        nodeURLs.add(entry.getValue());
+        nodeURLs.addIfAbsent(entry.getValue());
       }
     }
-
     return thisChanged;
   }
 
@@ -143,7 +142,7 @@ public class ConcurrentNetworkNodes implements NetworkNodes {
 
     final ConcurrentNetworkNodes that = (ConcurrentNetworkNodes) o;
 
-    return Objects.equals(that.url, url)
+    return Objects.equals(url, that.url)
         && Objects.equals(nodeURLs, that.nodeURLs)
         && Objects.equals(nodePKs, that.nodePKs);
   }

@@ -120,9 +120,9 @@ class DistributePayloadManagerTest {
   }
 
   @Test
-  public void failsWhenBadResponseFromPeer(VertxTestContext testContext) throws Exception {
+  public void failsWhenBadResponseFromPeer(final VertxTestContext testContext) throws Exception {
     final FakePeer fakePeer = new FakePeer(new MockResponse().setResponseCode(500), memoryKeyStore);
-    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
 
     final SendRequest request = buildLegacyRequest(Collections.singletonList(fakePeer), "foo".getBytes(UTF_8));
     final OrionException expectedException = new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS);
@@ -134,9 +134,9 @@ class DistributePayloadManagerTest {
   }
 
   @Test
-  public void failsWhenBadDigestFromPeer(VertxTestContext testContext) throws Exception {
+  public void failsWhenBadDigestFromPeer(final VertxTestContext testContext) throws Exception {
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody("not the best digest"), memoryKeyStore);
-    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
 
     final SendRequest request = buildLegacyRequest(Collections.singletonList(fakePeer), "foo".getBytes(UTF_8));
     final OrionException expectedException = new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS);
@@ -148,7 +148,7 @@ class DistributePayloadManagerTest {
   }
 
   @Test
-  public void requestWithNoToOnlyStoresPayload(VertxTestContext testContext) {
+  public void requestWithNoToOnlyStoresPayload(final VertxTestContext testContext) {
     final SendRequest request = buildLegacyRequest(Collections.emptyList(), "foo".getBytes(UTF_8));
 
     distributePayloadManager.processSendRequest(request, testContext.succeeding(response -> testContext.verify(() -> {
@@ -158,7 +158,7 @@ class DistributePayloadManagerTest {
   }
 
   @Test
-  public void sendRequestWithNoFromFailsIfEnclaveIsEmpty(VertxTestContext testContext) {
+  public void sendRequestWithNoFromFailsIfEnclaveIsEmpty(final VertxTestContext testContext) {
     final SendRequest request = buildLegacyRequest(null, Collections.emptyList(), "foo".getBytes(UTF_8));
     final OrionException expectedException = new OrionException(OrionErrorCode.NO_SENDER_KEY);
 
@@ -171,7 +171,7 @@ class DistributePayloadManagerTest {
   }
 
   @Test
-  public void sendRequestWithNoFromUsesNodeKeyIfAvailable(VertxTestContext testContext) {
+  public void sendRequestWithNoFromUsesNodeKeyIfAvailable(final VertxTestContext testContext) {
     final SendRequest request = buildLegacyRequest(null, Collections.emptyList(), "foo".getBytes(UTF_8));
     final Box.PublicKey sender = memoryKeyStore.generateKeyPair();
 
@@ -193,7 +193,7 @@ class DistributePayloadManagerTest {
   }
 
   @Test
-  public void distributePayloadToSinglePeerUsingLegacyWay(VertxTestContext testContext) throws Exception {
+  public void distributePayloadToSinglePeerUsingLegacyWay(final VertxTestContext testContext) throws Exception {
     // note: we need to do this as the fakePeers need to know in advance the digest to return.
     // not possible with libSodium due to random nonce
 
@@ -207,7 +207,7 @@ class DistributePayloadManagerTest {
 
     // create fake peer
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), memoryKeyStore);
-    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
 
     final SendRequest request = buildLegacyRequest(Collections.singletonList(fakePeer), toEncrypt);
 
@@ -219,7 +219,7 @@ class DistributePayloadManagerTest {
   }
 
   @Test
-  public void distributePayloadToMultiplePeerUsingLegacyWay(VertxTestContext testContext) throws Exception {
+  public void distributePayloadToMultiplePeerUsingLegacyWay(final VertxTestContext testContext) throws Exception {
     // note: we need to do this as the fakePeers need to know in advance the digest to return.
     // not possible with libSodium due to random nonce
 
@@ -235,7 +235,7 @@ class DistributePayloadManagerTest {
     for (int i = 0; i < 5; i++) {
       final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), memoryKeyStore);
       // add peer push URL to networkNodes
-      networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+      networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
       fakePeers.add(fakePeer);
     }
 
@@ -249,7 +249,7 @@ class DistributePayloadManagerTest {
   }
 
   @Test
-  public void distributePayloadToSinglePeerUsingPrivacyGroup(VertxTestContext testContext) throws Exception {
+  public void distributePayloadToSinglePeerUsingPrivacyGroup(final VertxTestContext testContext) throws Exception {
     // note: we need to do this as the fakePeers need to know in advance the digest to return.
     // not possible with libSodium due to random nonce
 
@@ -267,7 +267,7 @@ class DistributePayloadManagerTest {
 
     // create fake peer
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), recipientKey);
-    networkNodes.addNode(recipientKey, fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonList(recipientKey), fakePeer.getURL());
 
     final String from = encodeBytes(senderKey.bytesArray());
     final String to = encodeBytes(fakePeer.publicKey.bytesArray());
@@ -287,7 +287,7 @@ class DistributePayloadManagerTest {
   }
 
   @Test
-  public void distributePayloadToMultiplePeerUsingPrivacyGroup(VertxTestContext testContext) throws Exception {
+  public void distributePayloadToMultiplePeerUsingPrivacyGroup(final VertxTestContext testContext) throws Exception {
     // note: we need to do this as the fakePeers need to know in advance the digest to return.
     // not possible with libSodium due to random nonce
     final int numOfPeers = 5;
@@ -311,7 +311,7 @@ class DistributePayloadManagerTest {
     for (int i = 0; i < numOfPeers; i++) {
       // create fake peer
       final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), recipientKeys[i]);
-      networkNodes.addNode(recipientKeys[i], fakePeer.getURL());
+      networkNodes.addNode(Collections.singletonList(recipientKeys[i]), fakePeer.getURL());
       fakePeers.add(fakePeer);
     }
 
@@ -336,7 +336,7 @@ class DistributePayloadManagerTest {
     })));
   }
 
-  private void assertThatPayloadWasStored(SendResponse response) {
+  private void assertThatPayloadWasStored(final SendResponse response) {
     assertThat(response.getKey()).isNotBlank();
     payloadStorage.get(response.getKey()).handle((payload, ex) -> {
       assertThat(payload).isNotEmpty();
@@ -344,18 +344,18 @@ class DistributePayloadManagerTest {
     });
   }
 
-  private void assertThatPushedPayloadToPeer(EncryptedPayload encryptedPayload, FakePeer fakePeer) {
+  private void assertThatPushedPayloadToPeer(final EncryptedPayload encryptedPayload, final FakePeer fakePeer) {
     try {
-      RecordedRequest recordedRequest = fakePeer.server.takeRequest();
+      final RecordedRequest recordedRequest = fakePeer.server.takeRequest();
       assertEquals("/push", recordedRequest.getPath());
       assertEquals("POST", recordedRequest.getMethod());
       assertTrue(recordedRequest.getHeader("Content-Type").contains(CBOR.httpHeaderValue));
 
       // ensure cipher text is same.
-      EncryptedPayload receivedPayload =
+      final EncryptedPayload receivedPayload =
           Serializer.deserialize(CBOR, EncryptedPayload.class, recordedRequest.getBody().readByteArray());
       assertArrayEquals(receivedPayload.cipherText(), encryptedPayload.cipherText());
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       fail("Error checking if payload was pushed to peer", e);
     }
   }
@@ -372,7 +372,7 @@ class DistributePayloadManagerTest {
   }
 
   private SendRequest buildPrivacyGroupRequest(final String from, final String privacyGroupId, final byte[] payload) {
-    SendRequest request = new SendRequest(payload, from, null);
+    final SendRequest request = new SendRequest(payload, from, null);
     request.setPrivacyGroupId(privacyGroupId);
     return request;
   }

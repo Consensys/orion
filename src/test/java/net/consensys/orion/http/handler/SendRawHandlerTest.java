@@ -27,6 +27,7 @@ import net.consensys.orion.http.server.HttpContentType;
 import java.nio.file.Path;
 import java.security.Security;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -65,7 +66,7 @@ class SendRawHandlerTest extends HandlerTest {
     for (int i = 0; i < 5; i++) {
       final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), memoryKeyStore);
       // add peer push URL to networkNodes
-      networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+      networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
       fakePeers.add(fakePeer);
     }
 
@@ -106,7 +107,7 @@ class SendRawHandlerTest extends HandlerTest {
     // create fake peers
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), memoryKeyStore);
     // add peer push URL to networkNodes
-    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
 
     // configureRoutes the binary sendRequest
     final RequestBody body =

@@ -43,6 +43,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -126,8 +127,8 @@ class DualNodesPrivacyGroupsTest {
     final Box.PublicKey pk2 = Box.PublicKey.fromBytes(decodeBytes(PK_2_B_64));
     networkNodes = new ConcurrentNetworkNodes(NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
 
-    networkNodes.addNode(pk1, NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
-    networkNodes.addNode(pk2, NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
+    networkNodes.addNode(Collections.singletonList(pk1), NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
+    networkNodes.addNode(Collections.singletonList(pk2), NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
     // prepare /partyinfo payload (our known peers)
     final RequestBody partyInfoBody =
         RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), Serializer.serialize(CBOR, networkNodes));

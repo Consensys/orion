@@ -32,7 +32,9 @@ import net.consensys.orion.utils.Serializer;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -99,7 +101,7 @@ public class DistributePayloadManager {
     final PublicKey fromKey;
     try {
       fromKey = readPublicKey(sendRequest);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handler.handle(Future.failedFuture(e));
       return;
     }
@@ -166,7 +168,7 @@ public class DistributePayloadManager {
         future.fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_QUERY_ERROR));
         return null;
       });
-    } catch (OrionException e) {
+    } catch (final OrionException e) {
       future.fail(e);
     }
 
@@ -190,7 +192,7 @@ public class DistributePayloadManager {
         future.fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING, "privacy group not found"));
         return Optional.empty();
       });
-    } catch (OrionException e) {
+    } catch (final OrionException e) {
       future.fail(e);
     }
 
@@ -204,7 +206,7 @@ public class DistributePayloadManager {
     final Future<String> future = Future.future();
 
     try {
-      Optional<String> from = sendRequest.from();
+      final Optional<String> from = sendRequest.from();
       final List<PublicKey> toKeys = Arrays
           .stream(privacyGroupPayload.addresses())
           .filter(key -> from.isEmpty() || !key.equals(from.get()))
@@ -230,22 +232,32 @@ public class DistributePayloadManager {
         throw new OrionException(OrionErrorCode.NODE_MISSING_PEER_URL, "couldn't find peer URL");
       }
 
+      @SuppressWarnings("URLEqualsHashCode")
+      final Map<URL, ArrayList<Box.PublicKey>> urlToKeysMap = new HashMap<>();
+      for (final Box.PublicKey key : keys) {
+        final URL url = networkNodes.urlForRecipient(key);
+        if (!urlToKeysMap.containsKey(url)) {
+          urlToKeysMap.put(url, new ArrayList<>());
+        }
+        urlToKeysMap.get(url).add(key);
+      }
+
       log.debug("Generate payload digest");
       final String digest = storage.generateDigest(encryptedPayload);
 
       log.debug("propagating payload");
       @SuppressWarnings("rawtypes")
-      final CompletableFuture[] cfs = keys.stream().map(pKey -> {
-        URL recipientURL = networkNodes.urlForRecipient(pKey);
+      final CompletableFuture[] cfs = urlToKeysMap.keySet().stream().map(url -> {
 
         CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
 
         // serialize payload, stripping non-relevant encryptedKeys, and configureRoutes payload
-        final byte[] payload = Serializer.serialize(HttpContentType.CBOR, encryptedPayload.stripFor(pKey));
+        final byte[] payload =
+            Serializer.serialize(HttpContentType.CBOR, encryptedPayload.stripFor(urlToKeysMap.get(url)));
 
         // execute request
         httpClient
-            .post(recipientURL.getPort(), recipientURL.getHost(), "/push")
+            .post(url.getPort(), url.getHost(), "/push")
             .putHeader("Content-Type", "application/cbor")
             .handler(response -> response.bodyHandler(responseBody -> {
               if (response.statusCode() != 200 || !digest.equals(responseBody.toString())) {
@@ -270,7 +282,7 @@ public class DistributePayloadManager {
         });
       });
 
-    } catch (OrionException e) {
+    } catch (final OrionException e) {
       future.fail(e);
     }
 

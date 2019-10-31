@@ -32,6 +32,7 @@ import net.consensys.orion.utils.Serializer;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.SecureRandom;
+import java.util.Collections;
 
 import okhttp3.Request;
 import okhttp3.Response;
@@ -75,7 +76,7 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
 
     // create fake peer
     fakePeer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey);
-    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
 
     // execute request
     final Response resp = httpClient.newCall(request).execute();

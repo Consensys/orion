@@ -27,7 +27,9 @@ import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.utils.Serializer;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -67,10 +69,12 @@ public class ReceiveHandler implements Handler<RoutingContext> {
     } else {
       key = routingContext.request().getHeader("c11n-key");
     }
-    if (to == null) {
-      to = enclave.nodeKeys()[0];
+    final List<Box.PublicKey> recipients;
+    if (to != null) {
+      recipients = Collections.singletonList(to);
+    } else {
+      recipients = Arrays.asList(enclave.nodeKeys());
     }
-    final Box.PublicKey recipient = to;
 
     storage.get(key).thenAccept(encryptedPayload -> {
       if (!encryptedPayload.isPresent()) {
@@ -79,12 +83,18 @@ public class ReceiveHandler implements Handler<RoutingContext> {
         return;
       }
 
-      final byte[] decryptedPayload;
-      try {
-        decryptedPayload = enclave.decrypt(encryptedPayload.get(), recipient);
-      } catch (final EnclaveException e) {
-        log.info("unable to decrypt payload with key {}", key);
-        routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_KEY_CANNOT_DECRYPT_PAYLOAD, e));
+      byte[] decryptedPayload = null;
+      EnclaveException exception = null;
+      for (final Box.PublicKey recipient : recipients) {
+        try {
+          decryptedPayload = enclave.decrypt(encryptedPayload.get(), recipient);
+        } catch (final EnclaveException e) {
+          exception = e;
+        }
+      }
+      if (decryptedPayload == null) {
+        log.info("unable to decrypt payload");
+        routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_KEY_CANNOT_DECRYPT_PAYLOAD, exception));
         return;
       }
 

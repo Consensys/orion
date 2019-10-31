@@ -19,8 +19,10 @@ import net.consensys.orion.enclave.sodium.serialization.PublicKeySerializer;
 import net.consensys.orion.exception.OrionErrorCode;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -90,19 +92,20 @@ public class EncryptedPayload implements Serializable {
     return privacyGroupId;
   }
 
-  public EncryptedPayload stripFor(final Box.PublicKey key) {
-    final Integer toKeepIdx = encryptedKeyOwners.get(key);
+  public EncryptedPayload stripFor(final List<Box.PublicKey> keys) {
+    final List<EncryptedKey> keepKeys = new ArrayList<>();
+    keys.stream().filter(key -> encryptedKeys[encryptedKeyOwners.get(key)] != null).forEach(
+        key -> keepKeys.add(encryptedKeys[encryptedKeyOwners.get(key)]));
 
-    if (toKeepIdx == null || toKeepIdx < 0 || toKeepIdx >= encryptedKeys.length) {
+    if (keepKeys.size() != keys.size()) {
       throw new EnclaveException(
           OrionErrorCode.ENCLAVE_NOT_PAYLOAD_OWNER,
           "can't strip encrypted payload for provided key");
     }
-
     return new EncryptedPayload(
         sender,
         nonce,
-        new EncryptedKey[] {encryptedKeys[toKeepIdx]},
+        keepKeys.toArray(new EncryptedKey[keepKeys.size()]),
         cipherText,
         privacyGroupId);
   }

@@ -20,6 +20,7 @@ import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
 import static net.consensys.orion.acceptance.NodeUtils.sendTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.viewTransaction;
 import static net.consensys.orion.http.server.HttpContentType.CBOR;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 
@@ -38,10 +39,12 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
+import junit.framework.AssertionFailedError;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -58,6 +61,9 @@ class DualNodesSendReceiveTest {
 
   private static final String PK_1_B_64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
+  private static final String PK_3_B_64 = "SANQhg9hXMn0xcbll6wFcE6ICPKZjsC8gHg8YpmG+m0=";
+  private static final String PK_4_B_64 = "LSHik/TRY49hCZ/CQjQHCvd8VZwJxTbX+9594mBK4nM=";
+  private static final String PK_5_B_64 = "FEPb+LDOZ3E+kxX2RnNqygG2QlNPaGX9xrhD16rSWwQ=";
 
   private Config firstNodeConfig;
   private Config secondNodeConfig;
@@ -76,12 +82,19 @@ class DualNodesSendReceiveTest {
     final Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
     final Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
     final Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
+    final Path key3pub = copyResource("key3.pub", tempDir.resolve("key3.pub"));
+    final Path key3key = copyResource("key3.key", tempDir.resolve("key3.key"));
+    final Path key4pub = copyResource("key4.pub", tempDir.resolve("key4.pub"));
+    final Path key4key = copyResource("key4.key", tempDir.resolve("key4.key"));
+    final Path key5pub = copyResource("key5.pub", tempDir.resolve("key5.pub"));
+    final Path key5key = copyResource("key5.key", tempDir.resolve("key5.key"));
 
     final String jdbcUrl = "jdbc:h2:" + tempDir.resolve("node2").toString();
     try (final Connection conn = DriverManager.getConnection(jdbcUrl)) {
       final Statement st = conn.createStatement();
       st.executeUpdate("create table if not exists store(key char(60), value binary, primary key(key))");
     }
+
 
     firstNodeConfig = NodeUtils.nodeConfig(
         tempDir,
@@ -90,8 +103,8 @@ class DualNodesSendReceiveTest {
         0,
         "127.0.0.1",
         "node1",
-        joinPathsAsTomlListEntry(key1pub),
-        joinPathsAsTomlListEntry(key1key),
+        joinPathsAsTomlListEntry(key1pub, key2pub),
+        joinPathsAsTomlListEntry(key1key, key2key),
         "off",
         "tofu",
         "tofu",
@@ -103,8 +116,8 @@ class DualNodesSendReceiveTest {
         0,
         "127.0.0.1",
         "node2",
-        joinPathsAsTomlListEntry(key2pub),
-        joinPathsAsTomlListEntry(key2key),
+        joinPathsAsTomlListEntry(key3pub, key4pub, key5pub),
+        joinPathsAsTomlListEntry(key3key, key4key, key5key),
         "off",
         "tofu",
         "tofu",
@@ -116,10 +129,17 @@ class DualNodesSendReceiveTest {
     secondHttpClient = vertx.createHttpClient();
     final Box.PublicKey pk1 = Box.PublicKey.fromBytes(decodeBytes(PK_1_B_64));
     final Box.PublicKey pk2 = Box.PublicKey.fromBytes(decodeBytes(PK_2_B_64));
+    final Box.PublicKey pk3 = Box.PublicKey.fromBytes(decodeBytes(PK_3_B_64));
+    final Box.PublicKey pk4 = Box.PublicKey.fromBytes(decodeBytes(PK_4_B_64));
+    final Box.PublicKey pk5 = Box.PublicKey.fromBytes(decodeBytes(PK_5_B_64));
     networkNodes = new ConcurrentNetworkNodes(NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
 
-    networkNodes.addNode(pk1, NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
-    networkNodes.addNode(pk2, NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
+    networkNodes.addNode(
+        Arrays.asList(new Box.PublicKey[] {pk1, pk2}),
+        NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
+    networkNodes.addNode(
+        Arrays.asList(new Box.PublicKey[] {pk3, pk4, pk5}),
+        NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
     // prepare /partyinfo payload (our known peers)
     final RequestBody partyInfoBody =
         RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), Serializer.serialize(CBOR, networkNodes));
@@ -155,8 +175,8 @@ class DualNodesSendReceiveTest {
     final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
     final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
 
-    final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
-    final byte[] receivedPayload = viewTransaction(secondNode, PK_2_B_64, digest);
+    final String digest = sendTransaction(firstNode, PK_1_B_64, PK_3_B_64);
+    final byte[] receivedPayload = viewTransaction(secondNode, PK_3_B_64, digest);
 
     assertTransaction(receivedPayload);
   }
@@ -165,9 +185,55 @@ class DualNodesSendReceiveTest {
   void senderCanView() {
     final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
 
-    final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
+    final String digest = sendTransaction(firstNode, PK_1_B_64, PK_3_B_64);
     final byte[] receivedPayload = viewTransaction(firstNode, PK_1_B_64, digest);
 
+    assertTransaction(receivedPayload);
+  }
+
+  @Test
+  void sendToMultipleRecipientsOnOneOrionUsesAllRecipientsKeysToEncryptButStripsAllOtherNodesKeys() {
+    final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
+    final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
+
+    final String digest = sendTransaction(firstNode, PK_1_B_64, PK_4_B_64, PK_5_B_64);
+    byte[] receivedPayload = viewTransaction(secondNode, PK_4_B_64, digest);
+    assertTransaction(receivedPayload);
+
+    receivedPayload = viewTransaction(secondNode, PK_5_B_64, digest);
+    assertTransaction(receivedPayload);
+
+    assertThatThrownBy(() -> viewTransaction(secondNode, PK_3_B_64, digest)).isInstanceOf(AssertionFailedError.class);
+
+    assertThatThrownBy(() -> viewTransaction(secondNode, PK_1_B_64, digest)).isInstanceOf(AssertionFailedError.class);
+
+    receivedPayload = viewTransaction(firstNode, PK_1_B_64, digest);
+    assertTransaction(receivedPayload);
+
+    assertThatThrownBy(() -> viewTransaction(firstNode, PK_4_B_64, digest)).isInstanceOf(AssertionFailedError.class);
+
+    assertThatThrownBy(() -> viewTransaction(firstNode, PK_5_B_64, digest)).isInstanceOf(AssertionFailedError.class);
+  }
+
+  @Test
+  void receiveWithoutToCanView() {
+    final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
+    final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
+
+    String digest = sendTransaction(firstNode, PK_1_B_64, PK_5_B_64);
+
+    byte[] receivedPayload = viewTransaction(secondNode, null, digest);
+    assertTransaction(receivedPayload);
+
+    receivedPayload = viewTransaction(firstNode, null, digest);
+    assertTransaction(receivedPayload);
+
+    digest = sendTransaction(firstNode, PK_2_B_64, PK_3_B_64);
+
+    receivedPayload = viewTransaction(secondNode, null, digest);
+    assertTransaction(receivedPayload);
+
+    receivedPayload = viewTransaction(firstNode, null, digest);
     assertTransaction(receivedPayload);
   }
 }
