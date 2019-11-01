@@ -15,15 +15,15 @@ dependencyManagement {
   dependencies {
     dependency "com.google.errorprone:javac:9+181-r4173-1"
 
-    dependency 'com.fasterxml.jackson.core:jackson-databind:2.9.9.1'
-    dependency 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.9'
-    dependency 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.9'
+    dependency 'com.fasterxml.jackson.core:jackson-databind:2.10.0'
+    dependency 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.10.0'
+    dependency 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.10.0'
 
     dependency 'com.github.jnr:jnr-ffi:2.1.8'
 
     dependency 'com.google.errorprone:error_prone_core:2.3.3'
 
-    dependency 'com.h2database:h2:1.4.197'
+    dependency 'com.h2database:h2:1.4.200'
 
     dependency 'com.jolbox:bonecp:0.8.0.RELEASE'
 
@@ -34,18 +34,17 @@ dependencyManagement {
     dependency 'com.squareup.okhttp3:mockwebserver:3.10.0'
     dependency 'com.squareup.okhttp3:okhttp:3.10.0'
 
-    dependency 'com.oracle.jdbc:ojdbc10:19.3.0.0'
-    dependency 'com.oracle.jdbc:ucp:19.3.0.0'
+    dependency 'com.oracle.ojdbc:ojdbc10:19.3.0.0'
 
     dependency 'io.gatling.highcharts:gatling-charts-highcharts:2.3.1'
     dependency 'io.gatling:gatling-app:2.3.1'
     dependency 'io.gatling:gatling-core:2.3.1'
     dependency 'io.gatling:gatling-http:2.3.1'
 
-    dependency 'io.vertx:vertx-core:3.7.0'
-    dependency 'io.vertx:vertx-web:3.7.0'
-    dependency 'io.vertx:vertx-unit:3.7.0'
-    dependency 'io.vertx:vertx-junit5:3.7.0'
+    dependency 'io.vertx:vertx-core:3.7.1'
+    dependency 'io.vertx:vertx-web:3.7.1'
+    dependency 'io.vertx:vertx-unit:3.7.1'
+    dependency 'io.vertx:vertx-junit5:3.7.1'
 
     dependency 'javax.xml.bind:jaxb-api:2.3.0'
 
@@ -59,8 +58,8 @@ dependencyManagement {
 
     dependency 'org.awaitility:awaitility:3.1.0'
 
-    dependency 'org.bouncycastle:bcpkix-jdk15on:1.60'
-    dependency 'org.bouncycastle:bcprov-jdk15on:1.60'
+    dependency 'org.bouncycastle:bcpkix-jdk15on:1.64'
+    dependency 'org.bouncycastle:bcprov-jdk15on:1.64'
 
     dependency 'org.fusesource.leveldbjni:leveldbjni-all:1.8'
 
@@ -69,6 +68,7 @@ dependencyManagement {
     dependency 'org.junit.jupiter:junit-jupiter-params:5.2.0'
 
     dependency 'org.mapdb:mapdb:3.0.7'
+    dependency 'org.lz4:lz4-java:1.6.0'
 
     dependency 'org.postgresql:postgresql:42.2.6'
 
