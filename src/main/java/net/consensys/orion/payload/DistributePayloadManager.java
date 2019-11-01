@@ -48,6 +48,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 public class DistributePayloadManager {
 
@@ -233,14 +234,7 @@ public class DistributePayloadManager {
       }
 
       @SuppressWarnings("URLEqualsHashCode")
-      final Map<URL, ArrayList<Box.PublicKey>> urlToKeysMap = new HashMap<>();
-      for (final Box.PublicKey key : keys) {
-        final URL url = networkNodes.urlForRecipient(key);
-        if (!urlToKeysMap.containsKey(url)) {
-          urlToKeysMap.put(url, new ArrayList<>());
-        }
-        urlToKeysMap.get(url).add(key);
-      }
+      final Map<URL, ArrayList<PublicKey>> urlToKeysMap = getUrlToKeyListMap(keys);
 
       log.debug("Generate payload digest");
       final String digest = storage.generateDigest(encryptedPayload);
@@ -287,6 +281,20 @@ public class DistributePayloadManager {
     }
 
     return future;
+  }
+
+  @NotNull
+  private Map<URL, ArrayList<PublicKey>> getUrlToKeyListMap(final List<PublicKey> keys) {
+    @SuppressWarnings("URLEqualsHashCode")
+    final Map<URL, ArrayList<PublicKey>> urlToKeysMap = new HashMap<>();
+    for (final PublicKey key : keys) {
+      final URL url = networkNodes.urlForRecipient(key);
+      if (!urlToKeysMap.containsKey(url)) {
+        urlToKeysMap.put(url, new ArrayList<>());
+      }
+      urlToKeysMap.get(url).add(key);
+    }
+    return urlToKeysMap;
   }
 
   private PublicKey readPublicKey(final SendRequest sendRequest) {

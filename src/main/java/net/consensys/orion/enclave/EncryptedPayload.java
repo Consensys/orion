@@ -19,12 +19,12 @@ import net.consensys.orion.enclave.sodium.serialization.PublicKeySerializer;
 import net.consensys.orion.exception.OrionErrorCode;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -93,9 +93,11 @@ public class EncryptedPayload implements Serializable {
   }
 
   public EncryptedPayload stripFor(final List<Box.PublicKey> keys) {
-    final List<EncryptedKey> keepKeys = new ArrayList<>();
-    keys.stream().filter(key -> encryptedKeys[encryptedKeyOwners.get(key)] != null).forEach(
-        key -> keepKeys.add(encryptedKeys[encryptedKeyOwners.get(key)]));
+    final List<EncryptedKey> keepKeys = keys
+        .stream()
+        .filter(key -> encryptedKeys[encryptedKeyOwners.get(key)] != null)
+        .map(key -> encryptedKeys[encryptedKeyOwners.get(key)])
+        .collect(Collectors.toList());
 
     if (keepKeys.size() != keys.size()) {
       throw new EnclaveException(

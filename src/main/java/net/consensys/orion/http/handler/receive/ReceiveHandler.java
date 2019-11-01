@@ -69,39 +69,24 @@ public class ReceiveHandler implements Handler<RoutingContext> {
     } else {
       key = routingContext.request().getHeader("c11n-key");
     }
-    final List<Box.PublicKey> recipients;
-    if (to != null) {
-      recipients = Collections.singletonList(to);
-    } else {
-      recipients = Arrays.asList(enclave.nodeKeys());
-    }
+    final List<Box.PublicKey> recipients =
+        to == null ? Arrays.asList(enclave.nodeKeys()) : Collections.singletonList(to);
 
-    storage.get(key).thenAccept(encryptedPayload -> {
-      if (!encryptedPayload.isPresent()) {
+    storage.get(key).thenAccept(encryptedPayloadOptional -> {
+      if (!encryptedPayloadOptional.isPresent()) {
         log.info("unable to find payload with key {}", key);
         routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_PAYLOAD_NOT_FOUND));
         return;
       }
 
-      byte[] decryptedPayload = null;
-      EnclaveException exception = null;
-      for (final Box.PublicKey recipient : recipients) {
-        try {
-          decryptedPayload = enclave.decrypt(encryptedPayload.get(), recipient);
-        } catch (final EnclaveException e) {
-          exception = e;
-        }
-      }
-      if (decryptedPayload == null) {
-        log.info("unable to decrypt payload");
-        routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_KEY_CANNOT_DECRYPT_PAYLOAD, exception));
+      final EncryptedPayload encryptedPayload = encryptedPayloadOptional.get();
+      final byte[] decryptedPayload = decryptPayload(routingContext, recipients, encryptedPayload);
+      if (decryptedPayload == null)
         return;
-      }
 
       // configureRoutes a ReceiveResponse
       final Buffer toReturn;
-      final ReceiveResponse receiveResponse =
-          new ReceiveResponse(decryptedPayload, encryptedPayload.get().privacyGroupId());
+      final ReceiveResponse receiveResponse = new ReceiveResponse(decryptedPayload, encryptedPayload.privacyGroupId());
       if (contentType == ORION) {
         toReturn = Buffer.buffer(Serializer.serialize(JSON, receiveResponse));
       } else if (contentType == JSON) {
@@ -113,5 +98,28 @@ public class ReceiveHandler implements Handler<RoutingContext> {
 
       routingContext.response().end(toReturn);
     });
+  }
+
+  private byte[] decryptPayload(
+      final RoutingContext routingContext,
+      final List<Box.PublicKey> recipients,
+      final EncryptedPayload encryptedPayload) {
+    byte[] decryptedPayload = null;
+    EnclaveException exception = null;
+    for (final Box.PublicKey recipient : recipients) {
+      try {
+        decryptedPayload = enclave.decrypt(encryptedPayload, recipient);
+      } catch (final EnclaveException e) {
+        continue;
+      }
+      // if we get here we have sucessfully decrypted the message, we can exit the loop
+      break;
+    }
+    if (decryptedPayload == null) {
+      log.info("unable to decrypt payload");
+      routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_KEY_CANNOT_DECRYPT_PAYLOAD));
+      return null;
+    }
+    return decryptedPayload;
   }
 }
