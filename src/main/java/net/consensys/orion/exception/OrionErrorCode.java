@@ -47,7 +47,7 @@ public enum OrionErrorCode {
   ENCLAVE_STORAGE_DECRYPT("EnclaveStorageDecrypt"),
   ENCLAVE_PRIVACY_GROUP_CREATION("EnclavePrivacyGroupIdCreation"),
   ENCLAVE_PAYLOAD_NOT_FOUND("EnclavePayloadNotFound"),
-  ENCLAVE_KEY_CANNOT_DECRYPT_PAYLOAD("EnclaveKeyCannotDecryptPayload"),
+  ENCLAVE_KEYS_CANNOT_DECRYPT_PAYLOAD("EnclaveKeysCannotDecryptPayload"),
 
   /** Storing privacy group issue */
   ENCLAVE_UNABLE_STORE_PRIVACY_GROUP("PrivacyGroupNotStored"),

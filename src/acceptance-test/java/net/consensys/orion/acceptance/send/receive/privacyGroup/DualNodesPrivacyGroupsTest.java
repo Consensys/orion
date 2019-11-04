@@ -43,6 +43,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -126,8 +127,8 @@ class DualNodesPrivacyGroupsTest {
     final Box.PublicKey pk2 = Box.PublicKey.fromBytes(decodeBytes(PK_2_B_64));
     networkNodes = new ConcurrentNetworkNodes(NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
 
-    networkNodes.addNode(pk1, NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
-    networkNodes.addNode(pk2, NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
+    networkNodes.addNode(Collections.singletonList(pk1), NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
+    networkNodes.addNode(Collections.singletonList(pk2), NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
     // prepare /partyinfo payload (our known peers)
     final RequestBody partyInfoBody =
         RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), Serializer.serialize(CBOR, networkNodes));
@@ -152,10 +153,19 @@ class DualNodesPrivacyGroupsTest {
   }
 
   @AfterEach
-  void tearDown() {
-    firstOrionLauncher.stop();
-    secondOrionLauncher.stop();
+  void tearDown() throws InterruptedException {
+    await().atMost(5, TimeUnit.SECONDS).until(() -> doesNotThrowWhenCallingStop(firstOrionLauncher));
+    await().atMost(5, TimeUnit.SECONDS).until(() -> doesNotThrowWhenCallingStop(secondOrionLauncher));
     vertx.close();
+  }
+
+  private Boolean doesNotThrowWhenCallingStop(final Orion orionLauncher) {
+    try {
+      orionLauncher.stop();
+      return true;
+    } catch (final Exception e) {
+      return false;
+    }
   }
 
   @Test
@@ -180,10 +190,11 @@ class DualNodesPrivacyGroupsTest {
     assertEquals(firstNodePrivacyGroups[0].getPrivacyGroupId(), privacyGroupId);
 
     // find the created privacy group in second node
-    final PrivacyGroup[] secondNodePrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
-
-    assertEquals(secondNodePrivacyGroups.length, firstNodePrivacyGroups.length);
-    assertEquals(secondNodePrivacyGroups[0].getPrivacyGroupId(), firstNodePrivacyGroups[0].getPrivacyGroupId());
+    await().atMost(20, TimeUnit.SECONDS).until(
+        () -> findPrivacyGroupTransaction(secondNode, addresses).length == firstNodePrivacyGroups.length);
+    assertEquals(
+        findPrivacyGroupTransaction(secondNode, addresses)[0].getPrivacyGroupId(),
+        firstNodePrivacyGroups[0].getPrivacyGroupId());
   }
 
   @Test

@@ -241,7 +241,7 @@ class ReceiveHandlerTest extends HandlerTest {
 
     final Response resp = httpClient.newCall(request).execute();
     assertEquals(404, resp.code());
-    assertError(OrionErrorCode.ENCLAVE_KEY_CANNOT_DECRYPT_PAYLOAD, resp);
+    assertError(OrionErrorCode.ENCLAVE_KEYS_CANNOT_DECRYPT_PAYLOAD, resp);
   }
 
   @Test

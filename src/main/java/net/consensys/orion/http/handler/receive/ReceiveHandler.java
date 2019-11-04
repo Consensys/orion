@@ -27,7 +27,10 @@ import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.utils.Serializer;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -67,41 +70,54 @@ public class ReceiveHandler implements Handler<RoutingContext> {
     } else {
       key = routingContext.request().getHeader("c11n-key");
     }
-    if (to == null) {
-      to = enclave.nodeKeys()[0];
-    }
-    final Box.PublicKey recipient = to;
+    final List<Box.PublicKey> recipients =
+        to == null ? Arrays.asList(enclave.nodeKeys()) : Collections.singletonList(to);
 
-    storage.get(key).thenAccept(encryptedPayload -> {
-      if (!encryptedPayload.isPresent()) {
+    storage.get(key).thenAccept(encryptedPayloadOptional -> {
+      if (encryptedPayloadOptional.isEmpty()) {
         log.info("unable to find payload with key {}", key);
         routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_PAYLOAD_NOT_FOUND));
         return;
       }
 
-      final byte[] decryptedPayload;
-      try {
-        decryptedPayload = enclave.decrypt(encryptedPayload.get(), recipient);
-      } catch (final EnclaveException e) {
-        log.info("unable to decrypt payload with key {}", key);
-        routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_KEY_CANNOT_DECRYPT_PAYLOAD, e));
-        return;
-      }
-
-      // configureRoutes a ReceiveResponse
-      final Buffer toReturn;
-      final ReceiveResponse receiveResponse =
-          new ReceiveResponse(decryptedPayload, encryptedPayload.get().privacyGroupId());
-      if (contentType == ORION) {
-        toReturn = Buffer.buffer(Serializer.serialize(JSON, receiveResponse));
-      } else if (contentType == JSON) {
-        toReturn = Buffer
-            .buffer(Serializer.serialize(JSON, Collections.singletonMap("payload", encodeBytes(decryptedPayload))));
-      } else {
-        toReturn = Buffer.buffer(decryptedPayload);
-      }
-
-      routingContext.response().end(toReturn);
+      final EncryptedPayload encryptedPayload = encryptedPayloadOptional.get();
+      Optional<byte[]> decryptPayload = decryptPayload(recipients, encryptedPayload);
+      decryptPayload
+          .ifPresentOrElse(payload -> sendResponse(routingContext, encryptedPayload.privacyGroupId(), payload), () -> {
+            log.info("unable to decrypt payload");
+            routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_KEYS_CANNOT_DECRYPT_PAYLOAD));
+          });
     });
+  }
+
+  private void sendResponse(
+      final RoutingContext routingContext,
+      final byte[] privacyGroupId,
+      final byte[] decryptedPayload) {
+    // configureRoutes a ReceiveResponse
+    final Buffer toReturn;
+    final ReceiveResponse receiveResponse = new ReceiveResponse(decryptedPayload, privacyGroupId);
+    if (contentType == ORION) {
+      toReturn = Buffer.buffer(Serializer.serialize(JSON, receiveResponse));
+    } else if (contentType == JSON) {
+      toReturn =
+          Buffer.buffer(Serializer.serialize(JSON, Collections.singletonMap("payload", encodeBytes(decryptedPayload))));
+    } else {
+      toReturn = Buffer.buffer(decryptedPayload);
+    }
+    routingContext.response().end(toReturn);
+  }
+
+  private Optional<byte[]> decryptPayload(
+      final List<Box.PublicKey> recipients,
+      final EncryptedPayload encryptedPayload) {
+    for (final Box.PublicKey recipient : recipients) {
+      try {
+        return Optional.of(enclave.decrypt(encryptedPayload, recipient));
+      } catch (final EnclaveException e) {
+        // ignore exception
+      }
+    }
+    return Optional.empty();
   }
 }

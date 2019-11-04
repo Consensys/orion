@@ -26,6 +26,7 @@ import net.consensys.orion.utils.Serializer;
 
 import java.net.URL;
 import java.time.Instant;
+import java.util.Collections;
 
 import io.vertx.core.Verticle;
 import io.vertx.core.Vertx;
@@ -77,7 +78,7 @@ class NetworkDiscoveryTest {
     // add peers
     final FakePeer fakePeer =
         new FakePeer(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE), Box.KeyPair.random().publicKey());
-    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
 
     // start network discovery
     final NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config, 50, 100);
@@ -110,14 +111,14 @@ class NetworkDiscoveryTest {
 
     // create a peer that we know, and that knows the lonely unknown peer.
     final ConcurrentNetworkNodes knownPeerNetworkNodes = new ConcurrentNetworkNodes(new URL("http://localhost/"));
-    knownPeerNetworkNodes.addNode(unknownPeer.publicKey, unknownPeer.getURL());
+    knownPeerNetworkNodes.addNode(Collections.singletonList(unknownPeer.publicKey), unknownPeer.getURL());
     final Buffer knownPeerBody = new Buffer();
     knownPeerBody.write(Serializer.serialize(CBOR, knownPeerNetworkNodes));
     final FakePeer knownPeer =
         new FakePeer(new MockResponse().setBody(knownPeerBody), Box.KeyPair.random().publicKey());
 
     // we know this peer, add it to our network nodes
-    networkNodes.addNode(knownPeer.publicKey, knownPeer.getURL());
+    networkNodes.addNode(Collections.singletonList(knownPeer.publicKey), knownPeer.getURL());
 
     // start network discovery
     final Instant discoveryStart = Instant.now();

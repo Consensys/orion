@@ -25,6 +25,7 @@ import net.consensys.orion.helpers.StubEnclave;
 import net.consensys.orion.http.server.HttpContentType;
 
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Random;
 
 import okhttp3.MediaType;
@@ -63,7 +64,7 @@ public class SendRawHandlerWithNodeKeys extends SendRawHandlerTest {
     final String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), memoryKeyStore);
-    networkNodes.addNode(fakePeer.publicKey, fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
     final String[] to = new String[] {encodeBytes(fakePeer.publicKey.bytesArray())};
 
     final Request request = new Request.Builder()
