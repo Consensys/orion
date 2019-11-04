@@ -30,6 +30,7 @@ import net.consensys.orion.utils.Serializer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -80,39 +81,43 @@ public class ReceiveHandler implements Handler<RoutingContext> {
       }
 
       final EncryptedPayload encryptedPayload = encryptedPayloadOptional.get();
-      final byte[] decryptedPayload = decryptPayload(recipients, encryptedPayload);
-      if (decryptedPayload == null) {
-        log.info("unable to decrypt payload");
-        routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_KEYS_CANNOT_DECRYPT_PAYLOAD));
-      }
-
-      // configureRoutes a ReceiveResponse
-      final Buffer toReturn;
-      final ReceiveResponse receiveResponse = new ReceiveResponse(decryptedPayload, encryptedPayload.privacyGroupId());
-      if (contentType == ORION) {
-        toReturn = Buffer.buffer(Serializer.serialize(JSON, receiveResponse));
-      } else if (contentType == JSON) {
-        toReturn = Buffer
-            .buffer(Serializer.serialize(JSON, Collections.singletonMap("payload", encodeBytes(decryptedPayload))));
-      } else {
-        toReturn = Buffer.buffer(decryptedPayload);
-      }
-
-      routingContext.response().end(toReturn);
+      Optional<byte[]> decryptPayload = decryptPayload(recipients, encryptedPayload);
+      decryptPayload
+          .ifPresentOrElse(payload -> sendResponse(routingContext, encryptedPayload.privacyGroupId(), payload), () -> {
+            log.info("unable to decrypt payload");
+            routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_KEYS_CANNOT_DECRYPT_PAYLOAD));
+          });
     });
   }
 
-  private byte[] decryptPayload(final List<Box.PublicKey> recipients, final EncryptedPayload encryptedPayload) {
-    byte[] decryptedPayload = null;
+  private void sendResponse(
+      final RoutingContext routingContext,
+      final byte[] privacyGroupId,
+      final byte[] decryptedPayload) {
+    // configureRoutes a ReceiveResponse
+    final Buffer toReturn;
+    final ReceiveResponse receiveResponse = new ReceiveResponse(decryptedPayload, privacyGroupId);
+    if (contentType == ORION) {
+      toReturn = Buffer.buffer(Serializer.serialize(JSON, receiveResponse));
+    } else if (contentType == JSON) {
+      toReturn =
+          Buffer.buffer(Serializer.serialize(JSON, Collections.singletonMap("payload", encodeBytes(decryptedPayload))));
+    } else {
+      toReturn = Buffer.buffer(decryptedPayload);
+    }
+    routingContext.response().end(toReturn);
+  }
+
+  private Optional<byte[]> decryptPayload(
+      final List<Box.PublicKey> recipients,
+      final EncryptedPayload encryptedPayload) {
     for (final Box.PublicKey recipient : recipients) {
       try {
-        decryptedPayload = enclave.decrypt(encryptedPayload, recipient);
+        return Optional.of(enclave.decrypt(encryptedPayload, recipient));
       } catch (final EnclaveException e) {
-        continue;
+        // ignore exception
       }
-      // if we get here we have sucessfully decrypted the message, we can exit the loop
-      break;
     }
-    return decryptedPayload;
+    return Optional.empty();
   }
 }
