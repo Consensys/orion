@@ -93,11 +93,9 @@ public class EncryptedPayload implements Serializable {
   }
 
   public EncryptedPayload stripFor(final List<Box.PublicKey> keys) {
-    final List<EncryptedKey> keepKeys = keys
-        .stream()
-        .filter(key -> encryptedKeys[encryptedKeyOwners.get(key)] != null)
-        .map(key -> encryptedKeys[encryptedKeyOwners.get(key)])
-        .collect(Collectors.toList());
+    final List<EncryptedKey> keepKeys =
+        keys.stream().map(key -> encryptedKeys[encryptedKeyOwners.get(key)]).filter(Objects::nonNull).collect(
+            Collectors.toList());
 
     if (keepKeys.size() != keys.size()) {
       throw new EnclaveException(

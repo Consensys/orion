@@ -73,16 +73,18 @@ public class ReceiveHandler implements Handler<RoutingContext> {
         to == null ? Arrays.asList(enclave.nodeKeys()) : Collections.singletonList(to);
 
     storage.get(key).thenAccept(encryptedPayloadOptional -> {
-      if (!encryptedPayloadOptional.isPresent()) {
+      if (encryptedPayloadOptional.isEmpty()) {
         log.info("unable to find payload with key {}", key);
         routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_PAYLOAD_NOT_FOUND));
         return;
       }
 
       final EncryptedPayload encryptedPayload = encryptedPayloadOptional.get();
-      final byte[] decryptedPayload = decryptPayload(routingContext, recipients, encryptedPayload);
-      if (decryptedPayload == null)
-        return;
+      final byte[] decryptedPayload = decryptPayload(recipients, encryptedPayload);
+      if (decryptedPayload == null) {
+        log.info("unable to decrypt payload");
+        routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_KEYS_CANNOT_DECRYPT_PAYLOAD));
+      }
 
       // configureRoutes a ReceiveResponse
       final Buffer toReturn;
@@ -100,12 +102,8 @@ public class ReceiveHandler implements Handler<RoutingContext> {
     });
   }
 
-  private byte[] decryptPayload(
-      final RoutingContext routingContext,
-      final List<Box.PublicKey> recipients,
-      final EncryptedPayload encryptedPayload) {
+  private byte[] decryptPayload(final List<Box.PublicKey> recipients, final EncryptedPayload encryptedPayload) {
     byte[] decryptedPayload = null;
-    EnclaveException exception = null;
     for (final Box.PublicKey recipient : recipients) {
       try {
         decryptedPayload = enclave.decrypt(encryptedPayload, recipient);
@@ -114,11 +112,6 @@ public class ReceiveHandler implements Handler<RoutingContext> {
       }
       // if we get here we have sucessfully decrypted the message, we can exit the loop
       break;
-    }
-    if (decryptedPayload == null) {
-      log.info("unable to decrypt payload");
-      routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_KEY_CANNOT_DECRYPT_PAYLOAD));
-      return null;
     }
     return decryptedPayload;
   }

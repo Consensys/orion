@@ -153,10 +153,19 @@ class DualNodesPrivacyGroupsTest {
   }
 
   @AfterEach
-  void tearDown() {
-    firstOrionLauncher.stop();
-    secondOrionLauncher.stop();
+  void tearDown() throws InterruptedException {
+    await().atMost(5, TimeUnit.SECONDS).until(() -> doesNotThrowWhenCallingStop(firstOrionLauncher));
+    await().atMost(5, TimeUnit.SECONDS).until(() -> doesNotThrowWhenCallingStop(secondOrionLauncher));
     vertx.close();
+  }
+
+  private Boolean doesNotThrowWhenCallingStop(final Orion orionLauncher) {
+    try {
+      orionLauncher.stop();
+      return true;
+    } catch (final Exception e) {
+      return false;
+    }
   }
 
   @Test
@@ -181,10 +190,11 @@ class DualNodesPrivacyGroupsTest {
     assertEquals(firstNodePrivacyGroups[0].getPrivacyGroupId(), privacyGroupId);
 
     // find the created privacy group in second node
-    final PrivacyGroup[] secondNodePrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
-
-    assertEquals(secondNodePrivacyGroups.length, firstNodePrivacyGroups.length);
-    assertEquals(secondNodePrivacyGroups[0].getPrivacyGroupId(), firstNodePrivacyGroups[0].getPrivacyGroupId());
+    await().atMost(20, TimeUnit.SECONDS).until(
+        () -> findPrivacyGroupTransaction(secondNode, addresses).length == firstNodePrivacyGroups.length);
+    assertEquals(
+        findPrivacyGroupTransaction(secondNode, addresses)[0].getPrivacyGroupId(),
+        firstNodePrivacyGroups[0].getPrivacyGroupId());
   }
 
   @Test
