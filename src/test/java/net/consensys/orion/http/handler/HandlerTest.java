@@ -58,15 +58,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(TempDirectoryExtension.class)
-abstract class HandlerTest {
+public abstract class HandlerTest {
 
   // http client
-  final OkHttpClient httpClient = new OkHttpClient();
-  String nodeBaseUrl;
-  String clientBaseUrl;
+  protected final OkHttpClient httpClient = new OkHttpClient();
+  protected String nodeBaseUrl;
+  protected String clientBaseUrl;
 
   // these are re-built between tests
-  ConcurrentNetworkNodes networkNodes;
+  protected ConcurrentNetworkNodes networkNodes;
   protected Config config;
   protected Enclave enclave;
 

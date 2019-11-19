@@ -33,6 +33,7 @@ import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
 import net.consensys.orion.enclave.sodium.FileKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
+import net.consensys.orion.http.handler.knownnodes.KnownNodesHandler;
 import net.consensys.orion.http.handler.partyinfo.PartyInfoHandler;
 import net.consensys.orion.http.handler.privacy.CreatePrivacyGroupHandler;
 import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupHandler;
@@ -210,6 +211,8 @@ public class Orion {
 
     clientRouter.post("/findPrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
         new FindPrivacyGroupHandler(queryPrivacyGroupStorage, privacyGroupStorage));
+
+    clientRouter.get("/knownnodes").produces(JSON.httpHeaderValue).handler(new KnownNodesHandler(networkNodes));
   }
 
   public Orion() {
