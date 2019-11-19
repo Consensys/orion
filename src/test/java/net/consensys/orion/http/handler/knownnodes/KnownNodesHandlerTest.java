@@ -80,15 +80,13 @@ class KnownNodesHandlerTest extends HandlerTest {
 
   private List<KnownNode> createNodes() {
     try {
-      return new ArrayList<>() {
-        {
-          add(new KnownNode(KeyPair.random().publicKey(), new URL("http://127.0.0.1:9001/")));
-          add(new KnownNode(KeyPair.random().publicKey(), new URL("http://127.0.0.1:9002/")));
-        }
-      };
+      final List<KnownNode> knownNodes = new ArrayList<>();
+      knownNodes.add(new KnownNode(KeyPair.random().publicKey(), new URL("http://127.0.0.1:9001/")));
+      knownNodes.add(new KnownNode(KeyPair.random().publicKey(), new URL("http://127.0.0.1:9002/")));
+      return knownNodes;
     } catch (Exception e) {
       fail(e);
-      return Collections.emptyList();
+      return new ArrayList<>();
     }
   }
 
