@@ -6,7 +6,9 @@ WORKDIR /opt/orion
 # Install latest libsodium
 RUN set -eux; \
     apt-get update; \
-    apt-get install -y --no-install-recommends libsodium23;
+    apt-get install -y --no-install-recommends libsodium23=1.0.18-1; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*
 
 # Expose services ports
 # 8080 Node Port, 8888 Client Port
