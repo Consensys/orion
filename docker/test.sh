@@ -18,7 +18,7 @@ tmp_dir=$(mktemp -d /tmp/tmp.XXXXXXXXXX)
 chmod 777 "$tmp_dir"
 trap 'ret=$?;cleanup;exit $ret' EXIT
 echo "Temp Data Directory: ${tmp_dir}"
-
+ls $tmp_dir
 mkdir -p ./reports
 
 ## Generate public/private key pair
