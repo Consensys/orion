@@ -161,14 +161,24 @@ jobs:
           command: |
             sudo apt-get install -y libsodium18
       - run:
-          name: build image
+          name: Build and Test Docker Image
           command: |
-            ./gradlew --no-daemon distDocker
-      - run:
-          name: test image
-          command: |
-            mkdir -p docker/reports
             ./gradlew --no-daemon testDocker
+
+  publishDocker:
+    docker:
+      - image: circleci/openjdk:11.0.2-jdk-stretch
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Build and Publish Docker Image
+          command: |
+            docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWORD}"
+            ./gradlew --no-daemon --parallel "-Pbranch=${CIRCLE_BRANCH}" dockerUpload
+
 
   upload-distribution:
     docker:
@@ -202,6 +212,14 @@ workflows:
       - buildDocker:
           requires:
             - build
+      - publishDocker:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master
+                - /^release-.*/
       - upload-distribution:
           requires:
             - build
