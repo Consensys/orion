@@ -1,34 +1,32 @@
 #!/bin/bash
 
-set -e
-
 export GOSS_PATH=tests/goss-linux-amd64
 export GOSS_OPTS="$GOSS_OPTS --format junit"
 export GOSS_FILES_STRATEGY=cp
-
 DOCKER_IMAGE=$1
-DOCKER_TEST_IMAGE=orion_goss
-
-# create test docker image that includes the test key file and password files
-TEST_CONTAINER_ID=$(docker create ${DOCKER_IMAGE})
-#docker cp ./tests/test_keyfile.json ${TEST_CONTAINER_ID}:/tmp/test_keyfile.json
-#docker cp ./tests/test_password ${TEST_CONTAINER_ID}:/tmp/test_password
-#docker commit ${TEST_CONTAINER_ID} ${DOCKER_TEST_IMAGE}
+DOCKER_FILE="${2:-$PWD/Dockerfile}"
 
 i=0
 
-# Test for normal startup with ports opened
-GOSS_FILES_PATH=tests/01 \
-bash tests/dgoss \
-run ${DOCKER_TEST_IMAGE} \
---chain-id=2018 \
---http-listen-host=0.0.0.0 \
---downstream-http-port=8590 \
-file-based-signer \
---key-file /tmp/test_keyfile.json \
---password-file /tmp/test_password \
-> ./reports/01.xml || i=`expr $i + 1`
+## Generate public/private key pair
+tmp_dir=$(mktemp -d -t ci-XXXXXXXXXX)
 
-docker image rm ${DOCKER_TEST_IMAGE}
+GOSS_FILES_PATH=tests/00 \
+yes 123456 | bash tests/dgoss run $DOCKER_IMAGE \
+--mount type=bind,source=$(tmp_dir),target=/data
+> ./reports/00.xml || i=`expr $i + 1`
+# fail fast if we dont pass static checks
+if [[ $i != 0 ]]; then exit $i; fi
+
+# Test for normal startup with ports opened
+# we test that things listen on the right interface/port, not what interface the advertise
+# hence we dont set p2p-host=0.0.0.0 because this sets what its advertising to devp2p; the important piece is that it defaults to listening on all interfaces
+#GOSS_FILES_PATH=tests/01 \
+#bash tests/dgoss run $DOCKER_IMAGE \
+#--network=dev \
+#--rpc-http-enabled \
+#--rpc-ws-enabled \
+#--graphql-http-enabled \
+#> ./reports/01.xml || i=`expr $i + 1`
 
 exit $i

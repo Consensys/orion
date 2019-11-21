@@ -1,0 +1,8 @@
+file:
+  /data/nodeKey.pub:
+    exists: true
+    filetype: file
+file:
+  /data/nodeKey.key:
+    exists: true
+    filetype: file

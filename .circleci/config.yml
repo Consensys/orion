@@ -143,6 +143,32 @@ jobs:
           paths:
             - build/version
             - build/distributions/*
+  buildDocker:
+    docker:
+      - image: circleci/openjdk:11.0.2-jdk-stretch
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: hadoLint
+          command: |
+            docker run --rm -i hadolint/hadolint < docker/Dockerfile
+
+      - run:
+          name: Install Sodium Dependencies
+          command: |
+            sudo apt-get install -y libsodium18
+      - run:
+          name: build image
+          command: |
+            ./gradlew --no-daemon distDocker
+      - run:
+          name: test image
+          command: |
+            mkdir -p docker/reports
+            ./gradlew --no-daemon testDocker
 
   upload-distribution:
     docker:
@@ -173,6 +199,9 @@ workflows:
   pipeline:
     jobs:
       - build
+      - buildDocker:
+          requires:
+            - build
       - upload-distribution:
           requires:
             - build

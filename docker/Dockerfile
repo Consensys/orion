@@ -8,8 +8,6 @@ RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends libsodium23;
 
-
-
 # Expose services ports
 # 8080 Node Port, 8888 Client Port
 EXPOSE 8080 8888
