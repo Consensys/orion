@@ -39,27 +39,20 @@ commands:
             - deps-{{ checksum "build.gradle" }}
             - deps-
 
-  capture_test_results:
-    description: "Capture test results"
-    steps:
-      - run:
-          name: Gather test results
-          when: always
-          command: |
-            FILES=`find . -name test-results`
-            for FILE in $FILES
-            do
-              MODULE=`echo "$FILE" | sed -e 's@./\(.*\)/build/test-results@\1@'`
-              TARGET="build/test-results/$MODULE"
-              mkdir -p "$TARGET"
-              cp -rf ${FILE}/*/* "$TARGET"
-            done
-      - store_test_results:
-          path: build/test-results
-
 jobs:
   build:
-    executor: executor_med
+    docker:
+      # The primary container
+      - image: circleci/openjdk:11.0.4-jdk-stretch
+      # Secondary container with PostgreSQL
+      - image: postgres:11.4-alpine
+    working_directory: ~/project
+    environment:
+      JAVA_TOOL_OPTIONS: -Xmx2048m
+      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=2 -Xmx2048m
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: orion
     steps:
       - prepare
       - run:
@@ -253,5 +246,4 @@ workflows:
                 - master
                 - /^release-.*/
           requires:
-            - build
             - buildDocker
