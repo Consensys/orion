@@ -1,0 +1,20 @@
+file:
+  /opt/orion/bin/orion:
+    exists: true
+    mode: "0755"
+    owner: root
+    group: root
+    filetype: file
+    contains: []
+port:
+  tcp:8080:
+    listening: true
+    ip:
+      - 0.0.0.0
+  tcp:8888:
+    listening: true
+    ip:
+      - 0.0.0.0
+process:
+  java:
+    running: true
