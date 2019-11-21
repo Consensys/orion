@@ -13,8 +13,9 @@ tmp_dir=$(mktemp -d -t ci-XXXXXXXXXX)
 
 GOSS_FILES_PATH=tests/00 \
 yes 123456 | bash tests/dgoss run $DOCKER_IMAGE \
---mount type=bind,source=$(tmp_dir),target=/data -g /data/nodeKey
+--mount type=bind,source=$tmp_dir,target=/data -g /data/nodeKey
 > ./reports/00.xml || i=`expr $i + 1`
+ls -l $tmp_dir/
 # fail fast if we dont pass static checks
 if [[ $i != 0 ]]; then exit $i; fi
 
