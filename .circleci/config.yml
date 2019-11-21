@@ -30,7 +30,7 @@ commands:
     steps:
       - checkout
       - run:
-          name: Install Packages - LibSodium
+          name: Install Dependencies
           command: |
             sudo apt-get update
             sudo apt-get install -y libsodium18 libsodium-dev apt-transport-https

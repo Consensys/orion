@@ -3,7 +3,7 @@ FROM openjdk:11.0.5-jre-slim-buster
 COPY orion /opt/orion/
 WORKDIR /opt/orion
 
-# Install latest libsodium
+# Install libsodium
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends libsodium23=1.0.17-1; \
@@ -26,6 +26,6 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.url="https://docs.orion.pegasys.tech/" \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.vcs-url="https://github.com/PegaSysEng/orion.git" \
-      org.label-schema.vendor="Pegasys" \
+      org.label-schema.vendor="PegaSys" \
       org.label-schema.version=$VERSION \
       org.label-schema.schema-version="1.0"
