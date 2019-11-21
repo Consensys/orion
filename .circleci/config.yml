@@ -4,11 +4,19 @@ executors:
   executor_med:  # 2cpu, 4G ram
     docker:
       - image: circleci/openjdk:11.0.4-jdk-stretch
+      - image: postgres:11.4-alpine
+        environment:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: orion
     resource_class: medium
     working_directory: ~/project
     environment:
       JAVA_TOOL_OPTIONS: -Xmx2048m
       GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=2 -Xmx2048m
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: orion
 
   executor_machine:
     machine:
@@ -35,20 +43,7 @@ commands:
 
 jobs:
   build:
-    docker:
-      # The primary container
-      - image: circleci/openjdk:11.0.4-jdk-stretch
-      # Secondary container with PostgreSQL
-      - image: postgres:11.4-alpine
-    working_directory: ~/project
-    environment:
-      TERM: dumb
-      JAVA_TOOL_OPTIONS: -Xmx2048m
-      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2
-      GRADLE_MAX_TEST_FORKS: 2
-      POSTGRES_USER: test
-      POSTGRES_PASSWORD: test
-      POSTGRES_DB: orion
+    executor: executor_med
     steps:
       - prepare
       - run:
