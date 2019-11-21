@@ -246,8 +246,6 @@ workflows:
                 - /^release-.*/
           requires:
             - build
-            - acceptanceTests
-            - azureTests
       - publishDocker:
           filters:
             branches:
