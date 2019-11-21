@@ -216,7 +216,7 @@ jobs:
 
 workflows:
   version: 2
-  default:
+  pipeline:
     jobs:
       - build
       - buildDocker:
