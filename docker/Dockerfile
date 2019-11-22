@@ -1,4 +1,4 @@
-FROM openjdk:11.0.5-jre-slim-buster
+FROM openjdk:11.0.2-jre-slim-stretch
 
 COPY orion /opt/orion/
 WORKDIR /opt/orion
@@ -6,7 +6,7 @@ WORKDIR /opt/orion
 # Install libsodium
 RUN set -eux; \
     apt-get update; \
-    apt-get install -y --no-install-recommends libsodium23=1.0.17-1; \
+    apt-get install -y --no-install-recommends libsodium18; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 
