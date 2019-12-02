@@ -477,7 +477,6 @@ def getCheckedOutGitCommitHash() {
 // Runtime
 
 applicationDefaultJvmArgs = [
-  '-Dlog4j.configurationFile=log4j2.xml',
   "-Dvertx.disableFileCPResolving=true",
   "-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory"
 ]
