@@ -38,6 +38,7 @@ import net.consensys.orion.http.handler.partyinfo.PartyInfoHandler;
 import net.consensys.orion.http.handler.privacy.CreatePrivacyGroupHandler;
 import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupHandler;
 import net.consensys.orion.http.handler.privacy.FindPrivacyGroupHandler;
+import net.consensys.orion.http.handler.privacy.GetPrivacyGroupHandler;
 import net.consensys.orion.http.handler.push.PushHandler;
 import net.consensys.orion.http.handler.push.PushPrivacyGroupHandler;
 import net.consensys.orion.http.handler.receive.ReceiveHandler;
@@ -211,6 +212,9 @@ public class Orion {
 
     clientRouter.post("/findPrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
         new FindPrivacyGroupHandler(queryPrivacyGroupStorage, privacyGroupStorage));
+
+    clientRouter.post("/getPrivacyGroup").consumes(JSON.httpHeaderValue).produces(JSON.httpHeaderValue).handler(
+        new GetPrivacyGroupHandler(privacyGroupStorage));
 
     clientRouter.get("/knownnodes").produces(JSON.httpHeaderValue).handler(new KnownNodesHandler(networkNodes));
   }
