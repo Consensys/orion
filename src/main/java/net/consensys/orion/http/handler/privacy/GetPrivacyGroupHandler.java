@@ -28,7 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Find the privacy group given the privacyGroupId.
+ * Get a privacy group given the privacyGroupId.
  */
 public class GetPrivacyGroupHandler implements Handler<RoutingContext> {
 
