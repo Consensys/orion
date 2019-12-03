@@ -18,9 +18,11 @@ import static net.consensys.cava.io.file.Files.copyResource;
 import static net.consensys.orion.acceptance.NodeUtils.createPrivacyGroupTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.deletePrivacyGroupTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.findPrivacyGroupTransaction;
+import static net.consensys.orion.acceptance.NodeUtils.getPrivacyGroupTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
 import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -198,6 +200,38 @@ class DualNodesPrivacyGroupsTest {
   }
 
   @Test
+  void createAndGet() {
+    final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
+    final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
+
+    final String name = "testName";
+    final String description = "testDescription";
+    final String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
+    // create a privacy group
+    final PrivacyGroup privacyGroup = createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, name, description);
+
+    final String privacyGroupId = privacyGroup.getPrivacyGroupId();
+    assertEquals(privacyGroup.getName(), name);
+    assertEquals(privacyGroup.getDescription(), description);
+
+    // get the created privacy group in first node
+    final PrivacyGroup firstNodePrivacyGroup = getPrivacyGroupTransaction(firstNode, privacyGroupId);
+
+    assertEquals(firstNodePrivacyGroup.getPrivacyGroupId(), privacyGroupId);
+    assertEquals(firstNodePrivacyGroup.getDescription(), description);
+    assertEquals(firstNodePrivacyGroup.getName(), name);
+    assertArrayEquals(firstNodePrivacyGroup.getMembers(), addresses);
+
+    // get the created privacy group in second node
+    await().atMost(20, TimeUnit.SECONDS).until(
+        () -> getPrivacyGroupTransaction(secondNode, privacyGroupId).getPrivacyGroupId().equals(privacyGroupId));
+    final PrivacyGroup secondNodePrivacyGroup = getPrivacyGroupTransaction(secondNode, privacyGroupId);
+    assertEquals(secondNodePrivacyGroup.getDescription(), description);
+    assertEquals(secondNodePrivacyGroup.getName(), name);
+    assertArrayEquals(secondNodePrivacyGroup.getMembers(), addresses);
+  }
+
+  @Test
   void createDeleteFind() {
     final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
     final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
@@ -229,7 +263,6 @@ class DualNodesPrivacyGroupsTest {
         Arrays.stream(deleteNodeSecondPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(Collectors.toList());
     assertFalse(listSecond.contains(privacyGroupDeleted));
   }
-
 
   @Test
   void createTwiceDeleteOnce() {

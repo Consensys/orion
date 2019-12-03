@@ -17,6 +17,7 @@ import static net.consensys.orion.http.server.HttpContentType.JSON;
 
 import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupRequest;
 import net.consensys.orion.http.handler.privacy.FindPrivacyGroupRequest;
+import net.consensys.orion.http.handler.privacy.GetPrivacyGroupRequest;
 import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
 import net.consensys.orion.http.handler.receive.ReceiveRequest;
@@ -172,6 +173,20 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
+  public Optional<PrivacyGroup> getPrivacyGroup(final String privacyGroupId) {
+    final GetPrivacyGroupRequest getGroupRequest = new GetPrivacyGroupRequest(privacyGroupId);
+    final CompletableFuture<PrivacyGroup> keyFuture = new CompletableFuture<>();
+    httpClient.post(clientPort, "localhost", "/getPrivacyGroup").handler(resp -> {
+      if (resp.statusCode() == 200) {
+        resp.bodyHandler(body -> keyFuture.complete(deserialize(body, PrivacyGroup.class)));
+      } else {
+        keyFuture.complete(null);
+      }
+    }).exceptionHandler(keyFuture::completeExceptionally).putHeader("Content-Type", "application/json").end(
+        Buffer.buffer(Serializer.serialize(JSON, getGroupRequest)));
+    return Optional.ofNullable(keyFuture.join());
+  }
+
   public Optional<String> deletePrivacyGroup(final String privacyGroupId, final String from) {
     final DeletePrivacyGroupRequest deleteGroupRequest = new DeletePrivacyGroupRequest(privacyGroupId, from);
     final CompletableFuture<String> keyFuture = new CompletableFuture<>();
@@ -214,4 +229,5 @@ public class EthClientStub {
     map.put("privacyGroupId", privacyGroupId);
     return map;
   }
+
 }
