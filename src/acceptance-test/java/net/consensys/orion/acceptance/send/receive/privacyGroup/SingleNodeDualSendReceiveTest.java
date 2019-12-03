@@ -14,7 +14,7 @@ package net.consensys.orion.acceptance.send.receive.privacyGroup;
 
 import static io.vertx.core.Vertx.vertx;
 import static net.consensys.cava.io.file.Files.copyResource;
-import static net.consensys.orion.acceptance.NodeUtils.findPrivacyGroupTransaction;
+import static net.consensys.orion.acceptance.NodeUtils.findPrivacyGroup;
 import static net.consensys.orion.acceptance.NodeUtils.freePort;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
 import static net.consensys.orion.acceptance.NodeUtils.sendTransaction;
@@ -98,8 +98,7 @@ public class SingleNodeDualSendReceiveTest {
     sendTransaction(ethClientStub, PK_1_B_64, PK_2_B_64);
     sendTransaction(ethClientStub, PK_1_B_64, PK_2_B_64);
 
-    final PrivacyGroup[] firstNodePrivacyGroups =
-        findPrivacyGroupTransaction(ethClientStub, new String[] {PK_1_B_64, PK_2_B_64});
+    final PrivacyGroup[] firstNodePrivacyGroups = findPrivacyGroup(ethClientStub, new String[] {PK_1_B_64, PK_2_B_64});
 
     assertEquals(1, firstNodePrivacyGroups.length);
   }

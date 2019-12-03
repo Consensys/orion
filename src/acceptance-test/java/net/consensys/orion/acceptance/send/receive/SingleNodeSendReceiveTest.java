@@ -28,7 +28,6 @@ import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
 
 import java.nio.file.Path;
-import java.util.concurrent.ExecutionException;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
@@ -79,7 +78,7 @@ class SingleNodeSendReceiveTest {
   }
 
   @BeforeEach
-  void setUp() throws ExecutionException, InterruptedException {
+  void setUp() {
     vertx = vertx();
     orionLauncher = NodeUtils.startOrion(config);
     httpClient = vertx.createHttpClient();
@@ -93,7 +92,7 @@ class SingleNodeSendReceiveTest {
 
   /** Sender and receiver use the same key. */
   @Test
-  void keyIdentity() throws Exception {
+  void keyIdentity() {
     final EthClientStub ethClientStub = NodeUtils.client(clientPort, httpClient);
 
     final String digest = sendTransaction(ethClientStub, PK_2_B_64, PK_2_B_64);
@@ -104,7 +103,7 @@ class SingleNodeSendReceiveTest {
 
   /** Different keys for the sender and receiver. */
   @Test
-  void receiverCanView() throws Exception {
+  void receiverCanView() {
     final EthClientStub ethClientStub = NodeUtils.client(clientPort, httpClient);
 
     final String digest = sendTransaction(ethClientStub, PK_1_B_64, PK_2_B_64);
@@ -115,7 +114,7 @@ class SingleNodeSendReceiveTest {
 
   /** The sender key can view their transaction when not in the recipient key list. */
   @Test
-  void senderCanView() throws Exception {
+  void senderCanView() {
     final EthClientStub ethClientStub = NodeUtils.client(clientPort, httpClient);
 
     final String digest = sendTransaction(ethClientStub, PK_1_B_64, PK_2_B_64);

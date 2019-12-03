@@ -14,8 +14,8 @@ package net.consensys.orion.acceptance.send.receive.privacyGroup;
 
 import static io.vertx.core.Vertx.vertx;
 import static net.consensys.cava.io.file.Files.copyResource;
-import static net.consensys.orion.acceptance.NodeUtils.createPrivacyGroupTransaction;
-import static net.consensys.orion.acceptance.NodeUtils.findPrivacyGroupTransaction;
+import static net.consensys.orion.acceptance.NodeUtils.createPrivacyGroup;
+import static net.consensys.orion.acceptance.NodeUtils.findPrivacyGroup;
 import static net.consensys.orion.acceptance.NodeUtils.freePort;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
 import static org.junit.Assert.assertEquals;
@@ -91,9 +91,9 @@ public class QueryGroupRestartTest {
   void nodeRestartDoesNotBreakFindPrivacyGroup() {
     final EthClientStub ethClientStub = NodeUtils.client(clientPort, httpClient);
 
-    createPrivacyGroupTransaction(ethClientStub, new String[] {PK_1_B_64}, PK_1_B_64, "Test", "Test");
+    createPrivacyGroup(ethClientStub, new String[] {PK_1_B_64}, PK_1_B_64, "Test", "Test");
 
-    final PrivacyGroup[] privacyGroups = findPrivacyGroupTransaction(ethClientStub, new String[] {PK_1_B_64});
+    final PrivacyGroup[] privacyGroups = findPrivacyGroup(ethClientStub, new String[] {PK_1_B_64});
 
     orionLauncher.stop();
     vertx.close();
@@ -105,7 +105,7 @@ public class QueryGroupRestartTest {
     final EthClientStub ethClientStubAfterRestart = NodeUtils.client(clientPort, httpClient);
 
     final PrivacyGroup[] privacyGroupsAfterRestart =
-        findPrivacyGroupTransaction(ethClientStubAfterRestart, new String[] {PK_1_B_64});
+        findPrivacyGroup(ethClientStubAfterRestart, new String[] {PK_1_B_64});
 
     assertEquals(1, privacyGroups.length);
     assertEquals(1, privacyGroupsAfterRestart.length);
