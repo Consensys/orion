@@ -2,7 +2,7 @@
 
 ## Pre-requisites
 
-[libsodium](https://docs.orion.pegasys.tech/en/latest/Installation/Dependencies/)
+[libsodium](https://docs.orion.pegasys.tech/en/latest/HowTo/Dependencies/)
 
 ## Check Out Source Code
 
