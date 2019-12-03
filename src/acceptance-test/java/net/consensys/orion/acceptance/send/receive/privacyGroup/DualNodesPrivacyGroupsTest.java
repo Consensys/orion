@@ -333,7 +333,9 @@ class DualNodesPrivacyGroupsTest {
             .collect(Collectors.toList())
             .size()).isEqualTo(1);
     assertThat(
-        Arrays.stream(privacyGroups).filter(p -> p.getName().equals("nonLegacy")).collect(Collectors.toList()).size())
+        Arrays.stream(privacyGroups).filter(p -> p.getName().equals("legacy")).collect(Collectors.toList()).size())
             .isEqualTo(1);
+    deletePrivacyGroup(firstNode, privacyGroups[0].getPrivacyGroupId(), PK_1_B_64);
+    deletePrivacyGroup(firstNode, privacyGroups[1].getPrivacyGroupId(), PK_1_B_64);
   }
 }

@@ -142,14 +142,15 @@ public class DistributePayloadManager {
           PrivacyGroupPayload.Type.LEGACY,
           null);
 
-      if (privacyGroupStorage.get(privacyGroupStorage.generateDigest(privacyGroupPayload)).get().isPresent()) {
+      final String legacyId = privacyGroupStorage.generateDigest(privacyGroupPayload);
+      if (privacyGroupStorage.get(legacyId).get().isPresent()) {
         future.complete(privacyGroupPayload);
       } else {
         final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
             new QueryPrivacyGroupPayload(keys.toArray(new String[0]), null);
         final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
         privacyGroupStorage.put(privacyGroupPayload).thenApply(result -> {
-          queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupStorage.generateDigest(privacyGroupPayload));
+          queryPrivacyGroupPayload.setPrivacyGroupToAppend(legacyId);
           return queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenApply((res) -> {
             future.complete(privacyGroupPayload);
             return result;
