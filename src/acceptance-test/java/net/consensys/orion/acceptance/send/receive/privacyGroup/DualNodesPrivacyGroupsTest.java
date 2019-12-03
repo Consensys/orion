@@ -29,7 +29,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
@@ -40,6 +39,7 @@ import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.utils.Serializer;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -81,8 +81,9 @@ class DualNodesPrivacyGroupsTest {
   private HttpClient secondHttpClient;
 
   @BeforeEach
-  void setUpDualNodes(@TempDirectory final Path tempDir) throws Exception {
+  void setUpDualNodes() throws Exception {
 
+    final Path tempDir = Files.createTempDirectory("temp");
     final Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
     final Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
     final Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
@@ -105,7 +106,7 @@ class DualNodesPrivacyGroupsTest {
         "off",
         "tofu",
         "tofu",
-        "leveldb:database/node1");
+        "leveldb:" + tempDir + "database/node1");
     secondNodeConfig = NodeUtils.nodeConfig(
         tempDir,
         0,
@@ -278,9 +279,6 @@ class DualNodesPrivacyGroupsTest {
         Arrays.stream(deleteNodeSecondPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(Collectors.toList());
     assertFalse(listSecond.contains(firstPrivacyGroupId));
     assertTrue(listSecond.contains(secondPrivacyGroupId));
-
-    // delete the second privacy group
-    deletePrivacyGroup(firstNode, secondPrivacyGroupId, PK_1_B_64);
   }
 
   @Test
@@ -335,7 +333,5 @@ class DualNodesPrivacyGroupsTest {
     assertThat(
         Arrays.stream(privacyGroups).filter(p -> p.getName().equals("legacy")).collect(Collectors.toList()).size())
             .isEqualTo(1);
-    deletePrivacyGroup(firstNode, privacyGroups[0].getPrivacyGroupId(), PK_1_B_64);
-    deletePrivacyGroup(firstNode, privacyGroups[1].getPrivacyGroupId(), PK_1_B_64);
   }
 }
