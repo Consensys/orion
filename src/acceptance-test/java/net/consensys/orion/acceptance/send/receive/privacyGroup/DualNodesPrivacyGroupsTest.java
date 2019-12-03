@@ -229,6 +229,9 @@ class DualNodesPrivacyGroupsTest {
     assertEquals(secondNodePrivacyGroup.getDescription(), description);
     assertEquals(secondNodePrivacyGroup.getName(), name);
     assertArrayEquals(secondNodePrivacyGroup.getMembers(), addresses);
+
+    // delete the privacy group
+    deletePrivacyGroupTransaction(firstNode, privacyGroupId, PK_1_B_64);
   }
 
   @Test
