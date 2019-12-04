@@ -82,21 +82,17 @@ public class ReceiveHandler implements Handler<RoutingContext> {
 
       final EncryptedPayload encryptedPayload = encryptedPayloadOptional.get();
       Optional<byte[]> decryptPayload = decryptPayload(recipients, encryptedPayload);
-      decryptPayload
-          .ifPresentOrElse(payload -> sendResponse(routingContext, encryptedPayload.privacyGroupId(), payload), () -> {
-            log.info("unable to decrypt payload");
-            routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_KEYS_CANNOT_DECRYPT_PAYLOAD));
-          });
+      decryptPayload.ifPresentOrElse(payload -> sendResponse(routingContext, payload), () -> {
+        log.info("unable to decrypt payload");
+        routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_KEYS_CANNOT_DECRYPT_PAYLOAD));
+      });
     });
   }
 
-  private void sendResponse(
-      final RoutingContext routingContext,
-      final byte[] privacyGroupId,
-      final byte[] decryptedPayload) {
+  private void sendResponse(final RoutingContext routingContext, final byte[] decryptedPayload) {
     // configureRoutes a ReceiveResponse
     final Buffer toReturn;
-    final ReceiveResponse receiveResponse = new ReceiveResponse(decryptedPayload, privacyGroupId);
+    final ReceiveResponse receiveResponse = new ReceiveResponse(decryptedPayload);
     if (contentType == ORION) {
       toReturn = Buffer.buffer(Serializer.serialize(JSON, receiveResponse));
     } else if (contentType == JSON) {

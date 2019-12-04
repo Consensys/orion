@@ -84,7 +84,6 @@ class ReceiveHandlerTest extends HandlerTest {
     // generate keys and the privacy group
     final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
-    final byte[] privacyGroupId = getPrivacyGroupId(senderKey, new Box.PublicKey[] {recipientKey});
 
     final byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
@@ -100,7 +99,6 @@ class ReceiveHandlerTest extends HandlerTest {
 
     final ReceiveResponse receiveResponse = Serializer.deserialize(JSON, ReceiveResponse.class, resp.body().bytes());
     assertArrayEquals(toEncrypt, receiveResponse.getPayload());
-    assertArrayEquals(privacyGroupId, receiveResponse.getPrivacyGroupId());
   }
 
   @Test
@@ -108,7 +106,6 @@ class ReceiveHandlerTest extends HandlerTest {
     // generate keys and the privacy group
     final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
-    final byte[] privacyGroupId = getPrivacyGroupId(senderKey, new Box.PublicKey[] {recipientKey});
 
     final byte[] toEncrypt = new byte[342];
     new Random().nextBytes(toEncrypt);
@@ -127,7 +124,6 @@ class ReceiveHandlerTest extends HandlerTest {
 
     final ReceiveResponse receiveResponse = Serializer.deserialize(JSON, ReceiveResponse.class, resp.body().bytes());
     assertArrayEquals(toEncrypt, receiveResponse.getPayload());
-    assertArrayEquals(privacyGroupId, receiveResponse.getPrivacyGroupId());
   }
 
   @Test
