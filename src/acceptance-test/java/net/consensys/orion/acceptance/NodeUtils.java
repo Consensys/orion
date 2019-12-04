@@ -139,7 +139,7 @@ public class NodeUtils {
     return sender.send(originalPayload, senderKey, privacyGroupId).orElseThrow(AssertionFailedError::new);
   }
 
-  public static PrivacyGroup createPrivacyGroupTransaction(
+  public static PrivacyGroup createPrivacyGroup(
       final EthClientStub sender,
       final String[] addresses,
       final String from,
@@ -148,14 +148,11 @@ public class NodeUtils {
     return sender.createPrivacyGroup(addresses, from, name, description).orElseThrow(AssertionFailedError::new);
   }
 
-  public static PrivacyGroup[] findPrivacyGroupTransaction(final EthClientStub sender, final String[] addresses) {
+  public static PrivacyGroup[] findPrivacyGroup(final EthClientStub sender, final String[] addresses) {
     return sender.findPrivacyGroup(addresses).orElseThrow(AssertionFailedError::new);
   }
 
-  public static String deletePrivacyGroupTransaction(
-      final EthClientStub sender,
-      final String privacyGroupId,
-      final String from) {
+  public static String deletePrivacyGroup(final EthClientStub sender, final String privacyGroupId, final String from) {
     return sender.deletePrivacyGroup(privacyGroupId, from).orElseThrow(AssertionFailedError::new);
   }
 

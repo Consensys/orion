@@ -142,34 +142,28 @@ public class DistributePayloadManager {
           PrivacyGroupPayload.Type.LEGACY,
           null);
 
-      final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
-          new QueryPrivacyGroupPayload(keys.toArray(new String[0]), null);
-      final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
-
-      queryPrivacyGroupStorage.get(key).thenApply(privacyGroup -> {
-        if (privacyGroup.isPresent()) {
-          future.complete(privacyGroupPayload);
-          return key;
-        } else {
-          return privacyGroupStorage.put(privacyGroupPayload).thenApply(result -> {
-            queryPrivacyGroupPayload.setPrivacyGroupToAppend(privacyGroupStorage.generateDigest(privacyGroupPayload));
-            return queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenApply((res) -> {
-              future.complete(privacyGroupPayload);
-              return result;
-            }).exceptionally(e -> {
-              future.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP));
-              return null;
-            });
+      final String legacyId = privacyGroupStorage.generateDigest(privacyGroupPayload);
+      if (privacyGroupStorage.get(legacyId).get().isPresent()) {
+        future.complete(privacyGroupPayload);
+      } else {
+        final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
+            new QueryPrivacyGroupPayload(keys.toArray(new String[0]), null);
+        final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
+        privacyGroupStorage.put(privacyGroupPayload).thenApply(result -> {
+          queryPrivacyGroupPayload.setPrivacyGroupToAppend(legacyId);
+          return queryPrivacyGroupStorage.update(key, queryPrivacyGroupPayload).thenApply((res) -> {
+            future.complete(privacyGroupPayload);
+            return result;
           }).exceptionally(e -> {
             future.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP));
             return null;
           });
-        }
-      }).exceptionally(e -> {
-        future.fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_QUERY_ERROR));
-        return null;
-      });
-    } catch (final OrionException e) {
+        }).exceptionally(e -> {
+          future.fail(new OrionException(OrionErrorCode.ENCLAVE_UNABLE_STORE_PRIVACY_GROUP));
+          return null;
+        });
+      }
+    } catch (final Exception e) {
       future.fail(e);
     }
 
