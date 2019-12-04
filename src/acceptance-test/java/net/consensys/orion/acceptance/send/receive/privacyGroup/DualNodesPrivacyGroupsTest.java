@@ -15,11 +15,13 @@ package net.consensys.orion.acceptance.send.receive.privacyGroup;
 import static io.vertx.core.Vertx.vertx;
 import static net.consensys.cava.io.Base64.decodeBytes;
 import static net.consensys.cava.io.file.Files.copyResource;
-import static net.consensys.orion.acceptance.NodeUtils.createPrivacyGroupTransaction;
-import static net.consensys.orion.acceptance.NodeUtils.deletePrivacyGroupTransaction;
-import static net.consensys.orion.acceptance.NodeUtils.findPrivacyGroupTransaction;
+import static net.consensys.orion.acceptance.NodeUtils.createPrivacyGroup;
+import static net.consensys.orion.acceptance.NodeUtils.deletePrivacyGroup;
+import static net.consensys.orion.acceptance.NodeUtils.findPrivacyGroup;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
+import static net.consensys.orion.acceptance.NodeUtils.sendTransaction;
 import static net.consensys.orion.http.server.HttpContentType.CBOR;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -27,7 +29,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
@@ -38,6 +39,7 @@ import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.utils.Serializer;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -79,8 +81,9 @@ class DualNodesPrivacyGroupsTest {
   private HttpClient secondHttpClient;
 
   @BeforeEach
-  void setUpDualNodes(@TempDirectory final Path tempDir) throws Exception {
+  void setUpDualNodes() throws Exception {
 
+    final Path tempDir = Files.createTempDirectory("temp");
     final Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
     final Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
     final Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
@@ -103,7 +106,7 @@ class DualNodesPrivacyGroupsTest {
         "off",
         "tofu",
         "tofu",
-        "leveldb:database/node1");
+        "leveldb:" + tempDir + "database/node1");
     secondNodeConfig = NodeUtils.nodeConfig(
         tempDir,
         0,
@@ -177,23 +180,23 @@ class DualNodesPrivacyGroupsTest {
     final String description = "testDescription";
     final String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
     // create a privacy group
-    final PrivacyGroup privacyGroup = createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, name, description);
+    final PrivacyGroup privacyGroup = createPrivacyGroup(firstNode, addresses, PK_1_B_64, name, description);
 
     final String privacyGroupId = privacyGroup.getPrivacyGroupId();
     assertEquals(privacyGroup.getName(), name);
     assertEquals(privacyGroup.getDescription(), description);
 
     // find the created privacy group in first node
-    final PrivacyGroup[] firstNodePrivacyGroups = findPrivacyGroupTransaction(firstNode, addresses);
+    final PrivacyGroup[] firstNodePrivacyGroups = findPrivacyGroup(firstNode, addresses);
 
     assertEquals(firstNodePrivacyGroups.length, 1);
     assertEquals(firstNodePrivacyGroups[0].getPrivacyGroupId(), privacyGroupId);
 
     // find the created privacy group in second node
     await().atMost(20, TimeUnit.SECONDS).until(
-        () -> findPrivacyGroupTransaction(secondNode, addresses).length == firstNodePrivacyGroups.length);
+        () -> findPrivacyGroup(secondNode, addresses).length == firstNodePrivacyGroups.length);
     assertEquals(
-        findPrivacyGroupTransaction(secondNode, addresses)[0].getPrivacyGroupId(),
+        findPrivacyGroup(secondNode, addresses)[0].getPrivacyGroupId(),
         firstNodePrivacyGroups[0].getPrivacyGroupId());
   }
 
@@ -206,24 +209,24 @@ class DualNodesPrivacyGroupsTest {
     final String description = "testDescription";
     final String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
     // create a privacy group
-    final PrivacyGroup privacyGroup = createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, name, description);
+    final PrivacyGroup privacyGroup = createPrivacyGroup(firstNode, addresses, PK_1_B_64, name, description);
 
     final String privacyGroupId = privacyGroup.getPrivacyGroupId();
     assertEquals(privacyGroup.getName(), name);
     assertEquals(privacyGroup.getDescription(), description);
 
     // delete privacy group
-    final String privacyGroupDeleted = deletePrivacyGroupTransaction(firstNode, privacyGroupId, PK_1_B_64);
+    final String privacyGroupDeleted = deletePrivacyGroup(firstNode, privacyGroupId, PK_1_B_64);
 
     // find the created privacy group deleted in first node
-    final PrivacyGroup[] deleteNodeFirstPrivacyGroups = findPrivacyGroupTransaction(firstNode, addresses);
+    final PrivacyGroup[] deleteNodeFirstPrivacyGroups = findPrivacyGroup(firstNode, addresses);
 
     final List<String> listFirst =
         Arrays.stream(deleteNodeFirstPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(Collectors.toList());
     assertFalse(listFirst.contains(privacyGroupDeleted));
 
     // find the deleted privacy group in second node
-    final PrivacyGroup[] deleteNodeSecondPrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
+    final PrivacyGroup[] deleteNodeSecondPrivacyGroups = findPrivacyGroup(secondNode, addresses);
 
     final List<String> listSecond =
         Arrays.stream(deleteNodeSecondPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(Collectors.toList());
@@ -241,46 +244,41 @@ class DualNodesPrivacyGroupsTest {
     final String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
 
     // create a privacy group
-    final PrivacyGroup firstPrivacyGroup =
-        createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, name, description);
+    final PrivacyGroup firstPrivacyGroup = createPrivacyGroup(firstNode, addresses, PK_1_B_64, name, description);
 
     final String firstPrivacyGroupId = firstPrivacyGroup.getPrivacyGroupId();
     assertEquals(firstPrivacyGroup.getName(), name);
     assertEquals(firstPrivacyGroup.getDescription(), description);
 
     // find the created privacy group in first node
-    final PrivacyGroup[] initialPrivacyGroups = findPrivacyGroupTransaction(firstNode, addresses);
+    final PrivacyGroup[] initialPrivacyGroups = findPrivacyGroup(firstNode, addresses);
     assertEquals(initialPrivacyGroups.length, 1);
     assertEquals(initialPrivacyGroups[0].getPrivacyGroupId(), firstPrivacyGroupId);
 
 
     //create another privacy group
-    final PrivacyGroup secondPrivacyGroup =
-        createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, name, description);
+    final PrivacyGroup secondPrivacyGroup = createPrivacyGroup(firstNode, addresses, PK_1_B_64, name, description);
 
     final String secondPrivacyGroupId = secondPrivacyGroup.getPrivacyGroupId();
     assertEquals(firstPrivacyGroup.getName(), name);
     assertEquals(firstPrivacyGroup.getDescription(), description);
 
     // find the created privacy group in second node
-    await().atMost(5, TimeUnit.SECONDS).until(() -> findPrivacyGroupTransaction(secondNode, addresses).length == 2);
-    final PrivacyGroup[] updatedPrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
+    await().atMost(5, TimeUnit.SECONDS).until(() -> findPrivacyGroup(secondNode, addresses).length == 2);
+    final PrivacyGroup[] updatedPrivacyGroups = findPrivacyGroup(secondNode, addresses);
     assertEquals(updatedPrivacyGroups[0].getPrivacyGroupId(), firstPrivacyGroupId);
     assertEquals(updatedPrivacyGroups[1].getPrivacyGroupId(), secondPrivacyGroupId);
 
     // delete the first privacy group
-    deletePrivacyGroupTransaction(firstNode, firstPrivacyGroupId, PK_1_B_64);
+    deletePrivacyGroup(firstNode, firstPrivacyGroupId, PK_1_B_64);
 
     // find the deleted privacy group in second node
-    final PrivacyGroup[] deleteNodeSecondPrivacyGroups = findPrivacyGroupTransaction(secondNode, addresses);
+    final PrivacyGroup[] deleteNodeSecondPrivacyGroups = findPrivacyGroup(secondNode, addresses);
 
     final List<String> listSecond =
         Arrays.stream(deleteNodeSecondPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(Collectors.toList());
     assertFalse(listSecond.contains(firstPrivacyGroupId));
     assertTrue(listSecond.contains(secondPrivacyGroupId));
-
-    // delete the second privacy group
-    deletePrivacyGroupTransaction(firstNode, secondPrivacyGroupId, PK_1_B_64);
   }
 
   @Test
@@ -292,21 +290,48 @@ class DualNodesPrivacyGroupsTest {
     final String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
 
     // create a privacy group
-    final PrivacyGroup privacyGroup = createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, name, description);
+    final PrivacyGroup privacyGroup = createPrivacyGroup(firstNode, addresses, PK_1_B_64, name, description);
 
     final String privacyGroupId = privacyGroup.getPrivacyGroupId();
     assertEquals(privacyGroup.getName(), name);
     assertEquals(privacyGroup.getDescription(), description);
 
     // find the created privacy group in first node
-    final PrivacyGroup[] initialPrivacyGroups = findPrivacyGroupTransaction(firstNode, addresses);
+    final PrivacyGroup[] initialPrivacyGroups = findPrivacyGroup(firstNode, addresses);
     assertEquals(initialPrivacyGroups.length, 1);
     assertEquals(initialPrivacyGroups[0].getPrivacyGroupId(), privacyGroupId);
 
     // delete the privacy group
-    deletePrivacyGroupTransaction(firstNode, privacyGroupId, PK_1_B_64);
+    deletePrivacyGroup(firstNode, privacyGroupId, PK_1_B_64);
 
     // try to delete the group again
-    assertThrows(AssertionFailedError.class, () -> deletePrivacyGroupTransaction(firstNode, privacyGroupId, PK_1_B_64));
+    assertThrows(AssertionFailedError.class, () -> deletePrivacyGroup(firstNode, privacyGroupId, PK_1_B_64));
+  }
+
+  @Test
+  void legacyPrivacyGroupAddedToQueryPrivacyGroupIfNonLegacyGroupHasBeenCreatedBefore() {
+    final String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
+
+    final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
+    NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
+
+    final PrivacyGroup privacyGroup =
+        createPrivacyGroup(firstNode, addresses, PK_1_B_64, "nonLegacy", "nonLegacy Group");
+
+    // legacy transaction should create legacy privacy group
+    sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
+
+    final PrivacyGroup[] privacyGroups = findPrivacyGroup(firstNode, addresses);
+
+    assertThat(privacyGroups.length).isEqualTo(2);
+    assertThat(
+        Arrays
+            .stream(privacyGroups)
+            .filter(p -> privacyGroup.getPrivacyGroupId().equals(p.getPrivacyGroupId()))
+            .collect(Collectors.toList())
+            .size()).isEqualTo(1);
+    assertThat(
+        Arrays.stream(privacyGroups).filter(p -> p.getName().equals("legacy")).collect(Collectors.toList()).size())
+            .isEqualTo(1);
   }
 }
