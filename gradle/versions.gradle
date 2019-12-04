@@ -63,9 +63,9 @@ dependencyManagement {
 
     dependency 'org.fusesource.leveldbjni:leveldbjni-all:1.8'
 
-    dependency 'org.junit.jupiter:junit-jupiter-api:5.2.0'
-    dependency 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
-    dependency 'org.junit.jupiter:junit-jupiter-params:5.2.0'
+    dependency 'org.junit.jupiter:junit-jupiter-api:5.5.2'
+    dependency 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
+    dependency 'org.junit.jupiter:junit-jupiter-params:5.5.2'
 
     dependency 'org.mapdb:mapdb:3.0.7'
     dependency 'org.lz4:lz4-java:1.6.0'

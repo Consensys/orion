@@ -62,6 +62,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Runs up a two nodes that communicates with each other. */
 @ExtendWith(TempDirectoryExtension.class)
@@ -81,7 +82,7 @@ class DualNodesPrivacyGroupsTest {
   private HttpClient secondHttpClient;
 
   @BeforeEach
-  void setUpDualNodes(@TempDirectory final Path tempDir) throws Exception {
+  void setUpDualNodes(@TempDir final Path tempDir) throws Exception {
 
     final Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
     final Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
@@ -229,9 +230,6 @@ class DualNodesPrivacyGroupsTest {
     assertEquals(secondNodePrivacyGroup.getDescription(), description);
     assertEquals(secondNodePrivacyGroup.getName(), name);
     assertArrayEquals(secondNodePrivacyGroup.getMembers(), addresses);
-
-    // delete the privacy group
-    deletePrivacyGroupTransaction(firstNode, privacyGroupId, PK_1_B_64);
   }
 
   @Test
