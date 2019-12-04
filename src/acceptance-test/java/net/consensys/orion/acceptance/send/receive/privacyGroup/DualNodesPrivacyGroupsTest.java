@@ -309,7 +309,7 @@ class DualNodesPrivacyGroupsTest {
   }
 
   @Test
-  void LegacyPrivacyGroupAddedToQueryPrivacyGroupIfNonLegacyGroupHasBeenCreatedBefore() {
+  void legacyPrivacyGroupAddedToQueryPrivacyGroupIfNonLegacyGroupHasBeenCreatedBefore() {
     final String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
 
     final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
