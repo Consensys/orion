@@ -45,7 +45,7 @@ public class RetrievePrivacyGroupHandlerTest extends HandlerTest {
   private static final String PRIVACY_GROUP_NAME = "test";
   private static final String PRIVACY_GROUP_DESCRIPTION = "desc";
 
-  private MemoryKeyStore memoryKeyStore;
+  private MemoryKeyStore memoryKeyStore = new MemoryKeyStore();
   private String privacyGroupId;
   private FakePeer peer;
   private Box.PublicKey senderKey;
@@ -53,9 +53,7 @@ public class RetrievePrivacyGroupHandlerTest extends HandlerTest {
 
   @Override
   protected Enclave buildEnclave(final Path tempDir) {
-    memoryKeyStore = new MemoryKeyStore();
-    final Box.PublicKey defaultNodeKey = memoryKeyStore.generateKeyPair();
-    memoryKeyStore.addNodeKey(defaultNodeKey);
+    memoryKeyStore.generateKeyPair();
     return new SodiumEnclave(memoryKeyStore);
   }
 
@@ -83,8 +81,6 @@ public class RetrievePrivacyGroupHandlerTest extends HandlerTest {
 
     // execute request
     final Response resp = httpClient.newCall(request).execute();
-
-    assertThat(resp.code()).isEqualTo(200);
 
     final RecordedRequest recordedRequest = peer.server.takeRequest();
     assertThat(recordedRequest.getPath()).isEqualTo(PUSH_PRIVACY_GROUP);
