@@ -45,7 +45,7 @@ public class RetrievePrivacyGroupHandlerTest extends HandlerTest {
   private static final String PRIVACY_GROUP_NAME = "test";
   private static final String PRIVACY_GROUP_DESCRIPTION = "desc";
 
-  private MemoryKeyStore memoryKeyStore = new MemoryKeyStore();
+  private final MemoryKeyStore memoryKeyStore = new MemoryKeyStore();
   private String privacyGroupId;
   private FakePeer peer;
   private Box.PublicKey senderKey;
