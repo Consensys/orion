@@ -70,10 +70,6 @@ class DualNodesPrivacyGroupsTest {
   private static final String PK_1_B_64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
 
-  private Config firstNodeConfig;
-  private Config secondNodeConfig;
-  private ConcurrentNetworkNodes networkNodes;
-
   private Orion firstOrionLauncher;
   private Orion secondOrionLauncher;
   private Vertx vertx;
@@ -93,7 +89,7 @@ class DualNodesPrivacyGroupsTest {
       st.executeUpdate("create table if not exists store(key char(60), value binary, primary key(key))");
     }
 
-    firstNodeConfig = NodeUtils.nodeConfig(
+    final Config firstNodeConfig = NodeUtils.nodeConfig(
         tempDir,
         0,
         "127.0.0.1",
@@ -106,7 +102,7 @@ class DualNodesPrivacyGroupsTest {
         "tofu",
         "tofu",
         "leveldb:database/node1");
-    secondNodeConfig = NodeUtils.nodeConfig(
+    final Config secondNodeConfig = NodeUtils.nodeConfig(
         tempDir,
         0,
         "127.0.0.1",
@@ -127,13 +123,17 @@ class DualNodesPrivacyGroupsTest {
     secondHttpClient = vertx.createHttpClient();
     final Box.PublicKey pk1 = Box.PublicKey.fromBytes(decodeBytes(PK_1_B_64));
     final Box.PublicKey pk2 = Box.PublicKey.fromBytes(decodeBytes(PK_2_B_64));
-    networkNodes = new ConcurrentNetworkNodes(NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
+    final ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(
+        NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
 
-    networkNodes.addNode(Collections.singletonList(pk1), NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
-    networkNodes.addNode(Collections.singletonList(pk2), NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
+    networkNodes
+        .addNode(Collections.singletonList(pk1), NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
+    networkNodes
+        .addNode(Collections.singletonList(pk2), NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
     // prepare /partyinfo payload (our known peers)
     final RequestBody partyInfoBody =
-        RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), Serializer.serialize(CBOR, networkNodes));
+        RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), Serializer.serialize(CBOR,
+            networkNodes));
     // call http endpoint
     final OkHttpClient httpClient = new OkHttpClient();
 
@@ -149,13 +149,11 @@ class DualNodesPrivacyGroupsTest {
     final Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
 
-    final ConcurrentNetworkNodes partyInfoResponse =
-        Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
-    return partyInfoResponse;
+    return Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
   }
 
   @AfterEach
-  void tearDown() throws InterruptedException {
+  void tearDown() {
     await().atMost(5, TimeUnit.SECONDS).until(() -> doesNotThrowWhenCallingStop(firstOrionLauncher));
     await().atMost(5, TimeUnit.SECONDS).until(() -> doesNotThrowWhenCallingStop(secondOrionLauncher));
     vertx.close();
