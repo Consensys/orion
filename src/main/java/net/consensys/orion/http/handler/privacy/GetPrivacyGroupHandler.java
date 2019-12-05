@@ -52,28 +52,41 @@ public class GetPrivacyGroupHandler implements Handler<RoutingContext> {
     if (privacyGroupId == null) {
       routingContext.fail(400);
     } else {
-
-      privacyGroupStorage.get(privacyGroupId).thenAccept((result) -> {
-        if (result.isPresent()) {
-          final PrivacyGroupPayload privacyGroupPayload = result.get();
-          log.info("Found privacy group {}", privacyGroupId);
-
-          if (privacyGroupPayload.state().equals(State.ACTIVE)) {
-            final PrivacyGroup response = new PrivacyGroup(
-                privacyGroupId,
-                privacyGroupPayload.type(),
-                privacyGroupPayload.name(),
-                privacyGroupPayload.description(),
-                privacyGroupPayload.addresses());
-            routingContext.response().end(Buffer.buffer(Serializer.serialize(JSON, response)));
-          } else {
-            routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING));
-          }
-        } else {
-          routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING));
-        }
-      });
+      handleRequest(routingContext, privacyGroupId);
     }
+  }
+
+  private void handleRequest(final RoutingContext routingContext, final String privacyGroupId) {
+    privacyGroupStorage.get(privacyGroupId).thenAccept((result) -> {
+      if (result.isPresent()) {
+        final PrivacyGroupPayload privacyGroupPayload = result.get();
+        log.info("Found privacy group {}", privacyGroupId);
+        if (privacyGroupPayload.state().equals(State.ACTIVE)) {
+          privacyGroupResponse(routingContext, privacyGroupId, privacyGroupPayload);
+        } else {
+          notFoundResponse(routingContext);
+        }
+      } else {
+        notFoundResponse(routingContext);
+      }
+    });
+  }
+
+  private void privacyGroupResponse(
+      final RoutingContext routingContext,
+      final String privacyGroupId,
+      final PrivacyGroupPayload privacyGroupPayload) {
+    final PrivacyGroup response = new PrivacyGroup(
+        privacyGroupId,
+        privacyGroupPayload.type(),
+        privacyGroupPayload.name(),
+        privacyGroupPayload.description(),
+        privacyGroupPayload.addresses());
+    routingContext.response().end(Buffer.buffer(Serializer.serialize(JSON, response)));
+  }
+
+  private void notFoundResponse(final RoutingContext routingContext) {
+    routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING));
   }
 
 }
