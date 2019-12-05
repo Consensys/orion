@@ -17,12 +17,12 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class GetPrivacyGroupRequest implements Serializable {
+public class RetrievePrivacyGroupRequest implements Serializable {
 
   private final String privacyGroupId;
 
   @JsonCreator
-  public GetPrivacyGroupRequest(@JsonProperty("privacyGroupId") final String privacyGroupId) {
+  public RetrievePrivacyGroupRequest(@JsonProperty("privacyGroupId") final String privacyGroupId) {
     this.privacyGroupId = privacyGroupId;
   }
 

@@ -28,15 +28,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Get a privacy group given the privacyGroupId.
+ * Retrieves a privacy group given the privacyGroupId.
  */
-public class GetPrivacyGroupHandler implements Handler<RoutingContext> {
+public class RetrievePrivacyGroupHandler implements Handler<RoutingContext> {
 
   private static final Logger log = LogManager.getLogger();
 
   private final Storage<PrivacyGroupPayload> privacyGroupStorage;
 
-  public GetPrivacyGroupHandler(final Storage<PrivacyGroupPayload> privacyGroupStorage) {
+  public RetrievePrivacyGroupHandler(final Storage<PrivacyGroupPayload> privacyGroupStorage) {
     this.privacyGroupStorage = privacyGroupStorage;
   }
 
@@ -44,10 +44,10 @@ public class GetPrivacyGroupHandler implements Handler<RoutingContext> {
   @SuppressWarnings("rawtypes")
   public void handle(final RoutingContext routingContext) {
     final byte[] request = routingContext.getBody().getBytes();
-    final GetPrivacyGroupRequest getPrivacyGroupRequest =
-        Serializer.deserialize(JSON, GetPrivacyGroupRequest.class, request);
+    final RetrievePrivacyGroupRequest retrievePrivacyGroupRequest =
+        Serializer.deserialize(JSON, RetrievePrivacyGroupRequest.class, request);
 
-    final String privacyGroupId = getPrivacyGroupRequest.privacyGroupId();
+    final String privacyGroupId = retrievePrivacyGroupRequest.privacyGroupId();
 
     if (privacyGroupId == null) {
       routingContext.fail(400);

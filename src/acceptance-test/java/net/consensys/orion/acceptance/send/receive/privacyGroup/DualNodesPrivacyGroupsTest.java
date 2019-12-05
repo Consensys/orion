@@ -18,8 +18,8 @@ import static net.consensys.cava.io.file.Files.copyResource;
 import static net.consensys.orion.acceptance.NodeUtils.createPrivacyGroupTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.deletePrivacyGroupTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.findPrivacyGroupTransaction;
-import static net.consensys.orion.acceptance.NodeUtils.getPrivacyGroupTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
+import static net.consensys.orion.acceptance.NodeUtils.retrievePrivacyGroupTransaction;
 import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertArrayEquals;
@@ -200,7 +200,7 @@ class DualNodesPrivacyGroupsTest {
   }
 
   @Test
-  void createAndGet() {
+  void createAndRetrieve() {
     final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
     final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
 
@@ -215,7 +215,7 @@ class DualNodesPrivacyGroupsTest {
     assertEquals(privacyGroup.getDescription(), description);
 
     // get the created privacy group in first node
-    final PrivacyGroup firstNodePrivacyGroup = getPrivacyGroupTransaction(firstNode, privacyGroupId);
+    final PrivacyGroup firstNodePrivacyGroup = retrievePrivacyGroupTransaction(firstNode, privacyGroupId);
 
     assertEquals(firstNodePrivacyGroup.getPrivacyGroupId(), privacyGroupId);
     assertEquals(firstNodePrivacyGroup.getDescription(), description);
@@ -224,8 +224,8 @@ class DualNodesPrivacyGroupsTest {
 
     // get the created privacy group in second node
     await().atMost(20, TimeUnit.SECONDS).until(
-        () -> getPrivacyGroupTransaction(secondNode, privacyGroupId).getPrivacyGroupId().equals(privacyGroupId));
-    final PrivacyGroup secondNodePrivacyGroup = getPrivacyGroupTransaction(secondNode, privacyGroupId);
+        () -> retrievePrivacyGroupTransaction(secondNode, privacyGroupId).getPrivacyGroupId().equals(privacyGroupId));
+    final PrivacyGroup secondNodePrivacyGroup = retrievePrivacyGroupTransaction(secondNode, privacyGroupId);
     assertEquals(secondNodePrivacyGroup.getDescription(), description);
     assertEquals(secondNodePrivacyGroup.getName(), name);
     assertArrayEquals(secondNodePrivacyGroup.getMembers(), addresses);

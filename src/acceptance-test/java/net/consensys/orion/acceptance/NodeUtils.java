@@ -159,8 +159,8 @@ public class NodeUtils {
     return sender.deletePrivacyGroup(privacyGroupId, from).orElseThrow(AssertionFailedError::new);
   }
 
-  public static PrivacyGroup getPrivacyGroupTransaction(final EthClientStub sender, final String privacyGroupId) {
-    return sender.getPrivacyGroup(privacyGroupId).orElseThrow(AssertionFailedError::new);
+  public static PrivacyGroup retrievePrivacyGroupTransaction(final EthClientStub sender, final String privacyGroupId) {
+    return sender.retrievePrivacyGroup(privacyGroupId).orElseThrow(AssertionFailedError::new);
   }
 
   /** Asserts the received payload matches that sent. */

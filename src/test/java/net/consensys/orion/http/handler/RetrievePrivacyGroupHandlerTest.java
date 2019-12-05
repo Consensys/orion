@@ -23,9 +23,9 @@ import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 import net.consensys.orion.helpers.FakePeer;
 import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupRequest;
-import net.consensys.orion.http.handler.privacy.GetPrivacyGroupRequest;
 import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
+import net.consensys.orion.http.handler.privacy.RetrievePrivacyGroupRequest;
 import net.consensys.orion.utils.Serializer;
 
 import java.io.IOException;
@@ -40,7 +40,7 @@ import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class GetPrivacyGroupHandlerTest extends HandlerTest {
+public class RetrievePrivacyGroupHandlerTest extends HandlerTest {
 
   private static final String PRIVACY_GROUP_NAME = "test";
   private static final String PRIVACY_GROUP_DESCRIPTION = "desc";
@@ -70,7 +70,7 @@ public class GetPrivacyGroupHandlerTest extends HandlerTest {
         encodeBytes(senderKey.bytesArray()),
         PRIVACY_GROUP_NAME,
         PRIVACY_GROUP_DESCRIPTION);
-    final Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
+    final Request request = buildPrivateAPIRequest(CREATE_PRIVACY_GROUP, JSON, privacyGroupRequestExpected);
 
     final byte[] privacyGroupId = enclave.generatePrivacyGroupId(
         new Box.PublicKey[] {senderKey, recipientKey},
@@ -87,7 +87,7 @@ public class GetPrivacyGroupHandlerTest extends HandlerTest {
     assertThat(resp.code()).isEqualTo(200);
 
     final RecordedRequest recordedRequest = peer.server.takeRequest();
-    assertThat(recordedRequest.getPath()).isEqualTo("/pushPrivacyGroup");
+    assertThat(recordedRequest.getPath()).isEqualTo(PUSH_PRIVACY_GROUP);
     assertThat(recordedRequest.getMethod()).isEqualTo("POST");
 
     final PrivacyGroup privacyGroup = Serializer.deserialize(JSON, PrivacyGroup.class, resp.body().bytes());
@@ -96,8 +96,8 @@ public class GetPrivacyGroupHandlerTest extends HandlerTest {
 
   @Test
   void knownPrivacyGroupIsRetrieved() throws IOException {
-    final GetPrivacyGroupRequest getPrivacyGroupRequest = buildGetPrivacyGroupRequest(privacyGroupId);
-    final Request request = buildPrivateAPIRequest("/getPrivacyGroup", JSON, getPrivacyGroupRequest);
+    final RetrievePrivacyGroupRequest retrievePrivacyGroupRequest = buildGetPrivacyGroupRequest(privacyGroupId);
+    final Request request = buildPrivateAPIRequest(RETRIEVE_PRIVACY_GROUP, JSON, retrievePrivacyGroupRequest);
     peer.addResponse(new MockResponse().setBody(privacyGroupId));
 
     final Response resp = httpClient.newCall(request).execute();
@@ -112,8 +112,9 @@ public class GetPrivacyGroupHandlerTest extends HandlerTest {
 
   @Test
   void unknownPrivacyGroupIdReturnsNotFoundError() throws IOException {
-    final GetPrivacyGroupRequest getPrivacyGroupRequest = buildGetPrivacyGroupRequest("unknownPrivacyGroupId");
-    final Request request = buildPrivateAPIRequest("/getPrivacyGroup", JSON, getPrivacyGroupRequest);
+    final RetrievePrivacyGroupRequest retrievePrivacyGroupRequest =
+        buildGetPrivacyGroupRequest("unknownPrivacyGroupId");
+    final Request request = buildPrivateAPIRequest(RETRIEVE_PRIVACY_GROUP, JSON, retrievePrivacyGroupRequest);
 
     final Response resp = httpClient.newCall(request).execute();
 
@@ -126,20 +127,20 @@ public class GetPrivacyGroupHandlerTest extends HandlerTest {
 
     final DeletePrivacyGroupRequest deletePrivacyGroupRequest =
         buildDeletePrivacyGroupRequest(privacyGroupId, encodeBytes(senderKey.bytesArray()));
-    final Request deleteRequest = buildPrivateAPIRequest("/deletePrivacyGroup", JSON, deletePrivacyGroupRequest);
+    final Request deleteRequest = buildPrivateAPIRequest(DELETE_PRIVACY_GROUP, JSON, deletePrivacyGroupRequest);
     final Response deleteResponse = httpClient.newCall(deleteRequest).execute();
     assertThat(deleteResponse.code()).isEqualTo(200);
 
-    final GetPrivacyGroupRequest getPrivacyGroupRequest = buildGetPrivacyGroupRequest(privacyGroupId);
-    final Request getGroupRequest = buildPrivateAPIRequest("/getPrivacyGroup", JSON, getPrivacyGroupRequest);
+    final RetrievePrivacyGroupRequest retrievePrivacyGroupRequest = buildGetPrivacyGroupRequest(privacyGroupId);
+    final Request getGroupRequest = buildPrivateAPIRequest(RETRIEVE_PRIVACY_GROUP, JSON, retrievePrivacyGroupRequest);
     final Response getGroupResponse = httpClient.newCall(getGroupRequest).execute();
     assertThat(getGroupResponse.code()).isEqualTo(404);
   }
 
   @Test
   void requestWithoutPrivacyGroupIdFails() throws IOException {
-    final GetPrivacyGroupRequest getPrivacyGroupRequest = buildGetPrivacyGroupRequest(null);
-    final Request request = buildPrivateAPIRequest("/getPrivacyGroup", JSON, getPrivacyGroupRequest);
+    final RetrievePrivacyGroupRequest retrievePrivacyGroupRequest = buildGetPrivacyGroupRequest(null);
+    final Request request = buildPrivateAPIRequest(RETRIEVE_PRIVACY_GROUP, JSON, retrievePrivacyGroupRequest);
 
     final Response resp = httpClient.newCall(request).execute();
 
@@ -161,8 +162,8 @@ public class GetPrivacyGroupHandlerTest extends HandlerTest {
     return privacyGroupRequest;
   }
 
-  private GetPrivacyGroupRequest buildGetPrivacyGroupRequest(final String key) {
-    return new GetPrivacyGroupRequest(key);
+  private RetrievePrivacyGroupRequest buildGetPrivacyGroupRequest(final String key) {
+    return new RetrievePrivacyGroupRequest(key);
   }
 
   private DeletePrivacyGroupRequest buildDeletePrivacyGroupRequest(final String key, final String from) {
