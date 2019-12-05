@@ -123,17 +123,14 @@ class DualNodesPrivacyGroupsTest {
     secondHttpClient = vertx.createHttpClient();
     final Box.PublicKey pk1 = Box.PublicKey.fromBytes(decodeBytes(PK_1_B_64));
     final Box.PublicKey pk2 = Box.PublicKey.fromBytes(decodeBytes(PK_2_B_64));
-    final ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(
-        NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
+    final ConcurrentNetworkNodes networkNodes =
+        new ConcurrentNetworkNodes(NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
 
-    networkNodes
-        .addNode(Collections.singletonList(pk1), NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
-    networkNodes
-        .addNode(Collections.singletonList(pk2), NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
+    networkNodes.addNode(Collections.singletonList(pk1), NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
+    networkNodes.addNode(Collections.singletonList(pk2), NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
     // prepare /partyinfo payload (our known peers)
     final RequestBody partyInfoBody =
-        RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), Serializer.serialize(CBOR,
-            networkNodes));
+        RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), Serializer.serialize(CBOR, networkNodes));
     // call http endpoint
     final OkHttpClient httpClient = new OkHttpClient();
 
