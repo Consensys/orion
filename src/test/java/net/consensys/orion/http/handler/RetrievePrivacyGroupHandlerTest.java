@@ -17,6 +17,7 @@ import static net.consensys.orion.http.server.HttpContentType.JSON;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import net.consensys.cava.crypto.sodium.Box;
+import net.consensys.cava.crypto.sodium.Box.PublicKey;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
@@ -36,7 +37,6 @@ import java.util.Collections;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -58,11 +58,17 @@ public class RetrievePrivacyGroupHandlerTest extends HandlerTest {
   }
 
   @BeforeEach
-  void setup() throws IOException, InterruptedException {
+  void setup() throws IOException {
     senderKey = memoryKeyStore.generateKeyPair();
     final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
 
     privacyGroupMembers = new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
+    peer = new FakePeer(recipientKey);
+
+    privacyGroupId = createPrivacyGroupId(recipientKey);
+  }
+
+  private String createPrivacyGroupId(final PublicKey recipientKey) throws IOException {
     final PrivacyGroupRequest privacyGroupRequestExpected = buildPrivacyGroupRequest(
         privacyGroupMembers,
         encodeBytes(senderKey.bytesArray()),
@@ -71,23 +77,17 @@ public class RetrievePrivacyGroupHandlerTest extends HandlerTest {
     final Request request = buildPrivateAPIRequest(CREATE_PRIVACY_GROUP, JSON, privacyGroupRequestExpected);
 
     final byte[] privacyGroupId = enclave.generatePrivacyGroupId(
-        new Box.PublicKey[] {senderKey, recipientKey},
+        new PublicKey[] {senderKey, recipientKey},
         privacyGroupRequestExpected.getSeed().get(),
         PrivacyGroupPayload.Type.PANTHEON);
 
-    // create fake peer
-    peer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupId)), recipientKey);
+    peer.addResponse(new MockResponse().setBody(encodeBytes(privacyGroupId)));
     networkNodes.addNode(Collections.singletonList(peer.publicKey), peer.getURL());
 
-    // execute request
     final Response resp = httpClient.newCall(request).execute();
 
-    final RecordedRequest recordedRequest = peer.server.takeRequest();
-    assertThat(recordedRequest.getPath()).isEqualTo(PUSH_PRIVACY_GROUP);
-    assertThat(recordedRequest.getMethod()).isEqualTo("POST");
-
     final PrivacyGroup privacyGroup = Serializer.deserialize(JSON, PrivacyGroup.class, resp.body().bytes());
-    this.privacyGroupId = privacyGroup.getPrivacyGroupId();
+    return privacyGroup.getPrivacyGroupId();
   }
 
   @Test
