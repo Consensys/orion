@@ -30,7 +30,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.junit.TempDirectory;
 import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
@@ -41,7 +40,6 @@ import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.utils.Serializer;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -82,7 +80,6 @@ class DualNodesPrivacyGroupsTest {
   @BeforeEach
   void setUpDualNodes(@TempDir final Path tempDir) throws Exception {
 
-    final Path tempDir = Files.createTempDirectory("temp");
     final Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
     final Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
     final Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
@@ -207,7 +204,7 @@ class DualNodesPrivacyGroupsTest {
     final String description = "testDescription";
     final String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
     // create a privacy group
-    final PrivacyGroup privacyGroup = createPrivacyGroupTransaction(firstNode, addresses, PK_1_B_64, name, description);
+    final PrivacyGroup privacyGroup = NodeUtils.createPrivacyGroup(firstNode, addresses, PK_1_B_64, name, description);
 
     final String privacyGroupId = privacyGroup.getPrivacyGroupId();
     assertThat(privacyGroup.getName()).isEqualTo(name);
