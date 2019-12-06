@@ -62,17 +62,17 @@ public class RetrievePrivacyGroupHandler implements Handler<RoutingContext> {
         final PrivacyGroupPayload privacyGroupPayload = result.get();
         log.info("Found privacy group {}", privacyGroupId);
         if (privacyGroupPayload.state().equals(State.ACTIVE)) {
-          privacyGroupResponse(routingContext, privacyGroupId, privacyGroupPayload);
+          responseWithPrivacyGroup(routingContext, privacyGroupId, privacyGroupPayload);
         } else {
-          notFoundResponse(routingContext);
+          responseWithNotFoundError(routingContext);
         }
       } else {
-        notFoundResponse(routingContext);
+        responseWithNotFoundError(routingContext);
       }
     });
   }
 
-  private void privacyGroupResponse(
+  private void responseWithPrivacyGroup(
       final RoutingContext routingContext,
       final String privacyGroupId,
       final PrivacyGroupPayload privacyGroupPayload) {
@@ -85,7 +85,7 @@ public class RetrievePrivacyGroupHandler implements Handler<RoutingContext> {
     routingContext.response().end(Buffer.buffer(Serializer.serialize(JSON, response)));
   }
 
-  private void notFoundResponse(final RoutingContext routingContext) {
+  private void responseWithNotFoundError(final RoutingContext routingContext) {
     routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING));
   }
 
