@@ -229,5 +229,4 @@ public class EthClientStub {
     map.put("privacyGroupId", privacyGroupId);
     return map;
   }
-
 }
