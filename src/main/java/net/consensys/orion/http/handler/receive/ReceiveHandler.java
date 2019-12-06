@@ -75,7 +75,7 @@ public class ReceiveHandler implements Handler<RoutingContext> {
 
     storage.get(key).thenAccept(encryptedPayloadOptional -> {
       if (encryptedPayloadOptional.isEmpty()) {
-        log.info("unable to find payload with key {}", key);
+        log.debug("unable to find payload with key {}", key);
         routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_PAYLOAD_NOT_FOUND));
         return;
       }

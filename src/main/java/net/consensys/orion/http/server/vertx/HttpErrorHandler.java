@@ -72,7 +72,7 @@ public class HttpErrorHandler implements Handler<RoutingContext> {
   private OrionErrorCode orionError(final Throwable failure) {
 
     if (failure instanceof OrionException) {
-      log.info(failure);
+      log.debug(failure);
       return ((OrionException) failure).code();
     }
 
