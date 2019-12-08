@@ -92,8 +92,12 @@ class PostgresqlSendReceiveTest {
 
   @AfterEach
   void tearDown() {
-    orionLauncher.stop();
-    vertx.close();
+    if (orionLauncher != null) {
+      orionLauncher.stop();
+    }
+    if (vertx != null) {
+      vertx.close();
+    }
   }
 
   @Test

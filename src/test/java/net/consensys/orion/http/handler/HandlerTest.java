@@ -60,6 +60,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(TempDirectoryExtension.class)
 public abstract class HandlerTest {
 
+  static final String RETRIEVE_PRIVACY_GROUP = "/retrievePrivacyGroup";
+  static final String DELETE_PRIVACY_GROUP = "/deletePrivacyGroup";
+  static final String PUSH_PRIVACY_GROUP = "/pushPrivacyGroup";
+  static final String CREATE_PRIVACY_GROUP = "/createPrivacyGroup";
+
   // http client
   protected final OkHttpClient httpClient = new OkHttpClient();
   protected String nodeBaseUrl;
