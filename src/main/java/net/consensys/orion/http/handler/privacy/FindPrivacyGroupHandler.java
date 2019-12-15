@@ -59,20 +59,20 @@ public class FindPrivacyGroupHandler implements Handler<RoutingContext> {
         Serializer.deserialize(JSON, FindPrivacyGroupRequest.class, request);
 
     final String[] addresses = findPrivacyGroupRequest.addresses();
-    log.info("Searching for groups with {}", Arrays.toString(addresses));
+    log.trace("Searching for groups with {}", Arrays.toString(addresses));
 
     final QueryPrivacyGroupPayload queryPrivacyGroupPayload =
         new QueryPrivacyGroupPayload(findPrivacyGroupRequest.addresses(), null);
     final String key = queryPrivacyGroupStorage.generateDigest(queryPrivacyGroupPayload);
-    log.info("Generated digest of find request {}", key);
+    log.trace("Generated digest of find request {}", key);
 
     queryPrivacyGroupStorage.get(key).thenAccept((result) -> {
       if (result.isPresent()) {
         final List<String> privacyGroupIds = result.get().privacyGroupId();
-        log.info("Privacy groups ids found {}", Arrays.toString(privacyGroupIds.toArray()));
+        log.trace("Privacy groups ids found {}", Arrays.toString(privacyGroupIds.toArray()));
 
         final CompletableFuture[] cfs = privacyGroupIds.stream().map(pKey -> {
-          log.info("Retrieving privacy group object for {}", pKey);
+          log.trace("Retrieving privacy group object for {}", pKey);
 
           final CompletableFuture<PrivacyGroup> responseFuture = new CompletableFuture<>();
           privacyGroupStorage.get(pKey).thenAccept((res) -> {
@@ -111,14 +111,14 @@ public class FindPrivacyGroupHandler implements Handler<RoutingContext> {
               if (privacyGroup.getPrivacyGroupId() != null) {
                 listPrivacyGroups.add(privacyGroup);
               } else {
-                log.info("Found a privacy group but it does not have a privacy group id");
+                log.debug("Found a privacy group but it does not have a privacy group id");
               }
             } catch (final InterruptedException | ExecutionException e) {
               log.error(e);
               routingContext.fail(new OrionException(OrionErrorCode.ENCLAVE_PRIVACY_GROUP_MISSING));
             }
           }
-          log.info("Found privacy group objects {}", listPrivacyGroups);
+          log.debug("Found privacy group objects {}", listPrivacyGroups);
 
           final Buffer responseData = Buffer.buffer(Serializer.serialize(JSON, listPrivacyGroups));
           routingContext.response().end(responseData);
