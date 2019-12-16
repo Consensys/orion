@@ -13,15 +13,13 @@
 package net.consensys.orion.acceptance.send.receive.privacyGroup;
 
 import static io.vertx.core.Vertx.vertx;
-import static net.consensys.cava.io.file.Files.copyResource;
 import static net.consensys.orion.acceptance.NodeUtils.findPrivacyGroup;
 import static net.consensys.orion.acceptance.NodeUtils.freePort;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
 import static net.consensys.orion.acceptance.NodeUtils.sendTransaction;
+import static org.apache.tuweni.io.file.Files.copyResource;
 import static org.junit.Assert.assertEquals;
 
-import net.consensys.cava.junit.TempDirectory;
-import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.cmd.Orion;
@@ -33,6 +31,8 @@ import java.util.concurrent.ExecutionException;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
+import org.apache.tuweni.junit.TempDirectory;
+import org.apache.tuweni.junit.TempDirectoryExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;

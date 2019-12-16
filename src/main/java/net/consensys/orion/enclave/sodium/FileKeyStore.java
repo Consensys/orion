@@ -13,11 +13,9 @@
 package net.consensys.orion.enclave.sodium;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static net.consensys.cava.io.Base64.decodeBytes;
-import static net.consensys.cava.io.Base64.encodeBytes;
+import static org.apache.tuweni.io.Base64.decodeBytes;
+import static org.apache.tuweni.io.Base64.encodeBytes;
 
-import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.crypto.sodium.SodiumException;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.EnclaveException;
 import net.consensys.orion.enclave.KeyStore;
@@ -36,6 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
+
+import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.crypto.sodium.SodiumException;
 
 public class FileKeyStore implements KeyStore {
   private final Map<Box.PublicKey, Box.SecretKey> cache;

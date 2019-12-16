@@ -13,9 +13,9 @@
 package net.consensys.orion.payload;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static net.consensys.cava.crypto.Hash.sha2_512_256;
-import static net.consensys.cava.io.Base64.encodeBytes;
 import static net.consensys.orion.http.server.HttpContentType.CBOR;
+import static org.apache.tuweni.crypto.Hash.sha2_512_256;
+import static org.apache.tuweni.io.Base64.encodeBytes;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,12 +24,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.crypto.sodium.Box.PublicKey;
-import net.consensys.cava.junit.TempDirectory;
-import net.consensys.cava.junit.TempDirectoryExtension;
-import net.consensys.cava.kv.KeyValueStore;
-import net.consensys.cava.kv.MapDBKeyValueStore;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
@@ -65,6 +59,12 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.crypto.sodium.Box.PublicKey;
+import org.apache.tuweni.junit.TempDirectory;
+import org.apache.tuweni.junit.TempDirectoryExtension;
+import org.apache.tuweni.kv.KeyValueStore;
+import org.apache.tuweni.kv.MapDBKeyValueStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

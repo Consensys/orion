@@ -13,18 +13,14 @@
 package net.consensys.orion.http;
 
 import static io.vertx.core.Vertx.vertx;
-import static net.consensys.cava.net.tls.TLS.certificateHexFingerprint;
 import static net.consensys.orion.TestUtils.configureJDKTrustStore;
 import static net.consensys.orion.TestUtils.generateAndLoadConfiguration;
 import static net.consensys.orion.TestUtils.writeServerCertToConfig;
+import static org.apache.tuweni.net.tls.TLS.certificateHexFingerprint;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import net.consensys.cava.concurrent.AsyncResult;
-import net.consensys.cava.concurrent.CompletableAsyncResult;
-import net.consensys.cava.junit.TempDirectory;
-import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
 
@@ -42,6 +38,10 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.net.SelfSignedCertificate;
+import org.apache.tuweni.concurrent.AsyncResult;
+import org.apache.tuweni.concurrent.CompletableAsyncResult;
+import org.apache.tuweni.junit.TempDirectory;
+import org.apache.tuweni.junit.TempDirectoryExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

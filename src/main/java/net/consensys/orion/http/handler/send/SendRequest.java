@@ -12,8 +12,8 @@
  */
 package net.consensys.orion.http.handler.send;
 
-import static net.consensys.cava.io.Base64.decodeBytes;
-import static net.consensys.cava.io.Base64.encodeBytes;
+import static org.apache.tuweni.io.Base64.decodeBytes;
+import static org.apache.tuweni.io.Base64.encodeBytes;
 
 import java.io.Serializable;
 import java.util.Arrays;

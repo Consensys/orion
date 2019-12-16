@@ -15,13 +15,13 @@ package net.consensys.orion.acceptance;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.acceptance.dsl.AcceptanceTestBase;
 import net.consensys.orion.acceptance.dsl.OrionNode;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.tuweni.crypto.sodium.Box;
 import org.junit.Test;
 
 public class MultiKeyOperationAcceptanceTest extends AcceptanceTestBase {

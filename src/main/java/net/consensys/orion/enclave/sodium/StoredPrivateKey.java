@@ -12,11 +12,6 @@
  */
 package net.consensys.orion.enclave.sodium;
 
-import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.crypto.sodium.Box.SecretKey;
-import net.consensys.cava.crypto.sodium.PasswordHash;
-import net.consensys.cava.crypto.sodium.SecretBox;
-import net.consensys.cava.io.Base64;
 import net.consensys.orion.enclave.EnclaveException;
 import net.consensys.orion.enclave.sodium.serialization.StoredPrivateKeyDeserializer;
 import net.consensys.orion.enclave.sodium.serialization.StoredPrivateKeySerializer;
@@ -27,6 +22,11 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.crypto.sodium.Box.SecretKey;
+import org.apache.tuweni.crypto.sodium.PasswordHash;
+import org.apache.tuweni.crypto.sodium.SecretBox;
+import org.apache.tuweni.io.Base64;
 
 @JsonSerialize(using = StoredPrivateKeySerializer.class)
 @JsonDeserialize(using = StoredPrivateKeyDeserializer.class)

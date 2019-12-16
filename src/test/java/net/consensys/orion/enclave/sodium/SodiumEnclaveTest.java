@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.EnclaveException;
 import net.consensys.orion.enclave.EncryptedKey;
 import net.consensys.orion.enclave.EncryptedPayload;
@@ -25,6 +24,7 @@ import net.consensys.orion.exception.OrionErrorCode;
 
 import java.security.Security;
 
+import org.apache.tuweni.crypto.sodium.Box;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -12,15 +12,11 @@
  */
 package net.consensys.orion.storage;
 
-import static net.consensys.cava.io.Base64.encodeBytes;
+import static org.apache.tuweni.io.Base64.encodeBytes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.junit.TempDirectory;
-import net.consensys.cava.junit.TempDirectoryExtension;
-import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
@@ -35,6 +31,10 @@ import java.sql.Statement;
 import java.util.Optional;
 import java.util.Random;
 
+import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.junit.TempDirectory;
+import org.apache.tuweni.junit.TempDirectoryExtension;
+import org.apache.tuweni.kv.KeyValueStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

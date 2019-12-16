@@ -12,13 +12,12 @@
  */
 package net.consensys.orion.http.handler.knownnodes;
 
-import net.consensys.cava.crypto.sodium.Box.PublicKey;
-
 import java.net.URL;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
+import org.apache.tuweni.crypto.sodium.Box.PublicKey;
 import org.postgresql.util.Base64;
 
 class KnownNode {

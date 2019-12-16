@@ -14,14 +14,6 @@ package net.consensys.orion.enclave.sodium;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import net.consensys.cava.bytes.Bytes;
-import net.consensys.cava.crypto.Hash;
-import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.crypto.sodium.Box.SecretKey;
-import net.consensys.cava.crypto.sodium.SecretBox;
-import net.consensys.cava.crypto.sodium.SecretBox.Nonce;
-import net.consensys.cava.crypto.sodium.SodiumException;
-import net.consensys.cava.rlp.RLP;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EnclaveException;
 import net.consensys.orion.enclave.EncryptedKey;
@@ -36,6 +28,15 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.crypto.Hash;
+import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.crypto.sodium.Box.SecretKey;
+import org.apache.tuweni.crypto.sodium.SecretBox;
+import org.apache.tuweni.crypto.sodium.SecretBox.Nonce;
+import org.apache.tuweni.crypto.sodium.SodiumException;
+import org.apache.tuweni.rlp.RLP;
 
 public class SodiumEnclave implements Enclave {
   private static final Nonce ZERO_NONCE = Nonce.fromBytes(new byte[Nonce.length()]);

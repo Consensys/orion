@@ -16,9 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import net.consensys.cava.crypto.sodium.Box.KeyPair;
-import net.consensys.cava.crypto.sodium.Box.PublicKey;
-import net.consensys.cava.io.Base64;
 import net.consensys.orion.http.handler.HandlerTest;
 
 import java.net.MalformedURLException;
@@ -32,6 +29,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.tuweni.crypto.sodium.Box.KeyPair;
+import org.apache.tuweni.crypto.sodium.Box.PublicKey;
+import org.apache.tuweni.io.Base64;
 import org.junit.jupiter.api.Test;
 
 class KnownNodesHandlerTest extends HandlerTest {

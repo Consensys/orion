@@ -12,11 +12,10 @@
  */
 package net.consensys.orion.enclave;
 
-import static net.consensys.cava.io.Base64.encodeBytes;
+import static org.apache.tuweni.io.Base64.encodeBytes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 
@@ -33,6 +32,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.tuweni.crypto.sodium.Box;
 import org.junit.Before;
 import org.junit.Test;
 

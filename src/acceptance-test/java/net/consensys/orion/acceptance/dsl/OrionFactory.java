@@ -12,7 +12,6 @@
  */
 package net.consensys.orion.acceptance.dsl;
 
-import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.sodium.FileKeyStore;
 
@@ -26,6 +25,7 @@ import java.util.stream.Collectors;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.crypto.sodium.Box;
 
 public class OrionFactory {
 

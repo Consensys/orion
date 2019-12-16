@@ -12,9 +12,6 @@
  */
 package net.consensys.orion.acceptance.dsl;
 
-import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.crypto.sodium.Box.PublicKey;
-import net.consensys.cava.io.Base64;
 import net.consensys.orion.http.handler.receive.ReceiveRequest;
 import net.consensys.orion.http.server.HttpContentType;
 
@@ -30,6 +27,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.crypto.sodium.Box.PublicKey;
+import org.apache.tuweni.io.Base64;
 
 /**
  * Responsible for providing access to a running Orion instance via its HTTP interface such that payloads can be

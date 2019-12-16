@@ -13,11 +13,8 @@
 package net.consensys.orion.storage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static net.consensys.cava.io.Base64.encodeBytes;
+import static org.apache.tuweni.io.Base64.encodeBytes;
 
-import net.consensys.cava.bytes.Bytes;
-import net.consensys.cava.concurrent.AsyncResult;
-import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.exception.OrionException;
@@ -25,6 +22,10 @@ import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
 
 import java.util.Optional;
+
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.concurrent.AsyncResult;
+import org.apache.tuweni.kv.KeyValueStore;
 
 public class EncryptedPayloadStorage implements Storage<EncryptedPayload> {
 

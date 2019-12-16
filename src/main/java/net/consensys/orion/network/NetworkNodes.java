@@ -12,11 +12,11 @@
  */
 package net.consensys.orion.network;
 
-import net.consensys.cava.crypto.sodium.Box;
-
 import java.net.URL;
 import java.util.Collection;
 import java.util.Map;
+
+import org.apache.tuweni.crypto.sodium.Box;
 
 /** Details of other nodes on the network */
 public interface NetworkNodes {

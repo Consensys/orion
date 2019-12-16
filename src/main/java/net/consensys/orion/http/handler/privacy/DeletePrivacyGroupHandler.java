@@ -14,7 +14,6 @@ package net.consensys.orion.http.handler.privacy;
 
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
-import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
@@ -40,6 +39,7 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.crypto.sodium.Box;
 
 /**
  * Delete the privacy group given the privacyGroupId.

@@ -12,7 +12,7 @@
  */
 package net.consensys.orion.storage;
 
-import net.consensys.cava.crypto.Hash;
+import org.apache.tuweni.crypto.Hash;
 
 public class Sha512_256StorageKeyBuilder implements StorageKeyBuilder {
 

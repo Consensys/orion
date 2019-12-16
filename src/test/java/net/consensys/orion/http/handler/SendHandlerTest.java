@@ -13,12 +13,10 @@
 package net.consensys.orion.http.handler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static net.consensys.cava.crypto.Hash.sha2_512_256;
-import static net.consensys.cava.io.Base64.encodeBytes;
+import static org.apache.tuweni.crypto.Hash.sha2_512_256;
+import static org.apache.tuweni.io.Base64.encodeBytes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.junit.TempDirectory;
 import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.exception.OrionErrorCode;
@@ -37,6 +35,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
+import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.junit.TempDirectory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
