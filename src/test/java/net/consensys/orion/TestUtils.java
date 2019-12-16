@@ -13,9 +13,8 @@
 package net.consensys.orion;
 
 import static com.google.common.base.Charsets.UTF_8;
-import static net.consensys.cava.net.tls.TLS.readPemFile;
+import static org.apache.tuweni.net.tls.TLS.readPemFile;
 
-import net.consensys.cava.io.IOConsumer;
 import net.consensys.orion.config.Config;
 
 import java.io.ByteArrayInputStream;
@@ -35,6 +34,7 @@ import java.security.cert.CertificateFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
 
 import io.vertx.core.net.SelfSignedCertificate;
+import org.apache.tuweni.io.IOConsumer;
 
 public class TestUtils {
 

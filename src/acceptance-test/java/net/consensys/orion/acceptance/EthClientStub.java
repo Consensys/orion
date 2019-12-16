@@ -12,8 +12,8 @@
  */
 package net.consensys.orion.acceptance;
 
-import static net.consensys.cava.io.Base64.decodeBytes;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
+import static org.apache.tuweni.io.Base64.decodeBytes;
 
 import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupRequest;
 import net.consensys.orion.http.handler.privacy.FindPrivacyGroupRequest;

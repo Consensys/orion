@@ -12,7 +12,6 @@
  */
 package net.consensys.orion.network;
 
-import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.sodium.serialization.PublicKeyMapKeyDeserializer;
 import net.consensys.orion.enclave.sodium.serialization.PublicKeyMapKeySerializer;
@@ -29,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.tuweni.crypto.sodium.Box;
 
 public class ConcurrentNetworkNodes implements NetworkNodes {
   private URL url;

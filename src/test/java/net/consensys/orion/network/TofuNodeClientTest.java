@@ -13,20 +13,14 @@
 package net.consensys.orion.network;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static net.consensys.cava.net.tls.TLS.certificateHexFingerprint;
 import static net.consensys.orion.TestUtils.generateAndLoadConfiguration;
 import static net.consensys.orion.TestUtils.getFreePort;
 import static net.consensys.orion.TestUtils.writeClientCertToConfig;
+import static org.apache.tuweni.net.tls.TLS.certificateHexFingerprint;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import net.consensys.cava.concurrent.AsyncCompletion;
-import net.consensys.cava.concurrent.AsyncResult;
-import net.consensys.cava.concurrent.CompletableAsyncCompletion;
-import net.consensys.cava.concurrent.CompletableAsyncResult;
-import net.consensys.cava.junit.TempDirectory;
-import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
@@ -47,6 +41,12 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.SelfSignedCertificate;
 import io.vertx.ext.web.Router;
+import org.apache.tuweni.concurrent.AsyncCompletion;
+import org.apache.tuweni.concurrent.AsyncResult;
+import org.apache.tuweni.concurrent.CompletableAsyncCompletion;
+import org.apache.tuweni.concurrent.CompletableAsyncResult;
+import org.apache.tuweni.junit.TempDirectory;
+import org.apache.tuweni.junit.TempDirectoryExtension;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;

@@ -17,8 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import net.consensys.cava.junit.TempDirectory;
-import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.sodium.StoredPrivateKey;
 import net.consensys.orion.http.server.HttpContentType;
@@ -35,6 +33,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.Verticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.impl.VertxInternal;
+import org.apache.tuweni.junit.TempDirectory;
+import org.apache.tuweni.junit.TempDirectoryExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;

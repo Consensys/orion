@@ -14,7 +14,6 @@ package net.consensys.orion.network;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
 
@@ -24,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.tuweni.crypto.sodium.Box;
 import org.junit.jupiter.api.Test;
 
 class ConcurrentNetworkNodesTest {

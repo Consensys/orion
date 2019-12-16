@@ -12,7 +12,7 @@
  */
 package net.consensys.orion.enclave.sodium;
 
-import static net.consensys.cava.io.Base64.decodeBytes;
+import static org.apache.tuweni.io.Base64.decodeBytes;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -20,9 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.junit.TempDirectory;
-import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.EnclaveException;
 
@@ -31,6 +28,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.junit.TempDirectory;
+import org.apache.tuweni.junit.TempDirectoryExtension;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

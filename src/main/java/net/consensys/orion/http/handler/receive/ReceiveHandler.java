@@ -12,12 +12,11 @@
  */
 package net.consensys.orion.http.handler.receive;
 
-import static net.consensys.cava.io.Base64.decodeBytes;
-import static net.consensys.cava.io.Base64.encodeBytes;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 import static net.consensys.orion.http.server.HttpContentType.ORION;
+import static org.apache.tuweni.io.Base64.decodeBytes;
+import static org.apache.tuweni.io.Base64.encodeBytes;
 
-import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EnclaveException;
 import net.consensys.orion.enclave.EncryptedPayload;
@@ -37,6 +36,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.crypto.sodium.Box;
 
 /** Retrieve a base 64 encoded payload. */
 public class ReceiveHandler implements Handler<RoutingContext> {

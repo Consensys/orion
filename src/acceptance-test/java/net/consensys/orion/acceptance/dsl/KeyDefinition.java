@@ -12,10 +12,10 @@
  */
 package net.consensys.orion.acceptance.dsl;
 
-import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.crypto.sodium.Box.KeyPair;
-
 import java.nio.file.Path;
+
+import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.crypto.sodium.Box.KeyPair;
 
 public class KeyDefinition {
 

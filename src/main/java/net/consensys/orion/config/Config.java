@@ -12,18 +12,11 @@
  */
 package net.consensys.orion.config;
 
-import static net.consensys.cava.config.ConfigurationErrors.noErrors;
-import static net.consensys.cava.config.ConfigurationErrors.singleError;
-import static net.consensys.cava.config.PropertyValidator.allInList;
-import static net.consensys.cava.config.PropertyValidator.inRange;
-import static net.consensys.cava.config.PropertyValidator.isURL;
-
-import net.consensys.cava.config.Configuration;
-import net.consensys.cava.config.ConfigurationError;
-import net.consensys.cava.config.DocumentPosition;
-import net.consensys.cava.config.PropertyValidator;
-import net.consensys.cava.config.Schema;
-import net.consensys.cava.config.SchemaBuilder;
+import static org.apache.tuweni.config.ConfigurationErrors.noErrors;
+import static org.apache.tuweni.config.ConfigurationErrors.singleError;
+import static org.apache.tuweni.config.PropertyValidator.allInList;
+import static org.apache.tuweni.config.PropertyValidator.inRange;
+import static org.apache.tuweni.config.PropertyValidator.isURL;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +31,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+
+import org.apache.tuweni.config.Configuration;
+import org.apache.tuweni.config.ConfigurationError;
+import org.apache.tuweni.config.DocumentPosition;
+import org.apache.tuweni.config.PropertyValidator;
+import org.apache.tuweni.config.Schema;
+import org.apache.tuweni.config.SchemaBuilder;
 
 /**
  * The configuration of Orion.

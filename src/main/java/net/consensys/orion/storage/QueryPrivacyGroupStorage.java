@@ -13,12 +13,8 @@
 package net.consensys.orion.storage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static net.consensys.cava.io.Base64.encodeBytes;
+import static org.apache.tuweni.io.Base64.encodeBytes;
 
-import net.consensys.cava.bytes.Bytes;
-import net.consensys.cava.concurrent.AsyncResult;
-import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.kv.KeyValueStore;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
@@ -29,6 +25,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.concurrent.AsyncResult;
+import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.kv.KeyValueStore;
 
 public class QueryPrivacyGroupStorage implements Storage<QueryPrivacyGroupPayload> {
   private static final byte[] BYTES = Bytes.fromHexString("5375ba871e5c3d0f1d055b5da0ac02ea035bed38").toArrayUnsafe();

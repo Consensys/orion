@@ -16,8 +16,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.junit.TempDirectory;
 import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
@@ -32,6 +30,8 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.junit.TempDirectory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

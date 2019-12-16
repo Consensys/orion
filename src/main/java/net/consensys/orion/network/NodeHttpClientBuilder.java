@@ -12,7 +12,6 @@
  */
 package net.consensys.orion.network;
 
-import net.consensys.cava.net.tls.VertxTrustOptions;
 import net.consensys.orion.config.Config;
 
 import java.nio.file.Path;
@@ -22,6 +21,7 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PemTrustOptions;
+import org.apache.tuweni.net.tls.VertxTrustOptions;
 
 public class NodeHttpClientBuilder {
 

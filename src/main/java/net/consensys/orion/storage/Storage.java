@@ -12,9 +12,9 @@
  */
 package net.consensys.orion.storage;
 
-import net.consensys.cava.concurrent.AsyncResult;
-
 import java.util.Optional;
+
+import org.apache.tuweni.concurrent.AsyncResult;
 
 public interface Storage<T> {
 

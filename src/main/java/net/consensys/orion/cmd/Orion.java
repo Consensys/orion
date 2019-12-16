@@ -20,11 +20,6 @@ import static net.consensys.orion.http.server.HttpContentType.JSON;
 import static net.consensys.orion.http.server.HttpContentType.ORION;
 import static net.consensys.orion.http.server.HttpContentType.TEXT;
 
-import net.consensys.cava.crypto.sodium.Sodium;
-import net.consensys.cava.kv.KeyValueStore;
-import net.consensys.cava.kv.LevelDBKeyValueStore;
-import net.consensys.cava.kv.MapDBKeyValueStore;
-import net.consensys.cava.net.tls.VertxTrustOptions;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.config.ConfigException;
 import net.consensys.orion.enclave.Enclave;
@@ -91,6 +86,11 @@ import io.vertx.ext.web.handler.LoggerHandler;
 import io.vertx.ext.web.handler.ResponseContentTypeHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.crypto.sodium.Sodium;
+import org.apache.tuweni.kv.KeyValueStore;
+import org.apache.tuweni.kv.LevelDBKeyValueStore;
+import org.apache.tuweni.kv.MapDBKeyValueStore;
+import org.apache.tuweni.net.tls.VertxTrustOptions;
 
 public class Orion {
 

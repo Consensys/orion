@@ -12,8 +12,6 @@
  */
 package net.consensys.orion.payload;
 
-import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.crypto.sodium.Box.PublicKey;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
@@ -48,6 +46,8 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.crypto.sodium.Box.PublicKey;
 import org.jetbrains.annotations.NotNull;
 
 public class DistributePayloadManager {

@@ -48,7 +48,14 @@ dependencyManagement {
 
     dependency 'javax.xml.bind:jaxb-api:2.3.0'
 
-    dependency 'net.consensys.cava:cava:0.5.0'
+    dependency 'org.apache.tuweni:tuweni-bytes:0.10.0'
+    dependency 'org.apache.tuweni:tuweni-config:0.10.0'
+    dependency 'org.apache.tuweni:tuweni-crypto:0.10.0'
+    dependency 'org.apache.tuweni:tuweni-io:0.10.0'
+    dependency 'org.apache.tuweni:tuweni-junit:0.10.0'
+    dependency 'org.apache.tuweni:tuweni-kv:0.10.0'
+    dependency 'org.apache.tuweni:tuweni-net:0.10.0'
+    dependency 'org.apache.tuweni:tuweni-rlp:0.10.0'
 
     dependency 'org.apache.logging.log4j:log4j-api:2.11.2'
     dependency 'org.apache.logging.log4j:log4j-core:2.11.2'
