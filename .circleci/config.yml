@@ -46,6 +46,24 @@ commands:
       - attach_workspace:
           at: ~/project
 
+  capture_test_results:
+    description: "Capture test results"
+    steps:
+      - run:
+          name: Gather test results
+          when: always
+          command: |
+            FILES=`find . -name test-results`
+            for FILE in $FILES
+            do
+              MODULE=`echo "$FILE" | sed -e 's@./\(.*\)/build/test-results@\1@'`
+              TARGET="build/test-results/$MODULE"
+              mkdir -p "$TARGET"
+              cp -rf ${FILE}/*/* "$TARGET"
+            done
+      - store_test_results:
+          path: build/test-results
+
 jobs:
   build:
     executor: default
@@ -86,10 +104,18 @@ jobs:
           path: ~/reports
           destination: reports
 
+  test:
+    executor: default
+    steps:
+      - prepare
       - run:
           name: Running unit tests
           command: ./gradlew --stacktrace test
+      - capture_test_results
 
+  acceptanceTest:
+    executor: with_db
+    steps:
       - run:
           name: Waiting for Postgres to be ready
           command: |
@@ -103,32 +129,11 @@ jobs:
       - run:
           name: Running acceptance tests
           command: ./gradlew --stacktrace acceptanceTest
+      - capture_test_results
       - run:
-          name: Collecting test results
+          name: Collecting coverage reports
           command: |
-            ./gradlew jacocoTestReport
-            mkdir -p ~/test-results/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/ \;
-            find . -type f -regex ".*/build/acceptance-results/.*xml" -exec cp {} ~/test-results/ \;
-          when: always
-      - store_test_results:
-          name: Uploading test results
-          path: ~/test-results
-          destination: tests
-          when: always
-      - run:
-          name: Collecting reports
-          command: |
-              find . -type d -regex ".*/build/reports/tests/test" | while read dir; do
-                  module=`echo $dir | sed -e 's/build\/reports\/tests\/test//'`
-                  mkdir -p ~/reports/test/"$module"
-                  (cd "$dir" && tar c .) | (cd ~/reports/test/"$module" && tar x)
-              done
-              find . -type d -regex ".*/build/reports/acceptance" | while read dir; do
-                  module=`echo $dir | sed -e 's/build\/reports\/acceptance//'`
-                  mkdir -p ~/reports/acceptance/"$module"
-                  (cd "$dir" && tar c .) | (cd ~/reports/acceptance/"$module" && tar x)
-              done
+              ./gradlew jacocoTestReport
               find . -type d -regex ".*/build/reports/jacoco/test/html" | while read dir; do
                   module=`echo $dir | sed -e 's/build\/reports\/jacoco\/test\/html//'`
                   mkdir -p ~/reports/jacoco/"$module"
@@ -140,6 +145,10 @@ jobs:
           path: ~/reports
           destination: reports
 
+  javaDoc:
+    executor: default
+    steps:
+      - prepare
       - run:
           name: Building JavaDoc
           command: ./gradlew javadoc
@@ -209,6 +218,13 @@ workflows:
   pipeline:
     jobs:
       - build
+      - javaDoc
+      - test:
+          requires:
+            - build
+      - acceptanceTest:
+          requires:
+            - build
       - buildDocker:
           requires:
             - build
