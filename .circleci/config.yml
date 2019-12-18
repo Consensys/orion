@@ -75,6 +75,16 @@ jobs:
           path: build/distributions
           destination: distributions
           when: always
+      - run:
+          name: Collecting reports
+          command: |
+            mkdir -p ~/reports/license
+            (cd ./build/reports/license && tar c .) | (cd ~/reports/license && tar x)
+          when: always
+      - store_artifacts:
+          name: Uploading reports
+          path: ~/reports
+          destination: reports
 
       - run:
           name: Running unit tests
@@ -109,8 +119,6 @@ jobs:
       - run:
           name: Collecting reports
           command: |
-            mkdir -p ~/reports/license
-            (cd ./build/reports/license && tar c .) | (cd ~/reports/license && tar x)
               find . -type d -regex ".*/build/reports/tests/test" | while read dir; do
                   module=`echo $dir | sed -e 's/build\/reports\/tests\/test//'`
                   mkdir -p ~/reports/test/"$module"
