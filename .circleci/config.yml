@@ -61,6 +61,18 @@ jobs:
           name: Compiling
           command: ./gradlew assemble
 
+      - save_cache:
+          name: Caching gradle dependencies
+          key: deps-{{ checksum "build.gradle" }}-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .gradle
+            - ~/.gradle
+
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - ./
+
       - store_artifacts:
           name: Uploading artifacts
           path: build/distributions
@@ -145,18 +157,6 @@ jobs:
           name: Uploading JavaDoc
           path: ~/docs
           destination: javadoc
-
-      - save_cache:
-          name: Caching gradle dependencies
-          key: deps-{{ checksum "build.gradle" }}-{{ .Branch }}-{{ .Revision }}
-          paths:
-            - .gradle
-            - ~/.gradle
-
-      - persist_to_workspace:
-          root: ~/project
-          paths:
-            - ./
 
   buildDocker:
     executor: default
