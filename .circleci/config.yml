@@ -43,6 +43,8 @@ commands:
             - deps-{{ checksum "build.gradle" }}-{{ .Branch }}-{{ .Revision }}
             - deps-{{ checksum "build.gradle" }}
             - deps-
+      - attach_workspace:
+          at: ~/project
 
 jobs:
   build:
@@ -164,8 +166,6 @@ jobs:
       - prepare
       - setup_remote_docker
           docker_layer_caching: true
-      - attach_workspace:
-          at: ~/project
       - run:
           name: hadoLint
           command: |
@@ -180,8 +180,6 @@ jobs:
     executor: default
     steps:
       - prepare
-      - attach_workspace:
-          at: ~/project
       - run:
           name: Upload skinny targz file to Bintray
           command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/distributions/orion-$(cat build/version).tar.gz consensys binaries orion $(cat build/version)"
@@ -204,8 +202,6 @@ jobs:
     steps:
       - prepare
       - setup_remote_docker
-      - attach_workspace:
-          at: ~/project
       - run:
           name: Publish Docker
           command: |
