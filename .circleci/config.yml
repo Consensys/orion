@@ -54,27 +54,22 @@ jobs:
       - run:
           name: Spotless checks
           command: ./gradlew spotlesscheck
-
       - run:
           name: Downloading dependencies
           command: ./gradlew dependencies checkLicenses
-
       - run:
           name: Compiling
           command: ./gradlew assemble
-
       - save_cache:
           name: Caching gradle dependencies
           key: deps-{{ checksum "build.gradle" }}-{{ .Branch }}-{{ .Revision }}
           paths:
             - .gradle
             - ~/.gradle
-
       - persist_to_workspace:
           root: ~/project
           paths:
             - ./
-
       - store_artifacts:
           name: Uploading artifacts
           path: build/distributions
@@ -95,11 +90,9 @@ jobs:
               sleep 1
             done
             echo Failed waiting for Postgres to startup and be ready && exit 1
-
       - run:
           name: Running acceptance tests
           command: ./gradlew --stacktrace acceptanceTest
-
       - run:
           name: Collecting test results
           command: |
@@ -108,13 +101,11 @@ jobs:
             find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/ \;
             find . -type f -regex ".*/build/acceptance-results/.*xml" -exec cp {} ~/test-results/ \;
           when: always
-
       - store_test_results:
           name: Uploading test results
           path: ~/test-results
           destination: tests
           when: always
-
       - run:
           name: Collecting reports
           command: |
@@ -136,7 +127,6 @@ jobs:
                   (cd "$dir" && tar c .) | (cd ~/reports/jacoco/"$module" && tar x)
               done
           when: always
-
       - store_artifacts:
           name: Uploading reports
           path: ~/reports
@@ -145,7 +135,6 @@ jobs:
       - run:
           name: Building JavaDoc
           command: ./gradlew javadoc
-
       - run:
           name: Collecting JavaDoc
           command: |
@@ -154,7 +143,6 @@ jobs:
                 mkdir -p ~/docs/"$module"
                 (cd "$dir" && tar c .) | (cd ~/docs/"$module" && tar x)
             done
-
       - store_artifacts:
           name: Uploading JavaDoc
           path: ~/docs
