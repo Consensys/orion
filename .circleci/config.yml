@@ -1,7 +1,7 @@
 ---
 version: 2.1
 executors:
-  executor_med:  # 2cpu, 4G ram
+  default:  # 2cpu, 4G ram
     docker:
       - image: circleci/openjdk:11.0.4-jdk-stretch
     resource_class: medium
@@ -27,7 +27,7 @@ executors:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: orion
 
-  executor_machine:
+  machine:
     machine:
       image: ubuntu-1604:201903-01 #Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
       docker_layer_caching: true
@@ -52,7 +52,7 @@ commands:
 
 jobs:
   build:
-    executor: executor_med
+    executor: default
     steps:
       - prepare
       - run:
@@ -165,7 +165,7 @@ jobs:
             - ./
 
   buildDocker:
-    executor: executor_machine
+    executor: machine
     steps:
       - prepare
       - run:
@@ -188,7 +188,7 @@ jobs:
             ./gradlew --no-daemon testDocker
 
   upload-distribution:
-    executor: executor_med
+    executor: default
     steps:
       - prepare
       - attach_workspace:
@@ -211,7 +211,7 @@ jobs:
             fi
 
   publishDocker:
-    executor: executor_med
+    executor: default
     steps:
       - prepare
       - setup_remote_docker
