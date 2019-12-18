@@ -116,6 +116,7 @@ jobs:
   acceptanceTest:
     executor: with_db
     steps:
+      - prepare
       - run:
           name: Waiting for Postgres to be ready
           command: |
