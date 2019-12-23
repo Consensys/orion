@@ -1,7 +1,16 @@
 ---
 version: 2.1
 executors:
-  executor_med:  # 2cpu, 4G ram
+  default:  # 2cpu, 4G ram
+    docker:
+      - image: circleci/openjdk:11.0.4-jdk-stretch
+    resource_class: medium
+    working_directory: ~/project
+    environment:
+      JAVA_TOOL_OPTIONS: -Xmx2048m
+      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=2 -Xmx2048m
+
+  with_db:
     docker:
       - image: circleci/openjdk:11.0.4-jdk-stretch
       - image: postgres:11.4-alpine
@@ -18,7 +27,7 @@ executors:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: orion
 
-  executor_machine:
+  machine:
     machine:
       image: ubuntu-1604:201903-01 #Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
       docker_layer_caching: true
@@ -40,34 +49,80 @@ commands:
             - deps-{{ checksum "build.gradle" }}-{{ .Branch }}-{{ .Revision }}
             - deps-{{ checksum "build.gradle" }}
             - deps-
+      - attach_workspace:
+          at: ~/project
+
+  capture_test_results:
+    description: "Capture test results"
+    steps:
+      - run:
+          name: Gather test results
+          when: always
+          command: |
+            FILES=`find . -name test-results`
+            for FILE in $FILES
+            do
+              MODULE=`echo "$FILE" | sed -e 's@./\(.*\)/build/test-results@\1@'`
+              TARGET="test-results/$MODULE"
+              mkdir -p "$TARGET"
+              cp -rf ${FILE}/*/* "$TARGET"
+            done
+      - store_test_results:
+          path: test-results
 
 jobs:
   build:
-    executor: executor_med
+    executor: default
     steps:
       - prepare
       - run:
           name: Spotless checks
           command: ./gradlew spotlesscheck
-
       - run:
           name: Downloading dependencies
           command: ./gradlew dependencies checkLicenses
-
       - run:
           name: Compiling
           command: ./gradlew assemble
-
+      - save_cache:
+          name: Caching gradle dependencies
+          key: deps-{{ checksum "build.gradle" }}-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .gradle
+            - ~/.gradle
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - ./
       - store_artifacts:
           name: Uploading artifacts
           path: build/distributions
           destination: distributions
           when: always
+      - run:
+          name: Collecting reports
+          command: |
+            mkdir -p ~/reports/license
+            (cd ./build/reports/license && tar c .) | (cd ~/reports/license && tar x)
+          when: always
+      - store_artifacts:
+          name: Uploading reports
+          path: ~/reports
+          destination: reports
 
+  test:
+    executor: default
+    steps:
+      - prepare
       - run:
           name: Running unit tests
           command: ./gradlew --stacktrace test
+      - capture_test_results
 
+  acceptanceTest:
+    executor: with_db
+    steps:
+      - prepare
       - run:
           name: Waiting for Postgres to be ready
           command: |
@@ -78,57 +133,32 @@ jobs:
               sleep 1
             done
             echo Failed waiting for Postgres to startup and be ready && exit 1
-
       - run:
           name: Running acceptance tests
           command: ./gradlew --stacktrace acceptanceTest
-
+      - capture_test_results
       - run:
-          name: Collecting test results
+          name: Collecting coverage reports
           command: |
-            ./gradlew jacocoTestReport
-            mkdir -p ~/test-results/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/ \;
-            find . -type f -regex ".*/build/acceptance-results/.*xml" -exec cp {} ~/test-results/ \;
-          when: always
-
-      - store_test_results:
-          name: Uploading test results
-          path: ~/test-results
-          destination: tests
-          when: always
-
-      - run:
-          name: Collecting reports
-          command: |
-            mkdir -p ~/reports/license
-            (cd ./build/reports/license && tar c .) | (cd ~/reports/license && tar x)
-              find . -type d -regex ".*/build/reports/tests/test" | while read dir; do
-                  module=`echo $dir | sed -e 's/build\/reports\/tests\/test//'`
-                  mkdir -p ~/reports/test/"$module"
-                  (cd "$dir" && tar c .) | (cd ~/reports/test/"$module" && tar x)
-              done
-              find . -type d -regex ".*/build/reports/acceptance" | while read dir; do
-                  module=`echo $dir | sed -e 's/build\/reports\/acceptance//'`
-                  mkdir -p ~/reports/acceptance/"$module"
-                  (cd "$dir" && tar c .) | (cd ~/reports/acceptance/"$module" && tar x)
-              done
+              ./gradlew jacocoTestReport
               find . -type d -regex ".*/build/reports/jacoco/test/html" | while read dir; do
                   module=`echo $dir | sed -e 's/build\/reports\/jacoco\/test\/html//'`
                   mkdir -p ~/reports/jacoco/"$module"
                   (cd "$dir" && tar c .) | (cd ~/reports/jacoco/"$module" && tar x)
               done
           when: always
-
       - store_artifacts:
           name: Uploading reports
           path: ~/reports
           destination: reports
 
+  javaDoc:
+    executor: default
+    steps:
+      - prepare
       - run:
           name: Building JavaDoc
           command: ./gradlew javadoc
-
       - run:
           name: Collecting JavaDoc
           command: |
@@ -137,26 +167,13 @@ jobs:
                 mkdir -p ~/docs/"$module"
                 (cd "$dir" && tar c .) | (cd ~/docs/"$module" && tar x)
             done
-
       - store_artifacts:
           name: Uploading JavaDoc
           path: ~/docs
           destination: javadoc
 
-      - save_cache:
-          name: Caching gradle dependencies
-          key: deps-{{ checksum "build.gradle" }}-{{ .Branch }}-{{ .Revision }}
-          paths:
-            - .gradle
-            - ~/.gradle
-
-      - persist_to_workspace:
-          root: ~/project
-          paths:
-            - ./
-
   buildDocker:
-    executor: executor_machine
+    executor: machine
     steps:
       - prepare
       - run:
@@ -166,8 +183,6 @@ jobs:
             sudo apt update
             sudo apt install -y openjdk-11-jdk
             sudo update-java-alternatives -s java-1.11.0-openjdk-amd64
-      - attach_workspace:
-          at: ~/project
       - run:
           name: hadoLint
           command: |
@@ -179,11 +194,9 @@ jobs:
             ./gradlew --no-daemon testDocker
 
   upload-distribution:
-    executor: executor_med
+    executor: default
     steps:
       - prepare
-      - attach_workspace:
-          at: ~/project
       - run:
           name: Upload skinny targz file to Bintray
           command: "./scripts/upload-to-bintray.sh $BINTRAY_USER $BINTRAY_KEY build/distributions/orion-$(cat build/version).tar.gz consensys binaries orion $(cat build/version)"
@@ -202,12 +215,10 @@ jobs:
             fi
 
   publishDocker:
-    executor: executor_med
+    executor: default
     steps:
       - prepare
       - setup_remote_docker
-      - attach_workspace:
-          at: ~/project
       - run:
           name: Publish Docker
           command: |
@@ -219,6 +230,13 @@ workflows:
   pipeline:
     jobs:
       - build
+      - javaDoc
+      - test:
+          requires:
+            - build
+      - acceptanceTest:
+          requires:
+            - build
       - buildDocker:
           requires:
             - build
