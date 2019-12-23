@@ -168,8 +168,6 @@ task acceptanceTest(type: Test) {
   useJUnitPlatform()
   setTestClassesDirs(sourceSets.acceptance.output.getClassesDirs())
   classpath = sourceSets.acceptance.runtimeClasspath
-  reports.junitXml.setDestination(file("$buildDir/acceptance-results"))
-  reports.html.setDestination(file("$buildDir/reports/acceptance"))
 }
 
 static def gatlingURL() {
