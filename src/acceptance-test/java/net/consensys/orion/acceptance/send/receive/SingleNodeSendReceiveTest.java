@@ -24,6 +24,7 @@ import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
+import net.consensys.orion.http.handler.receive.ReceiveResponse;
 
 import java.nio.file.Path;
 
@@ -97,9 +98,9 @@ class SingleNodeSendReceiveTest {
     final EthClientStub ethClientStub = NodeUtils.client(clientPort, httpClient);
 
     final String digest = sendTransaction(ethClientStub, PK_2_B_64, PK_2_B_64);
-    final byte[] receivedPayload = viewTransaction(ethClientStub, PK_2_B_64, digest);
+    final ReceiveResponse response = viewTransaction(ethClientStub, PK_2_B_64, digest);
 
-    assertTransaction(receivedPayload);
+    assertTransaction(response.getPayload());
   }
 
   /** Different keys for the sender and receiver. */
@@ -108,9 +109,9 @@ class SingleNodeSendReceiveTest {
     final EthClientStub ethClientStub = NodeUtils.client(clientPort, httpClient);
 
     final String digest = sendTransaction(ethClientStub, PK_1_B_64, PK_2_B_64);
-    final byte[] receivedPayload = viewTransaction(ethClientStub, PK_2_B_64, digest);
+    final ReceiveResponse response = viewTransaction(ethClientStub, PK_2_B_64, digest);
 
-    assertTransaction(receivedPayload);
+    assertTransaction(response.getPayload());
   }
 
   /** The sender key can view their transaction when not in the recipient key list. */
@@ -119,8 +120,8 @@ class SingleNodeSendReceiveTest {
     final EthClientStub ethClientStub = NodeUtils.client(clientPort, httpClient);
 
     final String digest = sendTransaction(ethClientStub, PK_1_B_64, PK_2_B_64);
-    final byte[] receivedPayload = viewTransaction(ethClientStub, PK_1_B_64, digest);
+    final ReceiveResponse response = viewTransaction(ethClientStub, PK_1_B_64, digest);
 
-    assertTransaction(receivedPayload);
+    assertTransaction(response.getPayload());
   }
 }

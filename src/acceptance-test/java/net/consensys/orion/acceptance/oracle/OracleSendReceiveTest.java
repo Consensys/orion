@@ -23,6 +23,7 @@ import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
+import net.consensys.orion.http.handler.receive.ReceiveResponse;
 
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -114,9 +115,9 @@ class OracleSendReceiveTest {
     final EthClientStub ethClientStub = NodeUtils.client(orionLauncher.clientPort(), httpClient);
 
     final String digest = sendTransaction(ethClientStub, PK_2_B_64, PK_2_B_64);
-    final byte[] receivedPayload = viewTransaction(ethClientStub, PK_2_B_64, digest);
+    final ReceiveResponse response = viewTransaction(ethClientStub, PK_2_B_64, digest);
 
-    assertTransaction(receivedPayload);
+    assertTransaction(response.getPayload());
   }
 
 }

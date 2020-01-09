@@ -20,6 +20,7 @@ import static net.consensys.orion.acceptance.NodeUtils.viewTransaction;
 import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static org.apache.tuweni.io.Base64.decodeBytes;
 import static org.apache.tuweni.io.file.Files.copyResource;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
@@ -28,6 +29,7 @@ import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
+import net.consensys.orion.http.handler.receive.ReceiveResponse;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.network.PersistentNetworkNodes;
 import net.consensys.orion.network.ReadOnlyNetworkNodes;
@@ -41,6 +43,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -211,9 +214,9 @@ class DualNodesSendReceiveTest {
     final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
 
     final String digest = sendTransaction(firstNode, pubKeyStrings.get(0), pubKeyStrings.get(2));
-    final byte[] receivedPayload = viewTransaction(secondNode, pubKeyStrings.get(2), digest);
+    final ReceiveResponse response = viewTransaction(secondNode, pubKeyStrings.get(2), digest);
 
-    assertTransaction(receivedPayload);
+    assertTransaction(response.getPayload());
   }
 
   @Test
@@ -221,9 +224,9 @@ class DualNodesSendReceiveTest {
     final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
 
     final String digest = sendTransaction(firstNode, pubKeyStrings.get(0), pubKeyStrings.get(2));
-    final byte[] receivedPayload = viewTransaction(firstNode, pubKeyStrings.get(0), digest);
+    final ReceiveResponse response = viewTransaction(firstNode, pubKeyStrings.get(0), digest);
 
-    assertTransaction(receivedPayload);
+    assertTransaction(response.getPayload());
   }
 
   @Test
@@ -232,18 +235,18 @@ class DualNodesSendReceiveTest {
     final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
 
     final String digest = sendTransaction(firstNode, pubKeyStrings.get(0), pubKeyStrings.get(3), pubKeyStrings.get(4));
-    byte[] receivedPayload = viewTransaction(secondNode, pubKeyStrings.get(3), digest);
-    assertTransaction(receivedPayload);
+    ReceiveResponse response = viewTransaction(secondNode, pubKeyStrings.get(3), digest);
+    assertTransaction(response.getPayload());
 
-    receivedPayload = viewTransaction(secondNode, pubKeyStrings.get(4), digest);
-    assertTransaction(receivedPayload);
+    response = viewTransaction(secondNode, pubKeyStrings.get(4), digest);
+    assertTransaction(response.getPayload());
 
     assertTransactionNotReceived(secondNode, pubKeyStrings.get(2), digest);
 
     assertTransactionNotReceived(secondNode, pubKeyStrings.get(0), digest);
 
-    receivedPayload = viewTransaction(firstNode, pubKeyStrings.get(0), digest);
-    assertTransaction(receivedPayload);
+    response = viewTransaction(firstNode, pubKeyStrings.get(0), digest);
+    assertTransaction(response.getPayload());
 
     assertTransactionNotReceived(firstNode, pubKeyStrings.get(3), digest);
 
@@ -265,18 +268,48 @@ class DualNodesSendReceiveTest {
 
     String digest = sendTransaction(firstNode, pubKeyStrings.get(0), pubKeyStrings.get(4));
 
-    byte[] receivedPayload = viewTransaction(secondNode, null, digest);
-    assertTransaction(receivedPayload);
+    ReceiveResponse response = viewTransaction(secondNode, null, digest);
+    assertTransaction(response.getPayload());
 
-    receivedPayload = viewTransaction(firstNode, null, digest);
-    assertTransaction(receivedPayload);
+    response = viewTransaction(firstNode, null, digest);
+    assertTransaction(response.getPayload());
 
     digest = sendTransaction(firstNode, pubKeyStrings.get(1), pubKeyStrings.get(2));
 
-    receivedPayload = viewTransaction(secondNode, null, digest);
-    assertTransaction(receivedPayload);
+    response = viewTransaction(secondNode, null, digest);
+    assertTransaction(response.getPayload());
 
-    receivedPayload = viewTransaction(firstNode, null, digest);
-    assertTransaction(receivedPayload);
+    response = viewTransaction(firstNode, null, digest);
+    assertTransaction(response.getPayload());
+  }
+
+  @Test
+  void senderKeyIsCorrectOnBothNodes() {
+    final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
+    final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
+
+    final String key0FirstNode = pubKeyStrings.get(0);
+    final byte[] key0FirstNodeByteArray = Base64.getDecoder().decode(key0FirstNode);
+    String digest = sendTransaction(firstNode, key0FirstNode, pubKeyStrings.get(4));
+
+    ReceiveResponse response = viewTransaction(secondNode, null, digest);
+    assertTransaction(response.getPayload());
+    assertThat(response.getSenderKey()).isEqualTo(key0FirstNodeByteArray);
+
+    response = viewTransaction(firstNode, null, digest);
+    assertTransaction(response.getPayload());
+    assertThat(response.getSenderKey()).isEqualTo(key0FirstNodeByteArray);
+
+    final String key1FirstNode = pubKeyStrings.get(1);
+    final byte[] key1FirstNodeByteArray = Base64.getDecoder().decode(key1FirstNode);
+    digest = sendTransaction(firstNode, key1FirstNode, pubKeyStrings.get(4));
+
+    response = viewTransaction(secondNode, null, digest);
+    assertTransaction(response.getPayload());
+    assertThat(response.getSenderKey()).isEqualTo(key1FirstNodeByteArray);
+
+    response = viewTransaction(firstNode, null, digest);
+    assertTransaction(response.getPayload());
+    assertThat(response.getSenderKey()).isEqualTo(key1FirstNodeByteArray);
   }
 }
