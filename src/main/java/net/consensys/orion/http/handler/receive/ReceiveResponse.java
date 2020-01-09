@@ -17,12 +17,14 @@ import java.io.Serializable;
 public class ReceiveResponse implements Serializable {
   byte[] payload;
   byte[] privacyGroupId;
+  byte[] senderKey;
 
   public ReceiveResponse() {}
 
-  public ReceiveResponse(final byte[] payload, final byte[] privacyGroupId) {
+  public ReceiveResponse(final byte[] payload, final byte[] privacyGroupId, final byte[] senderKey) {
     this.payload = payload;
     this.privacyGroupId = privacyGroupId;
+    this.senderKey = senderKey;
   }
 
   public byte[] getPayload() {
@@ -39,5 +41,13 @@ public class ReceiveResponse implements Serializable {
 
   public void setPrivacyGroupId(final byte[] privacyGroupId) {
     this.privacyGroupId = privacyGroupId;
+  }
+
+  public byte[] getSenderKey() {
+    return senderKey;
+  }
+
+  public void setSenderKey(final byte[] senderKey) {
+    this.senderKey = senderKey;
   }
 }

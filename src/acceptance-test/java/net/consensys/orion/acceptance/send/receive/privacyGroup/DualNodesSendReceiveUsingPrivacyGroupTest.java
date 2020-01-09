@@ -18,7 +18,6 @@ import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
 import static net.consensys.orion.acceptance.NodeUtils.sendTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.sendTransactionPrivacyGroupId;
 import static net.consensys.orion.acceptance.NodeUtils.viewTransaction;
-import static net.consensys.orion.acceptance.NodeUtils.viewTransactionPrivacyGroupId;
 import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static org.apache.tuweni.io.Base64.decodeBytes;
 import static org.apache.tuweni.io.Base64.encodeBytes;
@@ -161,15 +160,15 @@ class DualNodesSendReceiveUsingPrivacyGroupTest {
     final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
-    final ReceiveResponse receivedPayload = viewTransactionPrivacyGroupId(firstNode, PK_1_B_64, digest);
+    final ReceiveResponse receivedPayload = viewTransaction(firstNode, PK_1_B_64, digest);
 
     assertTransaction(receivedPayload.getPayload());
 
     final String digestPrivacyGroup =
         sendTransactionPrivacyGroupId(firstNode, PK_1_B_64, encodeBytes(receivedPayload.getPrivacyGroupId()));
-    final byte[] response = viewTransaction(secondNode, PK_2_B_64, digestPrivacyGroup);
+    final ReceiveResponse response = viewTransaction(secondNode, PK_2_B_64, digestPrivacyGroup);
 
-    assertTransaction(response);
+    assertTransaction(response.getPayload());
   }
 
   @Test
@@ -177,15 +176,15 @@ class DualNodesSendReceiveUsingPrivacyGroupTest {
     final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
 
     final String digest = sendTransaction(firstNode, PK_1_B_64, PK_2_B_64);
-    final ReceiveResponse receivedPayload = viewTransactionPrivacyGroupId(firstNode, PK_1_B_64, digest);
+    final ReceiveResponse receivedPayload = viewTransaction(firstNode, PK_1_B_64, digest);
 
     assertTransaction(receivedPayload.getPayload());
 
     final String digestPriv =
         sendTransactionPrivacyGroupId(firstNode, PK_1_B_64, encodeBytes(receivedPayload.getPrivacyGroupId()));
-    final byte[] response = viewTransaction(firstNode, PK_1_B_64, digestPriv);
+    final ReceiveResponse response = viewTransaction(firstNode, PK_1_B_64, digestPriv);
 
-    assertTransaction(response);
+    assertTransaction(response.getPayload());
 
   }
 }

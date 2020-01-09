@@ -28,6 +28,7 @@ import net.consensys.orion.utils.Serializer;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -81,9 +82,14 @@ public class ReceiveHandler implements Handler<RoutingContext> {
       }
 
       final EncryptedPayload encryptedPayload = encryptedPayloadOptional.get();
-      Optional<byte[]> decryptPayload = decryptPayload(recipients, encryptedPayload);
-      decryptPayload
-          .ifPresentOrElse(payload -> sendResponse(routingContext, encryptedPayload.privacyGroupId(), payload), () -> {
+      final Optional<byte[]> decryptPayload = decryptPayload(recipients, encryptedPayload);
+      decryptPayload.ifPresentOrElse(
+          payload -> sendResponse(
+              routingContext,
+              encryptedPayload.privacyGroupId(),
+              payload,
+              encryptedPayload.sender().bytesArray()),
+          () -> {
             log.info("unable to decrypt payload");
             routingContext.fail(404, new OrionException(OrionErrorCode.ENCLAVE_KEYS_CANNOT_DECRYPT_PAYLOAD));
           });
@@ -93,15 +99,19 @@ public class ReceiveHandler implements Handler<RoutingContext> {
   private void sendResponse(
       final RoutingContext routingContext,
       final byte[] privacyGroupId,
-      final byte[] decryptedPayload) {
+      final byte[] decryptedPayload,
+      final byte[] sender) {
     // configureRoutes a ReceiveResponse
     final Buffer toReturn;
-    final ReceiveResponse receiveResponse = new ReceiveResponse(decryptedPayload, privacyGroupId);
+    final ReceiveResponse receiveResponse = new ReceiveResponse(decryptedPayload, privacyGroupId, sender);
     if (contentType == ORION) {
       toReturn = Buffer.buffer(Serializer.serialize(JSON, receiveResponse));
     } else if (contentType == JSON) {
-      toReturn =
-          Buffer.buffer(Serializer.serialize(JSON, Collections.singletonMap("payload", encodeBytes(decryptedPayload))));
+      final HashMap<String, String> payloadAndSenderKey = new HashMap<>();
+      payloadAndSenderKey.put("payload", encodeBytes(decryptedPayload));
+      payloadAndSenderKey.put("privacyGroupId", encodeBytes(privacyGroupId));
+      payloadAndSenderKey.put("senderKey", encodeBytes(sender));
+      toReturn = Buffer.buffer(Serializer.serialize(JSON, payloadAndSenderKey));
     } else {
       toReturn = Buffer.buffer(decryptedPayload);
     }
