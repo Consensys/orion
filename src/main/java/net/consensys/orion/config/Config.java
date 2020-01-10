@@ -443,6 +443,30 @@ public class Config {
     return getPath("tlsknownservers");
   }
 
+  public String clientConnectionTls() {
+    return configuration.getString("clientconnectiontls").toLowerCase();
+  }
+
+  public Path clientConnectionTlsServerCert() {
+    return getPath("clientconnectiontlsservercert");
+  }
+
+  public List<Path> clientConnectionTlsServerChain() {
+    return getListOfPath("clientconnectiontlsserverchain");
+  }
+
+  public Path clientConnectionTlsServerKey() {
+    return getPath("clientconnectiontlsserverkey");
+  }
+
+  public String clientConnectionTlsServerTrust() {
+    return configuration.getString("clientconnectiontlsservertrust").toLowerCase();
+  }
+
+  public Path clientConnectionTlsKnownClients() {
+    return getPath("clientconnectiontlsknownclients");
+  }
+
   private Optional<URL> getURL(final String key) {
     try {
       if (!configuration.contains(key)) {
@@ -658,6 +682,73 @@ public class Config {
         "tls-known-servers",
         "TLS known servers for the client. This contains the fingerprints of public keys of other nodes that this node has encountered for the ca-or-tofu, tofu and whitelist trust modes.",
         null);
+
+    schemaBuilder.addString(
+        "clientconnectiontls",
+        "off",
+        "TLS status. Options:\n"
+            + "\n"
+            + "   - strict: All connections to the client connection of this node must use TLS with client authentication\n"
+            + "       See the documentation 'clientconnectiontlsservertrust'\n"
+            + "   - off: Mutually authenticated TLS is not used for in- and outbound\n"
+            + "       connections, although unauthenticated connections to HTTPS hosts are still possible. This\n"
+            + "       should only be used if another transport security mechanism like WireGuard is in place.",
+        PropertyValidator.anyOfIgnoreCase("off", "strict"));
+
+    schemaBuilder.addString(
+        "clientconnectiontlsservertrust",
+        "tofu",
+        "TLS trust mode for the internal server endpoint. This decides who's allowed to connect to it. Options:\n"
+            + "\n"
+            + "   - whitelist: Only nodes presenting certificates with fingerprints in 'tlsknownclients'\n"
+            + "       will be allowed to connect.\n"
+            + "   - ca: Only nodes with a valid certificate and chain of trust to one of the\n"
+            + "       system root certificates will be allowed to connect. The folder containing trusted root\n"
+            + "       certificates can be overridden with the SYSTEM_CERTIFICATE_PATH environment variable.\n"
+            + "   - insecure-tofa: (Trust-on-first-access) On first connection to this server the common name\n"
+            + "       and fingerprint of the presented certificate will be added to 'tlsknownclients'. On\n"
+            + "       subsequent connections, the client will be rejected if the fingerprint has changed.\n"
+            + "   - insecure-ca-or-tofa: A combination of ca and tofa: If the client presents a certificate\n"
+            + "       signed by a trusted CA, it will be accepted. If it is self-signed, it\n"
+            + "       will be allowed only if it's the first certificate this node has seen for that host.\n"
+            + "   - insecure-record: Any client can connect and the fingerprint of their certificate will be\n"
+            + "       added to the 'tlsknownclients' file.\n",
+        PropertyValidator.anyOfIgnoreCase(
+            "whitelist",
+            "ca",
+            "ca-or-whitelist",
+            "tofu",
+            "insecure-tofa",
+            "ca-or-tofu",
+            "insecure-ca-or-tofa",
+            "insecure-no-validation",
+            "insecure-record",
+            "insecure-ca-or-record"));
+
+    schemaBuilder.addString(
+        "clientconnectiontlsknownclients",
+        "tls-known-servers",
+        "TLS known clients for the client interface. This contains the fingerprints of public keys of other nodes that this node has encountered for the ca-or-tofu, tofu and whitelist trust modes.",
+        null);
+
+    schemaBuilder.addString(
+        "clientconnectiontlsservercert",
+        "tls-server-cert.pem",
+        "containing the server's TLS certificate (as used on the (internal) client connection) in Apache format. This is used to identify this node to other nodes in the network when they connect to the public API. If it doesn't exist it will be created.",
+        null);
+
+    schemaBuilder.addListOfString(
+        "clientconnectiontlsserverchain",
+        Collections.emptyList(),
+        "List of files that constitute the CA trust chain for the server certificate used on the (internal) client connection. This can be empty for auto-generated/non-PKI-based certificates.",
+        null);
+
+    schemaBuilder.addString(
+        "clientconnectiontlsserverkey",
+        "tls-server-key.pem",
+        "The private key for the server TLS certificate used on the (internal) client connection. If the doesn't exist it will be created.",
+        null);
+
 
     schemaBuilder.addInteger("verbosity", 1, "Verbosity level (each level includes all prior levels)", inRange(0, 4));
 

@@ -64,6 +64,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Security;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
@@ -430,45 +431,8 @@ public class Orion {
       options.setClientAuth(ClientAuth.REQUIRED);
       options.setPemKeyCertOptions(pemKeyCertOptions);
 
-      if (!config.tlsServerChain().isEmpty()) {
-        final PemTrustOptions pemTrustOptions = new PemTrustOptions();
-        for (final Path chainCert : config.tlsServerChain()) {
-          pemTrustOptions.addCertPath(chainCert.toAbsolutePath().toString());
-        }
-        options.setPemTrustOptions(pemTrustOptions);
-      }
-
-      final Path knownClientsFile = config.tlsKnownClients();
-      final String serverTrustMode = config.tlsServerTrust().toLowerCase();
-      switch (serverTrustMode) {
-        case "whitelist":
-          options.setTrustOptions(VertxTrustOptions.whitelistClients(knownClientsFile, false));
-          break;
-        case "ca":
-          // use default trust options
-          break;
-        case "ca-or-whitelist":
-          options.setTrustOptions(VertxTrustOptions.whitelistClients(knownClientsFile, true));
-          break;
-        case "tofu":
-        case "insecure-tofa":
-          options.setTrustOptions(VertxTrustOptions.trustClientOnFirstAccess(knownClientsFile, false));
-          break;
-        case "ca-or-tofu":
-        case "insecure-ca-or-tofa":
-          options.setTrustOptions(VertxTrustOptions.trustClientOnFirstAccess(knownClientsFile, true));
-          break;
-        case "insecure-no-validation":
-        case "insecure-record":
-          options.setTrustOptions(VertxTrustOptions.recordClientFingerprints(knownClientsFile, false));
-          break;
-        case "insecure-ca-or-record":
-          options.setTrustOptions(VertxTrustOptions.recordClientFingerprints(knownClientsFile, true));
-          break;
-        default:
-          throw new UnsupportedOperationException(
-              "\"" + serverTrustMode + "\" option for tlsservertrust is not supported");
-      }
+      applyServerCertChain(options, config.tlsServerChain());
+      applyClientTrustOptions(options, config.tlsServerTrust().toLowerCase(), config.tlsKnownClients());
     }
 
     try {
@@ -478,6 +442,27 @@ public class Orion {
       final CompletableFuture<Boolean> clientFuture = new CompletableFuture<>();
       final HttpServerOptions clientOptions =
           new HttpServerOptions().setPort(config.clientPort()).setHost(config.clientNetworkInterface());
+
+      // Need to try and put TLS options into the clientOptions
+      if (!"off".equals(config.tls())) {
+        final Path tlsServerCert = workDir.resolve(config.clientConnectionTlsServerCert());
+        final Path tlsServerKey = workDir.resolve(config.clientConnectionTlsServerKey());
+        final PemKeyCertOptions pemKeyCertOptions =
+            new PemKeyCertOptions().setKeyPath(tlsServerKey.toString()).setCertPath(tlsServerCert.toString());
+        options.setSsl(true);
+        options.setClientAuth(ClientAuth.REQUIRED);
+        options.setPemKeyCertOptions(pemKeyCertOptions);
+
+        applyServerCertChain(options, config.clientConnectionTlsServerChain());
+        applyClientTrustOptions(options, config.tlsServerTrust().toLowerCase(), config.tlsKnownClients());
+
+        applyClientTrustOptions(
+            clientOptions,
+            config.clientConnectionTlsServerTrust(),
+            config.clientConnectionTlsKnownClients());
+
+      }
+
       clientHTTPServer = vertx
           .createHttpServer(clientOptions)
           .requestHandler(clientRouter::accept)
@@ -516,6 +501,51 @@ public class Orion {
     // set shutdown hook
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     isRunning.set(true);
+  }
+
+  private void applyServerCertChain(final HttpServerOptions options, List<Path> certChain) {
+    if (!certChain.isEmpty()) {
+      final PemTrustOptions pemTrustOptions = new PemTrustOptions();
+      for (final Path certPath : certChain) {
+        pemTrustOptions.addCertPath(certPath.toAbsolutePath().toString());
+      }
+      options.setPemTrustOptions(pemTrustOptions);
+    }
+  }
+
+  private void applyClientTrustOptions(
+      final HttpServerOptions options,
+      final String serverTrustMode,
+      final Path knownClientsFile) {
+    switch (serverTrustMode) {
+      case "whitelist":
+        options.setTrustOptions(VertxTrustOptions.whitelistClients(knownClientsFile, false));
+        break;
+      case "ca":
+        // use default trust options
+        break;
+      case "ca-or-whitelist":
+        options.setTrustOptions(VertxTrustOptions.whitelistClients(knownClientsFile, true));
+        break;
+      case "tofu":
+      case "insecure-tofa":
+        options.setTrustOptions(VertxTrustOptions.trustClientOnFirstAccess(knownClientsFile, false));
+        break;
+      case "ca-or-tofu":
+      case "insecure-ca-or-tofa":
+        options.setTrustOptions(VertxTrustOptions.trustClientOnFirstAccess(knownClientsFile, true));
+        break;
+      case "insecure-no-validation":
+      case "insecure-record":
+        options.setTrustOptions(VertxTrustOptions.recordClientFingerprints(knownClientsFile, false));
+        break;
+      case "insecure-ca-or-record":
+        options.setTrustOptions(VertxTrustOptions.recordClientFingerprints(knownClientsFile, true));
+        break;
+      default:
+        throw new UnsupportedOperationException(
+            "\"" + serverTrustMode + "\" option for tlsservertrust is not supported");
+    }
   }
 
   private void writePortsToFile(final Config config, final int nodePort, final int clientPort) {
