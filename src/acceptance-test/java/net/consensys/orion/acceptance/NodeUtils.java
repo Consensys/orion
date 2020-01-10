@@ -114,11 +114,15 @@ public class NodeUtils {
 
   private static final byte[] originalPayload = "a wonderful transaction".getBytes(UTF_8);
 
-  public static ReceiveResponse viewTransaction(
+  public static byte[] viewTransaction(final EthClientStub viewer, final String viewerKey, final String digest) {
+    return viewer.receive(digest, viewerKey).orElseThrow(AssertionFailedError::new);
+  }
+
+  public static ReceiveResponse viewTransactionPrivacyGroupId(
       final EthClientStub viewer,
       final String viewerKey,
       final String digest) {
-    return viewer.receive(digest, viewerKey).orElseThrow(AssertionFailedError::new);
+    return viewer.receivePrivacy(digest, viewerKey);
   }
 
   public static String sendTransaction(
