@@ -13,6 +13,7 @@
 package net.consensys.orion.acceptance;
 
 import static net.consensys.orion.http.server.HttpContentType.JSON;
+import static org.apache.tuweni.io.Base64.decodeBytes;
 
 import net.consensys.orion.http.handler.privacy.DeletePrivacyGroupRequest;
 import net.consensys.orion.http.handler.privacy.FindPrivacyGroupRequest;
@@ -110,22 +111,34 @@ public class EthClientStub {
     return Optional.ofNullable(keyFuture.join());
   }
 
-  Optional<ReceiveResponse> receive(final String digest, final String publicKey) {
+  Optional<byte[]> receive(final String digest, final String publicKey) {
     final ReceiveRequest receiveRequest = new ReceiveRequest(digest, publicKey);
     final CompletableFuture<byte[]> payloadFuture = new CompletableFuture<>();
     httpClient.post(clientPort, "localhost", "/receive").handler(resp -> {
       if (resp.statusCode() == 200) {
-        resp.bodyHandler(body -> {
-          payloadFuture.complete(body.getBytes());
-        });
+        resp.bodyHandler(body -> payloadFuture.complete(decodeBytes(deserialize(body).get("payload"))));
       } else {
         payloadFuture.complete(null);
       }
     }).exceptionHandler(payloadFuture::completeExceptionally).putHeader("Content-Type", "application/json").end(
         Buffer.buffer(Serializer.serialize(JSON, receiveRequest)));
-    final byte[] join = payloadFuture.join();
-    return join == null ? Optional.empty()
-        : Optional.ofNullable(Serializer.deserialize(JSON, ReceiveResponse.class, join));
+    return Optional.ofNullable(payloadFuture.join());
+  }
+
+  ReceiveResponse receivePrivacy(final String digest, final String publicKey) {
+    final ReceiveRequest receiveRequest = new ReceiveRequest(digest, publicKey);
+    final CompletableFuture<ReceiveResponse> payloadFuture = new CompletableFuture<>();
+    httpClient.post(clientPort, "localhost", "/receive").handler(resp -> {
+      if (resp.statusCode() == 200) {
+        resp.bodyHandler(body -> payloadFuture.complete(deserialize(body, ReceiveResponse.class)));
+      } else {
+        payloadFuture.complete(null);
+      }
+    })
+        .exceptionHandler(payloadFuture::completeExceptionally)
+        .putHeader("Content-Type", "application/vnd.orion.v1+json")
+        .end(Buffer.buffer(Serializer.serialize(JSON, receiveRequest)));
+    return payloadFuture.join();
   }
 
   public Optional<PrivacyGroup> createPrivacyGroup(
