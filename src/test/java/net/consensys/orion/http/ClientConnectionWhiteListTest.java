@@ -19,7 +19,6 @@ import static net.consensys.orion.TestUtils.writeClientConnectionServerCertToCon
 import static net.consensys.orion.TestUtils.writeServerCertToConfig;
 import static org.apache.tuweni.net.tls.TLS.certificateHexFingerprint;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.ThrowableAssert.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -116,7 +115,7 @@ class ClientConnectionWhiteListTest {
     final HttpClientRequest req = httpClientWithUnregisteredCert.get(clientPort, "localhost", "/upcheck");
     final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
-    
+
     final Throwable thrown = catchThrowable(result::get);
 
     assertThat(thrown).isInstanceOf(CompletionException.class);
