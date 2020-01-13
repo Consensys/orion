@@ -727,13 +727,13 @@ public class Config {
 
     schemaBuilder.addString(
         "clientconnectiontlsknownclients",
-        "tls-known-servers",
+        "client-connection-tls-known-clients",
         "TLS known clients for the client interface. This contains the fingerprints of public keys of other nodes that this node has encountered for the ca-or-tofu, tofu and whitelist trust modes.",
         null);
 
     schemaBuilder.addString(
         "clientconnectiontlsservercert",
-        "tls-server-cert.pem",
+        "client-connection-tls-server-cert.pem",
         "containing the server's TLS certificate (as used on the (internal) client connection) in Apache format. This is used to identify this node to other nodes in the network when they connect to the public API. If it doesn't exist it will be created.",
         null);
 
@@ -745,7 +745,7 @@ public class Config {
 
     schemaBuilder.addString(
         "clientconnectiontlsserverkey",
-        "tls-server-key.pem",
+        "client-connection-tls-server-key.pem",
         "The private key for the server TLS certificate used on the (internal) client connection. If the doesn't exist it will be created.",
         null);
 

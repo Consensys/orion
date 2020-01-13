@@ -56,7 +56,9 @@ class TomlConfigTest {
     assertEquals(expectedWorkdir.resolve("client-key.pem"), testConf.tlsClientKey());
     assertEquals(expectedWorkdir.resolve("known-servers"), testConf.tlsKnownServers());
     assertEquals(expectedWorkdir.resolve("client-presented-cert.pem"), testConf.clientConnectionTlsServerCert());
-    assertEquals(expectedWorkdir.resolve("client-connection-known-clients"), testConf.clientConnectionTlsKnownClients());
+    assertEquals(
+        expectedWorkdir.resolve("client-connection-known-clients"),
+        testConf.clientConnectionTlsKnownClients());
     assertEquals(Paths.get("/somepath"), testConf.libSodiumPath());
 
 

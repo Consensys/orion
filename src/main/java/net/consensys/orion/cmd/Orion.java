@@ -444,23 +444,20 @@ public class Orion {
           new HttpServerOptions().setPort(config.clientPort()).setHost(config.clientNetworkInterface());
 
       // Need to try and put TLS options into the clientOptions
-      if (!"off".equals(config.tls())) {
+      if (!"off".equals(config.clientConnectionTls())) {
         final Path tlsServerCert = workDir.resolve(config.clientConnectionTlsServerCert());
         final Path tlsServerKey = workDir.resolve(config.clientConnectionTlsServerKey());
         final PemKeyCertOptions pemKeyCertOptions =
             new PemKeyCertOptions().setKeyPath(tlsServerKey.toString()).setCertPath(tlsServerCert.toString());
-        options.setSsl(true);
-        options.setClientAuth(ClientAuth.REQUIRED);
-        options.setPemKeyCertOptions(pemKeyCertOptions);
+        clientOptions.setSsl(true);
+        clientOptions.setClientAuth(ClientAuth.REQUIRED);
+        clientOptions.setPemKeyCertOptions(pemKeyCertOptions);
 
-        applyServerCertChain(options, config.clientConnectionTlsServerChain());
-        applyClientTrustOptions(options, config.tlsServerTrust().toLowerCase(), config.tlsKnownClients());
-
+        applyServerCertChain(clientOptions, config.clientConnectionTlsServerChain());
         applyClientTrustOptions(
             clientOptions,
-            config.clientConnectionTlsServerTrust(),
+            config.clientConnectionTlsServerTrust().toLowerCase(),
             config.clientConnectionTlsKnownClients());
-
       }
 
       clientHTTPServer = vertx
