@@ -432,7 +432,9 @@ public class Orion {
       options.setClientAuth(ClientAuth.REQUIRED);
       options.setPemKeyCertOptions(pemKeyCertOptions);
 
-      options.setPemTrustOptions(createPemTrustOptions(config.tlsServerChain()));
+      if (!config.tlsServerChain().isEmpty()) {
+        options.setPemTrustOptions(createPemTrustOptions(config.tlsServerChain()));
+      }
       options.setTrustOptions(createTrustOptions(config.tlsServerTrust().toLowerCase(), config.tlsKnownClients()));
     }
 

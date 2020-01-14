@@ -102,7 +102,7 @@ class ClientConnectionWhiteListTest {
   }
 
   @Test
-  void clientInWhiteListCanInvokeUpcheck() throws Exception {
+  void clientInWhiteListCanInvokeUpCheck() throws Exception {
     final HttpClientRequest req = httpClient.get(clientPort, "localhost", "/upcheck");
     final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
@@ -111,7 +111,7 @@ class ClientConnectionWhiteListTest {
   }
 
   @Test
-  void clientNotInWhiteListCannotInvokeUpcheck() {
+  void clientNotInWhiteListCannotInvokeUpCheck() {
     final HttpClientRequest req = httpClientWithUnregisteredCert.get(clientPort, "localhost", "/upcheck");
     final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
@@ -123,7 +123,7 @@ class ClientConnectionWhiteListTest {
   }
 
   @Test
-  void clientWithImproperCertificateCannnotInvokeUpcheck() {
+  void clientWithImproperCertificateCannnotInvokeUpCheck() {
     final HttpClientRequest req = httpClientWithImproperCertificate.get(clientPort, "localhost", "/upcheck");
     final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
@@ -135,7 +135,7 @@ class ClientConnectionWhiteListTest {
   }
 
   @Test
-  void clientWithIncorrectTrustCannotInvokeUpcheck() {
+  void clientWithIncorrectTrustCannotInvokeUpCheck() {
     final HttpClientRequest req = httpClientWithMismatchedTrust.get(clientPort, "localhost", "/upcheck");
     final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
