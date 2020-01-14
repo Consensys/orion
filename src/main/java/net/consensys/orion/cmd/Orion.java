@@ -19,6 +19,7 @@ import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 import static net.consensys.orion.http.server.HttpContentType.ORION;
 import static net.consensys.orion.http.server.HttpContentType.TEXT;
+import static net.consensys.orion.network.HttpHelpers.createTrustOptions;
 
 import net.consensys.orion.config.Config;
 import net.consensys.orion.config.ConfigException;
@@ -91,7 +92,6 @@ import org.apache.tuweni.crypto.sodium.Sodium;
 import org.apache.tuweni.kv.KeyValueStore;
 import org.apache.tuweni.kv.LevelDBKeyValueStore;
 import org.apache.tuweni.kv.MapDBKeyValueStore;
-import org.apache.tuweni.net.tls.VertxTrustOptions;
 
 public class Orion {
 
@@ -421,7 +421,7 @@ public class Orion {
         .setHost(config.nodeNetworkInterface())
         .setCompressionSupported(true);
 
-    if (!"off".equals(config.tls())) {
+    if ("strict".equals(config.tls())) {
       final Path tlsServerCert = workDir.resolve(config.tlsServerCert());
       final Path tlsServerKey = workDir.resolve(config.tlsServerKey());
       final PemKeyCertOptions pemKeyCertOptions =
@@ -432,7 +432,7 @@ public class Orion {
       options.setPemKeyCertOptions(pemKeyCertOptions);
 
       applyServerCertChain(options, config.tlsServerChain());
-      applyClientTrustOptions(options, config.tlsServerTrust().toLowerCase(), config.tlsKnownClients());
+      createTrustOptions(options, config.tlsServerTrust().toLowerCase(), config.tlsKnownClients());
     }
 
     try {
@@ -444,7 +444,7 @@ public class Orion {
           new HttpServerOptions().setPort(config.clientPort()).setHost(config.clientNetworkInterface());
 
       // Need to try and put TLS options into the clientOptions
-      if (!"off".equals(config.clientConnectionTls())) {
+      if ("strict".equals(config.clientConnectionTls())) {
         final Path tlsServerCert = workDir.resolve(config.clientConnectionTlsServerCert());
         final Path tlsServerKey = workDir.resolve(config.clientConnectionTlsServerKey());
         final PemKeyCertOptions pemKeyCertOptions =
@@ -454,8 +454,8 @@ public class Orion {
         clientOptions.setPemKeyCertOptions(pemKeyCertOptions);
 
         applyServerCertChain(clientOptions, config.clientConnectionTlsServerChain());
-        applyClientTrustOptions(
-            clientOptions,
+
+        createTrustOptions(clientOptions,
             config.clientConnectionTlsServerTrust().toLowerCase(),
             config.clientConnectionTlsKnownClients());
       }
@@ -500,48 +500,13 @@ public class Orion {
     isRunning.set(true);
   }
 
-  private void applyServerCertChain(final HttpServerOptions options, List<Path> certChain) {
+  private void applyServerCertChain(final HttpServerOptions options, final List<Path> certChain) {
     if (!certChain.isEmpty()) {
       final PemTrustOptions pemTrustOptions = new PemTrustOptions();
       for (final Path certPath : certChain) {
         pemTrustOptions.addCertPath(certPath.toAbsolutePath().toString());
       }
       options.setPemTrustOptions(pemTrustOptions);
-    }
-  }
-
-  private void applyClientTrustOptions(
-      final HttpServerOptions options,
-      final String serverTrustMode,
-      final Path knownClientsFile) {
-    switch (serverTrustMode) {
-      case "whitelist":
-        options.setTrustOptions(VertxTrustOptions.whitelistClients(knownClientsFile, false));
-        break;
-      case "ca":
-        // use default trust options
-        break;
-      case "ca-or-whitelist":
-        options.setTrustOptions(VertxTrustOptions.whitelistClients(knownClientsFile, true));
-        break;
-      case "tofu":
-      case "insecure-tofa":
-        options.setTrustOptions(VertxTrustOptions.trustClientOnFirstAccess(knownClientsFile, false));
-        break;
-      case "ca-or-tofu":
-      case "insecure-ca-or-tofa":
-        options.setTrustOptions(VertxTrustOptions.trustClientOnFirstAccess(knownClientsFile, true));
-        break;
-      case "insecure-no-validation":
-      case "insecure-record":
-        options.setTrustOptions(VertxTrustOptions.recordClientFingerprints(knownClientsFile, false));
-        break;
-      case "insecure-ca-or-record":
-        options.setTrustOptions(VertxTrustOptions.recordClientFingerprints(knownClientsFile, true));
-        break;
-      default:
-        throw new UnsupportedOperationException(
-            "\"" + serverTrustMode + "\" option for tlsservertrust is not supported");
     }
   }
 
