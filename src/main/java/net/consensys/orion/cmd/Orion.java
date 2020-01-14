@@ -455,7 +455,8 @@ public class Orion {
 
         applyServerCertChain(clientOptions, config.clientConnectionTlsServerChain());
 
-        createTrustOptions(clientOptions,
+        createTrustOptions(
+            clientOptions,
             config.clientConnectionTlsServerTrust().toLowerCase(),
             config.clientConnectionTlsKnownClients());
       }

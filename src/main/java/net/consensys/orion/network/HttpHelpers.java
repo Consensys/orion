@@ -12,13 +12,17 @@
  */
 package net.consensys.orion.network;
 
-import io.vertx.core.net.TCPSSLOptions;
 import java.nio.file.Path;
+
+import io.vertx.core.net.TCPSSLOptions;
 import org.apache.tuweni.net.tls.VertxTrustOptions;
 
 public class HttpHelpers {
 
-  public static void createTrustOptions(final TCPSSLOptions optionsBase, final String trustMode, final Path knownConnectionFile) {
+  public static void createTrustOptions(
+      final TCPSSLOptions optionsBase,
+      final String trustMode,
+      final Path knownConnectionFile) {
     switch (trustMode) {
       case "whitelist":
         optionsBase.setTrustOptions(VertxTrustOptions.whitelistClients(knownConnectionFile, false));
