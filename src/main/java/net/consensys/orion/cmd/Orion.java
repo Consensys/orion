@@ -19,6 +19,7 @@ import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 import static net.consensys.orion.http.server.HttpContentType.ORION;
 import static net.consensys.orion.http.server.HttpContentType.TEXT;
+import static net.consensys.orion.network.HttpHelpers.createPemTrustOptions;
 import static net.consensys.orion.network.HttpHelpers.createTrustOptions;
 
 import net.consensys.orion.config.Config;
@@ -431,8 +432,8 @@ public class Orion {
       options.setClientAuth(ClientAuth.REQUIRED);
       options.setPemKeyCertOptions(pemKeyCertOptions);
 
-      applyServerCertChain(options, config.tlsServerChain());
-      createTrustOptions(options, config.tlsServerTrust().toLowerCase(), config.tlsKnownClients());
+      options.setPemTrustOptions(createPemTrustOptions(config.tlsServerChain()));
+      options.setTrustOptions(createTrustOptions(config.tlsServerTrust().toLowerCase(), config.tlsKnownClients()));
     }
 
     try {
@@ -443,7 +444,6 @@ public class Orion {
       final HttpServerOptions clientOptions =
           new HttpServerOptions().setPort(config.clientPort()).setHost(config.clientNetworkInterface());
 
-      // Need to try and put TLS options into the clientOptions
       if ("strict".equals(config.clientConnectionTls())) {
         final Path tlsServerCert = workDir.resolve(config.clientConnectionTlsServerCert());
         final Path tlsServerKey = workDir.resolve(config.clientConnectionTlsServerKey());
@@ -455,10 +455,11 @@ public class Orion {
 
         applyServerCertChain(clientOptions, config.clientConnectionTlsServerChain());
 
-        createTrustOptions(
-            clientOptions,
-            config.clientConnectionTlsServerTrust().toLowerCase(),
-            config.clientConnectionTlsKnownClients());
+        options.setPemTrustOptions(createPemTrustOptions(config.clientConnectionTlsServerChain()));
+        clientOptions.setTrustOptions(
+            createTrustOptions(
+                config.clientConnectionTlsServerTrust().toLowerCase(),
+                config.clientConnectionTlsKnownClients()));
       }
 
       clientHTTPServer = vertx
@@ -493,7 +494,7 @@ public class Orion {
       throw new OrionStartException("Orion was interrupted while starting services");
     }
 
-    //write acutal ports to a ports file
+    //write actual ports to a ports file
     writePortsToFile(config, nodeHTTPServer.actualPort(), clientHTTPServer.actualPort());
 
     // set shutdown hook

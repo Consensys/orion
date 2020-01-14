@@ -13,42 +13,46 @@
 package net.consensys.orion.network;
 
 import java.nio.file.Path;
+import java.util.List;
 
-import io.vertx.core.net.TCPSSLOptions;
+import io.vertx.core.net.PemTrustOptions;
+import io.vertx.core.net.TrustOptions;
 import org.apache.tuweni.net.tls.VertxTrustOptions;
 
 public class HttpHelpers {
 
-  public static void createTrustOptions(
-      final TCPSSLOptions optionsBase,
-      final String trustMode,
-      final Path knownConnectionFile) {
+  public static TrustOptions createTrustOptions(final String trustMode, final Path knownConnectionFile) {
     switch (trustMode) {
       case "whitelist":
-        optionsBase.setTrustOptions(VertxTrustOptions.whitelistClients(knownConnectionFile, false));
-        break;
+        return VertxTrustOptions.whitelistClients(knownConnectionFile, false);
       case "ca":
-        return;
+        return null;
       case "tofu":
       case "insecure-tofa":
-        optionsBase.setTrustOptions(VertxTrustOptions.trustClientOnFirstAccess(knownConnectionFile, false));
-        break;
+        return VertxTrustOptions.trustClientOnFirstAccess(knownConnectionFile, false);
       case "insecure-no-validation":
       case "insecure-record":
-        optionsBase.setTrustOptions(VertxTrustOptions.recordClientFingerprints(knownConnectionFile, false));
-        break;
+        return VertxTrustOptions.recordClientFingerprints(knownConnectionFile, false);
       case "ca-or-tofu":
       case "insecure-ca-or-tofa":
-        optionsBase.setTrustOptions(VertxTrustOptions.trustClientOnFirstAccess(knownConnectionFile, true));
-        break;
+        return VertxTrustOptions.trustClientOnFirstAccess(knownConnectionFile, true);
       case "ca-or-whitelist":
-        optionsBase.setTrustOptions(VertxTrustOptions.whitelistClients(knownConnectionFile, true));
-        break;
+        return VertxTrustOptions.whitelistClients(knownConnectionFile, true);
       case "insecure-ca-or-record":
-        optionsBase.setTrustOptions(VertxTrustOptions.recordClientFingerprints(knownConnectionFile, true));
-        break;
+        return VertxTrustOptions.recordClientFingerprints(knownConnectionFile, true);
       default:
         throw new UnsupportedOperationException("\"" + trustMode + "\" option is not supported");
     }
+  }
+
+  public static PemTrustOptions createPemTrustOptions(final List<Path> certChain) {
+    if (!certChain.isEmpty()) {
+      final PemTrustOptions pemTrustOptions = new PemTrustOptions();
+      for (final Path certPath : certChain) {
+        pemTrustOptions.addCertPath(certPath.toAbsolutePath().toString());
+      }
+      return pemTrustOptions;
+    }
+    return null;
   }
 }
