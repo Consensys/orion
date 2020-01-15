@@ -104,7 +104,7 @@ class TomlConfigTest {
         + "Value of property 'storage' must have storage type of \"leveldb\", \"mapdb\", \"sql\" or \"memory\" (line 11, column 1)\n"
         + "Value of property 'othernodes' is not a valid URL (line 6, column 1)\n"
         + "Value of property 'othernodes' is not a valid URL (line 6, column 1)\n"
-        + "Value of property 'tlsservertrust' should be \"whitelist\", \"ca\", \"tofu\", \"insecure-tofa\", \"insecure-no-validation\", \"insecure-record\", \"ca-or-tofu\", \"insecure-ca-or-tofa\", \"ca-or-whitelist\", or \"insecure-ca-or-record\" (line 9, column 1)\n"
+        + "Value of property 'tlsservertrust' should be \"whitelist\", \"ca\", \"ca-or-whitelist\", \"tofu\", \"insecure-tofa\", \"ca-or-tofu\", \"insecure-ca-or-tofa\", \"insecure-no-validation\", \"insecure-record\", or \"insecure-ca-or-record\" (line 9, column 1)\n"
         + "...";
     assertEquals(message, e.getMessage());
   }
