@@ -43,44 +43,6 @@ import org.apache.tuweni.config.SchemaBuilder;
  * The configuration of Orion.
  */
 public class Config {
-  /*
-  private static final String clienttrustModeDescriptions =
-      "   - whitelist: Only nodes presenting certificates with fingerprints in 'tlsknownclients'\n"
-          + "       will be allowed to connect.\n"
-          + "   - ca: Only nodes with a valid certificate and chain of trust to one of the\n"
-          + "       system root certificates will be allowed to connect. The folder containing trusted root\n"
-          + "       certificates can be overridden with the SYSTEM_CERTIFICATE_PATH environment variable.\n"
-          + "   - tofu: (Trust-on-first-use) This node will only connect to the same\n"
-          + "       server for any given host. (Similar to how OpenSSH works.)\n"
-          + "   - insecure-tofa: (Trust-on-first-access) On first connection to this server the common name\n"
-          + "       and fingerprint of the presented certificate will be added to 'tlsknownclients'. On\n"
-          + "       subsequent connections, the client will be rejected if the fingerprint has changed.\n"
-          + "   - insecure-no-validation: Any client can connect, however they will still be added to the\n"
-          + "       tlsKnownClients file."
-          + "   - insecure-record: Any client can connect and the fingerprint of their certificate will be\n"
-          + "       added to the 'tlsknownclients' file.\n"
-          + "   - ca-or-tofu: A combination of ca and tofu: If a certificate is valid, it\n"
-          + "       is always allowed and added to the 'tlsknownservers' list. If it is self-signed, it\n"
-          + "       will be allowed only if it's the first certificate this node has seen for that host.\n"
-          + "   - ca-or-whitelist: A combination of ca and whitelist: If a client is in the whitelist, \n"
-          + "       or presents a CA signed certificate, it will be accepted"
-          + "   - insecure-ca-or-tofa: A combination of ca and tofa: If the client presents a certificate\n"
-          + "       signed by a trusted CA, it will be accepted. If it is self-signed, it\n"
-          + "       will be allowed only if it's the first certificate this node has seen for that host.\n";
-          
-   */
-
-  private static final PropertyValidator<String> trustModes = PropertyValidator.anyOfIgnoreCase(
-      "whitelist",
-      "ca",
-      "tofu",
-      "insecure-tofa",
-      "insecure-no-validation",
-      "insecure-record",
-      "ca-or-tofu",
-      "insecure-ca-or-tofa",
-      "ca-or-whitelist",
-      "insecure-ca-or-record");
 
   private static final Schema SCHEMA = configSchema();
 
@@ -651,7 +613,17 @@ public class Config {
             + "       will be allowed only if it's the first certificate this node has seen for that host.\n"
             + "   - insecure-record: Any client can connect and the fingerprint of their certificate will be\n"
             + "       added to the 'tlsknownclients' file.\n",
-        trustModes);
+        PropertyValidator.anyOfIgnoreCase(
+            "whitelist",
+            "ca",
+            "ca-or-whitelist",
+            "tofu",
+            "insecure-tofa",
+            "ca-or-tofu",
+            "insecure-ca-or-tofa",
+            "insecure-no-validation",
+            "insecure-record",
+            "insecure-ca-or-record"));
 
     schemaBuilder.addString(
         "tlsknownclients",
@@ -695,7 +667,15 @@ public class Config {
             + "       will be allowed only if it's the first certificate this node has seen for that host.\n"
             + "   - insecure-record: This node will connect to any server, regardless\n"
             + "       of certificate, however it will still be added to the 'tlsknownservers' file.",
-        trustModes);
+        PropertyValidator.anyOfIgnoreCase(
+            "whitelist",
+            "ca",
+            "ca-or-whitelist",
+            "tofu",
+            "ca-or-tofu",
+            "insecure-no-validation",
+            "insecure-record",
+            "insecure-ca-or-record"));
 
     schemaBuilder.addString(
         "tlsknownservers",
@@ -725,24 +705,25 @@ public class Config {
             + "   - ca: Only nodes with a valid certificate and chain of trust to one of the\n"
             + "       system root certificates will be allowed to connect. The folder containing trusted root\n"
             + "       certificates can be overridden with the SYSTEM_CERTIFICATE_PATH environment variable.\n"
-            + "   - tofu: (Trust-on-first-use) This node will only connect to the same\n"
-            + "       server for any given host. (Similar to how OpenSSH works.)\n"
             + "   - insecure-tofa: (Trust-on-first-access) On first connection to this server the common name\n"
             + "       and fingerprint of the presented certificate will be added to 'tlsknownclients'. On\n"
             + "       subsequent connections, the client will be rejected if the fingerprint has changed.\n"
-            + "   - insecure-no-validation: Any client can connect, however they will still be added to the\n"
-            + "       tlsKnownClients file."
-            + "   - insecure-record: Any client can connect and the fingerprint of their certificate will be\n"
-            + "       added to the 'tlsknownclients' file.\n"
-            + "   - ca-or-tofu: A combination of ca and tofu: If a certificate is valid, it\n"
-            + "       is always allowed and added to the 'tlsknownservers' list. If it is self-signed, it\n"
-            + "       will be allowed only if it's the first certificate this node has seen for that host.\n"
-            + "   - ca-or-whitelist: A combination of ca and whitelist: If a client is in the whitelist, \n"
-            + "       or presents a CA signed certificate, it will be accepted"
             + "   - insecure-ca-or-tofa: A combination of ca and tofa: If the client presents a certificate\n"
             + "       signed by a trusted CA, it will be accepted. If it is self-signed, it\n"
-            + "       will be allowed only if it's the first certificate this node has seen for that host.\n",
-        trustModes);
+            + "       will be allowed only if it's the first certificate this node has seen for that host.\n"
+            + "   - insecure-record: Any client can connect and the fingerprint of their certificate will be\n"
+            + "       added to the 'tlsknownclients' file.\n",
+        PropertyValidator.anyOfIgnoreCase(
+            "whitelist",
+            "ca",
+            "ca-or-whitelist",
+            "tofu",
+            "insecure-tofa",
+            "ca-or-tofu",
+            "insecure-ca-or-tofa",
+            "insecure-no-validation",
+            "insecure-record",
+            "insecure-ca-or-record"));
 
     schemaBuilder.addString(
         "clientconnectiontlsknownclients",
