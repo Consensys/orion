@@ -433,7 +433,8 @@ public class Orion {
       if (!config.tlsServerChain().isEmpty()) {
         options.setPemTrustOptions(createPemTrustOptions(config.tlsServerChain()));
       }
-      options.setTrustOptions(createTrustOptions(config.tlsServerTrust().toLowerCase(), config.tlsKnownClients()));
+      createTrustOptions(config.tlsServerTrust().toLowerCase(), config.tlsKnownClients())
+          .ifPresent(options::setTrustOptions);
     }
 
     try {
@@ -454,10 +455,10 @@ public class Orion {
         clientOptions.setPemKeyCertOptions(pemKeyCertOptions);
 
         options.setPemTrustOptions(createPemTrustOptions(config.clientConnectionTlsServerChain()));
-        clientOptions.setTrustOptions(
-            createTrustOptions(
-                config.clientConnectionTlsServerTrust().toLowerCase(),
-                config.clientConnectionTlsKnownClients()));
+
+        createTrustOptions(
+            config.clientConnectionTlsServerTrust().toLowerCase(),
+            config.clientConnectionTlsKnownClients()).ifPresent(clientOptions::setTrustOptions);
       }
 
       clientHTTPServer = vertx

@@ -14,6 +14,7 @@ package net.consensys.orion.network;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.core.net.TrustOptions;
@@ -21,25 +22,25 @@ import org.apache.tuweni.net.tls.VertxTrustOptions;
 
 public class HttpHelpers {
 
-  public static TrustOptions createTrustOptions(final String trustMode, final Path knownConnectionFile) {
+  public static Optional<TrustOptions> createTrustOptions(final String trustMode, final Path knownConnectionFile) {
     switch (trustMode) {
       case "whitelist":
-        return VertxTrustOptions.whitelistClients(knownConnectionFile, false);
+        return Optional.of(VertxTrustOptions.whitelistClients(knownConnectionFile, false));
       case "ca":
-        return null;
+        return Optional.empty();
       case "tofu":
       case "insecure-tofa":
-        return VertxTrustOptions.trustClientOnFirstAccess(knownConnectionFile, false);
+        return Optional.of(VertxTrustOptions.trustClientOnFirstAccess(knownConnectionFile, false));
       case "insecure-no-validation":
       case "insecure-record":
-        return VertxTrustOptions.recordClientFingerprints(knownConnectionFile, false);
+        return Optional.of(VertxTrustOptions.recordClientFingerprints(knownConnectionFile, false));
       case "ca-or-tofu":
       case "insecure-ca-or-tofa":
-        return VertxTrustOptions.trustClientOnFirstAccess(knownConnectionFile, true);
+        return Optional.of(VertxTrustOptions.trustClientOnFirstAccess(knownConnectionFile, true));
       case "ca-or-whitelist":
-        return VertxTrustOptions.whitelistClients(knownConnectionFile, true);
+        return Optional.of(VertxTrustOptions.whitelistClients(knownConnectionFile, true));
       case "insecure-ca-or-record":
-        return VertxTrustOptions.recordClientFingerprints(knownConnectionFile, true);
+        return Optional.of(VertxTrustOptions.recordClientFingerprints(knownConnectionFile, true));
       default:
         throw new UnsupportedOperationException("\"" + trustMode + "\" option is not supported");
     }

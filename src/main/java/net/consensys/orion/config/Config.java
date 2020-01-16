@@ -87,7 +87,7 @@ public class Config {
    * <p>
    * This is what is advertised to other nodes on the network and must be reachable by them. This is optional, as the
    * url might be derived from the actual node port and node network interface
-   * 
+   *
    * @return URL for this node's Orion API
    */
   public Optional<URL> nodeUrl() {
@@ -204,8 +204,8 @@ public class Config {
    * <p>
    * <strong>Default:</strong> []
    *
-   * @see #publicKeys()
    * @return Array of paths to corresponding private keys
+   * @see #publicKeys()
    */
   public List<Path> privateKeys() {
     return getListOfPath("privatekeys");
@@ -219,9 +219,9 @@ public class Config {
    * <p>
    * <strong>Default:</strong> []
    *
+   * @return Array of paths to public keys that are always included as recipients
    * @see #publicKeys()
    * @see #privateKeys()
-   * @return Array of paths to public keys that are always included as recipients
    */
   public List<Path> alwaysSendTo() {
     return getListOfPath("alwayssendto");
@@ -231,8 +231,8 @@ public class Config {
    * Optional file containing the passwords needed to unlock the given <i>privateKeys</i> The file should contain one
    * password per line -- add an empty line if any one key isn't locked.
    *
-   * @see #privateKeys()
    * @return A file containing the passwords for the specified privateKeys
+   * @see #privateKeys()
    */
   public Optional<Path> passwords() {
     if (!configuration.contains("passwords")) {
@@ -272,9 +272,9 @@ public class Config {
    *
    * <strong>Default:</strong> "off"
    *
+   * @return TLS status
    * @see #tlsServerTrust()
    * @see #tlsClientTrust()
-   * @return TLS status
    */
   public String tls() {
     return configuration.getString("tls").toLowerCase();
@@ -342,8 +342,8 @@ public class Config {
    *
    * <strong>Default:</strong> "tofu"
    *
-   * @see #tlsKnownClients()
    * @return TLS server trust mode
+   * @see #tlsKnownClients()
    */
   public String tlsServerTrust() {
     return configuration.getString("tlsservertrust").toLowerCase();
@@ -356,8 +356,8 @@ public class Config {
    * <p>
    * <strong>Default:</strong> "tls-known-clients"
    *
-   * @see #tlsServerTrust()
    * @return TLS server known clients file
+   * @see #tlsServerTrust()
    */
   public Path tlsKnownClients() {
     return getPath("tlsknownclients");
@@ -422,8 +422,8 @@ public class Config {
    *
    * <strong>Default:</strong> "ca-or-tofu"
    *
-   * @see #tlsKnownServers()
    * @return TLS client trust mode
+   * @see #tlsKnownServers()
    */
   public String tlsClientTrust() {
     return configuration.getString("tlsclienttrust").toLowerCase();
@@ -436,8 +436,8 @@ public class Config {
    * <p>
    * <strong>Default:</strong> "tls-known-servers"
    *
-   * @see #tlsKnownServers()
    * @return TLS client known servers file
+   * @see #tlsKnownServers()
    */
   public Path tlsKnownServers() {
     return getPath("tlsknownservers");
@@ -728,27 +728,33 @@ public class Config {
     schemaBuilder.addString(
         "clientconnectiontlsknownclients",
         "client-connection-tls-known-clients",
-        "TLS known clients for the client interface. This contains the fingerprints of public keys of other nodes that this node has encountered for the ca-or-tofu, tofu and whitelist trust modes.",
+        "TLS known clients for the client interface. This contains the fingerprints of public keys "
+            + "of other nodes that this node has encountered for the ca-or-tofu, tofu and whitelist "
+            + "trust modes.",
         null);
 
     schemaBuilder.addString(
         "clientconnectiontlsservercert",
         "client-connection-tls-server-cert.pem",
-        "containing the server's TLS certificate (as used on the (internal) client connection) in Apache format. This is used to identify this node to other nodes in the network when they connect to the public API. If it doesn't exist it will be created.",
+        "containing the server's TLS certificate (as used on the (internal) client connection) in "
+            + "Apache format. This is used to identify this node to other nodes in the network "
+            + "when they connect to the public API. If it doesn't exist it will be created.",
         null);
 
     schemaBuilder.addListOfString(
         "clientconnectiontlsserverchain",
         Collections.emptyList(),
-        "List of files that constitute the CA trust chain for the server certificate used on the (internal) client connection. This can be empty for auto-generated/non-PKI-based certificates.",
+        "List of files that constitute the CA trust chain for the server certificate used on the "
+            + "(internal) client connection. This can be empty for auto-generated/non-PKI-based "
+            + "certificates.",
         null);
 
     schemaBuilder.addString(
         "clientconnectiontlsserverkey",
         "client-connection-tls-server-key.pem",
-        "The private key for the server TLS certificate used on the (internal) client connection. If the doesn't exist it will be created.",
+        "The private key for the server TLS certificate used on the (internal) client connection. "
+            + "If the file doesn't exist it will be created.",
         null);
-
 
     schemaBuilder.addInteger("verbosity", 1, "Verbosity level (each level includes all prior levels)", inRange(0, 4));
 
