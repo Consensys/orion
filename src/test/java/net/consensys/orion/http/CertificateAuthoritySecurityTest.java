@@ -16,7 +16,6 @@ import static io.vertx.core.Vertx.vertx;
 import static net.consensys.orion.TestUtils.generateAndLoadConfiguration;
 import static net.consensys.orion.TestUtils.writeClientConnectionServerCertToConfig;
 import static net.consensys.orion.TestUtils.writeServerCertToConfig;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import net.consensys.orion.TestUtils;
@@ -51,7 +50,7 @@ class CertificateAuthoritySecurityTest {
   private static HttpClient httpClient;
   private static Orion orion;
   private static Config config;
-  private static String TRUST_MODE = "ca";
+  private final static String TRUST_MODE = "ca";
 
   @BeforeAll
   static void setUp(@TempDirectory final Path tempDir) throws Exception {
@@ -67,8 +66,7 @@ class CertificateAuthoritySecurityTest {
     final SelfSignedCertificate clientCert = SelfSignedCertificate.create("example.com");
     TestUtils.configureJDKTrustStore(clientCert, tempDir);
     httpClient = vertx.createHttpClient(
-        new HttpClientOptions().setSsl(true).setTrustAll(true)
-            .setKeyCertOptions(clientCert.keyCertOptions()));
+        new HttpClientOptions().setSsl(true).setTrustAll(true).setKeyCertOptions(clientCert.keyCertOptions()));
 
     orion = new Orion(vertx);
     orion.run(System.out, System.err, config);
@@ -84,10 +82,8 @@ class CertificateAuthoritySecurityTest {
 
   @Test
   void testUpCheckOnServerPortsIsSuccessful() throws Exception {
-    Assertions.assertThat(upcheckOnPortUsingSslEnabledClient(config.nodePort()).statusCode())
-        .isEqualTo(200);
-    Assertions.assertThat(upcheckOnPortUsingSslEnabledClient(config.clientPort()).statusCode())
-        .isEqualTo(200);
+    Assertions.assertThat(upcheckOnPortUsingSslEnabledClient(config.nodePort()).statusCode()).isEqualTo(200);
+    Assertions.assertThat(upcheckOnPortUsingSslEnabledClient(config.clientPort()).statusCode()).isEqualTo(200);
   }
 
   private HttpClientResponse upcheckOnPortUsingSslEnabledClient(final int port) throws Exception {
@@ -104,12 +100,10 @@ class CertificateAuthoritySecurityTest {
 
     final Request nodeUpcheckRequest =
         new Request.Builder().url("https://localhost:" + config.nodePort() + "/upcheck").build();
-    assertThrows(SSLException.class,
-        () -> unsecureHttpClient.newCall(nodeUpcheckRequest).execute());
+    assertThrows(SSLException.class, () -> unsecureHttpClient.newCall(nodeUpcheckRequest).execute());
 
     final Request clientUpcheckRequest =
         new Request.Builder().url("https://localhost:" + config.clientPort() + "/upcheck").build();
-    assertThrows(SSLException.class,
-        () -> unsecureHttpClient.newCall(clientUpcheckRequest).execute());
+    assertThrows(SSLException.class, () -> unsecureHttpClient.newCall(clientUpcheckRequest).execute());
   }
 }

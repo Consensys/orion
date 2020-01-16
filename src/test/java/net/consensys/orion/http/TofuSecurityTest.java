@@ -57,7 +57,7 @@ class TofuSecurityTest {
   private HttpClient anotherExampleComClient;
   private Orion orion;
   private static Config config;
-  private static String TRUST_MODE = "tofu";
+  private static final String TRUST_MODE = "tofu";
 
   @BeforeEach
   void setUp(@TempDirectory final Path tempDir) throws Exception {
@@ -73,19 +73,15 @@ class TofuSecurityTest {
     configureJDKTrustStore(serverCertificate, tempDir);
 
     final SelfSignedCertificate clientCertificate = SelfSignedCertificate.create("example.com");
-    exampleComFingerprint =
-        certificateHexFingerprint(Paths.get(clientCertificate.keyCertOptions().getCertPath()));
+    exampleComFingerprint = certificateHexFingerprint(Paths.get(clientCertificate.keyCertOptions().getCertPath()));
     Files.write(config.tlsKnownClients(), Collections.singletonList("#First line"));
     Files.write(config.clientConnectionTlsKnownClients(), Collections.singletonList("#First line"));
     httpClient = vertx
-        .createHttpClient(new HttpClientOptions().setSsl(true)
-            .setKeyCertOptions(clientCertificate.keyCertOptions()));
+        .createHttpClient(new HttpClientOptions().setSsl(true).setKeyCertOptions(clientCertificate.keyCertOptions()));
 
-    final SelfSignedCertificate anotherExampleDotComCert =
-        SelfSignedCertificate.create("example.com");
+    final SelfSignedCertificate anotherExampleDotComCert = SelfSignedCertificate.create("example.com");
     anotherExampleComClient = vertx.createHttpClient(
-        new HttpClientOptions().setSsl(true)
-            .setKeyCertOptions(anotherExampleDotComCert.keyCertOptions()));
+        new HttpClientOptions().setSsl(true).setKeyCertOptions(anotherExampleDotComCert.keyCertOptions()));
 
     orion = new Orion(vertx);
     orion.run(System.out, System.err, config);
@@ -99,14 +95,14 @@ class TofuSecurityTest {
 
   @Test
   void testUpCheckOnNodePort() throws Exception {
-    assertUpCheckOnPortIsSuccessfulAndUpdatesKnownClientsFile(config.nodePort(),
-        config.tlsKnownClients());
-    assertUpCheckOnPortIsSuccessfulAndUpdatesKnownClientsFile(config.clientPort(),
+    assertUpCheckOnPortIsSuccessfulAndUpdatesKnownClientsFile(config.nodePort(), config.tlsKnownClients());
+    assertUpCheckOnPortIsSuccessfulAndUpdatesKnownClientsFile(
+        config.clientPort(),
         config.clientConnectionTlsKnownClients());
   }
 
-  void assertUpCheckOnPortIsSuccessfulAndUpdatesKnownClientsFile(final int port,
-      final Path knownClientsFile) throws Exception {
+  void assertUpCheckOnPortIsSuccessfulAndUpdatesKnownClientsFile(final int port, final Path knownClientsFile)
+      throws Exception {
     for (int i = 0; i < 5; i++) {
       final HttpClientRequest req = httpClient.get(port, "localhost", "/upcheck");
       final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
@@ -124,14 +120,14 @@ class TofuSecurityTest {
   @Test
   void testSameHostnameUnknownCertificate() throws Exception {
 
-    assertTwoDifferentClientsCannotConnectUsingSameCredentials(config.nodePort(),
-        config.tlsKnownClients());
-    assertTwoDifferentClientsCannotConnectUsingSameCredentials(config.clientPort(),
+    assertTwoDifferentClientsCannotConnectUsingSameCredentials(config.nodePort(), config.tlsKnownClients());
+    assertTwoDifferentClientsCannotConnectUsingSameCredentials(
+        config.clientPort(),
         config.clientConnectionTlsKnownClients());
   }
 
-  void assertTwoDifferentClientsCannotConnectUsingSameCredentials(final int port,
-      final Path knownClients) throws Exception {
+  void assertTwoDifferentClientsCannotConnectUsingSameCredentials(final int port, final Path knownClients)
+      throws Exception {
     assertUpCheckOnPortIsSuccessfulAndUpdatesKnownClientsFile(port, knownClients);
     final HttpClientRequest req = anotherExampleComClient.get(port, "localhost", "/upcheck");
     final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();

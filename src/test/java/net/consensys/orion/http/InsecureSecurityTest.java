@@ -55,7 +55,7 @@ class InsecureSecurityTest {
   private static HttpClient httpClient;
   private static Orion orion;
   private static Config config;
-  private static String TRUST_MODE = "insecure-no-validation";
+  private final static String TRUST_MODE = "insecure-no-validation";
 
   @BeforeAll
   static void setUp(@TempDirectory final Path tempDir) throws Exception {
@@ -86,12 +86,12 @@ class InsecureSecurityTest {
   }
 
   @Test
-  void testUpCheckOnNodePort() throws Exception {
-    upcheckOnPortIsSuccessful(config.tlsKnownClients(), config.nodePort());
-    upcheckOnPortIsSuccessful(config.clientConnectionTlsKnownClients(), config.clientPort());
+  void tlsClientCanExecuteUpcheck() throws Exception {
+    assertTlsClientSuccessfullyExecutesUpcheck(config.tlsKnownClients(), config.nodePort());
+    assertTlsClientSuccessfullyExecutesUpcheck(config.clientConnectionTlsKnownClients(), config.clientPort());
   }
 
-  void upcheckOnPortIsSuccessful(final Path knownClientsFile, final int port) throws Exception {
+  void assertTlsClientSuccessfullyExecutesUpcheck(final Path knownClientsFile, final int port) throws Exception {
     assertTrue(Files.readAllLines(knownClientsFile).isEmpty());
     for (int i = 0; i < 5; i++) {
       final HttpClientRequest req = httpClient.get(port, "localhost", "/upcheck");
