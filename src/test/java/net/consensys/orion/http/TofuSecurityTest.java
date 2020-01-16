@@ -15,6 +15,7 @@ package net.consensys.orion.http;
 import static io.vertx.core.Vertx.vertx;
 import static net.consensys.orion.TestUtils.configureJDKTrustStore;
 import static net.consensys.orion.TestUtils.generateAndLoadConfiguration;
+import static net.consensys.orion.TestUtils.writeClientConnectionServerCertToConfig;
 import static net.consensys.orion.TestUtils.writeServerCertToConfig;
 import static org.apache.tuweni.net.tls.TLS.certificateHexFingerprint;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -51,35 +52,41 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class TofuSecurityTest {
 
   private final Vertx vertx = vertx();
-  private Path knownClientsFile;
   private String exampleComFingerprint;
   private HttpClient httpClient;
   private HttpClient anotherExampleComClient;
-  private int nodePort;
   private Orion orion;
+  private static Config config;
+  private static String TRUST_MODE = "tofu";
 
   @BeforeEach
   void setUp(@TempDirectory final Path tempDir) throws Exception {
     final SelfSignedCertificate serverCertificate = SelfSignedCertificate.create("localhost");
-    final Config config = generateAndLoadConfiguration(tempDir, writer -> {
-      writer.write("tlsservertrust='tofu'\n");
+    config = generateAndLoadConfiguration(tempDir, writer -> {
+      writer.write("tlsservertrust='" + TRUST_MODE + "'\n");
+      writer.write("clientconnectiontls='strict'\n");
+      writer.write("clientconnectiontlsservertrust='" + TRUST_MODE + "'\n");
       writeServerCertToConfig(writer, serverCertificate);
+      writeClientConnectionServerCertToConfig(writer, serverCertificate);
     });
 
     configureJDKTrustStore(serverCertificate, tempDir);
-    knownClientsFile = config.tlsKnownClients();
 
     final SelfSignedCertificate clientCertificate = SelfSignedCertificate.create("example.com");
-    exampleComFingerprint = certificateHexFingerprint(Paths.get(clientCertificate.keyCertOptions().getCertPath()));
-    Files.write(knownClientsFile, Collections.singletonList("#First line"));
+    exampleComFingerprint =
+        certificateHexFingerprint(Paths.get(clientCertificate.keyCertOptions().getCertPath()));
+    Files.write(config.tlsKnownClients(), Collections.singletonList("#First line"));
+    Files.write(config.clientConnectionTlsKnownClients(), Collections.singletonList("#First line"));
     httpClient = vertx
-        .createHttpClient(new HttpClientOptions().setSsl(true).setKeyCertOptions(clientCertificate.keyCertOptions()));
+        .createHttpClient(new HttpClientOptions().setSsl(true)
+            .setKeyCertOptions(clientCertificate.keyCertOptions()));
 
-    final SelfSignedCertificate anotherExampleDotComCert = SelfSignedCertificate.create("example.com");
+    final SelfSignedCertificate anotherExampleDotComCert =
+        SelfSignedCertificate.create("example.com");
     anotherExampleComClient = vertx.createHttpClient(
-        new HttpClientOptions().setSsl(true).setKeyCertOptions(anotherExampleDotComCert.keyCertOptions()));
+        new HttpClientOptions().setSsl(true)
+            .setKeyCertOptions(anotherExampleDotComCert.keyCertOptions()));
 
-    nodePort = config.nodePort();
     orion = new Orion(vertx);
     orion.run(System.out, System.err, config);
   }
@@ -92,8 +99,16 @@ class TofuSecurityTest {
 
   @Test
   void testUpCheckOnNodePort() throws Exception {
+    assertUpCheckOnPortIsSuccessfulAndUpdatesKnownClientsFile(config.nodePort(),
+        config.tlsKnownClients());
+    assertUpCheckOnPortIsSuccessfulAndUpdatesKnownClientsFile(config.clientPort(),
+        config.clientConnectionTlsKnownClients());
+  }
+
+  void assertUpCheckOnPortIsSuccessfulAndUpdatesKnownClientsFile(final int port,
+      final Path knownClientsFile) throws Exception {
     for (int i = 0; i < 5; i++) {
-      final HttpClientRequest req = httpClient.get(nodePort, "localhost", "/upcheck");
+      final HttpClientRequest req = httpClient.get(port, "localhost", "/upcheck");
       final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
       req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
       final HttpClientResponse resp = result.get();
@@ -105,10 +120,20 @@ class TofuSecurityTest {
     assertEquals("example.com " + exampleComFingerprint, fingerprints.get(1));
   }
 
+
   @Test
   void testSameHostnameUnknownCertificate() throws Exception {
-    testUpCheckOnNodePort();
-    final HttpClientRequest req = anotherExampleComClient.get(nodePort, "localhost", "/upcheck");
+
+    assertTwoDifferentClientsCannotConnectUsingSameCredentials(config.nodePort(),
+        config.tlsKnownClients());
+    assertTwoDifferentClientsCannotConnectUsingSameCredentials(config.clientPort(),
+        config.clientConnectionTlsKnownClients());
+  }
+
+  void assertTwoDifferentClientsCannotConnectUsingSameCredentials(final int port,
+      final Path knownClients) throws Exception {
+    assertUpCheckOnPortIsSuccessfulAndUpdatesKnownClientsFile(port, knownClients);
+    final HttpClientRequest req = anotherExampleComClient.get(port, "localhost", "/upcheck");
     final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
 
@@ -120,10 +145,17 @@ class TofuSecurityTest {
   void testWithoutSSLConfiguration() {
     final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     final HttpClient insecureClient = vertx.createHttpClient(new HttpClientOptions().setSsl(true));
-    final HttpClientRequest req = insecureClient.get(nodePort, "localhost", "/upcheck");
+
+    final HttpClientRequest req = insecureClient.get(config.nodePort(), "localhost", "/upcheck");
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
 
     final CompletionException e = assertThrows(CompletionException.class, result::get);
     assertTrue(e.getCause() instanceof SSLHandshakeException);
+
+    final HttpClientRequest clientRequest = insecureClient.get(config.clientPort(), "localhost", "/upcheck");
+    clientRequest.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
+
+    final CompletionException clientException = assertThrows(CompletionException.class, result::get);
+    assertTrue(clientException.getCause() instanceof SSLHandshakeException);
   }
 }

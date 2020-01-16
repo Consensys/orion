@@ -455,8 +455,6 @@ public class Orion {
         clientOptions.setClientAuth(ClientAuth.REQUIRED);
         clientOptions.setPemKeyCertOptions(pemKeyCertOptions);
 
-        applyServerCertChain(clientOptions, config.clientConnectionTlsServerChain());
-
         options.setPemTrustOptions(createPemTrustOptions(config.clientConnectionTlsServerChain()));
         clientOptions.setTrustOptions(
             createTrustOptions(
@@ -502,16 +500,6 @@ public class Orion {
     // set shutdown hook
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     isRunning.set(true);
-  }
-
-  private void applyServerCertChain(final HttpServerOptions options, final List<Path> certChain) {
-    if (!certChain.isEmpty()) {
-      final PemTrustOptions pemTrustOptions = new PemTrustOptions();
-      for (final Path certPath : certChain) {
-        pemTrustOptions.addCertPath(certPath.toAbsolutePath().toString());
-      }
-      options.setPemTrustOptions(pemTrustOptions);
-    }
   }
 
   private void writePortsToFile(final Config config, final int nodePort, final int clientPort) {
