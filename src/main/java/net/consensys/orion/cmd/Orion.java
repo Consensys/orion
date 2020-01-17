@@ -19,8 +19,8 @@ import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 import static net.consensys.orion.http.server.HttpContentType.ORION;
 import static net.consensys.orion.http.server.HttpContentType.TEXT;
-import static net.consensys.orion.network.HttpHelpers.createPemTrustOptions;
-import static net.consensys.orion.network.HttpHelpers.createTrustOptions;
+import static net.consensys.orion.network.HttpTlsOptionHelpers.createPemTrustOptions;
+import static net.consensys.orion.network.HttpTlsOptionHelpers.createTrustOptions;
 
 import net.consensys.orion.config.Config;
 import net.consensys.orion.config.ConfigException;

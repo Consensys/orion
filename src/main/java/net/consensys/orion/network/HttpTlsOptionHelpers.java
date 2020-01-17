@@ -20,7 +20,7 @@ import io.vertx.core.net.PemTrustOptions;
 import io.vertx.core.net.TrustOptions;
 import org.apache.tuweni.net.tls.VertxTrustOptions;
 
-public class HttpHelpers {
+public class HttpTlsOptionHelpers {
 
   public static Optional<TrustOptions> createTrustOptions(final String trustMode, final Path knownConnectionFile) {
     switch (trustMode) {
