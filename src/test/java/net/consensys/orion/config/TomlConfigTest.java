@@ -41,6 +41,8 @@ class TomlConfigTest {
     assertEquals("off", testConf.tls());
     assertEquals("ca-or-tofu", testConf.tlsServerTrust());
     assertEquals("ca", testConf.tlsClientTrust());
+    assertEquals("off", testConf.clientConnectionTls());
+    assertEquals("ca-or-tofu", testConf.clientConnectionTlsServerTrust());
 
     // Files
     final Path expectedWorkdir = Paths.get("data");
@@ -53,7 +55,13 @@ class TomlConfigTest {
     assertEquals(expectedWorkdir.resolve("client-cert.pem"), testConf.tlsClientCert());
     assertEquals(expectedWorkdir.resolve("client-key.pem"), testConf.tlsClientKey());
     assertEquals(expectedWorkdir.resolve("known-servers"), testConf.tlsKnownServers());
+    assertEquals(expectedWorkdir.resolve("client-presented-cert.pem"), testConf.clientConnectionTlsServerCert());
+    assertEquals(
+        expectedWorkdir.resolve("client-connection-known-clients"),
+        testConf.clientConnectionTlsKnownClients());
     assertEquals(Paths.get("/somepath"), testConf.libSodiumPath());
+
+
 
     // File Arrays
     assertEquals(Collections.singletonList(expectedWorkdir.resolve("keys/tm1.pub")), testConf.publicKeys());
@@ -61,6 +69,7 @@ class TomlConfigTest {
     assertEquals(Collections.singletonList(expectedWorkdir.resolve("keys/tm1.pub")), testConf.alwaysSendTo());
     assertEquals(Collections.emptyList(), testConf.tlsServerChain());
     assertEquals(Collections.emptyList(), testConf.tlsClientChain());
+    assertEquals(Collections.emptyList(), testConf.clientConnectionTlsServerChain());
 
     // URL Array
     assertEquals(Collections.singletonList(new URL("http://127.0.0.1:9000/")), testConf.otherNodes());
