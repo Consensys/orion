@@ -19,6 +19,8 @@ import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 import static net.consensys.orion.http.server.HttpContentType.ORION;
 import static net.consensys.orion.http.server.HttpContentType.TEXT;
+import static net.consensys.orion.network.HttpTlsOptionHelpers.createPemTrustOptions;
+import static net.consensys.orion.network.HttpTlsOptionHelpers.createTrustOptions;
 
 import net.consensys.orion.config.Config;
 import net.consensys.orion.config.ConfigException;
@@ -79,7 +81,6 @@ import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.PemKeyCertOptions;
-import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.LoggerHandler;
@@ -90,7 +91,6 @@ import org.apache.tuweni.crypto.sodium.Sodium;
 import org.apache.tuweni.kv.KeyValueStore;
 import org.apache.tuweni.kv.LevelDBKeyValueStore;
 import org.apache.tuweni.kv.MapDBKeyValueStore;
-import org.apache.tuweni.net.tls.VertxTrustOptions;
 
 public class Orion {
 
@@ -420,7 +420,7 @@ public class Orion {
         .setHost(config.nodeNetworkInterface())
         .setCompressionSupported(true);
 
-    if (!"off".equals(config.tls())) {
+    if ("strict".equals(config.tls())) {
       final Path tlsServerCert = workDir.resolve(config.tlsServerCert());
       final Path tlsServerKey = workDir.resolve(config.tlsServerKey());
       final PemKeyCertOptions pemKeyCertOptions =
@@ -431,44 +431,10 @@ public class Orion {
       options.setPemKeyCertOptions(pemKeyCertOptions);
 
       if (!config.tlsServerChain().isEmpty()) {
-        final PemTrustOptions pemTrustOptions = new PemTrustOptions();
-        for (final Path chainCert : config.tlsServerChain()) {
-          pemTrustOptions.addCertPath(chainCert.toAbsolutePath().toString());
-        }
-        options.setPemTrustOptions(pemTrustOptions);
+        options.setPemTrustOptions(createPemTrustOptions(config.tlsServerChain()));
       }
-
-      final Path knownClientsFile = config.tlsKnownClients();
-      final String serverTrustMode = config.tlsServerTrust().toLowerCase();
-      switch (serverTrustMode) {
-        case "whitelist":
-          options.setTrustOptions(VertxTrustOptions.whitelistClients(knownClientsFile, false));
-          break;
-        case "ca":
-          // use default trust options
-          break;
-        case "ca-or-whitelist":
-          options.setTrustOptions(VertxTrustOptions.whitelistClients(knownClientsFile, true));
-          break;
-        case "tofu":
-        case "insecure-tofa":
-          options.setTrustOptions(VertxTrustOptions.trustClientOnFirstAccess(knownClientsFile, false));
-          break;
-        case "ca-or-tofu":
-        case "insecure-ca-or-tofa":
-          options.setTrustOptions(VertxTrustOptions.trustClientOnFirstAccess(knownClientsFile, true));
-          break;
-        case "insecure-no-validation":
-        case "insecure-record":
-          options.setTrustOptions(VertxTrustOptions.recordClientFingerprints(knownClientsFile, false));
-          break;
-        case "insecure-ca-or-record":
-          options.setTrustOptions(VertxTrustOptions.recordClientFingerprints(knownClientsFile, true));
-          break;
-        default:
-          throw new UnsupportedOperationException(
-              "\"" + serverTrustMode + "\" option for tlsservertrust is not supported");
-      }
+      createTrustOptions(config.tlsServerTrust().toLowerCase(), config.tlsKnownClients())
+          .ifPresent(options::setTrustOptions);
     }
 
     try {
@@ -478,6 +444,23 @@ public class Orion {
       final CompletableFuture<Boolean> clientFuture = new CompletableFuture<>();
       final HttpServerOptions clientOptions =
           new HttpServerOptions().setPort(config.clientPort()).setHost(config.clientNetworkInterface());
+
+      if ("strict".equals(config.clientConnectionTls())) {
+        final Path tlsServerCert = workDir.resolve(config.clientConnectionTlsServerCert());
+        final Path tlsServerKey = workDir.resolve(config.clientConnectionTlsServerKey());
+        final PemKeyCertOptions pemKeyCertOptions =
+            new PemKeyCertOptions().setKeyPath(tlsServerKey.toString()).setCertPath(tlsServerCert.toString());
+        clientOptions.setSsl(true);
+        clientOptions.setClientAuth(ClientAuth.REQUIRED);
+        clientOptions.setPemKeyCertOptions(pemKeyCertOptions);
+
+        options.setPemTrustOptions(createPemTrustOptions(config.clientConnectionTlsServerChain()));
+
+        createTrustOptions(
+            config.clientConnectionTlsServerTrust().toLowerCase(),
+            config.clientConnectionTlsKnownClients()).ifPresent(clientOptions::setTrustOptions);
+      }
+
       clientHTTPServer = vertx
           .createHttpServer(clientOptions)
           .requestHandler(clientRouter::accept)
@@ -510,7 +493,7 @@ public class Orion {
       throw new OrionStartException("Orion was interrupted while starting services");
     }
 
-    //write acutal ports to a ports file
+    //write actual ports to a ports file
     writePortsToFile(config, nodeHTTPServer.actualPort(), clientHTTPServer.actualPort());
 
     // set shutdown hook
