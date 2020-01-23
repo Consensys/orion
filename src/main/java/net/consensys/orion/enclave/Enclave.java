@@ -12,7 +12,7 @@
  */
 package net.consensys.orion.enclave;
 
-import net.consensys.cava.crypto.sodium.Box;
+import org.apache.tuweni.crypto.sodium.Box;
 
 public interface Enclave {
 

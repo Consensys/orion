@@ -13,7 +13,7 @@
 package net.consensys.orion.http.handler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static net.consensys.cava.io.Base64.encodeBytes;
+import static org.apache.tuweni.io.Base64.encodeBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

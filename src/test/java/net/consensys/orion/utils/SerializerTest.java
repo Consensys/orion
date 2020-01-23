@@ -14,7 +14,6 @@ package net.consensys.orion.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.EncryptedKey;
 import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.http.server.HttpContentType;
@@ -23,6 +22,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Random;
 
+import org.apache.tuweni.crypto.sodium.Box;
 import org.junit.jupiter.api.Test;
 
 class SerializerTest {

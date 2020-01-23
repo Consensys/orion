@@ -14,7 +14,6 @@ package net.consensys.orion.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import net.consensys.cava.kv.MapKeyValueStore;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
 import net.consensys.orion.enclave.sodium.SodiumEnclaveStub;
@@ -23,6 +22,7 @@ import java.security.Security;
 import java.util.Optional;
 import java.util.Random;
 
+import org.apache.tuweni.kv.MapKeyValueStore;
 import org.junit.jupiter.api.Test;
 
 class EncryptedPayloadStorageTest {

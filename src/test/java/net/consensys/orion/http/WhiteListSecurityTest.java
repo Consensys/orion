@@ -13,18 +13,15 @@
 package net.consensys.orion.http;
 
 import static io.vertx.core.Vertx.vertx;
-import static net.consensys.cava.net.tls.TLS.certificateHexFingerprint;
 import static net.consensys.orion.TestUtils.configureJDKTrustStore;
 import static net.consensys.orion.TestUtils.generateAndLoadConfiguration;
+import static net.consensys.orion.TestUtils.writeClientConnectionServerCertToConfig;
 import static net.consensys.orion.TestUtils.writeServerCertToConfig;
+import static org.apache.tuweni.net.tls.TLS.certificateHexFingerprint;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import net.consensys.cava.concurrent.AsyncResult;
-import net.consensys.cava.concurrent.CompletableAsyncResult;
-import net.consensys.cava.junit.TempDirectory;
-import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
 
@@ -41,6 +38,10 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.net.SelfSignedCertificate;
+import org.apache.tuweni.concurrent.AsyncResult;
+import org.apache.tuweni.concurrent.CompletableAsyncResult;
+import org.apache.tuweni.junit.TempDirectory;
+import org.apache.tuweni.junit.TempDirectoryExtension;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -54,23 +55,28 @@ class WhiteListSecurityTest {
   private static HttpClient httpClientWithUnregisteredCert;
   private static HttpClient httpClientWithImproperCertificate;
   private static HttpClient anotherExampleComClient;
-  private static int nodePort;
   private static Orion orion;
+  private static Config config;
+  private static final String TRUST_MODE = "whitelist";
 
   @BeforeAll
   static void setUp(@TempDirectory final Path tempDir) throws Exception {
     final SelfSignedCertificate serverCertificate = SelfSignedCertificate.create("localhost");
-    final Config config = generateAndLoadConfiguration(tempDir, writer -> {
-      writer.write("tlsservertrust='whitelist'\n");
+    config = generateAndLoadConfiguration(tempDir, writer -> {
+      writer.write("tlsservertrust='" + TRUST_MODE + "'\n");
+      writer.write("clientconnectiontls='strict'\n");
+      writer.write("clientconnectiontlsservertrust='" + TRUST_MODE + "'\n");
       writeServerCertToConfig(writer, serverCertificate);
+      writeClientConnectionServerCertToConfig(writer, serverCertificate);
     });
 
     configureJDKTrustStore(serverCertificate, tempDir);
-    final Path knownClientsFile = config.tlsKnownClients();
 
     final SelfSignedCertificate clientCertificate = SelfSignedCertificate.create("example.com");
     final String fingerprint = certificateHexFingerprint(Paths.get(clientCertificate.keyCertOptions().getCertPath()));
-    Files.write(knownClientsFile, Arrays.asList("#First line", "example.com " + fingerprint));
+
+    Files.write(config.tlsKnownClients(), Arrays.asList("#First line", "example.com " + fingerprint));
+    Files.write(config.clientConnectionTlsKnownClients(), Arrays.asList("#First line", "example.com " + fingerprint));
     httpClient = vertx
         .createHttpClient(new HttpClientOptions().setSsl(true).setKeyCertOptions(clientCertificate.keyCertOptions()));
 
@@ -86,7 +92,6 @@ class WhiteListSecurityTest {
     anotherExampleComClient = vertx.createHttpClient(
         new HttpClientOptions().setSsl(true).setKeyCertOptions(anotherExampleDotComCert.keyCertOptions()));
 
-    nodePort = config.nodePort();
     orion = new Orion(vertx);
     orion.run(System.out, System.err, config);
   }
@@ -98,9 +103,14 @@ class WhiteListSecurityTest {
   }
 
   @Test
-  void testUpCheckOnNodePort() throws Exception {
+  void whitelistedClientSuccessfullyExecuteUpcheck() throws Exception {
+    assertUpcheckIsSuccessfulOnPortWhenClientIsWhiteListed(config.nodePort());
+    assertUpcheckIsSuccessfulOnPortWhenClientIsWhiteListed(config.clientPort());
+  }
+
+  void assertUpcheckIsSuccessfulOnPortWhenClientIsWhiteListed(final int port) throws Exception {
     for (int i = 0; i < 5; i++) {
-      final HttpClientRequest req = httpClient.get(nodePort, "localhost", "/upcheck");
+      final HttpClientRequest req = httpClient.get(port, "localhost", "/upcheck");
       final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
       req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
       final HttpClientResponse resp = result.get();
@@ -110,7 +120,12 @@ class WhiteListSecurityTest {
 
   @Test
   void testSameHostnameUnknownCertificate() {
-    final HttpClientRequest req = anotherExampleComClient.get(nodePort, "localhost", "/upcheck");
+    assertClientWithUnknownCertificateFromKnownHostnameFails(config.nodePort());
+    assertClientWithUnknownCertificateFromKnownHostnameFails(config.clientPort());
+  }
+
+  void assertClientWithUnknownCertificateFromKnownHostnameFails(final int port) {
+    final HttpClientRequest req = anotherExampleComClient.get(port, "localhost", "/upcheck");
     final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
     final CompletionException e = assertThrows(CompletionException.class, result::get);
@@ -118,8 +133,13 @@ class WhiteListSecurityTest {
   }
 
   @Test
-  void testUpCheckOnNodePortWithUnregisteredClientCert() {
-    final HttpClientRequest req = httpClientWithUnregisteredCert.get(nodePort, "localhost", "/upcheck");
+  void testUpCheckOnNodePortWithUnregisteredClientCert() throws Exception {
+    assertUpCheckWithUnregisteredClientCertFails(config.nodePort());
+    assertUpCheckWithUnregisteredClientCertFails(config.clientPort());
+  }
+
+  void assertUpCheckWithUnregisteredClientCertFails(final int port) {
+    final HttpClientRequest req = httpClientWithUnregisteredCert.get(port, "localhost", "/upcheck");
     final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
     final CompletionException e = assertThrows(CompletionException.class, result::get);
@@ -128,7 +148,12 @@ class WhiteListSecurityTest {
 
   @Test
   void testUpCheckOnNodePortWithInvalidClientCert() {
-    final HttpClientRequest req = httpClientWithImproperCertificate.get(nodePort, "localhost", "/upcheck");
+    assertUpcheckOnPortWithInvalidClientCertFails(config.nodePort());
+    assertUpcheckOnPortWithInvalidClientCertFails(config.clientPort());
+  }
+
+  void assertUpcheckOnPortWithInvalidClientCertFails(int port) {
+    final HttpClientRequest req = httpClientWithImproperCertificate.get(port, "localhost", "/upcheck");
     final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
     final CompletionException e = assertThrows(CompletionException.class, result::get);
@@ -139,10 +164,20 @@ class WhiteListSecurityTest {
   void testWithoutSSLConfiguration() {
     final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     final HttpClient insecureClient = vertx.createHttpClient(new HttpClientOptions().setSsl(true));
-    final HttpClientRequest req = insecureClient.get(nodePort, "localhost", "/upcheck");
-    req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
 
-    final CompletionException e = assertThrows(CompletionException.class, result::get);
-    assertTrue(e.getCause() instanceof SSLHandshakeException);
+    {
+      final HttpClientRequest req = insecureClient.get(config.nodePort(), "localhost", "/upcheck");
+      req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
+      final CompletionException e = assertThrows(CompletionException.class, result::get);
+      assertTrue(e.getCause() instanceof SSLHandshakeException);
+    }
+
+    {
+      final HttpClientRequest req = insecureClient.get(config.clientPort(), "localhost", "/upcheck");
+      req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
+      final CompletionException e = assertThrows(CompletionException.class, result::get);
+      assertTrue(e.getCause() instanceof SSLHandshakeException);
+    }
+
   }
 }

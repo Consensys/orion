@@ -12,7 +12,6 @@
  */
 package net.consensys.orion.helpers;
 
-import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedKey;
 import net.consensys.orion.enclave.EncryptedPayload;
@@ -26,6 +25,8 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.apache.tuweni.crypto.sodium.Box;
 
 /*
  * A very simple test class that implements the enclave interface and does minimal encryption operations that do not do

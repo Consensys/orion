@@ -13,9 +13,8 @@
 package net.consensys.orion;
 
 import static com.google.common.base.Charsets.UTF_8;
-import static net.consensys.cava.net.tls.TLS.readPemFile;
+import static org.apache.tuweni.net.tls.TLS.readPemFile;
 
-import net.consensys.cava.io.IOConsumer;
 import net.consensys.orion.config.Config;
 
 import java.io.ByteArrayInputStream;
@@ -35,6 +34,7 @@ import java.security.cert.CertificateFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
 
 import io.vertx.core.net.SelfSignedCertificate;
+import org.apache.tuweni.io.IOConsumer;
 
 public class TestUtils {
 
@@ -66,12 +66,14 @@ public class TestUtils {
     final Path workDir = rootDir.resolve("data").toAbsolutePath();
     final Path knownClientsFile = rootDir.resolve("knownclients.txt").toAbsolutePath();
     final Path knownServersFile = rootDir.resolve("knownservers.txt").toAbsolutePath();
+    final Path clientConnectionKnownClientsFile = rootDir.resolve("clientconnectionknownclients.txt").toAbsolutePath();
     final Path configFile = rootDir.resolve("config");
     try (final Writer writer = Files.newBufferedWriter(configFile, UTF_8)) {
       writer.write("tls='strict'\n");
       writer.write("workdir='" + workDir + "'\n");
       writer.write("tlsknownclients='" + knownClientsFile + "'\n");
       writer.write("tlsknownservers='" + knownServersFile + "'\n");
+      writer.write("clientconnectiontlsknownclients='" + clientConnectionKnownClientsFile + "'\n");
       findFreePortsAndWriteToConfig(writer);
       consumer.accept(writer);
     }
@@ -97,6 +99,13 @@ public class TestUtils {
       throws IOException {
     configWriter.write("tlsclientcert=\"" + serverCert.certificatePath() + "\"\n");
     configWriter.write("tlsclientkey=\"" + serverCert.privateKeyPath() + "\"\n");
+  }
+
+  public static void writeClientConnectionServerCertToConfig(
+      final Writer configWriter,
+      final SelfSignedCertificate serverCert) throws IOException {
+    configWriter.write("clientconnectiontlsservercert=\"" + serverCert.certificatePath() + "\"\n");
+    configWriter.write("clientconnectiontlsserverkey=\"" + serverCert.privateKeyPath() + "\"\n");
   }
 
   public static int getFreePort() throws Exception {

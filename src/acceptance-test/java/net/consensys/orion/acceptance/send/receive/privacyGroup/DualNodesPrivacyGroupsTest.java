@@ -13,14 +13,15 @@
 package net.consensys.orion.acceptance.send.receive.privacyGroup;
 
 import static io.vertx.core.Vertx.vertx;
-import static net.consensys.cava.io.Base64.decodeBytes;
-import static net.consensys.cava.io.file.Files.copyResource;
 import static net.consensys.orion.acceptance.NodeUtils.createPrivacyGroup;
 import static net.consensys.orion.acceptance.NodeUtils.deletePrivacyGroup;
 import static net.consensys.orion.acceptance.NodeUtils.findPrivacyGroup;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
+import static net.consensys.orion.acceptance.NodeUtils.retrievePrivacyGroupTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.sendTransaction;
 import static net.consensys.orion.http.server.HttpContentType.CBOR;
+import static org.apache.tuweni.io.Base64.decodeBytes;
+import static org.apache.tuweni.io.file.Files.copyResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
@@ -28,8 +29,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.cmd.Orion;
@@ -39,7 +38,6 @@ import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.utils.Serializer;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -58,10 +56,13 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.junit.TempDirectoryExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Runs up a two nodes that communicates with each other. */
 @ExtendWith(TempDirectoryExtension.class)
@@ -70,10 +71,6 @@ class DualNodesPrivacyGroupsTest {
   private static final String PK_1_B_64 = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGo=";
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
 
-  private Config firstNodeConfig;
-  private Config secondNodeConfig;
-  private ConcurrentNetworkNodes networkNodes;
-
   private Orion firstOrionLauncher;
   private Orion secondOrionLauncher;
   private Vertx vertx;
@@ -81,9 +78,8 @@ class DualNodesPrivacyGroupsTest {
   private HttpClient secondHttpClient;
 
   @BeforeEach
-  void setUpDualNodes() throws Exception {
+  void setUpDualNodes(@TempDir final Path tempDir) throws Exception {
 
-    final Path tempDir = Files.createTempDirectory("temp");
     final Path key1pub = copyResource("key1.pub", tempDir.resolve("key1.pub"));
     final Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
     final Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
@@ -94,7 +90,7 @@ class DualNodesPrivacyGroupsTest {
       st.executeUpdate("create table if not exists store(key char(60), value binary, primary key(key))");
     }
 
-    firstNodeConfig = NodeUtils.nodeConfig(
+    final Config firstNodeConfig = NodeUtils.nodeConfig(
         tempDir,
         0,
         "127.0.0.1",
@@ -107,7 +103,7 @@ class DualNodesPrivacyGroupsTest {
         "tofu",
         "tofu",
         "leveldb:" + tempDir + "database/node1");
-    secondNodeConfig = NodeUtils.nodeConfig(
+    final Config secondNodeConfig = NodeUtils.nodeConfig(
         tempDir,
         0,
         "127.0.0.1",
@@ -128,7 +124,8 @@ class DualNodesPrivacyGroupsTest {
     secondHttpClient = vertx.createHttpClient();
     final Box.PublicKey pk1 = Box.PublicKey.fromBytes(decodeBytes(PK_1_B_64));
     final Box.PublicKey pk2 = Box.PublicKey.fromBytes(decodeBytes(PK_2_B_64));
-    networkNodes = new ConcurrentNetworkNodes(NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
+    final ConcurrentNetworkNodes networkNodes =
+        new ConcurrentNetworkNodes(NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
 
     networkNodes.addNode(Collections.singletonList(pk1), NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
     networkNodes.addNode(Collections.singletonList(pk2), NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
@@ -150,13 +147,11 @@ class DualNodesPrivacyGroupsTest {
     final Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
 
-    final ConcurrentNetworkNodes partyInfoResponse =
-        Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
-    return partyInfoResponse;
+    return Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
   }
 
   @AfterEach
-  void tearDown() throws InterruptedException {
+  void tearDown() {
     await().atMost(5, TimeUnit.SECONDS).until(() -> doesNotThrowWhenCallingStop(firstOrionLauncher));
     await().atMost(5, TimeUnit.SECONDS).until(() -> doesNotThrowWhenCallingStop(secondOrionLauncher));
     vertx.close();
@@ -201,6 +196,36 @@ class DualNodesPrivacyGroupsTest {
   }
 
   @Test
+  void createAndRetrieve() {
+    final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
+    final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
+
+    final String name = "testName";
+    final String description = "testDescription";
+    final String[] addresses = new String[] {PK_1_B_64, PK_2_B_64};
+    // create a privacy group
+    final PrivacyGroup privacyGroup = NodeUtils.createPrivacyGroup(firstNode, addresses, PK_1_B_64, name, description);
+
+    final String privacyGroupId = privacyGroup.getPrivacyGroupId();
+    assertThat(privacyGroup.getName()).isEqualTo(name);
+    assertThat(privacyGroup.getDescription()).isEqualTo(description);
+
+    // get the created privacy group in first node
+    final PrivacyGroup firstNodePrivacyGroup = retrievePrivacyGroupTransaction(firstNode, privacyGroupId);
+
+    assertThat(firstNodePrivacyGroup.getPrivacyGroupId()).isEqualTo(privacyGroupId);
+    assertThat(firstNodePrivacyGroup.getDescription()).isEqualTo(description);
+    assertThat(firstNodePrivacyGroup.getName()).isEqualTo(name);
+    assertThat(firstNodePrivacyGroup.getMembers()).isEqualTo(addresses);
+
+    // get the created privacy group in second node
+    await().atMost(20, TimeUnit.SECONDS).until(
+        () -> retrievePrivacyGroupTransaction(secondNode, privacyGroupId).getPrivacyGroupId().equals(privacyGroupId));
+    final PrivacyGroup secondNodePrivacyGroup = retrievePrivacyGroupTransaction(secondNode, privacyGroupId);
+    assertThat(secondNodePrivacyGroup).isEqualToComparingFieldByField(firstNodePrivacyGroup);
+  }
+
+  @Test
   void createDeleteFind() {
     final EthClientStub firstNode = NodeUtils.client(firstOrionLauncher.clientPort(), firstHttpClient);
     final EthClientStub secondNode = NodeUtils.client(secondOrionLauncher.clientPort(), secondHttpClient);
@@ -232,7 +257,6 @@ class DualNodesPrivacyGroupsTest {
         Arrays.stream(deleteNodeSecondPrivacyGroups).map(PrivacyGroup::getPrivacyGroupId).collect(Collectors.toList());
     assertFalse(listSecond.contains(privacyGroupDeleted));
   }
-
 
   @Test
   void createTwiceDeleteOnce() {

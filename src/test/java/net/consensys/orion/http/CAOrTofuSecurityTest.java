@@ -13,17 +13,14 @@
 package net.consensys.orion.http;
 
 import static io.vertx.core.Vertx.vertx;
-import static net.consensys.cava.net.tls.TLS.certificateHexFingerprint;
 import static net.consensys.orion.TestUtils.configureJDKTrustStore;
 import static net.consensys.orion.TestUtils.generateAndLoadConfiguration;
+import static net.consensys.orion.TestUtils.writeClientConnectionServerCertToConfig;
 import static net.consensys.orion.TestUtils.writeServerCertToConfig;
+import static org.apache.tuweni.net.tls.TLS.certificateHexFingerprint;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import net.consensys.cava.concurrent.AsyncResult;
-import net.consensys.cava.concurrent.CompletableAsyncResult;
-import net.consensys.cava.junit.TempDirectory;
-import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
 
@@ -41,6 +38,10 @@ import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.net.SelfSignedCertificate;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import org.apache.tuweni.concurrent.AsyncResult;
+import org.apache.tuweni.concurrent.CompletableAsyncResult;
+import org.apache.tuweni.junit.TempDirectory;
+import org.apache.tuweni.junit.TempDirectoryExtension;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -50,21 +51,23 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class CAOrTofuSecurityTest {
 
   private final static Vertx vertx = vertx();
-  private static Path knownClientsFile;
   private static String exampleComFingerprint;
   private static HttpClient nonCAhttpClient;
   private static HttpClient httpClient;
-  private static int nodePort;
   private static Orion orion;
+  private static Config config;
+  private final static String TRUST_MODE = "ca-or-tofu";
 
   @BeforeAll
   static void setUp(@TempDirectory final Path tempDir) throws Exception {
-    final Config config = generateAndLoadConfiguration(tempDir, writer -> {
-      writer.write("tlsservertrust='ca-or-tofu'\n");
-      writeServerCertToConfig(writer, SelfSignedCertificate.create("localhost"));
+    final SelfSignedCertificate serverCertificate = SelfSignedCertificate.create("localhost");
+    config = generateAndLoadConfiguration(tempDir, writer -> {
+      writer.write("tlsservertrust='" + TRUST_MODE + "'\n");
+      writer.write("clientconnectiontls='strict'\n");
+      writer.write("clientconnectiontlsservertrust='" + TRUST_MODE + "'\n");
+      writeServerCertToConfig(writer, serverCertificate);
+      writeClientConnectionServerCertToConfig(writer, serverCertificate);
     });
-
-    knownClientsFile = config.tlsKnownClients();
 
     final SelfSignedCertificate nonCAClientCertificate = SelfSignedCertificate.create("example.com");
     exampleComFingerprint = certificateHexFingerprint(Paths.get(nonCAClientCertificate.keyCertOptions().getCertPath()));
@@ -77,7 +80,6 @@ class CAOrTofuSecurityTest {
     httpClient = vertx.createHttpClient(
         new HttpClientOptions().setSsl(true).setTrustAll(true).setKeyCertOptions(clientCert.keyCertOptions()));
 
-    nodePort = config.nodePort();
     orion = new Orion(vertx);
     orion.run(System.out, System.err, config);
   }
@@ -91,33 +93,54 @@ class CAOrTofuSecurityTest {
   }
 
   @Test
-  void testTofuThenCA() throws Exception {
+  void testNodePort() throws Exception {
+    connectionsOnPortAreSuccesfulAndUpdateKnownClientsFile(config.nodePort(), config.tlsKnownClients());
+  }
+
+  @Test
+  void testClientPort() throws Exception {
+    connectionsOnPortAreSuccesfulAndUpdateKnownClientsFile(
+        config.clientPort(),
+        config.clientConnectionTlsKnownClients());
+  }
+
+  private void connectionsOnPortAreSuccesfulAndUpdateKnownClientsFile(final int port, final Path clientFingerprintFile)
+      throws Exception {
     {
-      final HttpClientRequest req = nonCAhttpClient.get(nodePort, "localhost", "/upcheck");
+      final HttpClientRequest req = nonCAhttpClient.get(port, "localhost", "/upcheck");
       final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
       req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
       final HttpClientResponse resp = result.get();
       assertEquals(200, resp.statusCode());
     }
-    List<String> fingerprints = Files.readAllLines(knownClientsFile);
+    List<String> fingerprints = Files.readAllLines(clientFingerprintFile);
     assertEquals(1, fingerprints.size(), String.join("\n", fingerprints));
     assertEquals("example.com " + exampleComFingerprint, fingerprints.get(0));
 
-    final HttpClientRequest req = httpClient.get(nodePort, "localhost", "/upcheck");
+    final HttpClientRequest req = httpClient.get(port, "localhost", "/upcheck");
     final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
     final HttpClientResponse resp = result.get();
     assertEquals(200, resp.statusCode());
 
-    fingerprints = Files.readAllLines(knownClientsFile);
+    fingerprints = Files.readAllLines(clientFingerprintFile);
     assertEquals(1, fingerprints.size(), String.join("\n", fingerprints));
   }
 
   @Test
-  void testWithoutSSLConfiguration() {
+  void accessingNodePortWithoutSSLConfigurationFails() {
+    assertThrows(SSLHandshakeException.class, () -> upcheckFailsUsingNonTlsClient(config.nodePort()));
+  }
+
+  @Test
+  void accessingClientPortWithoutSSLConfigurationFails() {
+    assertThrows(SSLHandshakeException.class, () -> upcheckFailsUsingNonTlsClient(config.clientPort()));
+  }
+
+  private void upcheckFailsUsingNonTlsClient(final int orionPort) throws Exception {
     final OkHttpClient unsecureHttpClient = new OkHttpClient.Builder().build();
 
-    final Request upcheckRequest = new Request.Builder().url("https://localhost:" + nodePort + "/upcheck").build();
-    assertThrows(SSLHandshakeException.class, () -> unsecureHttpClient.newCall(upcheckRequest).execute());
+    final Request upcheckRequest = new Request.Builder().url("https://localhost:" + orionPort + "/upcheck").build();
+    unsecureHttpClient.newCall(upcheckRequest).execute();
   }
 }

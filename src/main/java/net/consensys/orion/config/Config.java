@@ -12,18 +12,11 @@
  */
 package net.consensys.orion.config;
 
-import static net.consensys.cava.config.ConfigurationErrors.noErrors;
-import static net.consensys.cava.config.ConfigurationErrors.singleError;
-import static net.consensys.cava.config.PropertyValidator.allInList;
-import static net.consensys.cava.config.PropertyValidator.inRange;
-import static net.consensys.cava.config.PropertyValidator.isURL;
-
-import net.consensys.cava.config.Configuration;
-import net.consensys.cava.config.ConfigurationError;
-import net.consensys.cava.config.DocumentPosition;
-import net.consensys.cava.config.PropertyValidator;
-import net.consensys.cava.config.Schema;
-import net.consensys.cava.config.SchemaBuilder;
+import static org.apache.tuweni.config.ConfigurationErrors.noErrors;
+import static org.apache.tuweni.config.ConfigurationErrors.singleError;
+import static org.apache.tuweni.config.PropertyValidator.allInList;
+import static org.apache.tuweni.config.PropertyValidator.inRange;
+import static org.apache.tuweni.config.PropertyValidator.isURL;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +31,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+
+import org.apache.tuweni.config.Configuration;
+import org.apache.tuweni.config.ConfigurationError;
+import org.apache.tuweni.config.DocumentPosition;
+import org.apache.tuweni.config.PropertyValidator;
+import org.apache.tuweni.config.Schema;
+import org.apache.tuweni.config.SchemaBuilder;
 
 /**
  * The configuration of Orion.
@@ -87,7 +87,7 @@ public class Config {
    * <p>
    * This is what is advertised to other nodes on the network and must be reachable by them. This is optional, as the
    * url might be derived from the actual node port and node network interface
-   * 
+   *
    * @return URL for this node's Orion API
    */
   public Optional<URL> nodeUrl() {
@@ -204,8 +204,8 @@ public class Config {
    * <p>
    * <strong>Default:</strong> []
    *
-   * @see #publicKeys()
    * @return Array of paths to corresponding private keys
+   * @see #publicKeys()
    */
   public List<Path> privateKeys() {
     return getListOfPath("privatekeys");
@@ -219,9 +219,9 @@ public class Config {
    * <p>
    * <strong>Default:</strong> []
    *
+   * @return Array of paths to public keys that are always included as recipients
    * @see #publicKeys()
    * @see #privateKeys()
-   * @return Array of paths to public keys that are always included as recipients
    */
   public List<Path> alwaysSendTo() {
     return getListOfPath("alwayssendto");
@@ -231,8 +231,8 @@ public class Config {
    * Optional file containing the passwords needed to unlock the given <i>privateKeys</i> The file should contain one
    * password per line -- add an empty line if any one key isn't locked.
    *
-   * @see #privateKeys()
    * @return A file containing the passwords for the specified privateKeys
+   * @see #privateKeys()
    */
   public Optional<Path> passwords() {
     if (!configuration.contains("passwords")) {
@@ -272,9 +272,9 @@ public class Config {
    *
    * <strong>Default:</strong> "off"
    *
+   * @return TLS status
    * @see #tlsServerTrust()
    * @see #tlsClientTrust()
-   * @return TLS status
    */
   public String tls() {
     return configuration.getString("tls").toLowerCase();
@@ -342,8 +342,8 @@ public class Config {
    *
    * <strong>Default:</strong> "tofu"
    *
-   * @see #tlsKnownClients()
    * @return TLS server trust mode
+   * @see #tlsKnownClients()
    */
   public String tlsServerTrust() {
     return configuration.getString("tlsservertrust").toLowerCase();
@@ -356,8 +356,8 @@ public class Config {
    * <p>
    * <strong>Default:</strong> "tls-known-clients"
    *
-   * @see #tlsServerTrust()
    * @return TLS server known clients file
+   * @see #tlsServerTrust()
    */
   public Path tlsKnownClients() {
     return getPath("tlsknownclients");
@@ -422,8 +422,8 @@ public class Config {
    *
    * <strong>Default:</strong> "ca-or-tofu"
    *
-   * @see #tlsKnownServers()
    * @return TLS client trust mode
+   * @see #tlsKnownServers()
    */
   public String tlsClientTrust() {
     return configuration.getString("tlsclienttrust").toLowerCase();
@@ -436,11 +436,35 @@ public class Config {
    * <p>
    * <strong>Default:</strong> "tls-known-servers"
    *
-   * @see #tlsKnownServers()
    * @return TLS client known servers file
+   * @see #tlsKnownServers()
    */
   public Path tlsKnownServers() {
     return getPath("tlsknownservers");
+  }
+
+  public String clientConnectionTls() {
+    return configuration.getString("clientconnectiontls").toLowerCase();
+  }
+
+  public Path clientConnectionTlsServerCert() {
+    return getPath("clientconnectiontlsservercert");
+  }
+
+  public List<Path> clientConnectionTlsServerChain() {
+    return getListOfPath("clientconnectiontlsserverchain");
+  }
+
+  public Path clientConnectionTlsServerKey() {
+    return getPath("clientconnectiontlsserverkey");
+  }
+
+  public String clientConnectionTlsServerTrust() {
+    return configuration.getString("clientconnectiontlsservertrust").toLowerCase();
+  }
+
+  public Path clientConnectionTlsKnownClients() {
+    return getPath("clientconnectiontlsknownclients");
   }
 
   private Optional<URL> getURL(final String key) {
@@ -657,6 +681,79 @@ public class Config {
         "tlsknownservers",
         "tls-known-servers",
         "TLS known servers for the client. This contains the fingerprints of public keys of other nodes that this node has encountered for the ca-or-tofu, tofu and whitelist trust modes.",
+        null);
+
+    schemaBuilder.addString(
+        "clientconnectiontls",
+        "off",
+        "TLS status. Options:\n"
+            + "\n"
+            + "   - strict: All connections to the client connection of this node must use TLS with client authentication\n"
+            + "       See the documentation 'clientconnectiontlsservertrust'\n"
+            + "   - off: Mutually authenticated TLS is not used for in- and outbound\n"
+            + "       connections, although unauthenticated connections to HTTPS hosts are still possible. This\n"
+            + "       should only be used if another transport security mechanism like WireGuard is in place.",
+        PropertyValidator.anyOfIgnoreCase("off", "strict"));
+
+    schemaBuilder.addString(
+        "clientconnectiontlsservertrust",
+        "tofu",
+        "TLS trust mode for the internal server endpoint. This decides who's allowed to connect to it. Options:\n"
+            + "\n"
+            + "   - whitelist: Only nodes presenting certificates with fingerprints in 'tlsknownclients'\n"
+            + "       will be allowed to connect.\n"
+            + "   - ca: Only nodes with a valid certificate and chain of trust to one of the\n"
+            + "       system root certificates will be allowed to connect. The folder containing trusted root\n"
+            + "       certificates can be overridden with the SYSTEM_CERTIFICATE_PATH environment variable.\n"
+            + "   - insecure-tofa: (Trust-on-first-access) On first connection to this server the common name\n"
+            + "       and fingerprint of the presented certificate will be added to 'tlsknownclients'. On\n"
+            + "       subsequent connections, the client will be rejected if the fingerprint has changed.\n"
+            + "   - insecure-ca-or-tofa: A combination of ca and tofa: If the client presents a certificate\n"
+            + "       signed by a trusted CA, it will be accepted. If it is self-signed, it\n"
+            + "       will be allowed only if it's the first certificate this node has seen for that host.\n"
+            + "   - insecure-record: Any client can connect and the fingerprint of their certificate will be\n"
+            + "       added to the 'tlsknownclients' file.\n",
+        PropertyValidator.anyOfIgnoreCase(
+            "whitelist",
+            "ca",
+            "ca-or-whitelist",
+            "tofu",
+            "insecure-tofa",
+            "ca-or-tofu",
+            "insecure-ca-or-tofa",
+            "insecure-no-validation",
+            "insecure-record",
+            "insecure-ca-or-record"));
+
+    schemaBuilder.addString(
+        "clientconnectiontlsknownclients",
+        "client-connection-tls-known-clients",
+        "TLS known clients for the client interface. This contains the fingerprints of public keys "
+            + "of other nodes that this node has encountered for the ca-or-tofu, tofu and whitelist "
+            + "trust modes.",
+        null);
+
+    schemaBuilder.addString(
+        "clientconnectiontlsservercert",
+        "client-connection-tls-server-cert.pem",
+        "containing the server's TLS certificate (as used on the (internal) client connection) in "
+            + "Apache format. This is used to identify this node to other nodes in the network "
+            + "when they connect to the public API. If it doesn't exist it will be created.",
+        null);
+
+    schemaBuilder.addListOfString(
+        "clientconnectiontlsserverchain",
+        Collections.emptyList(),
+        "List of files that constitute the CA trust chain for the server certificate used on the "
+            + "(internal) client connection. This can be empty for auto-generated/non-PKI-based "
+            + "certificates.",
+        null);
+
+    schemaBuilder.addString(
+        "clientconnectiontlsserverkey",
+        "client-connection-tls-server-key.pem",
+        "The private key for the server TLS certificate used on the (internal) client connection. "
+            + "If the file doesn't exist it will be created.",
         null);
 
     schemaBuilder.addInteger("verbosity", 1, "Verbosity level (each level includes all prior levels)", inRange(0, 4));

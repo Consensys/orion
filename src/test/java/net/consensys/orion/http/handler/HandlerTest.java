@@ -14,12 +14,6 @@ package net.consensys.orion.http.handler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import net.consensys.cava.concurrent.AsyncCompletion;
-import net.consensys.cava.concurrent.CompletableAsyncCompletion;
-import net.consensys.cava.junit.TempDirectory;
-import net.consensys.cava.junit.TempDirectoryExtension;
-import net.consensys.cava.kv.KeyValueStore;
-import net.consensys.cava.kv.MapDBKeyValueStore;
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.Enclave;
@@ -53,12 +47,23 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.tuweni.concurrent.AsyncCompletion;
+import org.apache.tuweni.concurrent.CompletableAsyncCompletion;
+import org.apache.tuweni.junit.TempDirectory;
+import org.apache.tuweni.junit.TempDirectoryExtension;
+import org.apache.tuweni.kv.KeyValueStore;
+import org.apache.tuweni.kv.MapDBKeyValueStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(TempDirectoryExtension.class)
 public abstract class HandlerTest {
+
+  static final String RETRIEVE_PRIVACY_GROUP = "/retrievePrivacyGroup";
+  static final String DELETE_PRIVACY_GROUP = "/deletePrivacyGroup";
+  static final String PUSH_PRIVACY_GROUP = "/pushPrivacyGroup";
+  static final String CREATE_PRIVACY_GROUP = "/createPrivacyGroup";
 
   // http client
   protected final OkHttpClient httpClient = new OkHttpClient();

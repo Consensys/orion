@@ -14,14 +14,10 @@ package net.consensys.orion.http;
 
 import static io.vertx.core.Vertx.vertx;
 import static net.consensys.orion.TestUtils.generateAndLoadConfiguration;
+import static net.consensys.orion.TestUtils.writeClientConnectionServerCertToConfig;
 import static net.consensys.orion.TestUtils.writeServerCertToConfig;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import net.consensys.cava.concurrent.AsyncResult;
-import net.consensys.cava.concurrent.CompletableAsyncResult;
-import net.consensys.cava.junit.TempDirectory;
-import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.TestUtils;
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
@@ -37,6 +33,11 @@ import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.net.SelfSignedCertificate;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import org.apache.tuweni.concurrent.AsyncResult;
+import org.apache.tuweni.concurrent.CompletableAsyncResult;
+import org.apache.tuweni.junit.TempDirectory;
+import org.apache.tuweni.junit.TempDirectoryExtension;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -47,14 +48,19 @@ class CertificateAuthoritySecurityTest {
 
   private final static Vertx vertx = vertx();
   private static HttpClient httpClient;
-  private static int nodePort;
   private static Orion orion;
+  private static Config config;
+  private final static String TRUST_MODE = "ca";
 
   @BeforeAll
   static void setUp(@TempDirectory final Path tempDir) throws Exception {
-    final Config config = generateAndLoadConfiguration(tempDir, writer -> {
-      writer.write("tlsservertrust='ca'\n");
-      writeServerCertToConfig(writer, SelfSignedCertificate.create("localhost"));
+    final SelfSignedCertificate serverCertificate = SelfSignedCertificate.create("localhost");
+    config = generateAndLoadConfiguration(tempDir, writer -> {
+      writer.write("tlsservertrust='" + TRUST_MODE + "'\n");
+      writer.write("clientconnectiontls='strict'\n");
+      writer.write("clientconnectiontlsservertrust='" + TRUST_MODE + "'\n");
+      writeServerCertToConfig(writer, serverCertificate);
+      writeClientConnectionServerCertToConfig(writer, serverCertificate);
     });
 
     final SelfSignedCertificate clientCert = SelfSignedCertificate.create("example.com");
@@ -62,7 +68,6 @@ class CertificateAuthoritySecurityTest {
     httpClient = vertx.createHttpClient(
         new HttpClientOptions().setSsl(true).setTrustAll(true).setKeyCertOptions(clientCert.keyCertOptions()));
 
-    nodePort = config.nodePort();
     orion = new Orion(vertx);
     orion.run(System.out, System.err, config);
   }
@@ -76,19 +81,29 @@ class CertificateAuthoritySecurityTest {
   }
 
   @Test
-  void testUpCheckOnNodePort() throws Exception {
-    final HttpClientRequest req = httpClient.get(nodePort, "localhost", "/upcheck");
+  void testUpCheckOnServerPortsIsSuccessful() throws Exception {
+    Assertions.assertThat(upcheckOnPortUsingSslEnabledClient(config.nodePort()).statusCode()).isEqualTo(200);
+    Assertions.assertThat(upcheckOnPortUsingSslEnabledClient(config.clientPort()).statusCode()).isEqualTo(200);
+  }
+
+  private HttpClientResponse upcheckOnPortUsingSslEnabledClient(final int port) throws Exception {
+    final HttpClientRequest req = httpClient.get(port, "localhost", "/upcheck");
     final CompletableAsyncResult<HttpClientResponse> result = AsyncResult.incomplete();
     req.handler(result::complete).exceptionHandler(result::completeExceptionally).end();
-    final HttpClientResponse resp = result.get();
-    assertEquals(200, resp.statusCode());
+    return result.get();
+
   }
 
   @Test
   void testWithoutSSLConfiguration() {
     final OkHttpClient unsecureHttpClient = new OkHttpClient.Builder().build();
 
-    final Request upcheckRequest = new Request.Builder().url("https://localhost:" + nodePort + "/upcheck").build();
-    assertThrows(SSLException.class, () -> unsecureHttpClient.newCall(upcheckRequest).execute());
+    final Request nodeUpcheckRequest =
+        new Request.Builder().url("https://localhost:" + config.nodePort() + "/upcheck").build();
+    assertThrows(SSLException.class, () -> unsecureHttpClient.newCall(nodeUpcheckRequest).execute());
+
+    final Request clientUpcheckRequest =
+        new Request.Builder().url("https://localhost:" + config.clientPort() + "/upcheck").build();
+    assertThrows(SSLException.class, () -> unsecureHttpClient.newCall(clientUpcheckRequest).execute());
   }
 }

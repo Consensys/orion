@@ -12,9 +12,9 @@
  */
 package net.consensys.orion.enclave;
 
-import net.consensys.cava.crypto.sodium.Box;
-
 import javax.annotation.Nullable;
+
+import org.apache.tuweni.crypto.sodium.Box;
 
 /**
  * Interface for key put. Provides a mechanism for generating keys, and looking up a private key for a given public key.

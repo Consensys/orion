@@ -12,7 +12,6 @@
  */
 package net.consensys.orion.enclave.sodium;
 
-import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedKey;
 import net.consensys.orion.enclave.EncryptedPayload;
@@ -20,6 +19,8 @@ import net.consensys.orion.enclave.PrivacyGroupPayload;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+
+import org.apache.tuweni.crypto.sodium.Box;
 
 public class SodiumEnclaveStub implements Enclave {
 

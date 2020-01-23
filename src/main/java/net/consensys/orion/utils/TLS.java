@@ -45,7 +45,7 @@ import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 
 /**
- * Common utilities for TLS (based on net.consensys.cava.net.tls.TLS in Cava 0.5).
+ * Common utilities for TLS (based on org.apache.tuweni.net.tls.TLS in Cava 0.5).
  *
  * Main reason for not using the Cava version is due to the way that the CN of the self-signed certificate is hardcoded
  * to `example.com`

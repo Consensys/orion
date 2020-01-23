@@ -12,9 +12,6 @@
  */
 package net.consensys.orion.enclave.sodium;
 
-import net.consensys.cava.crypto.sodium.Box;
-import net.consensys.cava.crypto.sodium.Box.PublicKey;
-import net.consensys.cava.crypto.sodium.SodiumException;
 import net.consensys.orion.enclave.EnclaveException;
 import net.consensys.orion.enclave.KeyStore;
 import net.consensys.orion.exception.OrionErrorCode;
@@ -24,6 +21,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+
+import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.crypto.sodium.Box.PublicKey;
+import org.apache.tuweni.crypto.sodium.SodiumException;
 
 public class MemoryKeyStore implements KeyStore {
 

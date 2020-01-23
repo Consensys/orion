@@ -16,7 +16,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
@@ -29,6 +28,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.tuweni.crypto.sodium.Box;
 import org.junit.jupiter.api.Test;
 
 class EncryptedPayloadTest {

@@ -16,7 +16,6 @@ import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.network.ConcurrentNetworkNodes;
@@ -29,6 +28,7 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.tuweni.crypto.sodium.Box;
 import org.junit.jupiter.api.Test;
 
 class PartyInfoHandlerTest extends HandlerTest {

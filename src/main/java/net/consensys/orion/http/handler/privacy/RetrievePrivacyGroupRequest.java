@@ -10,36 +10,25 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package net.consensys.orion.storage;
+package net.consensys.orion.http.handler.privacy;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
-public class ByteArrayId implements Serializable {
-  private byte[] key;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-  public byte[] getKey() {
-    return key;
+public class RetrievePrivacyGroupRequest implements Serializable {
+
+  private final String privacyGroupId;
+
+  @JsonCreator
+  public RetrievePrivacyGroupRequest(@JsonProperty("privacyGroupId") final String privacyGroupId) {
+    this.privacyGroupId = privacyGroupId;
   }
 
-  public void setKey(final byte[] key) {
-    this.key = key;
+  @JsonProperty("privacyGroupId")
+  public String privacyGroupId() {
+    return privacyGroupId;
   }
 
-  @Override
-  public boolean equals(final Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    final ByteArrayId that = (ByteArrayId) o;
-    return Arrays.equals(key, that.key);
-  }
-
-  @Override
-  public int hashCode() {
-    return Arrays.hashCode(key);
-  }
 }

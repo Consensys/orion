@@ -13,14 +13,12 @@
 package net.consensys.orion.acceptance.oracle;
 
 import static io.vertx.core.Vertx.vertx;
-import static net.consensys.cava.io.file.Files.copyResource;
 import static net.consensys.orion.acceptance.NodeUtils.assertTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.joinPathsAsTomlListEntry;
 import static net.consensys.orion.acceptance.NodeUtils.sendTransaction;
 import static net.consensys.orion.acceptance.NodeUtils.viewTransaction;
+import static org.apache.tuweni.io.file.Files.copyResource;
 
-import net.consensys.cava.junit.TempDirectory;
-import net.consensys.cava.junit.TempDirectoryExtension;
 import net.consensys.orion.acceptance.EthClientStub;
 import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.cmd.Orion;
@@ -33,6 +31,8 @@ import java.sql.Statement;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
+import org.apache.tuweni.junit.TempDirectory;
+import org.apache.tuweni.junit.TempDirectoryExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
@@ -100,8 +100,12 @@ class OracleSendReceiveTest {
 
   @AfterEach
   void tearDown() {
-    orionLauncher.stop();
-    vertx.close();
+    if (orionLauncher != null) {
+      orionLauncher.stop();
+    }
+    if (vertx != null) {
+      vertx.close();
+    }
   }
 
   @Test

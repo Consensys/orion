@@ -12,7 +12,6 @@
  */
 package net.consensys.orion.helpers;
 
-import net.consensys.cava.crypto.sodium.Box;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 
 import java.io.IOException;
@@ -20,6 +19,8 @@ import java.net.URL;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.crypto.sodium.Box.PublicKey;
 
 public class FakePeer {
   public final MockWebServer server;
@@ -36,6 +37,12 @@ public class FakePeer {
     server = new MockWebServer();
     this.publicKey = publicKey;
     server.enqueue(response);
+    server.start();
+  }
+
+  public FakePeer(final PublicKey publicKey) throws IOException {
+    this.server = new MockWebServer();
+    this.publicKey = publicKey;
     server.start();
   }
 

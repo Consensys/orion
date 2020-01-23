@@ -12,11 +12,6 @@
  */
 package net.consensys.orion.storage;
 
-import net.consensys.cava.bytes.Bytes;
-import net.consensys.cava.concurrent.AsyncCompletion;
-import net.consensys.cava.concurrent.AsyncResult;
-import net.consensys.cava.kv.KeyValueStore;
-
 import java.util.Base64;
 import java.util.function.Function;
 import javax.persistence.EntityManager;
@@ -24,6 +19,10 @@ import javax.persistence.EntityManager;
 import kotlin.Unit;
 import kotlin.coroutines.Continuation;
 import kotlinx.coroutines.CoroutineDispatcher;
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.concurrent.AsyncCompletion;
+import org.apache.tuweni.concurrent.AsyncResult;
+import org.apache.tuweni.kv.KeyValueStore;
 
 public class OrionSQLKeyValueStore implements KeyValueStore {
   private final JpaEntityManagerProvider jpaEntityManagerProvider;
