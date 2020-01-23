@@ -33,7 +33,7 @@ class OrionArgumentsTest {
           + " [options] [config file]%n"
           + "where options include:%n"
           + "\t-g%n"
-          + "\t--generatekeys <names>%n\t\tgenerate key pairs for each of the names supplied.%n\t\twhere <names> are a comma-seperated list%n"
+          + "\t--generatekeys <names>%n\t\tgenerate key pairs for each of the names supplied.%n\t\twhere <names> are a comma-separated list%n"
           + "\t-h%n"
           + "\t--help\tprint this help message%n"
           + "\t-v%n"
