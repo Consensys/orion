@@ -33,7 +33,7 @@ class OrionArguments {
     boolean showUsage = false;
     // Process Arguments
     // Usage Orion [--generatekeys|-g names] [config]
-    // names - comma seperated list of key file prefixes (can include directory information) to
+    // names - comma separated list of key file prefixes (can include directory information) to
     // generate key(s) for
     for (int i = 0; i < args.length; i++) {
       switch (args[i]) {
@@ -80,7 +80,7 @@ class OrionArguments {
     out.println("\t-g");
     out.println("\t--generatekeys <names>");
     out.println("\t\tgenerate key pairs for each of the names supplied.");
-    out.println("\t\twhere <names> are a comma-seperated list");
+    out.println("\t\twhere <names> are a comma-separated list");
     out.println("\t-h");
     out.println("\t--help\tprint this help message");
     out.println("\t-v");
