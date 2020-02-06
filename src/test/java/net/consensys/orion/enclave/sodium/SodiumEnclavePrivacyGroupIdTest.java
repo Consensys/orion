@@ -75,5 +75,4 @@ public class SodiumEnclavePrivacyGroupIdTest {
             PublicKey[]::new);
     return Bytes.of(enclave.generatePrivacyGroupId(publicKeys, null, Type.LEGACY)).toBase64String();
   }
-
 }
