@@ -13,6 +13,7 @@
 package net.consensys.orion.enclave.sodium;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -20,15 +21,22 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import net.consensys.orion.enclave.EnclaveException;
 import net.consensys.orion.enclave.EncryptedKey;
 import net.consensys.orion.enclave.EncryptedPayload;
+import net.consensys.orion.enclave.PrivacyGroupPayload.Type;
 import net.consensys.orion.exception.OrionErrorCode;
 
 import java.security.Security;
+import java.util.Arrays;
 
+import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.crypto.sodium.Box.PublicKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SodiumEnclaveTest {
+  private static final String PRIVACY_GROUP_ID1 = "negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk=";
+  private static final String PRIVACY_GROUP_ID2 = "g59BmTeJIn7HIcnq8VQWgyh/pDbvbt2eyP0Ii60aDDw=";
+  private static final String PRIVACY_GROUP_ID3 = "6fg8q5rWMBoAT2oIiU3tYJbk4b7oAr7dxaaVY7TeM3U=";
 
   private final MemoryKeyStore keyStore = new MemoryKeyStore();
   private SodiumEnclave enclave;
@@ -164,6 +172,34 @@ class SodiumEnclaveTest {
     assertNotEquals(encryptedPayload1.cipherText(), encryptedPayload2.cipherText());
   }
 
+  @Test
+  public void generatesLegacyPrivacyGroupIdForDuplicateValues() {
+    final String expectedPrivacyGroupId = "/xzRjCLioUBkm5LYuzll61GXyrD5x7bvXzQk/ovJA/4=";
+    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID2, PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID3, PRIVACY_GROUP_ID1))
+        .isEqualTo(expectedPrivacyGroupId);
+    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID2, PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID3))
+        .isEqualTo(expectedPrivacyGroupId);
+    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID2, PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID3))
+        .isEqualTo(expectedPrivacyGroupId);
+  }
+
+  @Test
+  public void generatesSameLegacyPrivacyGroupIdForPrivateForInDifferentOrders() {
+    final String expectedPrivacyGroupId = "/xzRjCLioUBkm5LYuzll61GXyrD5x7bvXzQk/ovJA/4=";
+    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID2, PRIVACY_GROUP_ID3))
+        .isEqualTo(expectedPrivacyGroupId);
+    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID3, PRIVACY_GROUP_ID2))
+        .isEqualTo(expectedPrivacyGroupId);
+    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID2, PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID3))
+        .isEqualTo(expectedPrivacyGroupId);
+    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID2, PRIVACY_GROUP_ID3, PRIVACY_GROUP_ID1))
+        .isEqualTo(expectedPrivacyGroupId);
+    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID3, PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID2))
+        .isEqualTo(expectedPrivacyGroupId);
+    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID3, PRIVACY_GROUP_ID2, PRIVACY_GROUP_ID1))
+        .isEqualTo(expectedPrivacyGroupId);
+  }
+
   private String decrypt(final EncryptedPayload encryptedPayload, final Box.PublicKey senderKey) {
     return new String(enclave.decrypt(encryptedPayload, senderKey), UTF_8);
   }
@@ -174,4 +210,12 @@ class SodiumEnclaveTest {
       final Box.PublicKey... recipientKey) {
     return enclave.encrypt(plaintext.getBytes(UTF_8), senderKey, recipientKey, null);
   }
+
+  private String legacyPrivacyGroupId(final String... recipientsAndSender) {
+    final PublicKey[] publicKeys =
+        Arrays.stream(recipientsAndSender).map(Bytes::fromBase64String).map(PublicKey::fromBytes).toArray(
+            PublicKey[]::new);
+    return Bytes.of(enclave.generatePrivacyGroupId(publicKeys, null, Type.LEGACY)).toBase64String();
+  }
+
 }
