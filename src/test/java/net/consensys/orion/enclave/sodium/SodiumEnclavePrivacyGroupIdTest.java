@@ -25,9 +25,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class SodiumEnclavePrivacyGroupIdTest {
-  private static final String PRIVACY_GROUP_ID1 = "negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk=";
-  private static final String PRIVACY_GROUP_ID2 = "g59BmTeJIn7HIcnq8VQWgyh/pDbvbt2eyP0Ii60aDDw=";
-  private static final String PRIVACY_GROUP_ID3 = "6fg8q5rWMBoAT2oIiU3tYJbk4b7oAr7dxaaVY7TeM3U=";
+  private static final String ENCLAVE_PUBLIC_KEY_1 = "negmDcN2P4ODpqn/6WkJ02zT/0w0bjhGpkZ8UP6vARk=";
+  private static final String ENCLAVE_PUBLIC_KEY_2 = "g59BmTeJIn7HIcnq8VQWgyh/pDbvbt2eyP0Ii60aDDw=";
+  private static final String ENCLAVE_PUBLIC_KEY_3 = "6fg8q5rWMBoAT2oIiU3tYJbk4b7oAr7dxaaVY7TeM3U=";
+
+  // This is the expected generated legacy privacy group id for a privacy group containing the enclave
+  // public keys enclave_public_key_1, enclave_public_key_2 and enclave_public_key_3
+  private static final String EXPECTED_LEGACY_PRIVACY_GROUP_ID = "/xzRjCLioUBkm5LYuzll61GXyrD5x7bvXzQk/ovJA/4=";
 
   private final MemoryKeyStore keyStore = new MemoryKeyStore();
   private SodiumEnclave enclave;
@@ -43,30 +47,30 @@ public class SodiumEnclavePrivacyGroupIdTest {
 
   @Test
   public void generatesSameLegacyPrivacyGroupIdForDuplicateValues() {
-    final String expectedPrivacyGroupId = "/xzRjCLioUBkm5LYuzll61GXyrD5x7bvXzQk/ovJA/4=";
-    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID2, PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID3, PRIVACY_GROUP_ID1))
-        .isEqualTo(expectedPrivacyGroupId);
-    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID2, PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID3))
-        .isEqualTo(expectedPrivacyGroupId);
-    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID2, PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID3))
-        .isEqualTo(expectedPrivacyGroupId);
+    assertThat(
+        legacyPrivacyGroupId(ENCLAVE_PUBLIC_KEY_2, ENCLAVE_PUBLIC_KEY_1, ENCLAVE_PUBLIC_KEY_3, ENCLAVE_PUBLIC_KEY_1))
+            .isEqualTo(EXPECTED_LEGACY_PRIVACY_GROUP_ID);
+    assertThat(
+        legacyPrivacyGroupId(ENCLAVE_PUBLIC_KEY_2, ENCLAVE_PUBLIC_KEY_1, ENCLAVE_PUBLIC_KEY_1, ENCLAVE_PUBLIC_KEY_3))
+            .isEqualTo(EXPECTED_LEGACY_PRIVACY_GROUP_ID);
+    assertThat(legacyPrivacyGroupId(ENCLAVE_PUBLIC_KEY_2, ENCLAVE_PUBLIC_KEY_1, ENCLAVE_PUBLIC_KEY_3))
+        .isEqualTo(EXPECTED_LEGACY_PRIVACY_GROUP_ID);
   }
 
   @Test
   public void generatesSameLegacyPrivacyGroupIdForPrivateForInDifferentOrders() {
-    final String expectedPrivacyGroupId = "/xzRjCLioUBkm5LYuzll61GXyrD5x7bvXzQk/ovJA/4=";
-    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID2, PRIVACY_GROUP_ID3))
-        .isEqualTo(expectedPrivacyGroupId);
-    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID3, PRIVACY_GROUP_ID2))
-        .isEqualTo(expectedPrivacyGroupId);
-    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID2, PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID3))
-        .isEqualTo(expectedPrivacyGroupId);
-    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID2, PRIVACY_GROUP_ID3, PRIVACY_GROUP_ID1))
-        .isEqualTo(expectedPrivacyGroupId);
-    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID3, PRIVACY_GROUP_ID1, PRIVACY_GROUP_ID2))
-        .isEqualTo(expectedPrivacyGroupId);
-    assertThat(legacyPrivacyGroupId(PRIVACY_GROUP_ID3, PRIVACY_GROUP_ID2, PRIVACY_GROUP_ID1))
-        .isEqualTo(expectedPrivacyGroupId);
+    assertThat(legacyPrivacyGroupId(ENCLAVE_PUBLIC_KEY_1, ENCLAVE_PUBLIC_KEY_2, ENCLAVE_PUBLIC_KEY_3))
+        .isEqualTo(EXPECTED_LEGACY_PRIVACY_GROUP_ID);
+    assertThat(legacyPrivacyGroupId(ENCLAVE_PUBLIC_KEY_1, ENCLAVE_PUBLIC_KEY_3, ENCLAVE_PUBLIC_KEY_2))
+        .isEqualTo(EXPECTED_LEGACY_PRIVACY_GROUP_ID);
+    assertThat(legacyPrivacyGroupId(ENCLAVE_PUBLIC_KEY_2, ENCLAVE_PUBLIC_KEY_1, ENCLAVE_PUBLIC_KEY_3))
+        .isEqualTo(EXPECTED_LEGACY_PRIVACY_GROUP_ID);
+    assertThat(legacyPrivacyGroupId(ENCLAVE_PUBLIC_KEY_2, ENCLAVE_PUBLIC_KEY_3, ENCLAVE_PUBLIC_KEY_1))
+        .isEqualTo(EXPECTED_LEGACY_PRIVACY_GROUP_ID);
+    assertThat(legacyPrivacyGroupId(ENCLAVE_PUBLIC_KEY_3, ENCLAVE_PUBLIC_KEY_1, ENCLAVE_PUBLIC_KEY_2))
+        .isEqualTo(EXPECTED_LEGACY_PRIVACY_GROUP_ID);
+    assertThat(legacyPrivacyGroupId(ENCLAVE_PUBLIC_KEY_3, ENCLAVE_PUBLIC_KEY_2, ENCLAVE_PUBLIC_KEY_1))
+        .isEqualTo(EXPECTED_LEGACY_PRIVACY_GROUP_ID);
   }
 
   private String legacyPrivacyGroupId(final String... recipientsAndSender) {
