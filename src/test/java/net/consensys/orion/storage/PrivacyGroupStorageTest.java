@@ -128,5 +128,4 @@ class PrivacyGroupStorageTest {
     final String key2 = payloadStorage.put(privacyGroupPayload2).get();
     assertEquals(key1, key2);
   }
-
 }
