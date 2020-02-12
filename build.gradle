@@ -46,7 +46,6 @@ apply from: "gradle/versions.gradle"
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'openjpa'
 
-version = '1.5.0-SNAPSHOT'
 
 //////
 // Default tasks and build aliases
