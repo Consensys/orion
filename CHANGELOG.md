@@ -14,7 +14,7 @@ Workaround - Do not use `alwayssendto` when using [EEA-compliant privacy](https:
 
 ### Additions and Improvements
 
-- Generate docker image of Orion [\#OR-305](https://pegasys1.atlassian.net/browse/OR-305)
+- Generate docker image of Orion [\#OR-305](https://github.com/PegaSysEng/orion/pull/304)
 
 ## 1.4 
 
