@@ -12,6 +12,10 @@ From v1.4, Orion requires Java 11. Orion on Java 8 is no longer supported.
 
 Workaround - Do not use `alwayssendto` when using [EEA-compliant privacy](https://besu.hyperledger.org/en/stable/Concepts/Privacy/Privacy-Groups/#eea-compliant-privacy).
 
+### Additions and Improvements
+
+- Generate docker image of Orion [\#OR-305](https://pegasys1.atlassian.net/browse/OR-305)
+
 ## 1.4 
 
 ### Additions and Improvements 
