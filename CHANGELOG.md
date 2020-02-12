@@ -9,6 +9,7 @@ From v1.4, Orion requires Java 11. Orion on Java 8 is no longer supported.
 ### Additions and Improvements 
 
 - Add endpoint to retrieve the privacy group details and members for a given privacyGroupId [\#307](https://github.com/PegaSysEng/orion/pull/307)
+- Client connection endpoint can be configured to accept TLS connections [\#319](https://github.com/PegaSysEng/orion/pull/319)
 
 ### Known Bugs 
 
