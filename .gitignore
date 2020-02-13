@@ -10,7 +10,7 @@ version.txt
 
 ### Gradle ###
 .gradle
-gradle.properties
+oracle.properties
 
 
 ### IntelliJ ###
