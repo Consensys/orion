@@ -74,6 +74,7 @@ public class PersistentNetworkNodes implements NetworkNodes {
    * @param nodesPks List of PublicKeys of new node
    */
   public boolean addNode(final Iterable<Map.Entry<Box.PublicKey, URI>> nodesPks) {
+    logger.trace("addNode called");
     AtomicBoolean changed = new AtomicBoolean(false);
     List<AsyncCompletion> completions = new ArrayList<>();
     nodesPks.forEach(entry -> {

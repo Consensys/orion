@@ -83,13 +83,15 @@ public class NetworkDiscovery extends AbstractVerticle {
    * when a merge occurs in one of the Discoverer (same event loop)
    */
   private void updateDiscoverers() {
+    log.trace("Updating discoverers");
     // for each peer that we know, we start a Discoverer (on timer)
     for (final URI nodeUri : nodes.nodeURIs()) {
-      if (!(nodeUri.equals(nodes.uri()) || discoverers.containsKey(nodeUri))) {
-        final Discoverer d = new Discoverer(nodeUri, refreshDelayMs, nodes.uri().equals(nodeUri));
-        discoverers.put(nodeUri, d);
+      discoverers.computeIfAbsent(nodeUri, uri -> {
+        log.trace("New discoverer for {}", uri);
+        final Discoverer d = new Discoverer(uri, refreshDelayMs, uri.equals(nodes.uri()));
         d.engageNextTimerTick();
-      }
+        return d;
+      });
     }
   }
 

@@ -92,7 +92,7 @@ class NetworkDiscoveryTest {
     deployVerticle(networkDiscovery).join();
 
     // assert the discoverer started
-    assertEquals(1, networkDiscovery.discoverers().size());
+    assertEquals(2, networkDiscovery.discoverers().size());
 
     // ensure the discoverer match our peer URL
     final NetworkDiscovery.Discoverer discoverer = networkDiscovery.discoverers().get(fakePeer.getURI());
@@ -128,21 +128,21 @@ class NetworkDiscoveryTest {
         new FakePeer(new MockResponse().setBody(knownPeerBody), Box.KeyPair.random().publicKey());
 
     // we know this peer, add it to our network nodes
-    boolean added =networkNodes.addNode(Collections.singletonMap(knownPeer.publicKey, knownPeer.getURI()).entrySet());
-assertTrue(added);
+    boolean added = networkNodes.addNode(Collections.singletonMap(knownPeer.publicKey, knownPeer.getURI()).entrySet());
+    assertTrue(added);
     // start network discovery
     final Instant discoveryStart = Instant.now();
     final NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config, 500, 500);
     deployVerticle(networkDiscovery).join();
 
     // assert the discoverer started, we should only have 1 discoverer for knownPeer
-    assertEquals(1, networkDiscovery.discoverers().size());
+    assertEquals(2, networkDiscovery.discoverers().size());
 
     // ensure the discoverer match our peer URL
     final NetworkDiscovery.Discoverer knownPeerDiscoverer = networkDiscovery.discoverers().get(knownPeer.getURI());
     assertNotNull(knownPeerDiscoverer);
 
-    Thread.sleep(3 * (knownPeerDiscoverer.currentRefreshDelay + 1000));
+    Thread.sleep(3 * (knownPeerDiscoverer.currentRefreshDelay + 2000));
 
     // ensure knownPeer responded and that his party info was called at least twice
     assertTrue(
@@ -155,12 +155,13 @@ assertTrue(added);
     Iterator<Map.Entry<Box.PublicKey, URI>> iter = networkNodes.nodePKs().iterator();
     while (iter.hasNext()) {
       size++;
-      iter.next();
+      Map.Entry<Box.PublicKey, URI> entry = iter.next();
+      System.out.println(entry.getValue());
     }
     assertEquals(3, size);
     assertEquals(unknownPeer.getURI(), networkNodes.uriForRecipient(unknownPeer.publicKey));
 
-    assertEquals(2, networkDiscovery.discoverers().size());
+    assertEquals(3, networkDiscovery.discoverers().size());
 
     // ensure unknown peer discoverer is set and being called
     final NetworkDiscovery.Discoverer unknownPeerDiscoverer = networkDiscovery.discoverers().get(unknownPeer.getURI());
