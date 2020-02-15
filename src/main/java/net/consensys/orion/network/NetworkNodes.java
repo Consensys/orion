@@ -12,10 +12,14 @@
  */
 package net.consensys.orion.network;
 
-import java.net.URL;
+import net.consensys.orion.enclave.sodium.serialization.PublicKeyURISerializer;
+
+import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.tuweni.crypto.sodium.Box;
 
 /** Details of other nodes on the network */
@@ -24,19 +28,27 @@ public interface NetworkNodes {
   /**
    * @return URL of node
    */
-  URL url();
+  @JsonProperty("uri")
+  URI uri();
 
   /**
-   * @return List of URLs of other nodes on the network
+   * @return List of URIs of other nodes on the network
    */
-  Collection<URL> nodeURLs();
+  @JsonProperty("nodeURIs")
+  Collection<URI> nodeURIs();
 
-  URL urlForRecipient(Box.PublicKey recipient);
+  /**
+   * Provide the URI associated with a public key.
+   * 
+   * @param recipient the public key of the recipient of a message
+   * @return the URI, or null if no recipient exists for the given URI.
+   */
+  URI uriForRecipient(Box.PublicKey recipient);
 
   /**
    * @return Map from public key to node for all discovered nodes.
    */
-  Map<Box.PublicKey, URL> nodePKs();
-
-  boolean merge(ConcurrentNetworkNodes other);
+  @JsonProperty("nodePKs")
+  @JsonSerialize(using = PublicKeyURISerializer.class)
+  Iterable<Map.Entry<Box.PublicKey, URI>> nodePKs();
 }

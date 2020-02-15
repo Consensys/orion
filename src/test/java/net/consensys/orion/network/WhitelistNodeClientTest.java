@@ -24,11 +24,12 @@ import net.consensys.orion.config.Config;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
 
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.CompletionException;
 import javax.net.ssl.SSLException;
 
@@ -81,7 +82,8 @@ class WhitelistNodeClientTest {
 
     client = NodeHttpClientBuilder.build(vertx, config, 100);
 
-    final ConcurrentNetworkNodes payload = new ConcurrentNetworkNodes(new URL("http://www.example.com"));
+    final ReadOnlyNetworkNodes payload =
+        new ReadOnlyNetworkNodes(URI.create("http://www.example.com"), Collections.emptyList(), Collections.emptyMap());
     dummyRouter.post("/partyinfo").handler(routingContext -> {
       routingContext.response().end(Buffer.buffer(Serializer.serialize(HttpContentType.CBOR, payload)));
     });

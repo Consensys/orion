@@ -25,7 +25,6 @@ import net.consensys.orion.config.Config;
 import net.consensys.orion.exception.OrionErrorCode;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Path;
 
 import io.vertx.core.Vertx;
@@ -84,7 +83,6 @@ class SingleNodeSendTest {
   void setUp() throws MalformedURLException {
     orionLauncher = NodeUtils.startOrion(config);
     vertx = vertx();
-    orionLauncher.addPeer(new URL(NodeUtils.urlString(HOST_NAME, orionLauncher.nodePort())));
     httpClient = vertx.createHttpClient();
   }
 

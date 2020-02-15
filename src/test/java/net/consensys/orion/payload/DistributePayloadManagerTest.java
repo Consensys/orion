@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.EncryptedPayload;
@@ -38,7 +39,7 @@ import net.consensys.orion.helpers.FakePeer;
 import net.consensys.orion.helpers.StubEnclave;
 import net.consensys.orion.http.handler.send.SendRequest;
 import net.consensys.orion.http.handler.send.SendResponse;
-import net.consensys.orion.network.ConcurrentNetworkNodes;
+import net.consensys.orion.network.PersistentNetworkNodes;
 import net.consensys.orion.storage.EncryptedPayloadStorage;
 import net.consensys.orion.storage.PrivacyGroupStorage;
 import net.consensys.orion.storage.QueryPrivacyGroupStorage;
@@ -59,6 +60,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.crypto.sodium.Box;
 import org.apache.tuweni.crypto.sodium.Box.PublicKey;
 import org.apache.tuweni.junit.TempDirectory;
@@ -80,14 +82,14 @@ class DistributePayloadManagerTest {
   private Storage<EncryptedPayload> payloadStorage;
   private Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
   private Storage<PrivacyGroupPayload> privacyGroupStorage;
-  private ConcurrentNetworkNodes networkNodes;
+  private PersistentNetworkNodes networkNodes;
   private DistributePayloadManager distributePayloadManager;
 
   static {
     Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
   }
 
-  private KeyValueStore storage;
+  private KeyValueStore<Bytes, Bytes> storage;
 
   @BeforeEach
   public void beforeEach(@TempDirectory final Path tempDir) throws Exception {
@@ -102,7 +104,7 @@ class DistributePayloadManagerTest {
     payloadStorage = new EncryptedPayloadStorage(storage, keyBuilder);
     privacyGroupStorage = new PrivacyGroupStorage(storage, enclave);
     queryPrivacyGroupStorage = new QueryPrivacyGroupStorage(storage, enclave);
-    networkNodes = new ConcurrentNetworkNodes(config, enclave.nodeKeys());
+    networkNodes = new PersistentNetworkNodes(config, enclave.nodeKeys(), Orion.wrap(storage));
 
     distributePayloadManager = new DistributePayloadManager(
         enclave,
@@ -122,7 +124,7 @@ class DistributePayloadManagerTest {
   @Test
   public void failsWhenBadResponseFromPeer(final VertxTestContext testContext) throws Exception {
     final FakePeer fakePeer = new FakePeer(new MockResponse().setResponseCode(500), memoryKeyStore);
-    networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
 
     final SendRequest request = buildLegacyRequest(Collections.singletonList(fakePeer), "foo".getBytes(UTF_8));
     final OrionException expectedException = new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS);
@@ -136,7 +138,7 @@ class DistributePayloadManagerTest {
   @Test
   public void failsWhenBadDigestFromPeer(final VertxTestContext testContext) throws Exception {
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody("not the best digest"), memoryKeyStore);
-    networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
 
     final SendRequest request = buildLegacyRequest(Collections.singletonList(fakePeer), "foo".getBytes(UTF_8));
     final OrionException expectedException = new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS);
@@ -207,7 +209,7 @@ class DistributePayloadManagerTest {
 
     // create fake peer
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), memoryKeyStore);
-    networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
 
     final SendRequest request = buildLegacyRequest(Collections.singletonList(fakePeer), toEncrypt);
 
@@ -235,7 +237,7 @@ class DistributePayloadManagerTest {
     for (int i = 0; i < 5; i++) {
       final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), memoryKeyStore);
       // add peer push URL to networkNodes
-      networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
+      networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
       fakePeers.add(fakePeer);
     }
 
@@ -267,7 +269,7 @@ class DistributePayloadManagerTest {
 
     // create fake peer
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), recipientKey);
-    networkNodes.addNode(Collections.singletonList(recipientKey), fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
 
     final String from = encodeBytes(senderKey.bytesArray());
     final String to = encodeBytes(fakePeer.publicKey.bytesArray());
@@ -311,7 +313,7 @@ class DistributePayloadManagerTest {
     for (int i = 0; i < numOfPeers; i++) {
       // create fake peer
       final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), recipientKeys[i]);
-      networkNodes.addNode(Collections.singletonList(recipientKeys[i]), fakePeer.getURL());
+      networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
       fakePeers.add(fakePeer);
     }
 

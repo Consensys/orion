@@ -13,7 +13,8 @@
 package net.consensys.orion.http.handler.partyinfo;
 
 import net.consensys.orion.http.server.HttpContentType;
-import net.consensys.orion.network.ConcurrentNetworkNodes;
+import net.consensys.orion.network.PersistentNetworkNodes;
+import net.consensys.orion.network.ReadOnlyNetworkNodes;
 import net.consensys.orion.utils.Serializer;
 
 import io.vertx.core.Handler;
@@ -25,16 +26,16 @@ import io.vertx.ext.web.RoutingContext;
  * knowledge of.
  */
 public class PartyInfoHandler implements Handler<RoutingContext> {
-  private final ConcurrentNetworkNodes networkNodes;
+  private final PersistentNetworkNodes networkNodes;
 
-  public PartyInfoHandler(final ConcurrentNetworkNodes networkNodes) {
+  public PartyInfoHandler(final PersistentNetworkNodes networkNodes) {
     this.networkNodes = networkNodes;
   }
 
   @Override
   public void handle(final RoutingContext routingContext) {
-    final ConcurrentNetworkNodes callerPeers =
-        Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, routingContext.getBody().getBytes());
+    final ReadOnlyNetworkNodes callerPeers =
+        Serializer.deserialize(HttpContentType.CBOR, ReadOnlyNetworkNodes.class, routingContext.getBody().getBytes());
     final Buffer toReturn = Buffer.buffer(Serializer.serialize(HttpContentType.CBOR, networkNodes));
     routingContext.response().end(toReturn);
 

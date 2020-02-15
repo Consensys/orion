@@ -17,7 +17,7 @@ import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.utils.Serializer;
 
-import java.net.URL;
+import java.net.URI;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,14 +39,14 @@ public class NetworkDiscovery extends AbstractVerticle {
 
   private Optional<HttpClient> httpClient = Optional.empty();
 
-  private final ConcurrentNetworkNodes nodes;
-  private final Map<String, Discoverer> discoverers;
+  private final PersistentNetworkNodes nodes;
+  private final Map<URI, Discoverer> discoverers;
   private final Config config;
   private final long refreshDelayMs;
   private final int clientTimeoutMs;
 
   public NetworkDiscovery(
-      final ConcurrentNetworkNodes nodes,
+      final PersistentNetworkNodes nodes,
       final Config config,
       final long refreshDelayMs,
       final int clientTimeoutMs) {
@@ -57,7 +57,7 @@ public class NetworkDiscovery extends AbstractVerticle {
     this.clientTimeoutMs = clientTimeoutMs;
   }
 
-  public NetworkDiscovery(final ConcurrentNetworkNodes nodes, final Config config) {
+  public NetworkDiscovery(final PersistentNetworkNodes nodes, final Config config) {
     this(nodes, config, REFRESH_DELAY_MS, HTTP_CLIENT_TIMEOUT_MS);
   }
 
@@ -84,23 +84,17 @@ public class NetworkDiscovery extends AbstractVerticle {
    */
   private void updateDiscoverers() {
     // for each peer that we know, we start a Discoverer (on timer)
-    for (final URL nodeUrl : nodes.nodeURLs()) {
-      final String urlString = nodeUrl.toString();
-      if (!discoverers.containsKey(urlString)) {
-        final Discoverer d = new Discoverer(nodeUrl, refreshDelayMs, nodes.url().equals(nodeUrl));
-        discoverers.put(urlString, d);
+    for (final URI nodeUri : nodes.nodeURIs()) {
+      if (!(nodeUri.equals(nodes.uri()) || discoverers.containsKey(nodeUri))) {
+        final Discoverer d = new Discoverer(nodeUri, refreshDelayMs, nodes.uri().equals(nodeUri));
+        discoverers.put(nodeUri, d);
         d.engageNextTimerTick();
       }
     }
   }
 
-  public Map<String, Discoverer> discoverers() {
+  public Map<URI, Discoverer> discoverers() {
     return new HashMap<>(discoverers);
-  }
-
-  public void addPeer(final URL url) {
-    nodes.addNodeUrl(url);
-    updateDiscoverers();
   }
 
   /**
@@ -110,14 +104,14 @@ public class NetworkDiscovery extends AbstractVerticle {
    * Its job is to call /partyInfo periodically on a specified URL and merge results if needed in NetworkDiscovery state
    */
   class Discoverer implements Handler<Long> {
-    private final URL nodeUrl;
+    private final URI nodeUrl;
     long currentRefreshDelay;
     Instant lastUpdate = Instant.MIN;
     long attempts = 0;
     private long timerId;
     private final boolean self;
 
-    Discoverer(final URL nodeUrl, final long refreshDelayMs, final boolean self) {
+    Discoverer(final URI nodeUrl, final long refreshDelayMs, final boolean self) {
       this.nodeUrl = nodeUrl;
       this.currentRefreshDelay = refreshDelayMs;
       this.self = self;
@@ -141,11 +135,10 @@ public class NetworkDiscovery extends AbstractVerticle {
             .post(nodeUrl.getPort(), nodeUrl.getHost(), "/partyinfo", resp -> {
               if (resp.statusCode() == 200) {
                 lastUpdate = Instant.now();
-
                 resp.bodyHandler(respBody -> {
                   // deserialize response
-                  ConcurrentNetworkNodes partyInfoResponse =
-                      Serializer.deserialize(CBOR, ConcurrentNetworkNodes.class, respBody.getBytes());
+                  ReadOnlyNetworkNodes partyInfoResponse =
+                      Serializer.deserialize(CBOR, ReadOnlyNetworkNodes.class, respBody.getBytes());
                   if (nodes.merge(partyInfoResponse)) {
                     log.info("merged new nodes from {} discoverer", nodeUrl);
                   }
@@ -158,6 +151,7 @@ public class NetworkDiscovery extends AbstractVerticle {
             })
             .exceptionHandler(ex -> {
               log.error("calling partyInfo on {} failed {}", nodeUrl, ex.getMessage());
+              log.error(ex.getMessage(), ex);
               engageNextTimerTick();
             })
             .putHeader("Content-Type", "application/cbor")

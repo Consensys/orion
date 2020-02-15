@@ -43,25 +43,26 @@ import net.consensys.orion.http.handler.send.SendHandler;
 import net.consensys.orion.http.handler.sendraw.SendRawHandler;
 import net.consensys.orion.http.handler.upcheck.UpcheckHandler;
 import net.consensys.orion.http.server.vertx.HttpErrorHandler;
-import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.network.NetworkDiscovery;
+import net.consensys.orion.network.PersistentNetworkNodes;
 import net.consensys.orion.payload.DistributePayloadManager;
 import net.consensys.orion.storage.EncryptedPayloadStorage;
 import net.consensys.orion.storage.JpaEntityManagerProvider;
-import net.consensys.orion.storage.OrionSQLKeyValueStore;
 import net.consensys.orion.storage.PrivacyGroupStorage;
 import net.consensys.orion.storage.QueryPrivacyGroupStorage;
 import net.consensys.orion.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.storage.StorageKeyBuilder;
+import net.consensys.orion.storage.Store;
 import net.consensys.orion.utils.TLS;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -71,6 +72,7 @@ import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import io.vertx.core.AsyncResult;
@@ -87,10 +89,15 @@ import io.vertx.ext.web.handler.LoggerHandler;
 import io.vertx.ext.web.handler.ResponseContentTypeHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.crypto.sodium.Box;
 import org.apache.tuweni.crypto.sodium.Sodium;
+import org.apache.tuweni.io.Base64;
+import org.apache.tuweni.kv.EntityManagerKeyValueStore;
 import org.apache.tuweni.kv.KeyValueStore;
 import org.apache.tuweni.kv.LevelDBKeyValueStore;
 import org.apache.tuweni.kv.MapDBKeyValueStore;
+import org.apache.tuweni.kv.ProxyKeyValueStore;
 
 public class Orion {
 
@@ -106,7 +113,7 @@ public class Orion {
   }
 
   private final Vertx vertx;
-  private KeyValueStore storage;
+  private KeyValueStore<Bytes, Bytes> storage;
   private NetworkDiscovery discovery;
   private HttpServer nodeHTTPServer;
   private HttpServer clientHTTPServer;
@@ -130,7 +137,7 @@ public class Orion {
 
   public static void configureRoutes(
       final Vertx vertx,
-      final ConcurrentNetworkNodes networkNodes,
+      final PersistentNetworkNodes networkNodes,
       final Enclave enclave,
       final Storage<EncryptedPayload> storage,
       final Storage<PrivacyGroupPayload> privacyGroupStorage,
@@ -171,7 +178,7 @@ public class Orion {
 
     clientRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
     clientRouter.get("/peercount").produces(TEXT.httpHeaderValue).handler(
-        new PeerCountHandler(() -> networkNodes.nodeURLs().size()));
+        new PeerCountHandler(() -> networkNodes.nodeURIs().size()));
 
     clientRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
         new SendHandler(distributePayloadManager));
@@ -331,12 +338,16 @@ public class Orion {
     } catch (final IOException ex) {
       throw new OrionStartException(ex.getMessage(), ex);
     }
-    final ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(config, keyStore.nodeKeys());
-
-    final Enclave enclave = new SodiumEnclave(keyStore);
 
     final Path workDir = config.workDir();
     log.info("using working directory {}", workDir);
+
+    // create our storage engine
+    storage = createStorage(config.storage(), workDir);
+
+    final PersistentNetworkNodes networkNodes = new PersistentNetworkNodes(config, keyStore.nodeKeys(), wrap(storage));
+
+    final Enclave enclave = new SodiumEnclave(keyStore);
 
     try {
       Files.createDirectories(workDir);
@@ -379,9 +390,6 @@ public class Orion {
         throw new OrionStartException("Missing client TLS key file \"" + tlsClientKey + "\"");
       }
     }
-
-    // create our storage engine
-    storage = createStorage(config.storage(), workDir);
 
     // Vertx routers
     final Router nodeRouter = Router.router(vertx).exceptionHandler(log::error);
@@ -471,9 +479,9 @@ public class Orion {
       CompletableFuture.allOf(nodeFuture, clientFuture).get();
       // if there is not a node url in the config, then grab the actual port and use it to set the node url.
       if (!config.nodeUrl().isPresent()) {
-        networkNodes.setNodeUrl(
-            new URL("http", config.nodeNetworkInterface(), nodeHTTPServer.actualPort(), ""),
-            keyStore.nodeKeys());
+        URI nodeURI =
+            new URI("http", null, config.nodeNetworkInterface(), nodeHTTPServer.actualPort(), null, null, null);
+        networkNodes.setNodeUrl(nodeURI, keyStore.nodeKeys());
       }
 
       final CompletableFuture<Boolean> networkDiscoveryFuture = new CompletableFuture<>();
@@ -487,7 +495,7 @@ public class Orion {
         }
       });
       CompletableFuture.allOf(networkDiscoveryFuture).get();
-    } catch (final ExecutionException | MalformedURLException e) {
+    } catch (final ExecutionException | URISyntaxException e) {
       throw new OrionStartException("Orion failed to start: " + e.getCause().getMessage(), e.getCause());
     } catch (final InterruptedException e) {
       throw new OrionStartException("Orion was interrupted while starting services");
@@ -514,7 +522,7 @@ public class Orion {
     try (final FileOutputStream fileOutputStream = new FileOutputStream(portsFile)) {
       properties.store(
           fileOutputStream,
-          "This file contains the ports used by the running instance of Pantheon. This file will be deleted after the node is shutdown.");
+          "This file contains the ports used by the running instance of Besu. This file will be deleted after the node is shutdown.");
     } catch (final Exception e) {
       log.warn("Error writing ports file", e);
     }
@@ -530,19 +538,34 @@ public class Orion {
     };
   }
 
-  private KeyValueStore createStorage(final String storage, final Path storagePath) {
+  public static KeyValueStore<Box.PublicKey, URI> wrap(KeyValueStore<Bytes, Bytes> store) {
+    return ProxyKeyValueStore
+        .open(store, Box.PublicKey::fromBytes, Box.PublicKey::bytes, Orion::bytesToURI, Orion::uriToBytes);
+  }
+
+  private static Bytes uriToBytes(URI uri) {
+    return Bytes.wrap(uri.toString().getBytes(StandardCharsets.UTF_8));
+  }
+
+  private static URI bytesToURI(Bytes v) {
+    try {
+      return URI.create(new String(v.toArray(), StandardCharsets.UTF_8));
+    } catch (IllegalArgumentException e) {
+      log.warn("Error reading URI", e);
+    }
+    return null;
+  }
+
+  private KeyValueStore<Bytes, Bytes> createStorage(final String storage, final Path storagePath) {
     String db = "routerdb";
     final String[] storageOptions = storage.split(":", 2);
     if (storageOptions.length > 1) {
       db = storageOptions[1];
     }
-
+    final Function<Bytes, Bytes> bytesIdentityFn = Function.identity();
     if (storage.toLowerCase().startsWith("mapdb")) {
-      try {
-        return MapDBKeyValueStore.open(storagePath.resolve(db));
-      } catch (final IOException e) {
-        throw new OrionStartException("Couldn't create MapDB store: " + db, e);
-      }
+      return MapDBKeyValueStore
+          .open(storagePath.resolve(db), bytesIdentityFn, bytesIdentityFn, bytesIdentityFn, bytesIdentityFn);
     } else if (storage.toLowerCase().startsWith("leveldb")) {
       try {
         return LevelDBKeyValueStore.open(storagePath.resolve(db));
@@ -551,7 +574,17 @@ public class Orion {
       }
     } else if (storage.toLowerCase().startsWith("sql")) {
       final JpaEntityManagerProvider jpaEntityManagerProvider = new JpaEntityManagerProvider(db);
-      return new OrionSQLKeyValueStore(jpaEntityManagerProvider);
+      return ProxyKeyValueStore.open(
+          EntityManagerKeyValueStore.open(jpaEntityManagerProvider::createEntityManager, Store.class, Store::getKey),
+          Base64::decode,
+          Base64::encode,
+          store -> Bytes.concatenate(Base64.decode(store.getKey()), Bytes.wrap(store.getValue())),
+          value -> {
+            Store store = new Store();
+            store.setKey(Base64.encode(value.slice(0, 32)));
+            store.setValue(value.slice(32).toArrayUnsafe());
+            return store;
+          });
     } else {
       throw new OrionStartException("unsupported storage mechanism: " + storage);
     }
@@ -602,9 +635,5 @@ public class Orion {
 
   public int clientPort() {
     return clientHTTPServer.actualPort();
-  }
-
-  public void addPeer(final URL url) {
-    discovery.addPeer(url);
   }
 }

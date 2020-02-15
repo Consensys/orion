@@ -245,10 +245,10 @@ public class Config {
    * Storage engine used to save payloads and related information. Options:
    *
    * <ul>
-   * <li>leveldb:path - LevelDB
-   * <li>mapdb:path - MapDB
+   * <li>leveldb:path - LevelDB</li>
+   * <li>mapdb:path - MapDB</li>
    * <li>sql:jdbcurl - Relational database</li>
-   * <li>memory - Contents are cleared when Orion exits
+   * <li>memory - Contents are cleared when Orion exits</li>
    * </ul>
    *
    * <strong>Default:</strong> "leveldb"
@@ -256,7 +256,7 @@ public class Config {
    * @return Storage string specifying a storage engine and/or storage path
    */
   public String storage() {
-    return configuration.getString("storage");
+    return System.getenv().getOrDefault("ORION_STORAGE", configuration.getString("storage"));
   }
 
   /**
@@ -552,6 +552,17 @@ public class Config {
         "storage",
         "leveldb",
         "Storage engine used to save payloads and related information. Options:\n"
+            + "\n"
+            + "   - leveldb:path - LevelDB\n"
+            + "   - mapdb:path - MapDB\n"
+            + "   - sql:jdbcurl - SQL database\n"
+            + "   - memory - Contents are cleared when Orion exits",
+        Config::validateStorage);
+
+    schemaBuilder.addString(
+        "nodeStorage",
+        "memory",
+        "Storage engine used to save node information. Options:\n"
             + "\n"
             + "   - leveldb:path - LevelDB\n"
             + "   - mapdb:path - MapDB\n"

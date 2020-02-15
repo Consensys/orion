@@ -34,7 +34,7 @@ class EncryptedPayloadStorageTest {
   private final Enclave enclave = new SodiumEnclaveStub();
   private final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
   private final Storage<EncryptedPayload> payloadStorage =
-      new EncryptedPayloadStorage(new MapKeyValueStore(), keyBuilder);
+      new EncryptedPayloadStorage(new MapKeyValueStore<>(), keyBuilder);
 
   @Test
   void storeAndRetrieve() throws Exception {

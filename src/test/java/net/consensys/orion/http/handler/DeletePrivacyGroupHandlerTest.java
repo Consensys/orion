@@ -71,7 +71,7 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
 
     // create fake peer
     fakePeer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey);
-    networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
 
     // execute request
     final Response resp = httpClient.newCall(request).execute();

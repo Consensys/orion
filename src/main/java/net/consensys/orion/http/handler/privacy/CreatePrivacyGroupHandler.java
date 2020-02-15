@@ -21,12 +21,12 @@ import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.http.server.HttpContentType;
-import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.network.NodeHttpClientBuilder;
+import net.consensys.orion.network.PersistentNetworkNodes;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.utils.Serializer;
 
-import java.net.URL;
+import java.net.URI;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
@@ -51,14 +51,14 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
 
   private final Storage<PrivacyGroupPayload> privacyGroupStorage;
   private final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
-  private final ConcurrentNetworkNodes networkNodes;
+  private final PersistentNetworkNodes networkNodes;
   private final Enclave enclave;
   private final HttpClient httpClient;
 
   public CreatePrivacyGroupHandler(
       final Storage<PrivacyGroupPayload> privacyGroupStorage,
       final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
-      final ConcurrentNetworkNodes networkNodes,
+      final PersistentNetworkNodes networkNodes,
       final Enclave enclave,
       final Vertx vertx,
       final Config config) {
@@ -109,7 +109,7 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
         .map(enclave::readKey)
         .collect(Collectors.toList());
 
-    if (addressListToForward.stream().anyMatch(pKey -> networkNodes.urlForRecipient(pKey) == null)) {
+    if (addressListToForward.stream().anyMatch(pKey -> networkNodes.uriForRecipient(pKey) == null)) {
       routingContext.fail(new OrionException(OrionErrorCode.NODE_MISSING_PEER_URL, "couldn't find peer URL "));
       return;
     }
@@ -118,7 +118,7 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
 
     @SuppressWarnings("rawtypes")
     final CompletableFuture[] cfs = addressListToForward.stream().map(pKey -> {
-      URL recipientURL = networkNodes.urlForRecipient(pKey);
+      URI recipientURL = networkNodes.uriForRecipient(pKey);
 
       log.info("Propagating create request to {} with URL {}", pKey, recipientURL.toString());
 

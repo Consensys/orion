@@ -35,7 +35,7 @@ import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.http.handler.privacy.PrivacyGroup;
 import net.consensys.orion.http.server.HttpContentType;
-import net.consensys.orion.network.ConcurrentNetworkNodes;
+import net.consensys.orion.network.PersistentNetworkNodes;
 import net.consensys.orion.utils.Serializer;
 
 import java.nio.file.Path;
@@ -124,8 +124,8 @@ class DualNodesPrivacyGroupsTest {
     secondHttpClient = vertx.createHttpClient();
     final Box.PublicKey pk1 = Box.PublicKey.fromBytes(decodeBytes(PK_1_B_64));
     final Box.PublicKey pk2 = Box.PublicKey.fromBytes(decodeBytes(PK_2_B_64));
-    final ConcurrentNetworkNodes networkNodes =
-        new ConcurrentNetworkNodes(NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
+    final PersistentNetworkNodes networkNodes =
+        new PersistentNetworkNodes(NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
 
     networkNodes.addNode(Collections.singletonList(pk1), NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
     networkNodes.addNode(Collections.singletonList(pk2), NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
@@ -142,12 +142,12 @@ class DualNodesPrivacyGroupsTest {
 
   }
 
-  private ConcurrentNetworkNodes getPartyInfoResponse(final OkHttpClient httpClient, final Request request)
+  private PersistentNetworkNodes getPartyInfoResponse(final OkHttpClient httpClient, final Request request)
       throws Exception {
     final Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
 
-    return Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
+    return Serializer.deserialize(HttpContentType.CBOR, PersistentNetworkNodes.class, resp.body().bytes());
   }
 
   @AfterEach

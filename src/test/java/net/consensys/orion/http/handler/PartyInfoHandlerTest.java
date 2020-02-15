@@ -15,13 +15,14 @@ package net.consensys.orion.http.handler;
 import static net.consensys.orion.http.server.HttpContentType.CBOR;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.http.server.HttpContentType;
-import net.consensys.orion.network.ConcurrentNetworkNodes;
+import net.consensys.orion.network.ReadOnlyNetworkNodes;
 import net.consensys.orion.utils.Serializer;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.Collections;
 
 import okhttp3.MediaType;
@@ -35,10 +36,10 @@ class PartyInfoHandlerTest extends HandlerTest {
 
   @Test
   void successfulProcessingOfRequest() throws Exception {
-    networkNodes
-        .addNode(Collections.singletonList(Box.KeyPair.random().publicKey()), new URL("http://127.0.0.1:9001/"));
-    networkNodes
-        .addNode(Collections.singletonList(Box.KeyPair.random().publicKey()), new URL("http://127.0.0.1:9002/"));
+    networkNodes.addNode(
+        Collections.singletonMap(Box.KeyPair.random().publicKey(), URI.create("http://127.0.0.1:9001/")).entrySet());
+    networkNodes.addNode(
+        Collections.singletonMap(Box.KeyPair.random().publicKey(), URI.create("http://127.0.0.1:9002/")).entrySet());
 
     // prepare /partyinfo payload (our known peers)
     final RequestBody partyInfoBody =
@@ -50,26 +51,29 @@ class PartyInfoHandlerTest extends HandlerTest {
     final Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
 
-    final ConcurrentNetworkNodes partyInfoResponse =
-        Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
+    final ReadOnlyNetworkNodes partyInfoResponse =
+        Serializer.deserialize(HttpContentType.CBOR, ReadOnlyNetworkNodes.class, resp.body().bytes());
 
-    assertEquals(networkNodes, partyInfoResponse);
+    assertEquals(networkNodes.uri(), partyInfoResponse.uri());
+    assertFalse(networkNodes.merge(partyInfoResponse));
   }
 
   @Test
   void roundTripSerialization() throws Exception {
-    final ConcurrentNetworkNodes networkNodes = new ConcurrentNetworkNodes(new URL("http://localhost:1234/"));
-    networkNodes.addNode(Collections.singletonList(Box.KeyPair.random().publicKey()), new URL("http://localhost/"));
-    assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.CBOR, ConcurrentNetworkNodes.class, networkNodes));
-    assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.JSON, ConcurrentNetworkNodes.class, networkNodes));
+    final ReadOnlyNetworkNodes networkNodes = new ReadOnlyNetworkNodes(
+        URI.create("http://localhost:1234/"),
+        Collections.singletonList(URI.create("http://localhost/")),
+        Collections.singletonMap(Box.KeyPair.random().publicKey(), URI.create("http://localhost/")));
+    assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.CBOR, ReadOnlyNetworkNodes.class, networkNodes));
+    assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.JSON, ReadOnlyNetworkNodes.class, networkNodes));
   }
 
   @Test
   void partyInfoWithInvalidContentType() throws Exception {
-    networkNodes
-        .addNode(Collections.singletonList(Box.KeyPair.random().publicKey()), new URL("http://127.0.0.1:9001/"));
-    networkNodes
-        .addNode(Collections.singletonList(Box.KeyPair.random().publicKey()), new URL("http://127.0.0.1:9002/"));
+    networkNodes.addNode(
+        Collections.singletonMap(Box.KeyPair.random().publicKey(), URI.create("http://127.0.0.1:9001/")).entrySet());
+    networkNodes.addNode(
+        Collections.singletonMap(Box.KeyPair.random().publicKey(), URI.create("http://127.0.0.1:9002/")).entrySet());
 
     // prepare /partyinfo payload (our known peers) with invalid content type (json)
     final RequestBody partyInfoBody =

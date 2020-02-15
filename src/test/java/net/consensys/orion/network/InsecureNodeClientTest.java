@@ -22,7 +22,7 @@ import net.consensys.orion.config.Config;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.utils.Serializer;
 
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -74,7 +74,8 @@ class InsecureNodeClientTest {
     client = NodeHttpClientBuilder.build(vertx, config, 100);
 
     final Router dummyRouter = Router.router(vertx);
-    final ConcurrentNetworkNodes payload = new ConcurrentNetworkNodes(new URL("http://www.example.com"));
+    final ReadOnlyNetworkNodes payload =
+        new ReadOnlyNetworkNodes(URI.create("http://www.example.com"), Collections.emptyList(), Collections.emptyMap());
     dummyRouter.post("/partyinfo").handler(routingContext -> {
       routingContext.response().end(Buffer.buffer(Serializer.serialize(HttpContentType.CBOR, payload)));
     });

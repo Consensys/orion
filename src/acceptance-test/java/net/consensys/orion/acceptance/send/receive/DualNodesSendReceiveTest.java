@@ -29,7 +29,7 @@ import net.consensys.orion.acceptance.NodeUtils;
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.http.server.HttpContentType;
-import net.consensys.orion.network.ConcurrentNetworkNodes;
+import net.consensys.orion.network.PersistentNetworkNodes;
 import net.consensys.orion.utils.Serializer;
 
 import java.io.IOException;
@@ -69,7 +69,7 @@ class DualNodesSendReceiveTest {
 
   private Config firstNodeConfig;
   private Config secondNodeConfig;
-  private ConcurrentNetworkNodes networkNodes;
+  private PersistentNetworkNodes networkNodes;
 
   private Orion firstOrionLauncher;
   private Orion secondOrionLauncher;
@@ -129,7 +129,7 @@ class DualNodesSendReceiveTest {
     final Box.PublicKey pk3 = Box.PublicKey.fromBytes(decodeBytes(pubKeyStrings.get(2)));
     final Box.PublicKey pk4 = Box.PublicKey.fromBytes(decodeBytes(pubKeyStrings.get(3)));
     final Box.PublicKey pk5 = Box.PublicKey.fromBytes(decodeBytes(pubKeyStrings.get(4)));
-    networkNodes = new ConcurrentNetworkNodes(NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
+    networkNodes = new PersistentNetworkNodes(NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
 
     networkNodes.addNode(Arrays.asList(pk1, pk2), NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
     networkNodes.addNode(Arrays.asList(pk3, pk4, pk5), NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
@@ -163,13 +163,13 @@ class DualNodesSendReceiveTest {
     }
   }
 
-  private ConcurrentNetworkNodes getPartyInfoResponse(final OkHttpClient httpClient, final Request request)
+  private PersistentNetworkNodes getPartyInfoResponse(final OkHttpClient httpClient, final Request request)
       throws Exception {
     final Response resp = httpClient.newCall(request).execute();
     assertEquals(200, resp.code());
 
-    final ConcurrentNetworkNodes partyInfoResponse =
-        Serializer.deserialize(HttpContentType.CBOR, ConcurrentNetworkNodes.class, resp.body().bytes());
+    final PersistentNetworkNodes partyInfoResponse =
+        Serializer.deserialize(HttpContentType.CBOR, PersistentNetworkNodes.class, resp.body().bytes());
     return partyInfoResponse;
   }
 

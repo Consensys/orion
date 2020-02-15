@@ -22,12 +22,12 @@ import net.consensys.orion.exception.OrionException;
 import net.consensys.orion.http.handler.send.SendRequest;
 import net.consensys.orion.http.handler.send.SendResponse;
 import net.consensys.orion.http.server.HttpContentType;
-import net.consensys.orion.network.ConcurrentNetworkNodes;
 import net.consensys.orion.network.NodeHttpClientBuilder;
+import net.consensys.orion.network.PersistentNetworkNodes;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.utils.Serializer;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -58,7 +58,7 @@ public class DistributePayloadManager {
   private final Storage<EncryptedPayload> storage;
   private final Storage<PrivacyGroupPayload> privacyGroupStorage;
   private final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
-  private final ConcurrentNetworkNodes networkNodes;
+  private final PersistentNetworkNodes networkNodes;
   private final List<PublicKey> nodeKeys;
   private final HttpClient httpClient;
 
@@ -69,7 +69,7 @@ public class DistributePayloadManager {
       final Storage<EncryptedPayload> storage,
       final Storage<PrivacyGroupPayload> privacyGroupStorage,
       final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
-      final ConcurrentNetworkNodes networkNodes) {
+      final PersistentNetworkNodes networkNodes) {
     this(
         enclave,
         storage,
@@ -85,7 +85,7 @@ public class DistributePayloadManager {
       final Storage<EncryptedPayload> storage,
       final Storage<PrivacyGroupPayload> privacyGroupStorage,
       final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
-      final ConcurrentNetworkNodes networkNodes,
+      final PersistentNetworkNodes networkNodes,
       final HttpClient httpClient) {
     this.enclave = enclave;
     this.storage = storage;
@@ -223,25 +223,24 @@ public class DistributePayloadManager {
       final List<Box.PublicKey> keys =
           toKeys.stream().filter(pKey -> !nodeKeys.contains(pKey)).collect(Collectors.toList());
 
-      if (keys.stream().anyMatch(pKey -> networkNodes.urlForRecipient(pKey) == null)) {
+      if (keys.stream().anyMatch(pKey -> networkNodes.uriForRecipient(pKey) == null)) {
         throw new OrionException(OrionErrorCode.NODE_MISSING_PEER_URL, "couldn't find peer URL");
       }
 
-      @SuppressWarnings("URLEqualsHashCode")
-      final Map<URL, ArrayList<PublicKey>> urlToKeysMap = getUrlToKeyListMap(keys);
+      final Map<URI, ArrayList<PublicKey>> uriToKeysMap = getUriToKeyListMap(keys);
 
       log.debug("Generate payload digest");
       final String digest = storage.generateDigest(encryptedPayload);
 
       log.debug("propagating payload");
       @SuppressWarnings("rawtypes")
-      final CompletableFuture[] cfs = urlToKeysMap.keySet().stream().map(url -> {
+      final CompletableFuture[] cfs = uriToKeysMap.keySet().stream().map(url -> {
 
         CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
 
         // serialize payload, stripping non-relevant encryptedKeys, and configureRoutes payload
         final byte[] payload =
-            Serializer.serialize(HttpContentType.CBOR, encryptedPayload.stripFor(urlToKeysMap.get(url)));
+            Serializer.serialize(HttpContentType.CBOR, encryptedPayload.stripFor(uriToKeysMap.get(url)));
 
         // execute request
         httpClient
@@ -278,11 +277,11 @@ public class DistributePayloadManager {
   }
 
   @NotNull
-  private Map<URL, ArrayList<PublicKey>> getUrlToKeyListMap(final List<PublicKey> keys) {
+  private Map<URI, ArrayList<PublicKey>> getUriToKeyListMap(final List<PublicKey> keys) {
     @SuppressWarnings("URLEqualsHashCode")
-    final Map<URL, ArrayList<PublicKey>> urlToKeysMap = new HashMap<>();
+    final Map<URI, ArrayList<PublicKey>> urlToKeysMap = new HashMap<>();
     for (final PublicKey key : keys) {
-      final URL url = networkNodes.urlForRecipient(key);
+      final URI url = networkNodes.uriForRecipient(key);
       if (!urlToKeysMap.containsKey(url)) {
         urlToKeysMap.put(url, new ArrayList<>());
       }
