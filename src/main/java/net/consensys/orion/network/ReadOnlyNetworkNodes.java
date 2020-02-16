@@ -15,12 +15,13 @@ package net.consensys.orion.network;
 import net.consensys.orion.enclave.sodium.serialization.PublicKeyMapKeyDeserializer;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,18 +31,20 @@ import org.apache.tuweni.crypto.sodium.Box;
 public class ReadOnlyNetworkNodes implements NetworkNodes {
 
   private final URI uri;
-  private final CopyOnWriteArrayList<URI> nodeURIs;
   private final Map<Box.PublicKey, URI> nodePKs;
 
   @JsonCreator
   public ReadOnlyNetworkNodes(
       @JsonProperty("uri") final URI uri,
-      @JsonProperty("nodeURIs") final List<URI> nodeURIs,
+      @JsonProperty("nodeURIs") List<URI> nodeURIs,
       @JsonProperty("nodePKs") @JsonDeserialize(
           keyUsing = PublicKeyMapKeyDeserializer.class) final Map<Box.PublicKey, URI> nodePKs) {
     this.uri = uri;
-    this.nodeURIs = new CopyOnWriteArrayList<>(nodeURIs);
     this.nodePKs = new HashMap<>(nodePKs);
+  }
+
+  public ReadOnlyNetworkNodes(URI uri, Map<Box.PublicKey, URI> nodePKs) {
+    this(uri, Collections.emptyList(), nodePKs);
   }
 
   @Override
@@ -51,7 +54,7 @@ public class ReadOnlyNetworkNodes implements NetworkNodes {
 
   @Override
   public Collection<URI> nodeURIs() {
-    return nodeURIs;
+    return new ArrayList<>(nodePKs.values());
   }
 
   @Override
@@ -71,11 +74,11 @@ public class ReadOnlyNetworkNodes implements NetworkNodes {
     if (o == null || getClass() != o.getClass())
       return false;
     ReadOnlyNetworkNodes that = (ReadOnlyNetworkNodes) o;
-    return uri.equals(that.uri) && nodeURIs.equals(that.nodeURIs) && nodePKs.equals(that.nodePKs);
+    return uri.equals(that.uri) && nodePKs.equals(that.nodePKs);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(uri, nodeURIs, nodePKs);
+    return Objects.hash(uri, nodePKs);
   }
 }

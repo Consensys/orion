@@ -108,9 +108,8 @@ class NetworkDiscoveryTest {
   @Test
   void networkDiscoveryWithMerge() throws Exception {
     // empty memory nodes, lets' say one peer is alone in his network
-    final byte[] unknownPeerNetworkNodes = Serializer.serialize(
-        CBOR,
-        new ReadOnlyNetworkNodes(URI.create("http://localhost/"), Collections.emptyList(), Collections.emptyMap()));
+    final byte[] unknownPeerNetworkNodes =
+        Serializer.serialize(CBOR, new ReadOnlyNetworkNodes(URI.create("http://localhost/"), Collections.emptyMap()));
     final Buffer unknownPeerBody = new Buffer();
     unknownPeerBody.write(unknownPeerNetworkNodes);
     // create a peer that's not in our current network nodes
@@ -120,7 +119,6 @@ class NetworkDiscoveryTest {
     // create a peer that we know, and that knows the lonely unknown peer.
     final ReadOnlyNetworkNodes knownPeerNetworkNodes = new ReadOnlyNetworkNodes(
         URI.create("http://www.example.com"),
-        Collections.singletonList(unknownPeer.getURI()),
         Collections.singletonMap(unknownPeer.publicKey, unknownPeer.getURI()));
     final Buffer knownPeerBody = new Buffer();
     knownPeerBody.write(Serializer.serialize(CBOR, knownPeerNetworkNodes));
@@ -142,7 +140,9 @@ class NetworkDiscoveryTest {
     final NetworkDiscovery.Discoverer knownPeerDiscoverer = networkDiscovery.discoverers().get(knownPeer.getURI());
     assertNotNull(knownPeerDiscoverer);
 
-    Thread.sleep(3 * (knownPeerDiscoverer.currentRefreshDelay + 2000));
+    System.out.println("Hitting known peer at " + knownPeer.getURI());
+    System.out.println("Sleeping for " + (6 * (knownPeerDiscoverer.currentRefreshDelay + 2000)));
+    Thread.sleep(6 * (knownPeerDiscoverer.currentRefreshDelay + 2000));
 
     // ensure knownPeer responded and that his party info was called at least twice
     assertTrue(
@@ -155,6 +155,7 @@ class NetworkDiscoveryTest {
     Iterator<Map.Entry<Box.PublicKey, URI>> iter = networkNodes.nodePKs().iterator();
     while (iter.hasNext()) {
       size++;
+      iter.next();
     }
     assertEquals(2, size);
     assertEquals(unknownPeer.getURI(), networkNodes.uriForRecipient(unknownPeer.publicKey));

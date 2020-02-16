@@ -45,7 +45,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -130,7 +129,7 @@ class DualNodesPrivacyGroupsTest {
     final Box.PublicKey pk1 = Box.PublicKey.fromBytes(decodeBytes(PK_1_B_64));
     final Box.PublicKey pk2 = Box.PublicKey.fromBytes(decodeBytes(PK_2_B_64));
     final PersistentNetworkNodes networkNodes =
-        new PersistentNetworkNodes(firstNodeConfig, new Box.PublicKey[] { } , MapKeyValueStore.open());
+        new PersistentNetworkNodes(firstNodeConfig, new Box.PublicKey[] {}, MapKeyValueStore.open());
     networkNodes.setNodeUrl(NodeUtils.uri("127.0.0.1", firstOrionLauncher.nodePort()), new Box.PublicKey[0]);
     Map<Box.PublicKey, URI> pks = new HashMap<>();
     pks.put(pk1, NodeUtils.uri("127.0.0.1", firstOrionLauncher.nodePort()));

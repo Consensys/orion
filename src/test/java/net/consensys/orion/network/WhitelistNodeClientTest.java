@@ -83,7 +83,7 @@ class WhitelistNodeClientTest {
     client = NodeHttpClientBuilder.build(vertx, config, 100);
 
     final ReadOnlyNetworkNodes payload =
-        new ReadOnlyNetworkNodes(URI.create("http://www.example.com"), Collections.emptyList(), Collections.emptyMap());
+        new ReadOnlyNetworkNodes(URI.create("http://www.example.com"), Collections.emptyMap());
     dummyRouter.post("/partyinfo").handler(routingContext -> {
       routingContext.response().end(Buffer.buffer(Serializer.serialize(HttpContentType.CBOR, payload)));
     });

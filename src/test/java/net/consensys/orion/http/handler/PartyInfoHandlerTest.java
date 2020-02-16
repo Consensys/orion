@@ -62,7 +62,6 @@ class PartyInfoHandlerTest extends HandlerTest {
   void roundTripSerialization() throws Exception {
     final ReadOnlyNetworkNodes networkNodes = new ReadOnlyNetworkNodes(
         URI.create("http://localhost:1234/"),
-        Collections.singletonList(URI.create("http://localhost/")),
         Collections.singletonMap(Box.KeyPair.random().publicKey(), URI.create("http://localhost/")));
     assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.CBOR, ReadOnlyNetworkNodes.class, networkNodes));
     assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.JSON, ReadOnlyNetworkNodes.class, networkNodes));
