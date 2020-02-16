@@ -103,16 +103,8 @@ public class PersistentNetworkNodes implements NetworkNodes {
   @Override
   public Collection<URI> nodeURIs() {
     Set<URI> allURIs = new HashSet<>();
-    List<AsyncCompletion> completions = new ArrayList<>();
-    nodePKs.keysAsync().thenAccept(keys -> {
-      for (Box.PublicKey key : keys) {
-        completions.add(nodePKs.getAsync(key).thenAccept(allURIs::add));
-      }
-    });
-    try {
-      AsyncCompletion.allOf(completions).join();
-    } catch (InterruptedException e) {
-      logger.warn("Timeout waiting to collect all URLs", e);
+    for (Map.Entry<Box.PublicKey, URI> entry : nodePKs()) {
+      allURIs.add(entry.getValue());
     }
     return allURIs;
   }

@@ -34,7 +34,7 @@ public interface NetworkNodes {
   /**
    * @return List of URIs of other nodes on the network
    */
-  @JsonProperty("nodeURIs")
+  @JsonProperty("nodeURLs")
   Collection<URI> nodeURIs();
 
   /**
