@@ -30,16 +30,20 @@ import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
 import net.consensys.orion.http.server.HttpContentType;
 import net.consensys.orion.network.PersistentNetworkNodes;
+import net.consensys.orion.network.ReadOnlyNetworkNodes;
 import net.consensys.orion.utils.Serializer;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -56,6 +60,7 @@ import okhttp3.Response;
 import org.apache.tuweni.crypto.sodium.Box;
 import org.apache.tuweni.junit.TempDirectory;
 import org.apache.tuweni.junit.TempDirectoryExtension;
+import org.apache.tuweni.kv.MapKeyValueStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -129,10 +134,17 @@ class DualNodesSendReceiveTest {
     final Box.PublicKey pk3 = Box.PublicKey.fromBytes(decodeBytes(pubKeyStrings.get(2)));
     final Box.PublicKey pk4 = Box.PublicKey.fromBytes(decodeBytes(pubKeyStrings.get(3)));
     final Box.PublicKey pk5 = Box.PublicKey.fromBytes(decodeBytes(pubKeyStrings.get(4)));
-    networkNodes = new PersistentNetworkNodes(NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
+    networkNodes = new PersistentNetworkNodes(firstNodeConfig, new Box.PublicKey[] { } , MapKeyValueStore.open());
+    networkNodes.setNodeUrl(NodeUtils.uri("127.0.0.1", firstOrionLauncher.nodePort()), new Box.PublicKey[0]);
+    Map<Box.PublicKey, URI> pks = new HashMap<>();
+    pks.put(pk1, NodeUtils.uri("127.0.0.1", firstOrionLauncher.nodePort()));
+    pks.put(pk2, NodeUtils.uri("127.0.0.1", firstOrionLauncher.nodePort()));
+    pks.put(pk3, NodeUtils.uri("127.0.0.1", secondOrionLauncher.nodePort()));
+    pks.put(pk4, NodeUtils.uri("127.0.0.1", secondOrionLauncher.nodePort()));
+    pks.put(pk5, NodeUtils.uri("127.0.0.1", secondOrionLauncher.nodePort()));
 
-    networkNodes.addNode(Arrays.asList(pk1, pk2), NodeUtils.url("127.0.0.1", firstOrionLauncher.nodePort()));
-    networkNodes.addNode(Arrays.asList(pk3, pk4, pk5), NodeUtils.url("127.0.0.1", secondOrionLauncher.nodePort()));
+    networkNodes.addNode(pks.entrySet());
+
     // prepare /partyinfo payload (our known peers)
     final RequestBody partyInfoBody =
         RequestBody.create(MediaType.parse(CBOR.httpHeaderValue), Serializer.serialize(CBOR, networkNodes));
@@ -142,7 +154,7 @@ class DualNodesSendReceiveTest {
     final String firstNodeBaseUrl = NodeUtils.urlString("127.0.0.1", firstOrionLauncher.nodePort());
     final Request request = new Request.Builder().post(partyInfoBody).url(firstNodeBaseUrl + "/partyinfo").build();
     // first /partyinfo call may just get the one node, so wait until we get at least 2 nodes
-    await().atMost(10, TimeUnit.SECONDS).until(() -> getPartyInfoResponse(httpClient, request).nodeURLs().size() == 2);
+    await().atMost(10, TimeUnit.SECONDS).until(() -> getPartyInfoResponse(httpClient, request).nodeURIs().size() == 2);
 
   }
 
@@ -163,13 +175,14 @@ class DualNodesSendReceiveTest {
     }
   }
 
-  private PersistentNetworkNodes getPartyInfoResponse(final OkHttpClient httpClient, final Request request)
+  private ReadOnlyNetworkNodes getPartyInfoResponse(final OkHttpClient httpClient, final Request request)
       throws Exception {
     final Response resp = httpClient.newCall(request).execute();
-    assertEquals(200, resp.code());
+    System.out.println(resp.body().string());
+    assertEquals("Received " + resp.code(), 200, resp.code());
 
-    final PersistentNetworkNodes partyInfoResponse =
-        Serializer.deserialize(HttpContentType.CBOR, PersistentNetworkNodes.class, resp.body().bytes());
+    final ReadOnlyNetworkNodes partyInfoResponse =
+        Serializer.deserialize(HttpContentType.CBOR, ReadOnlyNetworkNodes.class, resp.body().bytes());
     return partyInfoResponse;
   }
 

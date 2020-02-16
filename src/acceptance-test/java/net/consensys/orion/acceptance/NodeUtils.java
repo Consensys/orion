@@ -23,7 +23,7 @@ import net.consensys.orion.http.handler.receive.ReceiveResponse;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -46,16 +46,16 @@ public class NodeUtils {
     return builder.toString();
   }
 
-  private static HttpUrl buildUrl(final String host, final int port) {
+  private static HttpUrl buildUri(final String host, final int port) {
     return new HttpUrl.Builder().scheme("http").host(host).port(port).build();
   }
 
   public static String urlString(final String host, final int port) {
-    return buildUrl(host, port).toString();
+    return buildUri(host, port).toString();
   }
 
-  public static URL url(final String host, final int port) {
-    return buildUrl(host, port).url();
+  public static URI uri(final String host, final int port) {
+    return buildUri(host, port).uri();
   }
 
   public static Config nodeConfig(
