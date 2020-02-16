@@ -68,11 +68,11 @@ class PrivacyGroupStorageTest {
         EntityManagerKeyValueStore.open(jpaEntityManagerProvider::createEntityManager, Store.class, Store::getKey),
         Base64::decode,
         Base64::encode,
-        store -> Bytes.concatenate(Base64.decode(store.getKey()), Bytes.wrap(store.getValue())),
-        value -> {
+        store -> Bytes.wrap(store.getValue()),
+        (key, value) -> {
           Store store = new Store();
-          store.setKey(Base64.encode(value.slice(0, 32)));
-          store.setValue(value.slice(32).toArrayUnsafe());
+          store.setKey(Base64.encode(key));
+          store.setValue(value.toArrayUnsafe());
           return store;
         });
     payloadStorage = new PrivacyGroupStorage(storage, enclave);

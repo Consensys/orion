@@ -543,7 +543,7 @@ public class Orion {
         .open(store, Box.PublicKey::fromBytes, Box.PublicKey::bytes, Orion::bytesToURI, Orion::uriToBytes);
   }
 
-  private static Bytes uriToBytes(URI uri) {
+  private static Bytes uriToBytes(Box.PublicKey key, URI uri) {
     return Bytes.wrap(uri.toString().getBytes(StandardCharsets.UTF_8));
   }
 
@@ -578,11 +578,11 @@ public class Orion {
           EntityManagerKeyValueStore.open(jpaEntityManagerProvider::createEntityManager, Store.class, Store::getKey),
           Base64::decode,
           Base64::encode,
-          store -> Bytes.concatenate(Base64.decode(store.getKey()), Bytes.wrap(store.getValue())),
-          value -> {
+          store -> Bytes.wrap(store.getValue()),
+          (Bytes key, Bytes value) -> {
             Store store = new Store();
-            store.setKey(Base64.encode(value.slice(0, 32)));
-            store.setValue(value.slice(32).toArrayUnsafe());
+            store.setKey(Base64.encode(key));
+            store.setValue(value.toArrayUnsafe());
             return store;
           });
     } else {

@@ -28,6 +28,7 @@ import java.util.Optional;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.concurrent.AsyncResult;
 import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.io.Base64;
 import org.apache.tuweni.kv.KeyValueStore;
 
 
