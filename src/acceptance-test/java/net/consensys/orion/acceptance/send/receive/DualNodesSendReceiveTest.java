@@ -90,8 +90,14 @@ class DualNodesSendReceiveTest {
     pubKeyStrings = pubKeys.stream().map(pub -> getStringFromResource(pub)).collect(Collectors.toList());
     final List<Path> priKeyFileList = priKeys.stream().map(pub -> getPath(tempDir, pub)).collect(Collectors.toList());
 
-    final String jdbcUrl = "jdbc:h2:" + tempDir.resolve("node2").toString();
+    final String jdbcUrl = "jdbc:h2:" + tempDir.resolve("DualNodesSendReceiveTest").toString();
     try (final Connection conn = DriverManager.getConnection(jdbcUrl)) {
+      final Statement st = conn.createStatement();
+      st.executeUpdate("create table if not exists store(key char(60), value binary, primary key(key))");
+    }
+
+    final String jdbcUrlNodeInfo = "jdbc:h2:" + tempDir.resolve("DualNodesSendReceiveTestNodeInfo").toString();
+    try (final Connection conn = DriverManager.getConnection(jdbcUrlNodeInfo)) {
       final Statement st = conn.createStatement();
       st.executeUpdate("create table if not exists store(key char(60), value binary, primary key(key))");
     }
@@ -109,7 +115,8 @@ class DualNodesSendReceiveTest {
         "off",
         "tofu",
         "tofu",
-        "leveldb:database/node1");
+        "leveldb:database/node1",
+        "memory");
     secondNodeConfig = NodeUtils.nodeConfig(
         tempDir,
         0,
@@ -122,7 +129,8 @@ class DualNodesSendReceiveTest {
         "off",
         "tofu",
         "tofu",
-        "sql:" + jdbcUrl);
+        "sql:" + jdbcUrl,
+        "sql:" + jdbcUrlNodeInfo);
     vertx = vertx();
     firstOrionLauncher = NodeUtils.startOrion(firstNodeConfig);
     firstHttpClient = vertx.createHttpClient();
@@ -177,11 +185,11 @@ class DualNodesSendReceiveTest {
   private ReadOnlyNetworkNodes getPartyInfoResponse(final OkHttpClient httpClient, final Request request)
       throws Exception {
     final Response resp = httpClient.newCall(request).execute();
-    System.out.println(resp.body().string());
+
     assertEquals("Received " + resp.code(), 200, resp.code());
 
     final ReadOnlyNetworkNodes partyInfoResponse =
-        Serializer.deserialize(HttpContentType.CBOR, ReadOnlyNetworkNodes.class, resp.body().bytes());
+          Serializer.deserialize(HttpContentType.CBOR, ReadOnlyNetworkNodes.class, resp.body().bytes());
     return partyInfoResponse;
   }
 

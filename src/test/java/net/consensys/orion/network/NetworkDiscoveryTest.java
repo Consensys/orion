@@ -49,7 +49,7 @@ class NetworkDiscoveryTest {
   private KeyValueStore<Box.PublicKey, URI> store;
 
   @BeforeEach
-  void setUp() throws Exception {
+  void setUp() {
     vertx = Vertx.vertx();
     config = Config.load("tls='off'");
     store = MapKeyValueStore.open(new ConcurrentHashMap<>());

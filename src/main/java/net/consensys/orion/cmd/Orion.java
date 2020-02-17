@@ -70,6 +70,7 @@ import java.security.Security;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
@@ -97,6 +98,7 @@ import org.apache.tuweni.kv.EntityManagerKeyValueStore;
 import org.apache.tuweni.kv.KeyValueStore;
 import org.apache.tuweni.kv.LevelDBKeyValueStore;
 import org.apache.tuweni.kv.MapDBKeyValueStore;
+import org.apache.tuweni.kv.MapKeyValueStore;
 import org.apache.tuweni.kv.ProxyKeyValueStore;
 
 public class Orion {
@@ -114,6 +116,7 @@ public class Orion {
 
   private final Vertx vertx;
   private KeyValueStore<Bytes, Bytes> storage;
+  private KeyValueStore<Bytes, Bytes> nodeStorage;
   private NetworkDiscovery discovery;
   private HttpServer nodeHTTPServer;
   private HttpServer clientHTTPServer;
@@ -300,6 +303,13 @@ public class Orion {
         log.error("Error closing storage", e);
       }
     }
+    if (nodeStorage != null) {
+      try {
+        nodeStorage.close();
+      } catch (final IOException e) {
+        log.error("Error closing node storage", e);
+      }
+    }
   }
 
   public void run(final PrintStream out, final PrintStream err, final String... args) {
@@ -343,9 +353,11 @@ public class Orion {
     log.info("using working directory {}", workDir);
 
     // create our storage engine
-    storage = createStorage(config.storage(), workDir);
+    storage = createStorage(config.storage(), workDir, "routerdb");
+    nodeStorage = createStorage(config.nodeStorage(), workDir, "nodedb");
 
-    final PersistentNetworkNodes networkNodes = new PersistentNetworkNodes(config, keyStore.nodeKeys(), wrap(storage));
+    final PersistentNetworkNodes networkNodes =
+        new PersistentNetworkNodes(config, keyStore.nodeKeys(), wrap(nodeStorage));
 
     final Enclave enclave = new SodiumEnclave(keyStore);
 
@@ -483,7 +495,6 @@ public class Orion {
             new URI("http", null, config.nodeNetworkInterface(), nodeHTTPServer.actualPort(), null, null, null);
         networkNodes.setNodeUrl(nodeURI, keyStore.nodeKeys());
       }
-
       final CompletableFuture<Boolean> networkDiscoveryFuture = new CompletableFuture<>();
       // start network discovery of other peers
       discovery = new NetworkDiscovery(networkNodes, config);
@@ -556,24 +567,23 @@ public class Orion {
     return null;
   }
 
-  private KeyValueStore<Bytes, Bytes> createStorage(final String storage, final Path storagePath) {
-    String db = "routerdb";
+  private KeyValueStore<Bytes, Bytes> createStorage(final String storage, final Path storagePath, String dbName) {
     final String[] storageOptions = storage.split(":", 2);
     if (storageOptions.length > 1) {
-      db = storageOptions[1];
+      dbName = storageOptions[1];
     }
     final Function<Bytes, Bytes> bytesIdentityFn = Function.identity();
     if (storage.toLowerCase().startsWith("mapdb")) {
       return MapDBKeyValueStore
-          .open(storagePath.resolve(db), bytesIdentityFn, bytesIdentityFn, bytesIdentityFn, bytesIdentityFn);
+          .open(storagePath.resolve(dbName), bytesIdentityFn, bytesIdentityFn, bytesIdentityFn, bytesIdentityFn);
     } else if (storage.toLowerCase().startsWith("leveldb")) {
       try {
-        return LevelDBKeyValueStore.open(storagePath.resolve(db));
+        return LevelDBKeyValueStore.open(storagePath.resolve(dbName));
       } catch (final IOException e) {
-        throw new OrionStartException("Couldn't create LevelDB store: " + db, e);
+        throw new OrionStartException("Couldn't create LevelDB store: " + dbName, e);
       }
     } else if (storage.toLowerCase().startsWith("sql")) {
-      final JpaEntityManagerProvider jpaEntityManagerProvider = new JpaEntityManagerProvider(db);
+      final JpaEntityManagerProvider jpaEntityManagerProvider = new JpaEntityManagerProvider(dbName);
       return ProxyKeyValueStore.open(
           EntityManagerKeyValueStore.open(jpaEntityManagerProvider::createEntityManager, Store.class, Store::getKey),
           Base64::decode,
@@ -585,6 +595,8 @@ public class Orion {
             store.setValue(value.toArrayUnsafe());
             return store;
           });
+    } else if (storage.toLowerCase().equals("memory")) {
+      return MapKeyValueStore.open(new ConcurrentHashMap<>());
     } else {
       throw new OrionStartException("unsupported storage mechanism: " + storage);
     }

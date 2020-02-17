@@ -21,6 +21,7 @@ import static org.apache.tuweni.config.PropertyValidator.isURL;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -176,11 +177,11 @@ public class Config {
    *
    * @return A list of other node URLs to connect to on startup.
    */
-  public List<URL> otherNodes() {
+  public List<URI> otherNodes() {
     return configuration.getListOfString("othernodes").stream().map(urlString -> {
       try {
-        return new URL(urlString);
-      } catch (MalformedURLException e) {
+        return URI.create(urlString);
+      } catch (IllegalArgumentException e) {
         throw new IllegalStateException("key 'othernodes' should have been validated, yet it's invalid", e);
       }
     }).collect(Collectors.toList());
@@ -257,6 +258,24 @@ public class Config {
    */
   public String storage() {
     return System.getenv().getOrDefault("ORION_STORAGE", configuration.getString("storage"));
+  }
+
+  /**
+   * Storage engine used to save node information. Options:
+   *
+   * <ul>
+   * <li>leveldb:path - LevelDB</li>
+   * <li>mapdb:path - MapDB</li>
+   * <li>sql:jdbcurl - Relational database</li>
+   * <li>memory - Contents are cleared when Orion exits</li>
+   * </ul>
+   *
+   * <strong>Default:</strong> "memory"
+   *
+   * @return Storage string specifying a storage engine and/or storage path
+   */
+  public String nodeStorage() {
+    return System.getenv().getOrDefault("ORION_NODE_STORAGE", configuration.getString("nodestorage"));
   }
 
   /**
@@ -560,7 +579,7 @@ public class Config {
         Config::validateStorage);
 
     schemaBuilder.addString(
-        "nodeStorage",
+        "nodestorage",
         "memory",
         "Storage engine used to save node information. Options:\n"
             + "\n"

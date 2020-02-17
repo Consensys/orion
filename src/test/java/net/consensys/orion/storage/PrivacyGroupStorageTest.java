@@ -58,7 +58,7 @@ class PrivacyGroupStorageTest {
     memoryKeyStore.addNodeKey(defaultNodeKey);
     enclave = new SodiumEnclave(memoryKeyStore);
 
-    final String jdbcUrl = "jdbc:h2:" + tempDir.resolve("node2").toString();
+    final String jdbcUrl = "jdbc:h2:" + tempDir.resolve("PrivacyGroupStorageTest").toString();
     try (final Connection conn = DriverManager.getConnection(jdbcUrl)) {
       final Statement st = conn.createStatement();
       st.executeUpdate("create table if not exists store(key char(60), value binary, primary key(key))");

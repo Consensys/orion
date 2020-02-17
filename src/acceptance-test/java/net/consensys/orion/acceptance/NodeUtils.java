@@ -70,7 +70,8 @@ public class NodeUtils {
       final String tls,
       final String tlsServerTrust,
       final String tlsClientTrust,
-      final String storage) throws IOException {
+      final String storage,
+      final String nodeStorage) throws IOException {
 
     final Path workDir = tempDir.resolve("acceptance").toAbsolutePath();
     Files.createDirectories(workDir);
@@ -85,6 +86,7 @@ public class NodeUtils {
         + "clientport = " + clientPort + "\n"
         + "clientnetworkinterface = \"" + clientNetworkInterface + "\"\n"
         + "storage = \"" + storage + "\"\n"
+        + "nodestorage = \"" + nodeStorage + "\"\n"
         + "publickeys = [" + pubKeys + "]\n"
         + "privatekeys = [" + privKeys + "]\n"
         + "workdir= \"" + workDir.toString() + "\"\n";

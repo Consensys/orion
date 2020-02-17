@@ -85,18 +85,25 @@ public class NetworkDiscovery extends AbstractVerticle {
   private void updateDiscoverers() {
     log.trace("Updating discoverers");
     // for each peer that we know, we start a Discoverer (on timer)
-    for (final URI nodeUri : nodes.nodeURIs()) {
-      discoverers.computeIfAbsent(nodeUri, uri -> {
-        log.trace("New discoverer for {}", uri);
-        final Discoverer d = new Discoverer(uri, refreshDelayMs, uri.equals(nodes.uri()));
-        d.engageNextTimerTick();
-        return d;
-      });
+    for (final URI fixedNode : config.otherNodes()) {
+      discoverers.computeIfAbsent(fixedNode, this::createDiscoverer);
     }
+
+    for (final URI nodeUri : nodes.nodeURIs()) {
+      discoverers.computeIfAbsent(nodeUri, this::createDiscoverer);
+    }
+
   }
 
   public Map<URI, Discoverer> discoverers() {
     return new HashMap<>(discoverers);
+  }
+
+  private Discoverer createDiscoverer(URI uri) {
+    log.trace("New discoverer for {}", uri);
+    final Discoverer d = new Discoverer(uri, refreshDelayMs, uri.equals(nodes.uri()));
+    d.engageNextTimerTick();
+    return d;
   }
 
   /**

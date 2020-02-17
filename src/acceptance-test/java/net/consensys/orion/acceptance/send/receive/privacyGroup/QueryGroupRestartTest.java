@@ -71,7 +71,8 @@ public class QueryGroupRestartTest {
         "off",
         "tofu",
         "tofu",
-        "leveldb:database/node1");
+        "leveldb:database/node1",
+        "leveldb:database/node1NodeInfo");
   }
 
   @BeforeEach

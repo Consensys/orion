@@ -86,7 +86,7 @@ class DualNodesSendReceiveUsingPrivacyGroupTest {
     final Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
     final Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
 
-    final String jdbcUrl = "jdbc:h2:" + tempDir.resolve("node2").toString();
+    final String jdbcUrl = "jdbc:h2:" + tempDir.resolve("DualNodesSendReceiveUsingPrivacyGroupTest").toString();
     try (final Connection conn = DriverManager.getConnection(jdbcUrl)) {
       final Statement st = conn.createStatement();
       st.executeUpdate("create table if not exists store(key char(60), value binary, primary key(key))");
@@ -104,7 +104,8 @@ class DualNodesSendReceiveUsingPrivacyGroupTest {
         "off",
         "tofu",
         "tofu",
-        "leveldb:database/node1");
+        "leveldb:database/DualNodesSendReceiveUsingPrivacyGroupTest",
+        "memory");
     secondNodeConfig = NodeUtils.nodeConfig(
         tempDir,
         0,
@@ -117,7 +118,8 @@ class DualNodesSendReceiveUsingPrivacyGroupTest {
         "off",
         "tofu",
         "tofu",
-        "sql:" + jdbcUrl);
+        "sql:" + jdbcUrl,
+        "memory");
     vertx = vertx();
     firstOrionLauncher = NodeUtils.startOrion(firstNodeConfig);
     firstHttpClient = vertx.createHttpClient();

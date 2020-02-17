@@ -88,7 +88,7 @@ class DualNodesPrivacyGroupsTest {
     final Path key1key = copyResource("key1.key", tempDir.resolve("key1.key"));
     final Path key2pub = copyResource("key2.pub", tempDir.resolve("key2.pub"));
     final Path key2key = copyResource("key2.key", tempDir.resolve("key2.key"));
-    final String jdbcUrl = "jdbc:h2:" + tempDir.resolve("node2").toString();
+    final String jdbcUrl = "jdbc:h2:" + tempDir.resolve("DualNodesPrivacyGroupsTest").toString();
     try (final Connection conn = DriverManager.getConnection(jdbcUrl)) {
       final Statement st = conn.createStatement();
       st.executeUpdate("create table if not exists store(key char(60), value binary, primary key(key))");
@@ -106,7 +106,8 @@ class DualNodesPrivacyGroupsTest {
         "off",
         "tofu",
         "tofu",
-        "leveldb:" + tempDir + "database/node1");
+        "leveldb:" + tempDir + "database/DualNodesPrivacyGroupsTest",
+        "memory");
     final Config secondNodeConfig = NodeUtils.nodeConfig(
         tempDir,
         0,
@@ -119,7 +120,8 @@ class DualNodesPrivacyGroupsTest {
         "off",
         "tofu",
         "tofu",
-        "sql:" + jdbcUrl);
+        "sql:" + jdbcUrl,
+        "memory");
 
     vertx = vertx();
     firstOrionLauncher = NodeUtils.startOrion(firstNodeConfig);

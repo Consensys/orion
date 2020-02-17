@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -72,7 +73,7 @@ class TomlConfigTest {
     assertEquals(Collections.emptyList(), testConf.clientConnectionTlsServerChain());
 
     // URL Array
-    assertEquals(Collections.singletonList(new URL("http://127.0.0.1:9000/")), testConf.otherNodes());
+    assertEquals(Collections.singletonList(URI.create("http://127.0.0.1:9000/")), testConf.otherNodes());
   }
 
   @Test
