@@ -25,6 +25,7 @@ import net.consensys.orion.config.Config;
 import net.consensys.orion.exception.OrionErrorCode;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.nio.file.Path;
 
 import io.vertx.core.Vertx;

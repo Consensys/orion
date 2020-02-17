@@ -53,6 +53,7 @@ import net.consensys.orion.storage.QueryPrivacyGroupStorage;
 import net.consensys.orion.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.storage.StorageKeyBuilder;
+import net.consensys.orion.storage.StorageUtils;
 import net.consensys.orion.storage.Store;
 import net.consensys.orion.utils.TLS;
 
@@ -357,7 +358,7 @@ public class Orion {
     nodeStorage = createStorage(config.nodeStorage(), workDir, "nodedb");
 
     final PersistentNetworkNodes networkNodes =
-        new PersistentNetworkNodes(config, keyStore.nodeKeys(), wrap(nodeStorage));
+        new PersistentNetworkNodes(config, keyStore.nodeKeys(), StorageUtils.convertToPubKeyStore(nodeStorage));
 
     final Enclave enclave = new SodiumEnclave(keyStore);
 
@@ -547,24 +548,6 @@ public class Orion {
         future.completeExceptionally(result.cause());
       }
     };
-  }
-
-  public static KeyValueStore<Box.PublicKey, URI> wrap(KeyValueStore<Bytes, Bytes> store) {
-    return ProxyKeyValueStore
-        .open(store, Box.PublicKey::fromBytes, Box.PublicKey::bytes, Orion::bytesToURI, Orion::uriToBytes);
-  }
-
-  private static Bytes uriToBytes(Box.PublicKey key, URI uri) {
-    return Bytes.wrap(uri.toString().getBytes(StandardCharsets.UTF_8));
-  }
-
-  private static URI bytesToURI(Bytes v) {
-    try {
-      return URI.create(new String(v.toArray(), StandardCharsets.UTF_8));
-    } catch (IllegalArgumentException e) {
-      log.warn("Error reading URI", e);
-    }
-    return null;
   }
 
   private KeyValueStore<Bytes, Bytes> createStorage(final String storage, final Path storagePath, String dbName) {

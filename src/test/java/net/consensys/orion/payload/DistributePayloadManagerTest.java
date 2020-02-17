@@ -46,6 +46,7 @@ import net.consensys.orion.storage.QueryPrivacyGroupStorage;
 import net.consensys.orion.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.storage.StorageKeyBuilder;
+import net.consensys.orion.storage.StorageUtils;
 import net.consensys.orion.utils.Serializer;
 
 import java.nio.file.Path;
@@ -104,7 +105,7 @@ class DistributePayloadManagerTest {
     payloadStorage = new EncryptedPayloadStorage(storage, keyBuilder);
     privacyGroupStorage = new PrivacyGroupStorage(storage, enclave);
     queryPrivacyGroupStorage = new QueryPrivacyGroupStorage(storage, enclave);
-    networkNodes = new PersistentNetworkNodes(config, enclave.nodeKeys(), Orion.wrap(storage));
+    networkNodes = new PersistentNetworkNodes(config, enclave.nodeKeys(), StorageUtils.convertToPubKeyStore(storage));
 
     distributePayloadManager = new DistributePayloadManager(
         enclave,

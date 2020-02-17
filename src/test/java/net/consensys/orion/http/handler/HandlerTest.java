@@ -31,6 +31,7 @@ import net.consensys.orion.storage.QueryPrivacyGroupStorage;
 import net.consensys.orion.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.storage.StorageKeyBuilder;
+import net.consensys.orion.storage.StorageUtils;
 import net.consensys.orion.utils.Serializer;
 
 import java.io.IOException;
@@ -103,7 +104,7 @@ public abstract class HandlerTest {
     config = Config.load("tls='off'\nworkdir=\"" + tempDir + "\"");
     storage = MapKeyValueStore.open();
     networkNodes =
-        new PersistentNetworkNodes(config, new Box.PublicKey[] {Box.KeyPair.random().publicKey()}, Orion.wrap(storage));
+        new PersistentNetworkNodes(config, new Box.PublicKey[] {Box.KeyPair.random().publicKey()}, StorageUtils.convertToPubKeyStore(storage));
     enclave = buildEnclave(tempDir);
 
     // create our vertx object
