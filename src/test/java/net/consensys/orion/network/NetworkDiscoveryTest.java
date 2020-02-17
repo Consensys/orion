@@ -140,9 +140,7 @@ class NetworkDiscoveryTest {
     final NetworkDiscovery.Discoverer knownPeerDiscoverer = networkDiscovery.discoverers().get(knownPeer.getURI());
     assertNotNull(knownPeerDiscoverer);
 
-    System.out.println("Hitting known peer at " + knownPeer.getURI());
-    System.out.println("Sleeping for " + (6 * (knownPeerDiscoverer.currentRefreshDelay + 2000)));
-    Thread.sleep(6 * (knownPeerDiscoverer.currentRefreshDelay + 2000));
+    Thread.sleep(3 * (knownPeerDiscoverer.currentRefreshDelay + 2000));
 
     // ensure knownPeer responded and that his party info was called at least twice
     assertTrue(

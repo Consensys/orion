@@ -160,7 +160,6 @@ public class NetworkDiscovery extends AbstractVerticle {
             })
             .exceptionHandler(ex -> {
               log.error("calling partyInfo on {} failed {}", nodeUrl, ex.getMessage());
-              log.error(ex.getMessage(), ex);
               engageNextTimerTick();
             })
             .putHeader("Content-Type", "application/cbor")

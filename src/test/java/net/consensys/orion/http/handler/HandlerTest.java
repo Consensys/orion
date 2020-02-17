@@ -103,8 +103,10 @@ public abstract class HandlerTest {
     // orion dependencies, reset them all between tests
     config = Config.load("tls='off'\nworkdir=\"" + tempDir + "\"");
     storage = MapKeyValueStore.open();
-    networkNodes =
-        new PersistentNetworkNodes(config, new Box.PublicKey[] {Box.KeyPair.random().publicKey()}, StorageUtils.convertToPubKeyStore(storage));
+    networkNodes = new PersistentNetworkNodes(
+        config,
+        new Box.PublicKey[] {Box.KeyPair.random().publicKey()},
+        StorageUtils.convertToPubKeyStore(storage));
     enclave = buildEnclave(tempDir);
 
     // create our vertx object

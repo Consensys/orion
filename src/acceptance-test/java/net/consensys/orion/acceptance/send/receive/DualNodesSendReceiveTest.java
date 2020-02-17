@@ -189,7 +189,7 @@ class DualNodesSendReceiveTest {
     assertEquals("Received " + resp.code(), 200, resp.code());
 
     final ReadOnlyNetworkNodes partyInfoResponse =
-          Serializer.deserialize(HttpContentType.CBOR, ReadOnlyNetworkNodes.class, resp.body().bytes());
+        Serializer.deserialize(HttpContentType.CBOR, ReadOnlyNetworkNodes.class, resp.body().bytes());
     return partyInfoResponse;
   }
 
