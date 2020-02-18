@@ -4,6 +4,20 @@
 
 From v1.4, Orion requires Java 11. Orion on Java 8 is no longer supported. 
 
+## 1.5 RC 
+
+### Additions and Improvements 
+
+- Add endpoint to retrieve the privacy group details and members for a given privacyGroupId [\#307](https://github.com/PegaSysEng/orion/pull/307)
+- Client connection endpoint can be configured to accept TLS connections [\#319](https://github.com/PegaSysEng/orion/pull/319)
+- Generate docker image of Orion [\#304](https://github.com/PegaSysEng/orion/pull/304)
+
+### Known Bugs 
+
+- Using `alwayssendto` makes privacy group ID calculation inconsistent [\#OR-357](https://pegasys1.atlassian.net/browse/OR-357)
+
+Workaround - Do not use `alwayssendto`.
+
 ## 1.4 
 
 ### Additions and Improvements 
@@ -71,3 +85,5 @@ Stability improvements and bug fixes
 - Enable send API to accept privacy group Id [\#235](https://github.com/PegaSysEng/orion/pull/235) (thanks to [Puneetha17](https://github.com/Puneetha17))
 - Updating Vertx and Jackson dependencies [\#233](https://github.com/PegaSysEng/orion/pull/233) 
 - Add endpoint to retrieve privacyGroupId from the given list of addresses [\#227](https://github.com/PegaSysEng/orion/pull/227) (thanks to [Puneetha17](https://github.com/Puneetha17))
+
+
