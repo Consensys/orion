@@ -67,6 +67,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Security;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
@@ -75,6 +77,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import javax.persistence.EntityManagerFactory;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -115,10 +118,11 @@ public class Orion {
 
   private final Vertx vertx;
   private KeyValueStore<Bytes, Bytes> storage;
-  private KeyValueStore<Bytes, Bytes> nodeStorage;
+  private KeyValueStore<Bytes, Bytes> knownNodesStorage;
   private NetworkDiscovery discovery;
   private HttpServer nodeHTTPServer;
   private HttpServer clientHTTPServer;
+  private List<EntityManagerFactory> entityManagerFactories = new ArrayList<>();
 
   public static void main(final String[] args) {
     log.info("starting orion");
@@ -302,12 +306,17 @@ public class Orion {
         log.error("Error closing storage", e);
       }
     }
-    if (nodeStorage != null) {
+
+    if (knownNodesStorage != null) {
       try {
-        nodeStorage.close();
+        knownNodesStorage.close();
       } catch (final IOException e) {
         log.error("Error closing node storage", e);
       }
+    }
+
+    for (EntityManagerFactory factory : entityManagerFactories) {
+      factory.close();
     }
   }
 
@@ -353,10 +362,10 @@ public class Orion {
 
     // create our storage engine
     storage = createStorage(config.storage(), workDir, "routerdb");
-    nodeStorage = createStorage(config.nodeStorage(), workDir, "nodedb");
+    knownNodesStorage = createStorage(config.knownNodesStorage(), workDir, "nodedb");
 
     final PersistentNetworkNodes networkNodes =
-        new PersistentNetworkNodes(config, keyStore.nodeKeys(), StorageUtils.convertToPubKeyStore(nodeStorage));
+        new PersistentNetworkNodes(config, keyStore.nodeKeys(), StorageUtils.convertToPubKeyStore(knownNodesStorage));
 
     final Enclave enclave = new SodiumEnclave(keyStore);
 
@@ -532,7 +541,7 @@ public class Orion {
     try (final FileOutputStream fileOutputStream = new FileOutputStream(portsFile)) {
       properties.store(
           fileOutputStream,
-          "This file contains the ports used by the running instance of Besu. This file will be deleted after the node is shutdown.");
+          "This file contains the ports used by the running instance of Orion. This file will be deleted after the node is shutdown.");
     } catch (final Exception e) {
       log.warn("Error writing ports file", e);
     }
@@ -565,6 +574,7 @@ public class Orion {
       }
     } else if (storage.toLowerCase().startsWith("sql")) {
       final JpaEntityManagerProvider jpaEntityManagerProvider = new JpaEntityManagerProvider(dbName);
+      entityManagerFactories.add(jpaEntityManagerProvider);
       return ProxyKeyValueStore.open(
           EntityManagerKeyValueStore.open(jpaEntityManagerProvider::createEntityManager, Store.class, Store::getKey),
           Base64::decode,

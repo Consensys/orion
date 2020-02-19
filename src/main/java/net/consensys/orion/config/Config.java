@@ -261,7 +261,7 @@ public class Config {
   }
 
   /**
-   * Storage engine used to save node information. Options:
+   * Storage engine used to save known nodes information. Options:
    *
    * <ul>
    * <li>leveldb:path - LevelDB</li>
@@ -274,8 +274,8 @@ public class Config {
    *
    * @return Storage string specifying a storage engine and/or storage path
    */
-  public String nodeStorage() {
-    return System.getenv().getOrDefault("ORION_NODE_STORAGE", configuration.getString("nodestorage"));
+  public String knownNodesStorage() {
+    return System.getenv().getOrDefault("ORION_KNOWN_NODE_STORAGE", configuration.getString("knownnodesstorage"));
   }
 
   /**
@@ -579,9 +579,9 @@ public class Config {
         Config::validateStorage);
 
     schemaBuilder.addString(
-        "nodestorage",
+        "knownnodesstorage",
         "memory",
-        "Storage engine used to save node information. Options:\n"
+        "Storage engine used to save known node information. Options:\n"
             + "\n"
             + "   - leveldb:path - LevelDB\n"
             + "   - mapdb:path - MapDB\n"

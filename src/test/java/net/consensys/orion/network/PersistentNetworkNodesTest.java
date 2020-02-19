@@ -64,4 +64,20 @@ class PersistentNetworkNodesTest {
     assertEquals(pk, entry.getKey());
     assertFalse(iter.hasNext());
   }
+
+  @Test
+  void tryOverridingNodeInfo() {
+    Config config = Config.load("tls='off'");
+    MapKeyValueStore<Box.PublicKey, URI> store = MapKeyValueStore.open(new ConcurrentHashMap<>());
+    PersistentNetworkNodes nodes = new PersistentNetworkNodes(config, new Box.PublicKey[0], store);
+    Box.PublicKey pk = random().publicKey();
+    boolean changed = nodes.addNode(Collections.singletonMap(pk, URI.create("http://example:com:56666")).entrySet());
+    assertTrue(changed);
+
+    changed = nodes.addNode(Collections.singletonMap(pk, URI.create("http://evil:com:56666")).entrySet());
+    assertFalse(changed);
+
+    assertEquals(URI.create("http://example:com:56666"), nodes.uriForRecipient(pk));
+
+  }
 }
