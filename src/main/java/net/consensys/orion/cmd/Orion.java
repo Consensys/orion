@@ -77,7 +77,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import javax.persistence.EntityManagerFactory;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -122,7 +121,7 @@ public class Orion {
   private NetworkDiscovery discovery;
   private HttpServer nodeHTTPServer;
   private HttpServer clientHTTPServer;
-  private List<EntityManagerFactory> entityManagerFactories = new ArrayList<>();
+  private List<JpaEntityManagerProvider> entityManagerFactories = new ArrayList<>();
 
   public static void main(final String[] args) {
     log.info("starting orion");
@@ -315,8 +314,8 @@ public class Orion {
       }
     }
 
-    for (EntityManagerFactory factory : entityManagerFactories) {
-      factory.close();
+    for (JpaEntityManagerProvider provider : entityManagerFactories) {
+      provider.close();
     }
   }
 
