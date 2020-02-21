@@ -1,4 +1,5 @@
 # Test file with complete config settings (not defaults)
+knownnodesstorage = "memory"
 nodeurl = "http://127.0.0.1:9001/"
 nodeport = 9001
 nodenetworkinterface = "0.0.0.0"

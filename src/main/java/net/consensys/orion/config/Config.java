@@ -29,10 +29,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.tuweni.config.Configuration;
 import org.apache.tuweni.config.ConfigurationError;
 import org.apache.tuweni.config.DocumentPosition;
@@ -45,21 +49,33 @@ import org.apache.tuweni.config.SchemaBuilder;
  */
 public class Config {
 
+  private static final Logger log = LogManager.getLogger(Config.class);
+
   private static final Schema SCHEMA = configSchema();
 
   public static Config load(final Path configFile) throws IOException {
-    return load(Configuration.fromToml(configFile, SCHEMA));
+    return load(Configuration.fromToml(configFile, SCHEMA), System.getenv());
   }
 
+  public static Config load(final String config, final Map<String, String> env) {
+    return load(Configuration.fromToml(config, SCHEMA), env);
+  }
+
+  @VisibleForTesting
   public static Config load(final String config) {
-    return load(Configuration.fromToml(config, SCHEMA));
+    return load(Configuration.fromToml(config, SCHEMA), Collections.emptyMap());
   }
 
   public static Config load(final InputStream is) throws IOException {
-    return load(Configuration.fromToml(is, SCHEMA));
+    return load(is, System.getenv());
   }
 
-  private static Config load(final Configuration configuration) {
+  @VisibleForTesting
+  public static Config load(final InputStream is, Map<String, String> env) throws IOException {
+    return load(Configuration.fromToml(is, SCHEMA), env);
+  }
+
+  private static Config load(final Configuration configuration, Map<String, String> env) {
     final List<ConfigurationError> errors = configuration.errors();
     if (!errors.isEmpty()) {
       String errorString = errors.stream().limit(5).map(ConfigurationError::toString).collect(Collectors.joining("\n"));
@@ -68,19 +84,21 @@ public class Config {
       }
       throw new ConfigException(errorString);
     }
-    return new Config(configuration);
+    return new Config(configuration, env);
   }
 
   public static Config defaultConfig() {
-    return new Config(Configuration.empty(SCHEMA));
+    return new Config(Configuration.empty(SCHEMA), System.getenv());
   }
 
   private final Configuration configuration;
   private final Path workDir;
+  private final Map<String, String> env;
 
-  private Config(final Configuration configuration) {
+  private Config(final Configuration configuration, final Map<String, String> env) {
     this.configuration = configuration;
-    this.workDir = Paths.get(configuration.getString("workdir"));
+    this.env = env;
+    this.workDir = Paths.get(getString("workdir"));
   }
 
   /**
@@ -101,6 +119,14 @@ public class Config {
    * @return Port to listen on for the Orion API
    */
   public int nodePort() {
+    String port = env.get(envKey("nodeport"));
+    if (port != null) {
+      try {
+        return Integer.parseInt(port);
+      } catch (NumberFormatException e) {
+        log.warn(e.getMessage(), e);
+      }
+    }
     return configuration.getInteger("nodeport");
   }
 
@@ -110,7 +136,7 @@ public class Config {
    * @return the network interface to bind the Orion API to
    */
   public String nodeNetworkInterface() {
-    return configuration.getString("nodenetworkinterface");
+    return getString("nodenetworkinterface");
   }
 
   /**
@@ -131,6 +157,14 @@ public class Config {
    * @return Port to listen on for the client API
    */
   public int clientPort() {
+    String port = env.get(envKey("clientport"));
+    if (port != null) {
+      try {
+        return Integer.parseInt(port);
+      } catch (NumberFormatException e) {
+        log.warn(e.getMessage(), e);
+      }
+    }
     return configuration.getInteger("clientport");
   }
 
@@ -140,7 +174,7 @@ public class Config {
    * @return the network interface to bind the client API to.
    */
   public String clientNetworkInterface() {
-    return configuration.getString("clientnetworkinterface");
+    return getString("clientnetworkinterface");
   }
 
   /**
@@ -150,10 +184,10 @@ public class Config {
    */
   @Nullable
   public Path libSodiumPath() {
-    if (!configuration.contains("libsodiumpath")) {
-      return null;
+    if (contains("libsodiumpath")) {
+      return Paths.get(getString("libsodiumpath"));
     }
-    return Paths.get(configuration.getString("libsodiumpath"));
+    return null;
   }
 
   /**
@@ -178,6 +212,15 @@ public class Config {
    * @return A list of other node URLs to connect to on startup.
    */
   public List<URI> otherNodes() {
+    String otherNodes = env.get(envKey("othernodes"));
+    if (otherNodes != null) {
+      try {
+        return Arrays.stream(otherNodes.split(",")).map(URI::create).collect(Collectors.toList());
+      } catch (IllegalArgumentException e) {
+        log.warn("Invalid ORION_OTHERNODES entry", e);
+      }
+    }
+
     return configuration.getListOfString("othernodes").stream().map(urlString -> {
       try {
         return URI.create(urlString);
@@ -236,10 +279,10 @@ public class Config {
    * @see #privateKeys()
    */
   public Optional<Path> passwords() {
-    if (!configuration.contains("passwords")) {
-      return Optional.empty();
+    if (contains("passwords")) {
+      return Optional.of(getString("passwords")).map(workDir::resolve);
     }
-    return Optional.of(configuration.getString("passwords")).map(workDir::resolve);
+    return Optional.empty();
   }
 
   /**
@@ -257,7 +300,7 @@ public class Config {
    * @return Storage string specifying a storage engine and/or storage path
    */
   public String storage() {
-    return System.getenv().getOrDefault("ORION_STORAGE", configuration.getString("storage"));
+    return getString("storage");
   }
 
   /**
@@ -275,7 +318,7 @@ public class Config {
    * @return Storage string specifying a storage engine and/or storage path
    */
   public String knownNodesStorage() {
-    return System.getenv().getOrDefault("ORION_KNOWN_NODE_STORAGE", configuration.getString("knownnodesstorage"));
+    return getString("knownnodesstorage");
   }
 
   /**
@@ -296,7 +339,7 @@ public class Config {
    * @see #tlsClientTrust()
    */
   public String tls() {
-    return configuration.getString("tls").toLowerCase();
+    return getString("tls").toLowerCase();
   }
 
   /**
@@ -365,7 +408,7 @@ public class Config {
    * @see #tlsKnownClients()
    */
   public String tlsServerTrust() {
-    return configuration.getString("tlsservertrust").toLowerCase();
+    return getString("tlsservertrust").toLowerCase();
   }
 
   /**
@@ -445,7 +488,7 @@ public class Config {
    * @see #tlsKnownServers()
    */
   public String tlsClientTrust() {
-    return configuration.getString("tlsclienttrust").toLowerCase();
+    return getString("tlsclienttrust").toLowerCase();
   }
 
   /**
@@ -463,7 +506,7 @@ public class Config {
   }
 
   public String clientConnectionTls() {
-    return configuration.getString("clientconnectiontls").toLowerCase();
+    return getString("clientconnectiontls").toLowerCase();
   }
 
   public Path clientConnectionTlsServerCert() {
@@ -479,29 +522,45 @@ public class Config {
   }
 
   public String clientConnectionTlsServerTrust() {
-    return configuration.getString("clientconnectiontlsservertrust").toLowerCase();
+    return getString("clientconnectiontlsservertrust").toLowerCase();
   }
 
   public Path clientConnectionTlsKnownClients() {
     return getPath("clientconnectiontlsknownclients");
   }
 
+  private String envKey(final String key) {
+    return "ORION_" + key.toUpperCase();
+  }
+
+  private boolean contains(final String key) {
+    return env.containsKey(envKey(key)) || configuration.contains(key);
+  }
+
+  private String getString(final String key) {
+    return env.getOrDefault(envKey(key), configuration.getString(key));
+  }
+
   private Optional<URL> getURL(final String key) {
     try {
-      if (!configuration.contains(key)) {
+      if (!contains(key)) {
         return Optional.empty();
       }
-      return Optional.of(new URL(configuration.getString(key)));
+      return Optional.of(new URL(getString(key)));
     } catch (final MalformedURLException e) {
       throw new IllegalStateException("key '" + key + "' should have been validated, yet it's invalid", e);
     }
   }
 
   private Path getPath(final String key) {
-    return workDir.resolve(configuration.getString(key));
+    return workDir.resolve(getString(key));
   }
 
   private List<Path> getListOfPath(final String key) {
+    String value = env.get(envKey(key));
+    if (value != null) {
+      return Arrays.stream(value.split(",")).map(workDir::resolve).collect(Collectors.toList());
+    }
     return configuration.getListOfString(key).stream().map(workDir::resolve).collect(Collectors.toList());
   }
 
