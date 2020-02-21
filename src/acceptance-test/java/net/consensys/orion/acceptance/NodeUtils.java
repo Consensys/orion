@@ -104,7 +104,7 @@ public class NodeUtils {
   /** It's the callers responsibility to stop the started Orion. */
   public static Orion startOrion(final Config config) {
     final Orion orion = new Orion();
-    orion.run(System.out, System.err, config);
+    orion.run(config, false);
     return orion;
   }
 
