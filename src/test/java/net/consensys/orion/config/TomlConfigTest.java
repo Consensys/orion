@@ -23,6 +23,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -88,6 +89,7 @@ class TomlConfigTest {
     overrides.put("ORION_NODEURL", "http://192.168.0.1:10001/");
     overrides.put("ORION_STORAGE", "mapdb:somefolder");
     overrides.put("ORION_KNOWNNODESSTORAGE", "mapdb:someotherfolder");
+    overrides.put("ORION_OTHERNODES", "foo,bar,noes");
     overrides.put("ORION_TLS", "on");
     overrides.put("ORION_TLSSERVERTRUST", "ca");
     final Config testConf = Config.load(configAsStream, overrides);
@@ -98,6 +100,7 @@ class TomlConfigTest {
     assertEquals("192.168.0.1", testConf.nodeNetworkInterface());
     assertEquals("mapdb:somefolder", testConf.storage());
     assertEquals("mapdb:someotherfolder", testConf.knownNodesStorage());
+    assertEquals(Arrays.asList(URI.create("foo"), URI.create("bar"), URI.create("noes")), testConf.otherNodes());
 
     assertEquals("on", testConf.tls());
     assertEquals("ca", testConf.tlsServerTrust());
