@@ -116,12 +116,12 @@ public class Orion {
   }
 
   private final Vertx vertx;
+  private final List<JpaEntityManagerProvider> entityManagerFactories = new ArrayList<>();
   private KeyValueStore<Bytes, Bytes> storage;
   private KeyValueStore<Bytes, Bytes> knownNodesStorage;
   private NetworkDiscovery discovery;
   private HttpServer nodeHTTPServer;
   private HttpServer clientHTTPServer;
-  private List<JpaEntityManagerProvider> entityManagerFactories = new ArrayList<>();
 
   public static void main(final String[] args) {
     log.info("starting orion");
@@ -340,10 +340,10 @@ public class Orion {
       return;
     }
 
-    run(out, err, config);
+    run(config, arguments.clearKnownNodes());
   }
 
-  public void run(final PrintStream out, final PrintStream err, final Config config) {
+  public void run(final Config config, final boolean clearKnownNodes) {
     final Path libSodiumPath = config.libSodiumPath();
     if (libSodiumPath != null) {
       Sodium.loadLibrary(libSodiumPath);
@@ -362,6 +362,9 @@ public class Orion {
     // create our storage engine
     storage = createStorage(config.storage(), workDir, "routerdb");
     knownNodesStorage = createStorage(config.knownNodesStorage(), workDir, "nodedb");
+    if (clearKnownNodes) {
+      knownNodesStorage.clearAsync();
+    }
 
     final PersistentNetworkNodes networkNodes =
         new PersistentNetworkNodes(config, keyStore.nodeKeys(), StorageUtils.convertToPubKeyStore(knownNodesStorage));

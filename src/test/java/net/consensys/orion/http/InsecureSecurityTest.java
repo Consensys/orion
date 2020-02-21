@@ -76,7 +76,7 @@ class InsecureSecurityTest {
         .createHttpClient(new HttpClientOptions().setSsl(true).setKeyCertOptions(clientCertificate.keyCertOptions()));
 
     orion = new Orion(vertx);
-    orion.run(System.out, System.err, config);
+    orion.run(config, false);
   }
 
   @AfterAll

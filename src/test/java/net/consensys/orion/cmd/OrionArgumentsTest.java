@@ -14,6 +14,7 @@ package net.consensys.orion.cmd;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
@@ -33,7 +34,8 @@ class OrionArgumentsTest {
           + " [options] [config file]%n"
           + "where options include:%n"
           + "\t-g%n"
-          + "\t--generatekeys <names>%n\t\tgenerate key pairs for each of the names supplied.%n\t\twhere <names> are a comma-separated list%n"
+          + "\t--generatekeys <names>%n\t\tgenerate key pairs for each of the names supplied%n\t\twhere <names> are a comma-separated list%n"
+          + "\t--clear-known-nodes\tclear known nodes information.%n"
           + "\t-h%n"
           + "\t--help\tprint this help message%n"
           + "\t-v%n"
@@ -90,6 +92,28 @@ class OrionArgumentsTest {
     assertEquals(errorMsg, errContent.toString());
     assertEquals(usageOut, outContent.toString());
     assertTrue(arguments.argumentExit());
+  }
+
+  @Test
+  void clearKnownNodeDefaultOption() {
+    final String[] args = {};
+
+    final OrionArguments arguments = new OrionArguments(outStream, errStream, args);
+
+    assertEquals("", errContent.toString());
+    assertEquals("", outContent.toString());
+    assertFalse(arguments.clearKnownNodes());
+  }
+
+  @Test
+  void clearKnownNodes() {
+    final String[] args = {"--clear-known-nodes"};
+
+    final OrionArguments arguments = new OrionArguments(outStream, errStream, args);
+
+    assertEquals("", errContent.toString());
+    assertEquals("", outContent.toString());
+    assertTrue(arguments.clearKnownNodes());
   }
 
   @Test

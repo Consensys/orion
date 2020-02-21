@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 class OrionArguments {
   private boolean argumentExit = false;
+  private boolean clearKnownNodes = false;
 
   private Optional<String> configFileName = Optional.empty();
   private Optional<String[]> keysToGenerate = Optional.empty();
@@ -58,6 +59,9 @@ class OrionArguments {
           displayVersion(out, err);
           argumentExit = true;
           break;
+        case "--clear-known-nodes":
+          clearKnownNodes = true;
+          break;
         default:
           if (args[i].startsWith("-")) {
             err.printf("Invalid option: %s\n", args[i]);
@@ -79,8 +83,9 @@ class OrionArguments {
     out.println("where options include:");
     out.println("\t-g");
     out.println("\t--generatekeys <names>");
-    out.println("\t\tgenerate key pairs for each of the names supplied.");
+    out.println("\t\tgenerate key pairs for each of the names supplied");
     out.println("\t\twhere <names> are a comma-separated list");
+    out.println("\t--clear-known-nodes\tclear known nodes information.");
     out.println("\t-h");
     out.println("\t--help\tprint this help message");
     out.println("\t-v");
@@ -103,6 +108,10 @@ class OrionArguments {
 
   boolean argumentExit() {
     return argumentExit;
+  }
+
+  boolean clearKnownNodes() {
+    return clearKnownNodes;
   }
 
   Optional<String> configFileName() {
