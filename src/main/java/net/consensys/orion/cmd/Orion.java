@@ -74,6 +74,8 @@ import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -93,6 +95,7 @@ import io.vertx.ext.web.handler.ResponseContentTypeHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.concurrent.AsyncCompletion;
 import org.apache.tuweni.crypto.sodium.Sodium;
 import org.apache.tuweni.io.Base64;
 import org.apache.tuweni.kv.EntityManagerKeyValueStore;
@@ -358,24 +361,34 @@ public class Orion {
 
     final Path workDir = config.workDir();
     log.info("using working directory {}", workDir);
+    try {
+      Files.createDirectories(workDir);
+    } catch (final IOException ex) {
+      throw new OrionStartException("Couldn't create working directory '" + workDir + "': " + ex.getMessage(), ex);
+    }
 
     // create our storage engine
     storage = createStorage(config.storage(), workDir, "routerdb");
     knownNodesStorage = createStorage(config.knownNodesStorage(), workDir, "nodedb");
     if (clearKnownNodes) {
-      knownNodesStorage.clearAsync();
+      AsyncCompletion completion = knownNodesStorage.clearAsync();
+      try {
+        completion.join(30, TimeUnit.SECONDS);
+      } catch (TimeoutException e) {
+        throw new OrionStartException(
+            "Couldn't clear known nodes storage after 30s'" + config.knownNodesStorage() + "': " + e.getMessage(),
+            e);
+      } catch (InterruptedException e) {
+        throw new OrionStartException(
+            "Interrupted while clearing known nodes storage '" + config.knownNodesStorage() + "': " + e.getMessage(),
+            e);
+      }
     }
 
     final PersistentNetworkNodes networkNodes =
         new PersistentNetworkNodes(config, keyStore.nodeKeys(), StorageUtils.convertToPubKeyStore(knownNodesStorage));
 
     final Enclave enclave = new SodiumEnclave(keyStore);
-
-    try {
-      Files.createDirectories(workDir);
-    } catch (final IOException ex) {
-      throw new OrionStartException("Couldn't create working directory '" + workDir + "': " + ex.getMessage(), ex);
-    }
 
     if (!"off".equals(config.tls())) {
       // verify server TLS cert and key
