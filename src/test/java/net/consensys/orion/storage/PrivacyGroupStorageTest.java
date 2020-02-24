@@ -23,7 +23,6 @@ import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 import net.consensys.orion.enclave.sodium.SodiumEnclave;
 
 import java.nio.file.Path;
-import java.security.Security;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -31,22 +30,23 @@ import java.sql.Statement;
 import java.util.Optional;
 import java.util.Random;
 
+import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.io.Base64;
+import org.apache.tuweni.junit.BouncyCastleExtension;
 import org.apache.tuweni.junit.TempDirectory;
 import org.apache.tuweni.junit.TempDirectoryExtension;
+import org.apache.tuweni.kv.EntityManagerKeyValueStore;
 import org.apache.tuweni.kv.KeyValueStore;
+import org.apache.tuweni.kv.ProxyKeyValueStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(TempDirectoryExtension.class)
+@ExtendWith({TempDirectoryExtension.class, BouncyCastleExtension.class})
 class PrivacyGroupStorageTest {
   private MemoryKeyStore memoryKeyStore;
-  private KeyValueStore storage;
-
-  static {
-    Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-  }
+  private KeyValueStore<Bytes, Bytes> storage;
 
   private Enclave enclave;
   private Storage<PrivacyGroupPayload> payloadStorage;
@@ -58,13 +58,23 @@ class PrivacyGroupStorageTest {
     memoryKeyStore.addNodeKey(defaultNodeKey);
     enclave = new SodiumEnclave(memoryKeyStore);
 
-    final String jdbcUrl = "jdbc:h2:" + tempDir.resolve("node2").toString();
+    final String jdbcUrl = "jdbc:h2:" + tempDir.resolve("PrivacyGroupStorageTest").toString();
     try (final Connection conn = DriverManager.getConnection(jdbcUrl)) {
       final Statement st = conn.createStatement();
       st.executeUpdate("create table if not exists store(key char(60), value binary, primary key(key))");
     }
     final JpaEntityManagerProvider jpaEntityManagerProvider = new JpaEntityManagerProvider(jdbcUrl);
-    storage = new OrionSQLKeyValueStore(jpaEntityManagerProvider);
+    storage = ProxyKeyValueStore.open(
+        EntityManagerKeyValueStore.open(jpaEntityManagerProvider::createEntityManager, Store.class, Store::getKey),
+        Base64::decode,
+        Base64::encode,
+        store -> Bytes.wrap(store.getValue()),
+        (key, value) -> {
+          Store store = new Store();
+          store.setKey(Base64.encode(key));
+          store.setValue(value.toArrayUnsafe());
+          return store;
+        });
     payloadStorage = new PrivacyGroupStorage(storage, enclave);
   }
 

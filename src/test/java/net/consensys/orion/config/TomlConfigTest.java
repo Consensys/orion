@@ -19,10 +19,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,13 +35,14 @@ class TomlConfigTest {
   @Test
   void fullFileRead() throws Exception {
     final InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("fullConfigTest.toml");
-    final Config testConf = Config.load(configAsStream);
+    final Config testConf = Config.load(configAsStream, Collections.emptyMap());
 
     final URL expectedURL = new URL("http://127.0.0.1:9001/");
     assertEquals(expectedURL, testConf.nodeUrl().get());
     assertEquals(9001, testConf.nodePort());
     assertEquals("0.0.0.0", testConf.nodeNetworkInterface());
     assertEquals("memory", testConf.storage());
+    assertEquals("memory", testConf.knownNodesStorage());
     assertEquals("off", testConf.tls());
     assertEquals("ca-or-tofu", testConf.tlsServerTrust());
     assertEquals("ca", testConf.tlsClientTrust());
@@ -72,14 +77,42 @@ class TomlConfigTest {
     assertEquals(Collections.emptyList(), testConf.clientConnectionTlsServerChain());
 
     // URL Array
-    assertEquals(Collections.singletonList(new URL("http://127.0.0.1:9000/")), testConf.otherNodes());
+    assertEquals(Collections.singletonList(URI.create("http://127.0.0.1:9000/")), testConf.otherNodes());
+  }
+
+  @Test
+  void testEnvOverride() throws Exception {
+    final InputStream configAsStream = this.getClass().getClassLoader().getResourceAsStream("fullConfigTest.toml");
+    Map<String, String> overrides = new HashMap<>();
+    overrides.put("ORION_NODEPORT", "10001");
+    overrides.put("ORION_NODENETWORKINTERFACE", "192.168.0.1");
+    overrides.put("ORION_NODEURL", "http://192.168.0.1:10001/");
+    overrides.put("ORION_STORAGE", "mapdb:somefolder");
+    overrides.put("ORION_KNOWNNODESSTORAGE", "mapdb:someotherfolder");
+    overrides.put("ORION_OTHERNODES", "foo,bar,noes");
+    overrides.put("ORION_TLS", "on");
+    overrides.put("ORION_TLSSERVERTRUST", "ca");
+    final Config testConf = Config.load(configAsStream, overrides);
+
+    final URL expectedURL = new URL("http://192.168.0.1:10001/");
+    assertEquals(expectedURL, testConf.nodeUrl().get());
+    assertEquals(10001, testConf.nodePort());
+    assertEquals("192.168.0.1", testConf.nodeNetworkInterface());
+    assertEquals("mapdb:somefolder", testConf.storage());
+    assertEquals("mapdb:someotherfolder", testConf.knownNodesStorage());
+    assertEquals(Arrays.asList(URI.create("foo"), URI.create("bar"), URI.create("noes")), testConf.otherNodes());
+
+    assertEquals("on", testConf.tls());
+    assertEquals("ca", testConf.tlsServerTrust());
   }
 
   @Test
   void fullFileReadUsingDefaults() throws Exception {
-    final Config testConf = Config.load(this.getClass().getClassLoader().getResourceAsStream("defaultConfigTest.toml"));
+    final Config testConf = Config
+        .load(this.getClass().getClassLoader().getResourceAsStream("defaultConfigTest.toml"), Collections.emptyMap());
 
     assertEquals("leveldb", testConf.storage());
+    assertEquals("memory", testConf.knownNodesStorage());
     assertEquals("off", testConf.tls());
     assertEquals("tofu", testConf.tlsServerTrust());
     assertEquals("ca-or-tofu", testConf.tlsClientTrust());

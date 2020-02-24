@@ -29,10 +29,10 @@ import org.apache.tuweni.kv.KeyValueStore;
 
 public class EncryptedPayloadStorage implements Storage<EncryptedPayload> {
 
-  private final KeyValueStore store;
+  private final KeyValueStore<Bytes, Bytes> store;
   private final StorageKeyBuilder keyBuilder;
 
-  public EncryptedPayloadStorage(final KeyValueStore store, final StorageKeyBuilder keyBuilder) {
+  public EncryptedPayloadStorage(final KeyValueStore<Bytes, Bytes> store, final StorageKeyBuilder keyBuilder) {
     this.store = store;
     this.keyBuilder = keyBuilder;
   }

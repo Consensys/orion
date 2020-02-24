@@ -34,10 +34,10 @@ import org.apache.tuweni.kv.KeyValueStore;
 public class QueryPrivacyGroupStorage implements Storage<QueryPrivacyGroupPayload> {
   private static final byte[] BYTES = Bytes.fromHexString("5375ba871e5c3d0f1d055b5da0ac02ea035bed38").toArrayUnsafe();
 
-  private final KeyValueStore store;
+  private final KeyValueStore<Bytes, Bytes> store;
   private final Enclave enclave;
 
-  public QueryPrivacyGroupStorage(final KeyValueStore store, final Enclave enclave) {
+  public QueryPrivacyGroupStorage(final KeyValueStore<Bytes, Bytes> store, final Enclave enclave) {
     this.store = store;
     this.enclave = enclave;
   }

@@ -18,8 +18,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import net.consensys.orion.http.handler.HandlerTest;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,7 +54,7 @@ class KnownNodesHandlerTest extends HandlerTest {
     final Response response = httpClient.newCall(request).execute();
     final List<KnownNode> knownNodes = readList(response);
 
-    assertTrue(knownNodes.isEmpty());
+    assertTrue(knownNodes.isEmpty(), () -> knownNodes.get(0).getNodeURI());
   }
 
   @Test
@@ -81,8 +80,8 @@ class KnownNodesHandlerTest extends HandlerTest {
   private List<KnownNode> createNodes() {
     try {
       final List<KnownNode> knownNodes = new ArrayList<>();
-      knownNodes.add(new KnownNode(KeyPair.random().publicKey(), new URL("http://127.0.0.1:9001/")));
-      knownNodes.add(new KnownNode(KeyPair.random().publicKey(), new URL("http://127.0.0.1:9002/")));
+      knownNodes.add(new KnownNode(KeyPair.random().publicKey(), URI.create("http://127.0.0.1:9001/")));
+      knownNodes.add(new KnownNode(KeyPair.random().publicKey(), URI.create("http://127.0.0.1:9002/")));
       return knownNodes;
     } catch (Exception e) {
       fail(e);
@@ -94,9 +93,9 @@ class KnownNodesHandlerTest extends HandlerTest {
     nodes.forEach(node -> {
       try {
         final PublicKey publicKey = PublicKey.fromBytes(Base64.decodeBytes(node.getPublicKey()));
-        final URL nodeUrl = new URL(node.getNodeUrl());
-        networkNodes.addNode(Collections.singletonList(publicKey), nodeUrl);
-      } catch (MalformedURLException e) {
+        final URI nodeUri = URI.create(node.getNodeURI());
+        networkNodes.addNode(Collections.singletonMap(publicKey, nodeUri).entrySet());
+      } catch (IllegalArgumentException e) {
         fail(e);
       }
     });

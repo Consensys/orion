@@ -25,7 +25,7 @@ import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
 import net.consensys.orion.utils.Serializer;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -69,7 +69,7 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
 
     // create fake peer
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey);
-    networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
 
     // execute request
     final Response resp = httpClient.newCall(request).execute();
@@ -108,15 +108,15 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
     // create fake peers
     final FakePeer fakePeer1 =
         new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey1);
-    networkNodes.addNode(Collections.singletonList(fakePeer1.publicKey), fakePeer1.getURL());
+    networkNodes.addNode(Collections.singletonMap(fakePeer1.publicKey, fakePeer1.getURI()).entrySet());
 
     final FakePeer fakePeer2 =
         new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey2);
-    networkNodes.addNode(Collections.singletonList(fakePeer2.publicKey), fakePeer2.getURL());
+    networkNodes.addNode(Collections.singletonMap(fakePeer2.publicKey, fakePeer2.getURI()).entrySet());
 
     final FakePeer fakePeer3 =
         new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey3);
-    networkNodes.addNode(Collections.singletonList(fakePeer3.publicKey), fakePeer3.getURL());
+    networkNodes.addNode(Collections.singletonMap(fakePeer3.publicKey, fakePeer3.getURI()).entrySet());
 
     // execute request
     final Response resp = httpClient.newCall(request).execute();
@@ -152,7 +152,7 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
 
     // create fake peer
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey);
-    networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
 
     // execute request
     final Response resp = httpClient.newCall(request).execute();
@@ -216,7 +216,7 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
 
     // create fake peer
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey);
-    networkNodes.addNode(Collections.singletonList(fakePeer.publicKey), fakePeer.getURL());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
 
     // execute request
     final Response resp = httpClient.newCall(request).execute();
@@ -246,8 +246,8 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
       server.start();
     }
 
-    URL getURL() {
-      return server.url("").url();
+    URI getURI() {
+      return server.url("").uri();
     }
   }
 }

@@ -23,7 +23,7 @@ import net.consensys.orion.http.handler.receive.ReceiveResponse;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -46,16 +46,16 @@ public class NodeUtils {
     return builder.toString();
   }
 
-  private static HttpUrl buildUrl(final String host, final int port) {
+  private static HttpUrl buildUri(final String host, final int port) {
     return new HttpUrl.Builder().scheme("http").host(host).port(port).build();
   }
 
   public static String urlString(final String host, final int port) {
-    return buildUrl(host, port).toString();
+    return buildUri(host, port).toString();
   }
 
-  public static URL url(final String host, final int port) {
-    return buildUrl(host, port).url();
+  public static URI uri(final String host, final int port) {
+    return buildUri(host, port).uri();
   }
 
   public static Config nodeConfig(
@@ -70,7 +70,8 @@ public class NodeUtils {
       final String tls,
       final String tlsServerTrust,
       final String tlsClientTrust,
-      final String storage) throws IOException {
+      final String storage,
+      final String nodeStorage) throws IOException {
 
     final Path workDir = tempDir.resolve("acceptance").toAbsolutePath();
     Files.createDirectories(workDir);
@@ -85,6 +86,7 @@ public class NodeUtils {
         + "clientport = " + clientPort + "\n"
         + "clientnetworkinterface = \"" + clientNetworkInterface + "\"\n"
         + "storage = \"" + storage + "\"\n"
+        + "nodestorage = \"" + nodeStorage + "\"\n"
         + "publickeys = [" + pubKeys + "]\n"
         + "privatekeys = [" + privKeys + "]\n"
         + "workdir= \"" + workDir.toString() + "\"\n";
@@ -102,7 +104,7 @@ public class NodeUtils {
   /** It's the callers responsibility to stop the started Orion. */
   public static Orion startOrion(final Config config) {
     final Orion orion = new Orion();
-    orion.run(System.out, System.err, config);
+    orion.run(config, false);
     return orion;
   }
 

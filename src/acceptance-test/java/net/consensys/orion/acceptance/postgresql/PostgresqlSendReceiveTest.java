@@ -83,7 +83,8 @@ class PostgresqlSendReceiveTest {
         "off",
         "tofu",
         "tofu",
-        "sql:" + jdbcUrl);
+        "sql:" + jdbcUrl,
+        "memory");
 
     vertx = vertx();
     orionLauncher = NodeUtils.startOrion(config);

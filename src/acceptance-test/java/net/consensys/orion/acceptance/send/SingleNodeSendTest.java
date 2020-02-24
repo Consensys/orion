@@ -25,7 +25,6 @@ import net.consensys.orion.config.Config;
 import net.consensys.orion.exception.OrionErrorCode;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Path;
 
 import io.vertx.core.Vertx;
@@ -49,7 +48,6 @@ class SingleNodeSendTest {
   private static final String PK_2_B_64 = "Ko2bVqD+nNlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
   private static final String PK_CORRUPTED = "A1aVtMxLCUHmBVHXoZzzBgPbW/wj5axDpW9X8l91SGoAAA=";
   private static final String PK_MISSING_PEER = "A1aVtMxLCUlNYL5EE7y3IdOnviftjiizpjRt+HTuFBs=";
-  private static final String HOST_NAME = "127.0.0.1";
 
   private static Config config;
 
@@ -76,7 +74,8 @@ class SingleNodeSendTest {
         "off",
         "tofu",
         "tofu",
-        "leveldb:database/node1");
+        "leveldb:database/node1",
+        "memory");
   }
 
 
@@ -84,7 +83,6 @@ class SingleNodeSendTest {
   void setUp() throws MalformedURLException {
     orionLauncher = NodeUtils.startOrion(config);
     vertx = vertx();
-    orionLauncher.addPeer(new URL(NodeUtils.urlString(HOST_NAME, orionLauncher.nodePort())));
     httpClient = vertx.createHttpClient();
   }
 

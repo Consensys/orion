@@ -13,7 +13,7 @@
 package net.consensys.orion.http.handler.knownnodes;
 
 import net.consensys.orion.http.server.HttpContentType;
-import net.consensys.orion.network.ConcurrentNetworkNodes;
+import net.consensys.orion.network.PersistentNetworkNodes;
 import net.consensys.orion.utils.Serializer;
 
 import java.util.ArrayList;
@@ -25,9 +25,9 @@ import io.vertx.ext.web.RoutingContext;
 
 public class KnownNodesHandler implements Handler<RoutingContext> {
 
-  private final ConcurrentNetworkNodes networkNodes;
+  private final PersistentNetworkNodes networkNodes;
 
-  public KnownNodesHandler(final ConcurrentNetworkNodes networkNodes) {
+  public KnownNodesHandler(final PersistentNetworkNodes networkNodes) {
     this.networkNodes = networkNodes;
   }
 
@@ -35,7 +35,11 @@ public class KnownNodesHandler implements Handler<RoutingContext> {
   public void handle(final RoutingContext routingContext) {
     final List<KnownNode> knownNodes = new ArrayList<>();
 
-    networkNodes.nodePKs().forEach((publicKey, url) -> knownNodes.add(new KnownNode(publicKey, url)));
+    networkNodes.nodePKs().forEach((entry) -> {
+      if (!entry.getValue().equals(networkNodes.uri())) {
+        knownNodes.add(new KnownNode(entry.getKey(), entry.getValue()));
+      }
+    });
 
     final Buffer bufferResponse = Buffer.buffer(Serializer.serialize(HttpContentType.JSON, knownNodes));
 

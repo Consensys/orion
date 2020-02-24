@@ -81,7 +81,7 @@ class CAOrTofuSecurityTest {
         new HttpClientOptions().setSsl(true).setTrustAll(true).setKeyCertOptions(clientCert.keyCertOptions()));
 
     orion = new Orion(vertx);
-    orion.run(System.out, System.err, config);
+    orion.run(config, false);
   }
 
   @AfterAll
