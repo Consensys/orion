@@ -33,10 +33,10 @@ import org.apache.tuweni.kv.KeyValueStore;
 
 public class PrivacyGroupStorage implements Storage<PrivacyGroupPayload> {
 
-  private final KeyValueStore store;
+  private final KeyValueStore<Bytes, Bytes> store;
   private final Enclave enclave;
 
-  public PrivacyGroupStorage(final KeyValueStore store, final Enclave enclave) {
+  public PrivacyGroupStorage(final KeyValueStore<Bytes, Bytes> store, final Enclave enclave) {
     this.store = store;
     this.enclave = enclave;
   }

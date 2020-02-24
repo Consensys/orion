@@ -150,6 +150,6 @@ class OrionTest {
 
     final Orion orion = new Orion(vertx);
     final Config config = Config.load("workdir=\"" + tempDir.resolve("data") + "\"\ntls=\"off\"\n");
-    assertThrows(OrionStartException.class, () -> orion.run(System.out, System.err, config));
+    assertThrows(OrionStartException.class, () -> orion.run(config, false));
   }
 }

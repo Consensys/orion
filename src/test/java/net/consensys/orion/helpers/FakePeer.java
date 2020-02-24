@@ -15,7 +15,7 @@ package net.consensys.orion.helpers;
 import net.consensys.orion.enclave.sodium.MemoryKeyStore;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -50,7 +50,7 @@ public class FakePeer {
     server.enqueue(response);
   }
 
-  public URL getURL() {
-    return server.url("").url();
+  public URI getURI() {
+    return server.url("").uri();
   }
 }

@@ -74,7 +74,8 @@ class SingleNodeSendReceiveTest {
         "off",
         "tofu",
         "tofu",
-        "leveldb:database/node1");
+        "leveldb:database/node1",
+        "memory");
   }
 
   @BeforeEach

@@ -12,7 +12,7 @@
  */
 package net.consensys.orion.http.handler.knownnodes;
 
-import java.net.URL;
+import java.net.URI;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,17 +23,17 @@ import org.postgresql.util.Base64;
 class KnownNode {
 
   private final String publicKey;
-  private final String nodeUrl;
+  private final String nodeURI;
 
-  KnownNode(final PublicKey publicKey, final URL nodeUrl) {
+  KnownNode(final PublicKey publicKey, final URI nodeURI) {
     this.publicKey = Base64.encodeBytes(publicKey.bytesArray());
-    this.nodeUrl = nodeUrl.toString();
+    this.nodeURI = nodeURI.toString();
   }
 
   @JsonCreator
-  KnownNode(@JsonProperty("publicKey") final String publicKey, final @JsonProperty("nodeUrl") String nodeUrl) {
+  KnownNode(@JsonProperty("publicKey") final String publicKey, final @JsonProperty("nodeUrl") String nodeURI) {
     this.publicKey = publicKey;
-    this.nodeUrl = nodeUrl;
+    this.nodeURI = nodeURI;
   }
 
   @JsonProperty("publicKey")
@@ -42,8 +42,8 @@ class KnownNode {
   }
 
   @JsonProperty("nodeUrl")
-  String getNodeUrl() {
-    return nodeUrl;
+  String getNodeURI() {
+    return nodeURI;
   }
 
   @Override
@@ -55,11 +55,11 @@ class KnownNode {
       return false;
     }
     final KnownNode knownNode = (KnownNode) o;
-    return Objects.equal(publicKey, knownNode.publicKey) && Objects.equal(nodeUrl, knownNode.nodeUrl);
+    return Objects.equal(publicKey, knownNode.publicKey) && Objects.equal(nodeURI, knownNode.nodeURI);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(publicKey, nodeUrl);
+    return Objects.hashCode(publicKey, nodeURI);
   }
 }

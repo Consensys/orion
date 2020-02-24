@@ -23,7 +23,7 @@ import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
 import net.consensys.orion.exception.OrionErrorCode;
 import net.consensys.orion.helpers.StubEnclave;
 import net.consensys.orion.http.server.HttpContentType;
-import net.consensys.orion.network.ConcurrentNetworkNodes;
+import net.consensys.orion.network.PersistentNetworkNodes;
 import net.consensys.orion.payload.DistributePayloadManager;
 import net.consensys.orion.storage.EncryptedPayloadStorage;
 import net.consensys.orion.storage.PrivacyGroupStorage;
@@ -31,6 +31,7 @@ import net.consensys.orion.storage.QueryPrivacyGroupStorage;
 import net.consensys.orion.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.storage.StorageKeyBuilder;
+import net.consensys.orion.storage.StorageUtils;
 import net.consensys.orion.utils.Serializer;
 
 import java.io.IOException;
@@ -47,12 +48,14 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.concurrent.AsyncCompletion;
 import org.apache.tuweni.concurrent.CompletableAsyncCompletion;
+import org.apache.tuweni.crypto.sodium.Box;
 import org.apache.tuweni.junit.TempDirectory;
 import org.apache.tuweni.junit.TempDirectoryExtension;
 import org.apache.tuweni.kv.KeyValueStore;
-import org.apache.tuweni.kv.MapDBKeyValueStore;
+import org.apache.tuweni.kv.MapKeyValueStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -71,7 +74,7 @@ public abstract class HandlerTest {
   protected String clientBaseUrl;
 
   // these are re-built between tests
-  protected ConcurrentNetworkNodes networkNodes;
+  protected PersistentNetworkNodes networkNodes;
   protected Config config;
   protected Enclave enclave;
 
@@ -81,7 +84,7 @@ public abstract class HandlerTest {
   private Integer clientHTTPServerPort;
   private HttpServer clientHttpServer;
 
-  private KeyValueStore storage;
+  private KeyValueStore<Bytes, Bytes> storage;
   protected Storage<EncryptedPayload> payloadStorage;
   protected Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
   protected Storage<PrivacyGroupPayload> privacyGroupStorage;
@@ -99,11 +102,13 @@ public abstract class HandlerTest {
 
     // orion dependencies, reset them all between tests
     config = Config.load("tls='off'\nworkdir=\"" + tempDir + "\"");
-    networkNodes = new ConcurrentNetworkNodes(nodeHTTP.url());
+    storage = MapKeyValueStore.open();
+    networkNodes = new PersistentNetworkNodes(
+        config,
+        new Box.PublicKey[] {Box.KeyPair.random().publicKey()},
+        StorageUtils.convertToPubKeyStore(storage));
     enclave = buildEnclave(tempDir);
 
-    final Path path = tempDir.resolve("routerdb");
-    storage = MapDBKeyValueStore.open(path);
     // create our vertx object
     vertx = Vertx.vertx();
     final StorageKeyBuilder keyBuilder = new Sha512_256StorageKeyBuilder();
