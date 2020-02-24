@@ -119,15 +119,7 @@ public class Config {
    * @return Port to listen on for the Orion API
    */
   public int nodePort() {
-    String port = env.get(envKey("nodeport"));
-    if (port != null) {
-      try {
-        return Integer.parseInt(port);
-      } catch (NumberFormatException e) {
-        log.warn(e.getMessage(), e);
-      }
-    }
-    return configuration.getInteger("nodeport");
+    return getInteger("nodeport");
   }
 
   /**
@@ -157,15 +149,7 @@ public class Config {
    * @return Port to listen on for the client API
    */
   public int clientPort() {
-    String port = env.get(envKey("clientport"));
-    if (port != null) {
-      try {
-        return Integer.parseInt(port);
-      } catch (NumberFormatException e) {
-        log.warn(e.getMessage(), e);
-      }
-    }
-    return configuration.getInteger("clientport");
+    return getInteger("clientport");
   }
 
   /**
@@ -535,6 +519,18 @@ public class Config {
 
   private boolean contains(final String key) {
     return env.containsKey(envKey(key)) || configuration.contains(key);
+  }
+
+  private Integer getInteger(final String key) {
+    String valueStr = env.get(envKey(key));
+    if (valueStr != null) {
+      try {
+        return Integer.parseInt(valueStr);
+      } catch (NumberFormatException e) {
+        log.warn(e.getMessage(), e);
+      }
+    }
+    return configuration.getInteger(key);
   }
 
   private String getString(final String key) {
