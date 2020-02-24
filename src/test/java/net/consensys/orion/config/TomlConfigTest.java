@@ -42,7 +42,7 @@ class TomlConfigTest {
     assertEquals(9001, testConf.nodePort());
     assertEquals("0.0.0.0", testConf.nodeNetworkInterface());
     assertEquals("memory", testConf.storage());
-    assertEquals("memory", testConf.knownNodesStorage());
+    assertEquals("mapdb:knownnodesdb", testConf.knownNodesStorage());
     assertEquals("off", testConf.tls());
     assertEquals("ca-or-tofu", testConf.tlsServerTrust());
     assertEquals("ca", testConf.tlsClientTrust());
