@@ -45,7 +45,6 @@ import net.consensys.orion.storage.QueryPrivacyGroupStorage;
 import net.consensys.orion.storage.Sha512_256StorageKeyBuilder;
 import net.consensys.orion.storage.Storage;
 import net.consensys.orion.storage.StorageKeyBuilder;
-import net.consensys.orion.storage.StorageUtils;
 import net.consensys.orion.utils.Serializer;
 
 import java.nio.file.Path;
@@ -54,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
@@ -67,6 +67,7 @@ import org.apache.tuweni.junit.TempDirectory;
 import org.apache.tuweni.junit.TempDirectoryExtension;
 import org.apache.tuweni.kv.KeyValueStore;
 import org.apache.tuweni.kv.MapDBKeyValueStore;
+import org.apache.tuweni.kv.MapKeyValueStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -104,7 +105,8 @@ class DistributePayloadManagerTest {
     payloadStorage = new EncryptedPayloadStorage(storage, keyBuilder);
     privacyGroupStorage = new PrivacyGroupStorage(storage, enclave);
     queryPrivacyGroupStorage = new QueryPrivacyGroupStorage(storage, enclave);
-    networkNodes = new PersistentNetworkNodes(config, enclave.nodeKeys(), StorageUtils.convertToPubKeyStore(storage));
+    networkNodes =
+        new PersistentNetworkNodes(config, enclave.nodeKeys(), MapKeyValueStore.open(new ConcurrentHashMap<>()));
 
     distributePayloadManager = new DistributePayloadManager(
         enclave,
