@@ -43,6 +43,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -141,7 +142,10 @@ class DualNodesSendReceiveTest {
     final Box.PublicKey pk3 = Box.PublicKey.fromBytes(decodeBytes(pubKeyStrings.get(2)));
     final Box.PublicKey pk4 = Box.PublicKey.fromBytes(decodeBytes(pubKeyStrings.get(3)));
     final Box.PublicKey pk5 = Box.PublicKey.fromBytes(decodeBytes(pubKeyStrings.get(4)));
-    networkNodes = new PersistentNetworkNodes(firstNodeConfig, new Box.PublicKey[] {}, MapKeyValueStore.open());
+    networkNodes = new PersistentNetworkNodes(
+        firstNodeConfig,
+        new Box.PublicKey[] {},
+        MapKeyValueStore.open(new ConcurrentHashMap<>()));
     networkNodes.setNodeUrl(NodeUtils.uri("127.0.0.1", firstOrionLauncher.nodePort()), new Box.PublicKey[0]);
     Map<Box.PublicKey, URI> pks = new HashMap<>();
     pks.put(pk1, NodeUtils.uri("127.0.0.1", firstOrionLauncher.nodePort()));

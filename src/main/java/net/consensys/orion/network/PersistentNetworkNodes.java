@@ -80,11 +80,13 @@ public class PersistentNetworkNodes implements NetworkNodes {
     nodesPks.forEach(entry -> {
       Box.PublicKey nodePk = entry.getKey();
       URI nodeURI = entry.getValue();
-      completions.add(nodePKs.getAsync(nodePk).thenAccept(oldNodeURL -> {
+      completions.add(nodePKs.getAsync(nodePk).thenCompose(oldNodeURL -> {
         if (oldNodeURL == null) {
-          nodePKs.putAsync(nodePk, nodeURI);
+          AsyncCompletion completion = nodePKs.putAsync(nodePk, nodeURI);
           changed.set(true);
+          return completion;
         }
+        return AsyncCompletion.completed();
       }));
     });
     try {
