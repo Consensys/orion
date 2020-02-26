@@ -6,7 +6,7 @@ WORKDIR /opt/orion
 # Install libsodium
 RUN set -eux; \
     apt-get update; \
-    apt-get install -y --no-install-recommends libsodium18=1.0.11-2; \
+    apt-get install -y --no-install-recommends curl libsodium18=1.0.11-2; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 

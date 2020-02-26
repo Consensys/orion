@@ -207,7 +207,7 @@ jobs:
           name: build and test docker image
           command: |
             mkdir -p docker/reports
-            ./gradlew --no-daemon testDocker
+            ./gradlew --no-daemon testDocker testDockerHA
       - notify            
 
   upload-distribution:
