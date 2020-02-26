@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 class PersistentNetworkNodesTest {
 
   @Test
-  void testTwoInstancesSameStore() {
+  void testTwoInstancesSameStore() throws Exception {
     Config config = Config.load("tls='off'");
     MapKeyValueStore<Box.PublicKey, URI> store = MapKeyValueStore.open(new ConcurrentHashMap<>());
     PersistentNetworkNodes nodes1 = new PersistentNetworkNodes(config, new Box.PublicKey[0], store);
@@ -41,8 +41,10 @@ class PersistentNetworkNodesTest {
     Box.PublicKey pk = random().publicKey();
     boolean changed = nodes1.addNode(Collections.singletonMap(pk, URI.create("http://example:com:56666")).entrySet());
     assertTrue(changed);
+    Thread.sleep(1000);
 
     Iterator<Map.Entry<Box.PublicKey, URI>> iter = nodes2.nodePKs().iterator();
+    assertTrue(iter.hasNext());
     Map.Entry<Box.PublicKey, URI> entry = iter.next();
     assertEquals(pk, entry.getKey());
     assertFalse(iter.hasNext());
