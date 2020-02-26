@@ -41,7 +41,6 @@ class PersistentNetworkNodesTest {
     Box.PublicKey pk = random().publicKey();
     boolean changed = nodes1.addNode(Collections.singletonMap(pk, URI.create("http://example:com:56666")).entrySet());
     assertTrue(changed);
-    Thread.sleep(1000);
 
     Iterator<Map.Entry<Box.PublicKey, URI>> iter = nodes2.nodePKs().iterator();
     assertTrue(iter.hasNext());
