@@ -52,4 +52,11 @@ GOSS_FILES_PATH=tests/01 \
 bash tests/dgoss run --mount type=bind,source=$tmp_dir,target=/data $DOCKER_IMAGE /data/orion.conf \
 > ./reports/01.xml || i=`expr $i + 1`
 
+if [[ $i != 0 ]]; then exit $i; fi
+
+# Test for normal startup with clearing known hosts
+GOSS_FILES_PATH=tests/01 \
+bash tests/dgoss run --mount type=bind,source=$tmp_dir,target=/data $DOCKER_IMAGE /data/orion.conf --clear-known-nodes \
+> ./reports/01_clear.xml || i=`expr $i + 1`
+
 exit $i
