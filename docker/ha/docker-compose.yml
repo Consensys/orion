@@ -35,13 +35,27 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
+  # Same configuration as orion_1, but with environment variables
   orion_2:
     image: $DOCKER_IMAGE
     container_name: orion_2
     volumes:
-      - ./orion.conf:/etc/orion.conf
       - ./keys:/var/keys
-    command: /etc/orion.conf
+    environment:
+      - ORION_NODEURL=http://load_balancer:8080/
+      - ORION_NODEPORT=8080
+      - ORION_NODENETWORKINTERFACE=0.0.0.0
+      - ORION_CLIENTURL=http://load_balancer:8888/
+      - ORION_CLIENTPORT=8888
+      - ORION_CLIENTNETWORKINTERFACE=0.0.0.0
+      - ORION_PUBLICKEYS=/var/keys/nodeKey.pub
+      - ORION_PRIVATEKEYS=/var/keys/nodeKey.key
+      - ORION_PASSWORDS=/var/keys/passwordFile
+      - ORION_WORKDIR=/data
+      - ORION_TLS=off
+      - ORION_STORAGE=sql:jdbc:postgresql://postgres:5432/payloaddb
+      - ORION_KNOWNNODESSTORAGE=sql:jdbc:postgresql://postgres:5432/knownnodes
+
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/upcheck"]

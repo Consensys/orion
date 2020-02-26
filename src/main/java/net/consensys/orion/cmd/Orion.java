@@ -636,7 +636,7 @@ public class Orion {
 
   private static Config loadConfig(@Nullable final Path configFile) {
     if (configFile == null) {
-      log.warn("no config file provided, using default");
+      log.info("no config file provided, using default values or environment variables");
       return Config.defaultConfig();
     }
     log.info("using {} provided config file", configFile.toAbsolutePath());

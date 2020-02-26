@@ -3,6 +3,12 @@ set +x
 
 DOCKER_IMAGE=$1
 
+if [[ $# -eq 0 ]]; then
+  echo "[ERROR] No Docker image parameter passed"
+  echo "Usage: $0 <docker-image-tag>"
+  exit 1
+fi
+
 cd ha
 DOCKER_IMAGE="$DOCKER_IMAGE" docker-compose up -d
 i=0
