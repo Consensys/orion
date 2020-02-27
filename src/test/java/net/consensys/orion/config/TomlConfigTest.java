@@ -92,6 +92,8 @@ class TomlConfigTest {
     overrides.put("ORION_OTHERNODES", "foo,bar,noes");
     overrides.put("ORION_TLS", "on");
     overrides.put("ORION_TLSSERVERTRUST", "ca");
+    overrides.put("ORION_PASSWORDS", "/etc/pass");
+
     final Config testConf = Config.load(configAsStream, overrides);
 
     final URL expectedURL = new URL("http://192.168.0.1:10001/");
@@ -104,6 +106,7 @@ class TomlConfigTest {
 
     assertEquals("on", testConf.tls());
     assertEquals("ca", testConf.tlsServerTrust());
+    assertEquals(Paths.get("/etc/pass"), testConf.passwords().get());
   }
 
   @Test

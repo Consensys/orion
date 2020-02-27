@@ -534,7 +534,10 @@ public class Config {
   }
 
   private String getString(final String key) {
-    return env.getOrDefault(envKey(key), configuration.getString(key));
+    if (env.containsKey(envKey(key))) {
+      return env.get(envKey(key));
+    }
+    return configuration.getString(key);
   }
 
   private Optional<URL> getURL(final String key) {
