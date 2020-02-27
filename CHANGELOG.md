@@ -4,18 +4,6 @@
 
 From v1.4, Orion requires Java 11. Orion on Java 8 is no longer supported. 
 
-## 1.5 
-
-### Additions and Improvements 
-
-* [TLS support to secure Orion to Orion, and Orion to Hyperledger Besu communication](https://docs.orion.pegasys.tech/en/latest/Concepts/TLS-Communication/). 
-
-### Known Bugs 
-
-- Using `alwayssendto` makes privacy group ID calculation inconsistent [\#OR-357](https://pegasys1.atlassian.net/browse/OR-357)
-
-Workaround - Do not use `alwayssendto`.
-
 ## 1.5 RC 
 
 ### Additions and Improvements 
