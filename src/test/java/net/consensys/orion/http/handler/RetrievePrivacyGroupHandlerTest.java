@@ -82,7 +82,7 @@ public class RetrievePrivacyGroupHandlerTest extends HandlerTest {
         PrivacyGroupPayload.Type.PANTHEON);
 
     peer.addResponse(new MockResponse().setBody(encodeBytes(privacyGroupId)));
-    networkNodes.addNode(Collections.singletonMap(peer.publicKey, peer.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(peer.publicKey.bytes(), peer.getURI()).entrySet());
 
     final Response resp = httpClient.newCall(request).execute();
 

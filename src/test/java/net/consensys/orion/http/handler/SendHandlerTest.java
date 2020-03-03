@@ -93,7 +93,7 @@ class SendHandlerTest extends HandlerTest {
 
     // create fake peer
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), memoryKeyStore);
-    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
 
     // configureRoutes our sendRequest
     final Map<String, Object> sendRequest = buildRequest(Collections.singletonList(fakePeer), toEncrypt);

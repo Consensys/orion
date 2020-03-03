@@ -80,8 +80,8 @@ class KnownNodesHandlerTest extends HandlerTest {
   private List<KnownNode> createNodes() {
     try {
       final List<KnownNode> knownNodes = new ArrayList<>();
-      knownNodes.add(new KnownNode(KeyPair.random().publicKey(), URI.create("http://127.0.0.1:9001/")));
-      knownNodes.add(new KnownNode(KeyPair.random().publicKey(), URI.create("http://127.0.0.1:9002/")));
+      knownNodes.add(new KnownNode(KeyPair.random().publicKey().bytes(), URI.create("http://127.0.0.1:9001/")));
+      knownNodes.add(new KnownNode(KeyPair.random().publicKey().bytes(), URI.create("http://127.0.0.1:9002/")));
       return knownNodes;
     } catch (Exception e) {
       fail(e);
@@ -94,7 +94,7 @@ class KnownNodesHandlerTest extends HandlerTest {
       try {
         final PublicKey publicKey = PublicKey.fromBytes(Base64.decodeBytes(node.getPublicKey()));
         final URI nodeUri = URI.create(node.getNodeURI());
-        networkNodes.addNode(Collections.singletonMap(publicKey, nodeUri).entrySet());
+        networkNodes.addNode(Collections.singletonMap(publicKey.bytes(), nodeUri).entrySet());
       } catch (IllegalArgumentException e) {
         fail(e);
       }

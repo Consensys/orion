@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.concurrent.AsyncCompletion;
 import org.apache.tuweni.crypto.sodium.Box;
 import org.apache.tuweni.kv.KeyValueStore;
@@ -36,12 +37,12 @@ import org.slf4j.LoggerFactory;
 public class PersistentNetworkNodes implements NetworkNodes {
   private final static Logger logger = LoggerFactory.getLogger(PersistentNetworkNodes.class);
   private URI uri;
-  private final KeyValueStore<Box.PublicKey, URI> nodePKs;
+  private final KeyValueStore<Bytes, URI> nodePKs;
 
   public PersistentNetworkNodes(
       final Config config,
       final Box.PublicKey[] publicKeys,
-      final KeyValueStore<Box.PublicKey, URI> store) {
+      final KeyValueStore<Bytes, URI> store) {
     nodePKs = store;
     config.nodeUrl().ifPresent(nodeURL -> {
       try {
@@ -62,7 +63,7 @@ public class PersistentNetworkNodes implements NetworkNodes {
   public void setNodeUrl(final URI uri, final Box.PublicKey[] publicKeys) {
     this.uri = uri;
     try {
-      AsyncCompletion.allOf(Arrays.stream(publicKeys).map(pk -> nodePKs.putAsync(pk, uri))).join();
+      AsyncCompletion.allOf(Arrays.stream(publicKeys).map(pk -> nodePKs.putAsync(pk.bytes(), uri))).join();
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
@@ -73,12 +74,12 @@ public class PersistentNetworkNodes implements NetworkNodes {
    *
    * @param nodesPks List of PublicKeys of new node
    */
-  public boolean addNode(final Iterable<Map.Entry<Box.PublicKey, URI>> nodesPks) {
+  public boolean addNode(final Iterable<Map.Entry<Bytes, URI>> nodesPks) {
     logger.trace("addNode called");
     AtomicBoolean changed = new AtomicBoolean(false);
     List<AsyncCompletion> completions = new ArrayList<>();
     nodesPks.forEach(entry -> {
-      Box.PublicKey nodePk = entry.getKey();
+      Bytes nodePk = entry.getKey();
       URI nodeURI = entry.getValue();
       completions.add(nodePKs.getAsync(nodePk).thenCompose(oldNodeURL -> {
         if (oldNodeURL == null) {
@@ -105,14 +106,14 @@ public class PersistentNetworkNodes implements NetworkNodes {
   @Override
   public Collection<URI> nodeURIs() {
     Set<URI> allURIs = new HashSet<>();
-    for (Map.Entry<Box.PublicKey, URI> entry : nodePKs()) {
+    for (Map.Entry<Bytes, URI> entry : nodePKs()) {
       allURIs.add(entry.getValue());
     }
     return allURIs;
   }
 
   @Override
-  public URI uriForRecipient(final Box.PublicKey recipient) {
+  public URI uriForRecipient(final Bytes recipient) {
     try {
       return nodePKs.getAsync(recipient).get();
     } catch (InterruptedException e) {
@@ -122,9 +123,9 @@ public class PersistentNetworkNodes implements NetworkNodes {
   }
 
   @Override
-  public Iterable<Map.Entry<Box.PublicKey, URI>> nodePKs() {
+  public Iterable<Map.Entry<Bytes, URI>> nodePKs() {
     try {
-      Iterator<Box.PublicKey> iter = nodePKs.keysAsync().get().iterator();
+      Iterator<Bytes> iter = nodePKs.keysAsync().get().iterator();
       return () -> new Iterator<>() {
         @Override
         public boolean hasNext() {
@@ -132,12 +133,12 @@ public class PersistentNetworkNodes implements NetworkNodes {
         }
 
         @Override
-        public Map.Entry<Box.PublicKey, URI> next() {
-          Box.PublicKey key = iter.next();
+        public Map.Entry<Bytes, URI> next() {
+          Bytes key = iter.next();
           return new Map.Entry<>() {
 
             @Override
-            public Box.PublicKey getKey() {
+            public Bytes getKey() {
               return key;
             }
 

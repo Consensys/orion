@@ -18,7 +18,6 @@ import java.nio.charset.StandardCharsets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.crypto.sodium.Box;
 import org.apache.tuweni.kv.KeyValueStore;
 import org.apache.tuweni.kv.ProxyKeyValueStore;
 
@@ -29,16 +28,11 @@ public class StorageUtils {
 
   private StorageUtils() {}
 
-  public static KeyValueStore<Box.PublicKey, URI> convertToPubKeyStore(KeyValueStore<Bytes, Bytes> store) {
-    return ProxyKeyValueStore.open(
-        store,
-        Box.PublicKey::fromBytes,
-        Box.PublicKey::bytes,
-        StorageUtils::bytesToURI,
-        StorageUtils::uriToBytes);
+  public static KeyValueStore<Bytes, URI> convertToPubKeyStore(KeyValueStore<Bytes, Bytes> store) {
+    return ProxyKeyValueStore.open(store, a -> a, b -> b, StorageUtils::bytesToURI, StorageUtils::uriToBytes);
   }
 
-  private static Bytes uriToBytes(Box.PublicKey key, URI uri) {
+  private static Bytes uriToBytes(Bytes key, URI uri) {
     return Bytes.wrap(uri.toString().getBytes(StandardCharsets.UTF_8));
   }
 

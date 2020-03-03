@@ -64,7 +64,7 @@ public class SendRawHandlerWithNodeKeys extends SendRawHandlerTest {
     final String digest = encodeBytes(sha2_512_256(encryptedPayload.cipherText()));
 
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), memoryKeyStore);
-    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
     final String[] to = new String[] {encodeBytes(fakePeer.publicKey.bytesArray())};
 
     final Request request = new Request.Builder()

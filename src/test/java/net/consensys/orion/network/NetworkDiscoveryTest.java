@@ -33,6 +33,7 @@ import io.vertx.core.Vertx;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.SocketPolicy;
 import okio.Buffer;
+import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.concurrent.AsyncCompletion;
 import org.apache.tuweni.concurrent.CompletableAsyncCompletion;
 import org.apache.tuweni.crypto.sodium.Box;
@@ -46,7 +47,7 @@ class NetworkDiscoveryTest {
   private Vertx vertx;
   private PersistentNetworkNodes networkNodes;
   private Config config;
-  private KeyValueStore<Box.PublicKey, URI> store;
+  private KeyValueStore<Bytes, URI> store;
 
   @BeforeEach
   void setUp() {
@@ -85,7 +86,7 @@ class NetworkDiscoveryTest {
     // add peers
     final FakePeer fakePeer =
         new FakePeer(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE), Box.KeyPair.random().publicKey());
-    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
 
     // start network discovery
     final NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config, 50, 10);
@@ -119,14 +120,15 @@ class NetworkDiscoveryTest {
     // create a peer that we know, and that knows the lonely unknown peer.
     final ReadOnlyNetworkNodes knownPeerNetworkNodes = new ReadOnlyNetworkNodes(
         URI.create("http://www.example.com"),
-        Collections.singletonMap(unknownPeer.publicKey, unknownPeer.getURI()));
+        Collections.singletonMap(unknownPeer.publicKey.bytes(), unknownPeer.getURI()));
     final Buffer knownPeerBody = new Buffer();
     knownPeerBody.write(Serializer.serialize(CBOR, knownPeerNetworkNodes));
     final FakePeer knownPeer =
         new FakePeer(new MockResponse().setBody(knownPeerBody), Box.KeyPair.random().publicKey());
 
     // we know this peer, add it to our network nodes
-    boolean added = networkNodes.addNode(Collections.singletonMap(knownPeer.publicKey, knownPeer.getURI()).entrySet());
+    boolean added =
+        networkNodes.addNode(Collections.singletonMap(knownPeer.publicKey.bytes(), knownPeer.getURI()).entrySet());
     assertTrue(added);
     // start network discovery
     final Instant discoveryStart = Instant.now();
@@ -150,7 +152,7 @@ class NetworkDiscoveryTest {
 
     // ensure we now know unknownPeer
     int size = 0;
-    Iterator<Map.Entry<Box.PublicKey, URI>> iter = networkNodes.nodePKs().iterator();
+    Iterator<Map.Entry<Bytes, URI>> iter = networkNodes.nodePKs().iterator();
     while (iter.hasNext()) {
       size++;
       iter.next();

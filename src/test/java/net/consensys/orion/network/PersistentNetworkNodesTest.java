@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.crypto.sodium.Box;
 import org.apache.tuweni.kv.MapKeyValueStore;
 import org.junit.jupiter.api.Test;
@@ -32,50 +33,53 @@ import org.junit.jupiter.api.Test;
 class PersistentNetworkNodesTest {
 
   @Test
-  void testTwoInstancesSameStore() throws Exception {
+  void testTwoInstancesSameStore() {
     Config config = Config.load("tls='off'");
-    MapKeyValueStore<Box.PublicKey, URI> store = MapKeyValueStore.open(new ConcurrentHashMap<>());
+    MapKeyValueStore<Bytes, URI> store = MapKeyValueStore.open(new ConcurrentHashMap<>());
     PersistentNetworkNodes nodes1 = new PersistentNetworkNodes(config, new Box.PublicKey[0], store);
     PersistentNetworkNodes nodes2 = new PersistentNetworkNodes(config, new Box.PublicKey[0], store);
 
     Box.PublicKey pk = random().publicKey();
-    boolean changed = nodes1.addNode(Collections.singletonMap(pk, URI.create("http://example:com:56666")).entrySet());
+    boolean changed =
+        nodes1.addNode(Collections.singletonMap(pk.bytes(), URI.create("http://example:com:56666")).entrySet());
     assertTrue(changed);
 
-    Iterator<Map.Entry<Box.PublicKey, URI>> iter = nodes2.nodePKs().iterator();
+    Iterator<Map.Entry<Bytes, URI>> iter = nodes2.nodePKs().iterator();
     assertTrue(iter.hasNext());
-    Map.Entry<Box.PublicKey, URI> entry = iter.next();
-    assertEquals(pk, entry.getKey());
+    Map.Entry<Bytes, URI> entry = iter.next();
+    assertEquals(pk.bytes(), entry.getKey());
     assertFalse(iter.hasNext());
   }
 
   @Test
   void testTwoInstancesInSequence() {
     Config config = Config.load("tls='off'");
-    MapKeyValueStore<Box.PublicKey, URI> store = MapKeyValueStore.open(new ConcurrentHashMap<>());
+    MapKeyValueStore<Bytes, URI> store = MapKeyValueStore.open(new ConcurrentHashMap<>());
     PersistentNetworkNodes nodes1 = new PersistentNetworkNodes(config, new Box.PublicKey[0], store);
 
     Box.PublicKey pk = random().publicKey();
-    boolean changed = nodes1.addNode(Collections.singletonMap(pk, URI.create("http://example:com:56666")).entrySet());
+    boolean changed =
+        nodes1.addNode(Collections.singletonMap(pk.bytes(), URI.create("http://example:com:56666")).entrySet());
     assertTrue(changed);
 
     PersistentNetworkNodes nodes2 = new PersistentNetworkNodes(config, new Box.PublicKey[0], store);
-    Iterator<Map.Entry<Box.PublicKey, URI>> iter = nodes2.nodePKs().iterator();
-    Map.Entry<Box.PublicKey, URI> entry = iter.next();
-    assertEquals(pk, entry.getKey());
+    Iterator<Map.Entry<Bytes, URI>> iter = nodes2.nodePKs().iterator();
+    Map.Entry<Bytes, URI> entry = iter.next();
+    assertEquals(pk.bytes(), entry.getKey());
     assertFalse(iter.hasNext());
   }
 
   @Test
   void tryOverridingNodeInfo() {
     Config config = Config.load("tls='off'");
-    MapKeyValueStore<Box.PublicKey, URI> store = MapKeyValueStore.open(new ConcurrentHashMap<>());
+    MapKeyValueStore<Bytes, URI> store = MapKeyValueStore.open(new ConcurrentHashMap<>());
     PersistentNetworkNodes nodes = new PersistentNetworkNodes(config, new Box.PublicKey[0], store);
     Box.PublicKey pk = random().publicKey();
-    boolean changed = nodes.addNode(Collections.singletonMap(pk, URI.create("http://example:com:56666")).entrySet());
+    boolean changed =
+        nodes.addNode(Collections.singletonMap(pk.bytes(), URI.create("http://example:com:56666")).entrySet());
     assertTrue(changed);
 
-    changed = nodes.addNode(Collections.singletonMap(pk, URI.create("http://evil:com:56666")).entrySet());
+    changed = nodes.addNode(Collections.singletonMap(pk.bytes(), URI.create("http://evil:com:56666")).entrySet());
     assertFalse(changed);
 
     assertEquals(URI.create("http://example:com:56666"), nodes.uriForRecipient(pk));

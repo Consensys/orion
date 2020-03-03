@@ -17,7 +17,7 @@ import java.net.URI;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
-import org.apache.tuweni.crypto.sodium.Box.PublicKey;
+import org.apache.tuweni.bytes.Bytes;
 import org.postgresql.util.Base64;
 
 class KnownNode {
@@ -25,8 +25,8 @@ class KnownNode {
   private final String publicKey;
   private final String nodeURI;
 
-  KnownNode(final PublicKey publicKey, final URI nodeURI) {
-    this.publicKey = Base64.encodeBytes(publicKey.bytesArray());
+  KnownNode(final Bytes publicKey, final URI nodeURI) {
+    this.publicKey = Base64.encodeBytes(publicKey.toArrayUnsafe());
     this.nodeURI = nodeURI.toString();
   }
 
