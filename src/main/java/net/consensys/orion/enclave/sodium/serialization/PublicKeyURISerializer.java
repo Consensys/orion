@@ -12,7 +12,7 @@
  */
 package net.consensys.orion.enclave.sodium.serialization;
 
-import static org.apache.tuweni.io.Base64.encodeBytes;
+import static org.apache.tuweni.io.Base64.encode;
 
 import java.io.IOException;
 import java.net.URI;
@@ -21,18 +21,18 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.bytes.Bytes;
 
-public class PublicKeyURISerializer extends JsonSerializer<Iterable<Map.Entry<Box.PublicKey, URI>>> {
+public class PublicKeyURISerializer extends JsonSerializer<Iterable<Map.Entry<Bytes, URI>>> {
 
   @Override
   public void serialize(
-      final Iterable<Map.Entry<Box.PublicKey, URI>> entries,
+      final Iterable<Map.Entry<Bytes, URI>> entries,
       final JsonGenerator gen,
       final SerializerProvider serializers) throws IOException {
     gen.writeStartObject();
-    for (Map.Entry<Box.PublicKey, URI> entry : entries) {
-      gen.writeObjectField(encodeBytes(entry.getKey().bytesArray()), entry.getValue().toString());
+    for (Map.Entry<Bytes, URI> entry : entries) {
+      gen.writeObjectField(encode(entry.getKey()), entry.getValue().toString());
     }
     gen.writeEndObject();
   }

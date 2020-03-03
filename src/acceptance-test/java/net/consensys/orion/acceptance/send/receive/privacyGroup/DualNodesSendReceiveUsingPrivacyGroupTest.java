@@ -52,6 +52,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.crypto.sodium.Box;
 import org.apache.tuweni.junit.TempDirectory;
 import org.apache.tuweni.junit.TempDirectoryExtension;
@@ -129,9 +130,9 @@ class DualNodesSendReceiveUsingPrivacyGroupTest {
     final Box.PublicKey pk2 = Box.PublicKey.fromBytes(decodeBytes(PK_2_B_64));
     networkNodes = new PersistentNetworkNodes(firstNodeConfig, new Box.PublicKey[] {}, MapKeyValueStore.open());
     networkNodes.setNodeUrl(NodeUtils.uri("127.0.0.1", firstOrionLauncher.nodePort()), new Box.PublicKey[0]);
-    Map<Box.PublicKey, URI> pks = new HashMap<>();
-    pks.put(pk1, NodeUtils.uri("127.0.0.1", firstOrionLauncher.nodePort()));
-    pks.put(pk2, NodeUtils.uri("127.0.0.1", secondOrionLauncher.nodePort()));
+    Map<Bytes, URI> pks = new HashMap<>();
+    pks.put(pk1.bytes(), NodeUtils.uri("127.0.0.1", firstOrionLauncher.nodePort()));
+    pks.put(pk2.bytes(), NodeUtils.uri("127.0.0.1", secondOrionLauncher.nodePort()));
 
     networkNodes.addNode(pks.entrySet());
     // prepare /partyinfo payload (our known peers)

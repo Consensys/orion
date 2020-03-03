@@ -66,7 +66,7 @@ class SendRawHandlerTest extends HandlerTest {
     for (int i = 0; i < 5; i++) {
       final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), memoryKeyStore);
       // add peer push URL to networkNodes
-      networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
+      networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
       fakePeers.add(fakePeer);
     }
 
@@ -107,7 +107,7 @@ class SendRawHandlerTest extends HandlerTest {
     // create fake peers
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), memoryKeyStore);
     // add peer push URL to networkNodes
-    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
 
     // configureRoutes the binary sendRequest
     final RequestBody body =

@@ -26,24 +26,24 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.bytes.Bytes;
 
 public class ReadOnlyNetworkNodes implements NetworkNodes {
 
   private final URI uri;
-  private final Map<Box.PublicKey, URI> nodePKs;
+  private final Map<Bytes, URI> nodePKs;
 
   @JsonCreator
   public ReadOnlyNetworkNodes(
       @JsonProperty("uri") final URI uri,
       @JsonProperty("nodeURLs") List<URI> nodeURIs,
       @JsonProperty("nodePKs") @JsonDeserialize(
-          keyUsing = PublicKeyMapKeyDeserializer.class) final Map<Box.PublicKey, URI> nodePKs) {
+          keyUsing = PublicKeyMapKeyDeserializer.class) final Map<Bytes, URI> nodePKs) {
     this.uri = uri;
     this.nodePKs = new HashMap<>(nodePKs);
   }
 
-  public ReadOnlyNetworkNodes(URI uri, Map<Box.PublicKey, URI> nodePKs) {
+  public ReadOnlyNetworkNodes(URI uri, Map<Bytes, URI> nodePKs) {
     this(uri, Collections.emptyList(), nodePKs);
   }
 
@@ -58,12 +58,12 @@ public class ReadOnlyNetworkNodes implements NetworkNodes {
   }
 
   @Override
-  public Iterable<Map.Entry<Box.PublicKey, URI>> nodePKs() {
+  public Iterable<Map.Entry<Bytes, URI>> nodePKs() {
     return nodePKs.entrySet();
   }
 
   @Override
-  public URI uriForRecipient(final Box.PublicKey recipient) {
+  public URI uriForRecipient(final Bytes recipient) {
     return nodePKs.get(recipient);
   }
 

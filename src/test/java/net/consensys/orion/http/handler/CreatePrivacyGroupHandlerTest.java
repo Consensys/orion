@@ -69,7 +69,7 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
 
     // create fake peer
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey);
-    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
 
     // execute request
     final Response resp = httpClient.newCall(request).execute();
@@ -108,15 +108,15 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
     // create fake peers
     final FakePeer fakePeer1 =
         new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey1);
-    networkNodes.addNode(Collections.singletonMap(fakePeer1.publicKey, fakePeer1.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer1.publicKey.bytes(), fakePeer1.getURI()).entrySet());
 
     final FakePeer fakePeer2 =
         new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey2);
-    networkNodes.addNode(Collections.singletonMap(fakePeer2.publicKey, fakePeer2.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer2.publicKey.bytes(), fakePeer2.getURI()).entrySet());
 
     final FakePeer fakePeer3 =
         new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey3);
-    networkNodes.addNode(Collections.singletonMap(fakePeer3.publicKey, fakePeer3.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer3.publicKey.bytes(), fakePeer3.getURI()).entrySet());
 
     // execute request
     final Response resp = httpClient.newCall(request).execute();
@@ -152,7 +152,7 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
 
     // create fake peer
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey);
-    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
 
     // execute request
     final Response resp = httpClient.newCall(request).execute();
@@ -216,7 +216,7 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
 
     // create fake peer
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey);
-    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
 
     // execute request
     final Response resp = httpClient.newCall(request).execute();

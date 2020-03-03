@@ -37,9 +37,13 @@ class PartyInfoHandlerTest extends HandlerTest {
   @Test
   void successfulProcessingOfRequest() throws Exception {
     networkNodes.addNode(
-        Collections.singletonMap(Box.KeyPair.random().publicKey(), URI.create("http://127.0.0.1:9001/")).entrySet());
+        Collections
+            .singletonMap(Box.KeyPair.random().publicKey().bytes(), URI.create("http://127.0.0.1:9001/"))
+            .entrySet());
     networkNodes.addNode(
-        Collections.singletonMap(Box.KeyPair.random().publicKey(), URI.create("http://127.0.0.1:9002/")).entrySet());
+        Collections
+            .singletonMap(Box.KeyPair.random().publicKey().bytes(), URI.create("http://127.0.0.1:9002/"))
+            .entrySet());
 
     // prepare /partyinfo payload (our known peers)
     final RequestBody partyInfoBody =
@@ -62,7 +66,7 @@ class PartyInfoHandlerTest extends HandlerTest {
   void roundTripSerialization() throws Exception {
     final ReadOnlyNetworkNodes networkNodes = new ReadOnlyNetworkNodes(
         URI.create("http://localhost:1234/"),
-        Collections.singletonMap(Box.KeyPair.random().publicKey(), URI.create("http://localhost/")));
+        Collections.singletonMap(Box.KeyPair.random().publicKey().bytes(), URI.create("http://localhost/")));
     assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.CBOR, ReadOnlyNetworkNodes.class, networkNodes));
     assertEquals(networkNodes, Serializer.roundTrip(HttpContentType.JSON, ReadOnlyNetworkNodes.class, networkNodes));
   }
@@ -70,9 +74,13 @@ class PartyInfoHandlerTest extends HandlerTest {
   @Test
   void partyInfoWithInvalidContentType() throws Exception {
     networkNodes.addNode(
-        Collections.singletonMap(Box.KeyPair.random().publicKey(), URI.create("http://127.0.0.1:9001/")).entrySet());
+        Collections
+            .singletonMap(Box.KeyPair.random().publicKey().bytes(), URI.create("http://127.0.0.1:9001/"))
+            .entrySet());
     networkNodes.addNode(
-        Collections.singletonMap(Box.KeyPair.random().publicKey(), URI.create("http://127.0.0.1:9002/")).entrySet());
+        Collections
+            .singletonMap(Box.KeyPair.random().publicKey().bytes(), URI.create("http://127.0.0.1:9002/"))
+            .entrySet());
 
     // prepare /partyinfo payload (our known peers) with invalid content type (json)
     final RequestBody partyInfoBody =

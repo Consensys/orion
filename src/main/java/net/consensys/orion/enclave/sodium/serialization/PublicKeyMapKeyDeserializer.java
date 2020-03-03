@@ -12,16 +12,16 @@
  */
 package net.consensys.orion.enclave.sodium.serialization;
 
-import static org.apache.tuweni.io.Base64.decodeBytes;
+import static org.apache.tuweni.io.Base64.decode;
 
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.KeyDeserializer;
-import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.bytes.Bytes;
 
 public final class PublicKeyMapKeyDeserializer extends KeyDeserializer {
 
   @Override
-  public Box.PublicKey deserializeKey(final String key, final DeserializationContext ctxt) {
-    return Box.PublicKey.fromBytes(decodeBytes(key));
+  public Bytes deserializeKey(final String key, final DeserializationContext ctxt) {
+    return decode(key);
   }
 }

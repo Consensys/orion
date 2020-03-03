@@ -126,7 +126,7 @@ class DistributePayloadManagerTest {
   @Test
   public void failsWhenBadResponseFromPeer(final VertxTestContext testContext) throws Exception {
     final FakePeer fakePeer = new FakePeer(new MockResponse().setResponseCode(500), memoryKeyStore);
-    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
 
     final SendRequest request = buildLegacyRequest(Collections.singletonList(fakePeer), "foo".getBytes(UTF_8));
     final OrionException expectedException = new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS);
@@ -140,7 +140,7 @@ class DistributePayloadManagerTest {
   @Test
   public void failsWhenBadDigestFromPeer(final VertxTestContext testContext) throws Exception {
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody("not the best digest"), memoryKeyStore);
-    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
 
     final SendRequest request = buildLegacyRequest(Collections.singletonList(fakePeer), "foo".getBytes(UTF_8));
     final OrionException expectedException = new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS);
@@ -211,7 +211,7 @@ class DistributePayloadManagerTest {
 
     // create fake peer
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), memoryKeyStore);
-    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
 
     final SendRequest request = buildLegacyRequest(Collections.singletonList(fakePeer), toEncrypt);
 
@@ -239,7 +239,7 @@ class DistributePayloadManagerTest {
     for (int i = 0; i < 5; i++) {
       final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), memoryKeyStore);
       // add peer push URL to networkNodes
-      networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
+      networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
       fakePeers.add(fakePeer);
     }
 
@@ -271,7 +271,7 @@ class DistributePayloadManagerTest {
 
     // create fake peer
     final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), recipientKey);
-    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
 
     final String from = encodeBytes(senderKey.bytesArray());
     final String to = encodeBytes(fakePeer.publicKey.bytesArray());
@@ -315,7 +315,7 @@ class DistributePayloadManagerTest {
     for (int i = 0; i < numOfPeers; i++) {
       // create fake peer
       final FakePeer fakePeer = new FakePeer(new MockResponse().setBody(digest), recipientKeys[i]);
-      networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
+      networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
       fakePeers.add(fakePeer);
     }
 
