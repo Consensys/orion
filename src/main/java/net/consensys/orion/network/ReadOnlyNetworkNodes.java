@@ -35,7 +35,7 @@ public class ReadOnlyNetworkNodes implements NetworkNodes {
 
   @JsonCreator
   public ReadOnlyNetworkNodes(
-      @JsonProperty("uri") final URI uri,
+      @JsonProperty("url") final URI uri,
       @JsonProperty("nodeURLs") List<URI> nodeURIs,
       @JsonProperty("nodePKs") @JsonDeserialize(
           keyUsing = PublicKeyMapKeyDeserializer.class) final Map<Bytes, URI> nodePKs) {
