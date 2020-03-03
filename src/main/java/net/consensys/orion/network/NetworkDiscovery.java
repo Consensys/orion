@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
@@ -119,6 +120,7 @@ public class NetworkDiscovery extends AbstractVerticle {
     long attempts = 0;
     private long timerId;
     private final boolean self;
+    private final AtomicBoolean scheduled = new AtomicBoolean(false);
 
     Discoverer(final URI nodeUrl, final long refreshDelayMs, final boolean self) {
       this.nodeUrl = nodeUrl;
@@ -130,7 +132,7 @@ public class NetworkDiscovery extends AbstractVerticle {
     public void handle(final Long timerId) {
       // This is called on timer event, in the event loop of the Verticle (NetworkDiscovery)
       // we call /partyInfo API on the peer and update NetworkDiscovery state if needed
-
+      scheduled.set(false);
       if (self) {
         log.trace("updating discoverers (local discovery)");
         updateDiscoverers();
@@ -168,14 +170,20 @@ public class NetworkDiscovery extends AbstractVerticle {
       }
     }
 
-    public void engageNextTimerTick() {
-      currentRefreshDelay = (long) ((double) currentRefreshDelay * 2.0);
-      currentRefreshDelay = Math.min(currentRefreshDelay, MAX_REFRESH_DELAY_MS);
-
-      this.timerId = vertx.setTimer(currentRefreshDelay, this);
+    void engageNextTimerTick() {
+      if (scheduled.compareAndSet(false, true)) {
+        currentRefreshDelay = (long) ((double) currentRefreshDelay * 2.0);
+        currentRefreshDelay = Math.min(currentRefreshDelay, MAX_REFRESH_DELAY_MS);
+        this.timerId = vertx.setTimer(currentRefreshDelay, this);
+      }
     }
 
-    public void cancel() {
+    @Override
+    public String toString() {
+      return this.nodeUrl.toString();
+    }
+
+    void cancel() {
       vertx.cancelTimer(timerId);
     }
   }
