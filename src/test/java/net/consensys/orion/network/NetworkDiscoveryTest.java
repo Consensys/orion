@@ -82,6 +82,30 @@ class NetworkDiscoveryTest {
   }
 
   @Test
+  void networkDiscoveryWithPeersOverTime() throws Exception {
+    Config config = Config.load("tls=\"off\"\nothernodes=[\"http://127.1.1.1:8080/\",\"http://192.168.1.2:8080/\"]");
+    // add peers
+    final FakePeer fakePeer =
+        new FakePeer(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE), Box.KeyPair.random().publicKey());
+    final FakePeer fakePeer2 =
+        new FakePeer(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE), Box.KeyPair.random().publicKey());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer2.publicKey.bytes(), fakePeer2.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer2.publicKey.bytes(), fakePeer.getURI()).entrySet());
+
+    // start network discovery
+    final NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config);
+    assertEquals(0, networkDiscovery.discoverers().size());
+    deployVerticle(networkDiscovery).join();
+    assertEquals(4, networkDiscovery.discoverers().size());
+    Thread.sleep(10 * (networkDiscovery.discoverers().values().iterator().next().currentRefreshDelay + 1000));
+    assertEquals(4, networkDiscovery.discoverers().size());
+    for (NetworkDiscovery.Discoverer discoverer : networkDiscovery.discoverers().values()) {
+      assertTrue(discoverer.attempts >= 3);
+    }
+  }
+
+  @Test
   void networkDiscoveryWithUnresponsivePeer() throws Exception {
     // add peers
     final FakePeer fakePeer =

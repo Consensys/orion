@@ -30,7 +30,7 @@ public interface NetworkNodes {
   /**
    * @return URL of node
    */
-  @JsonProperty("uri")
+  @JsonProperty("url")
   URI uri();
 
   /**
