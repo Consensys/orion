@@ -89,9 +89,9 @@ class NetworkDiscoveryTest {
         new FakePeer(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE), Box.KeyPair.random().publicKey());
     final FakePeer fakePeer2 =
         new FakePeer(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE), Box.KeyPair.random().publicKey());
-    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey, fakePeer.getURI()).entrySet());
-    networkNodes.addNode(Collections.singletonMap(fakePeer2.publicKey, fakePeer2.getURI()).entrySet());
-    networkNodes.addNode(Collections.singletonMap(fakePeer2.publicKey, fakePeer.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer2.publicKey.bytes(), fakePeer2.getURI()).entrySet());
+    networkNodes.addNode(Collections.singletonMap(fakePeer2.publicKey.bytes(), fakePeer.getURI()).entrySet());
 
     // start network discovery
     final NetworkDiscovery networkDiscovery = new NetworkDiscovery(networkNodes, config);
