@@ -101,7 +101,7 @@ class NetworkDiscoveryTest {
     Thread.sleep(10 * (networkDiscovery.discoverers().values().iterator().next().currentRefreshDelay + 1000));
     assertEquals(4, networkDiscovery.discoverers().size());
     for (NetworkDiscovery.Discoverer discoverer : networkDiscovery.discoverers().values()) {
-      assertEquals(4, discoverer.attempts);
+      assertTrue(discoverer.attempts >= 3);
     }
   }
 
