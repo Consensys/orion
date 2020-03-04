@@ -25,11 +25,14 @@ import org.apache.tuweni.net.tls.VertxTrustOptions;
 
 public class NodeHttpClientBuilder {
 
+  private static final int MAX_WAIT_QUEUE_SIZE = 32;
+
   private NodeHttpClientBuilder() {}
 
   public static HttpClient build(final Vertx vertx, final Config config, final int clientTimeoutMs) {
     final HttpClientOptions options =
-        new HttpClientOptions().setConnectTimeout(clientTimeoutMs).setIdleTimeout(clientTimeoutMs);
+        new HttpClientOptions().setConnectTimeout(clientTimeoutMs).setIdleTimeout(clientTimeoutMs).setMaxWaitQueueSize(
+            MAX_WAIT_QUEUE_SIZE);
 
     if ("strict".equals(config.tls())) {
       final Path workDir = config.workDir();
