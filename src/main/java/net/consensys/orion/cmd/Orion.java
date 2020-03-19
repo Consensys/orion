@@ -497,7 +497,7 @@ public class Orion {
         clientOptions.setClientAuth(ClientAuth.REQUIRED);
         clientOptions.setPemKeyCertOptions(pemKeyCertOptions);
 
-        options.setPemTrustOptions(createPemTrustOptions(config.clientConnectionTlsServerChain()));
+        clientOptions.setPemTrustOptions(createPemTrustOptions(config.clientConnectionTlsServerChain()));
 
         createTrustOptions(
             config.clientConnectionTlsServerTrust().toLowerCase(),
