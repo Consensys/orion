@@ -8,7 +8,7 @@ From v1.4, Orion requires Java 11. Orion on Java 8 is no longer supported.
 
 ## Additions and Improvements 
 
-* Moved Orion peer table to persistent storage to support [high availability configurations](https://docs.orion.pegasys.tech/en/latest/HowTo/High-Availability/) [\#332](https://github.com/PegaSysEng/orion/pull/332)
+* Added option to move Orion peer table to persistent storage to support [high availability configurations](https://docs.orion.pegasys.tech/en/latest/HowTo/High-Availability/) [\#332](https://github.com/PegaSysEng/orion/pull/332)
 * Added [environment variables](https://docs.orion.pegasys.tech/en/latest/Reference/Configuration-File/) to support Orion deployment [\#332](https://github.com/PegaSysEng/orion/pull/332)
 
 ## 1.5 
