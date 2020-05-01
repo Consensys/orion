@@ -153,7 +153,7 @@ public class OrionProcessRunner {
 
   private void awaitPortsFile(final Path dataDir) {
     final File file = new File(dataDir.toFile(), PORTS_FILENAME);
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS).until(() -> {
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> {
       if (file.exists()) {
         try (final Stream<String> s = Files.lines(file.toPath())) {
           return s.count() > 0;
