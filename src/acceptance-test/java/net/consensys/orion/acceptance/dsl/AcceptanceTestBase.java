@@ -30,21 +30,17 @@ public class AcceptanceTestBase {
   public void waitForClientInterconnect(final int timeoutSeconds, final OrionNode... nodes) {
     final List<OrionNode> nodeList = Lists.newArrayList(nodes);
 
-    // The value reported by PeerCount _appears_ to be calculated by adding:
-    // 1. Yourself
-    // 2. The number of keys reported by remote peers
-    // 3. The number of bootnodes specified
-
-    final int expectedKeyEndpoints = nodeList.stream().map(OrionNode::getPublicKeyCount).reduce(0, Integer::sum);
+    final int expectedKeyEndpoints = nodeList.size();
 
     for (final OrionNode node : nodeList) {
-      //
-      final int expectedPeerCount = expectedKeyEndpoints - node.getPublicKeyCount() + 1 + node.getBootnodeCount();
-      Awaitility.waitAtMost(timeoutSeconds, TimeUnit.SECONDS).until(() -> node.peerCount() == expectedPeerCount);
+      Awaitility.waitAtMost(timeoutSeconds, TimeUnit.SECONDS).until(() -> {
+        System.out.println("COUNT: " + node.peerCount() + "   EXPECTED: " + expectedKeyEndpoints);
+        return node.peerCount() == expectedKeyEndpoints;
+      });
     }
   }
 
   public void waitForClientInterconnect(final OrionNode... nodes) {
-    waitForClientInterconnect(5, nodes);
+    waitForClientInterconnect(30, nodes);
   }
 }
