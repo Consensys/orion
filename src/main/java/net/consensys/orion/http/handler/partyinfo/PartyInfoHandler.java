@@ -40,7 +40,6 @@ public class PartyInfoHandler implements Handler<RoutingContext> {
     routingContext.response().end(toReturn);
 
     // merge callerPeers into our peers
-    System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& PARTY INFO HANDLER");
     networkNodes.merge(callerPeers);
   }
 }
