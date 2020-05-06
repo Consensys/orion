@@ -27,6 +27,7 @@ import net.consensys.orion.http.handler.privacy.PrivacyGroupRequest;
 import net.consensys.orion.utils.Serializer;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.crypto.sodium.Box;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +45,6 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
   private MemoryKeyStore memoryKeyStore;
   private String privacyGroupId;
   private FakePeer fakePeer;
-  private Box.PublicKey senderKey;
 
   @Override
   protected Enclave buildEnclave(final Path tempDir) {
@@ -55,13 +56,12 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
 
   @BeforeEach
   void setup() throws IOException, InterruptedException {
-    senderKey = memoryKeyStore.generateKeyPair();
     final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
 
-    final String[] toEncrypt =
+    final String[] addresses =
         new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
     final PrivacyGroupRequest privacyGroupRequestExpected =
-        buildPrivacyGroupRequest(toEncrypt, encodeBytes(senderKey.bytesArray()), "test", "desc");
+        buildPrivacyGroupRequest(addresses, encodeBytes(senderKey.bytesArray()), "test", "desc");
     final Request request = buildPrivateAPIRequest("/createPrivacyGroup", JSON, privacyGroupRequestExpected);
 
     final byte[] privacyGroupPayload = enclave.generatePrivacyGroupId(
@@ -71,6 +71,7 @@ public class DeletePrivacyGroupHandlerTest extends HandlerTest {
 
     // create fake peer
     fakePeer = new FakePeer(new MockResponse().setBody(encodeBytes(privacyGroupPayload)), recipientKey);
+
     networkNodes.addNode(Collections.singletonMap(fakePeer.publicKey.bytes(), fakePeer.getURI()).entrySet());
 
     // execute request

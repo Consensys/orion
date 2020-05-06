@@ -48,7 +48,7 @@ public class RetrievePrivacyGroupHandlerTest extends HandlerTest {
   private final MemoryKeyStore memoryKeyStore = new MemoryKeyStore();
   private String privacyGroupId;
   private FakePeer peer;
-  private Box.PublicKey senderKey;
+  private Box.PublicKey recipientKey;
   private String[] privacyGroupMembers;
 
   @Override
@@ -59,11 +59,11 @@ public class RetrievePrivacyGroupHandlerTest extends HandlerTest {
 
   @BeforeEach
   void setup() throws IOException {
-    senderKey = memoryKeyStore.generateKeyPair();
-    final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
+    recipientKey = memoryKeyStore.generateKeyPair();
 
     privacyGroupMembers = new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};
     peer = new FakePeer(recipientKey);
+    networkNodes.addNode(Collections.singletonMap(recipientKey.bytes(), peer.getURI()).entrySet());
 
     privacyGroupId = createPrivacyGroupId(recipientKey);
   }
@@ -82,7 +82,6 @@ public class RetrievePrivacyGroupHandlerTest extends HandlerTest {
         PrivacyGroupPayload.Type.PANTHEON);
 
     peer.addResponse(new MockResponse().setBody(encodeBytes(privacyGroupId)));
-    networkNodes.addNode(Collections.singletonMap(peer.publicKey.bytes(), peer.getURI()).entrySet());
 
     final Response resp = httpClient.newCall(request).execute();
 

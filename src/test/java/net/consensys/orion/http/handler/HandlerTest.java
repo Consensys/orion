@@ -36,6 +36,8 @@ import net.consensys.orion.utils.Serializer;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 import io.vertx.core.Vertx;
@@ -78,6 +80,8 @@ public abstract class HandlerTest {
   protected Config config;
   protected Enclave enclave;
 
+  protected Box.PublicKey senderKey;
+
   private Vertx vertx;
   private Integer nodeHTTPServerPort;
   private HttpServer nodeHttpServer;
@@ -101,12 +105,12 @@ public abstract class HandlerTest {
     nodeBaseUrl = nodeHTTP.toString();
 
     // orion dependencies, reset them all between tests
-    config = Config.load("tls='off'\nworkdir=\"" + tempDir + "\"");
+    config = Config.load("tls='off'\nworkdir=\"" + tempDir + "\"" + "\nnodeurl=\"http://10.62.12.12:98876\"");
     storage = MapKeyValueStore.open();
-    networkNodes = new PersistentNetworkNodes(
-        config,
-        new Box.PublicKey[] {Box.KeyPair.random().publicKey()},
-        StorageUtils.convertToPubKeyStore(storage));
+    senderKey = Box.PublicKey.fromBytes(
+        new byte[32]);
+    networkNodes =
+        new PersistentNetworkNodes(config, new Box.PublicKey[] {senderKey}, StorageUtils.convertToPubKeyStore(storage));
     enclave = buildEnclave(tempDir);
 
     // create our vertx object

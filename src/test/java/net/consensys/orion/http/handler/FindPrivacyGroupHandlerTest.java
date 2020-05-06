@@ -46,7 +46,6 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
   private MemoryKeyStore memoryKeyStore;
   private String privacyGroupId;
   private FakePeer fakePeer;
-  private Box.PublicKey senderKey;
   private String[] toEncrypt;
   private final String name = "testName";
   private final String description = "testDescription";
@@ -61,7 +60,6 @@ public class FindPrivacyGroupHandlerTest extends HandlerTest {
 
   @BeforeEach
   void setup() throws IOException, InterruptedException {
-    senderKey = memoryKeyStore.generateKeyPair();
     final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
 
     toEncrypt = new String[] {encodeBytes(senderKey.bytesArray()), encodeBytes(recipientKey.bytesArray())};

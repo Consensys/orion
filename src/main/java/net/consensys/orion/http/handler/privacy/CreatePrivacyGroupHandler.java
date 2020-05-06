@@ -15,7 +15,6 @@ package net.consensys.orion.http.handler.privacy;
 import static net.consensys.orion.http.server.HttpContentType.JSON;
 
 import net.consensys.orion.config.Config;
-import net.consensys.orion.enclave.Enclave;
 import net.consensys.orion.enclave.PrivacyGroupPayload;
 import net.consensys.orion.enclave.QueryPrivacyGroupPayload;
 import net.consensys.orion.exception.OrionErrorCode;
@@ -40,7 +39,7 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.tuweni.crypto.sodium.Box;
+import org.apache.tuweni.bytes.Bytes;
 
 /**
  * Create a privacyGroup given the list of addresses.
@@ -52,20 +51,17 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
   private final Storage<PrivacyGroupPayload> privacyGroupStorage;
   private final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage;
   private final PersistentNetworkNodes networkNodes;
-  private final Enclave enclave;
   private final HttpClient httpClient;
 
   public CreatePrivacyGroupHandler(
       final Storage<PrivacyGroupPayload> privacyGroupStorage,
       final Storage<QueryPrivacyGroupPayload> queryPrivacyGroupStorage,
       final PersistentNetworkNodes networkNodes,
-      final Enclave enclave,
       final Vertx vertx,
       final Config config) {
     this.privacyGroupStorage = privacyGroupStorage;
     this.queryPrivacyGroupStorage = queryPrivacyGroupStorage;
     this.networkNodes = networkNodes;
-    this.enclave = enclave;
     this.httpClient = NodeHttpClientBuilder.build(vertx, config, 1500);
   }
 
@@ -102,25 +98,27 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
         bytes);
     final String privacyGroupId = privacyGroupStorage.generateDigest(privacyGroupPayload);
 
-    final List<Box.PublicKey> addressListToForward = Arrays
-        .stream(privacyGroupRequest.addresses())
-        .filter(key -> !key.equals(privacyGroupRequest.from())) // don't forward to self
-        .distinct()
-        .map(enclave::readKey)
-        .collect(Collectors.toList());
-
-    if (addressListToForward.stream().anyMatch(pKey -> networkNodes.uriForRecipient(pKey) == null)) {
+    final URI myUri = networkNodes.uriForRecipient(Bytes.fromBase64String(privacyGroupRequest.from()));
+    final List<URI> addressListToForward;
+    try {
+      addressListToForward = Arrays
+          .stream(privacyGroupRequest.addresses())
+          .map(key -> networkNodes.uriForRecipient(Bytes.fromBase64String(key)))
+          .filter(uri -> !uri.equals(myUri))
+          .distinct()
+          .collect(Collectors.toList());
+    } catch (final NullPointerException npe) {
       routingContext.fail(new OrionException(OrionErrorCode.NODE_MISSING_PEER_URL, "couldn't find peer URL "));
       return;
     }
+
     // propagate payload
     log.debug("propagating payload");
 
     @SuppressWarnings("rawtypes")
-    final CompletableFuture[] cfs = addressListToForward.stream().map(pKey -> {
-      URI recipientURL = networkNodes.uriForRecipient(pKey);
+    final CompletableFuture[] cfs = addressListToForward.stream().map(recipientURL -> {
 
-      log.info("Propagating create request to {} with URL {}", pKey, recipientURL.toString());
+      log.info("Propagating create request with URL {}", recipientURL.toString());
 
       final CompletableFuture<Boolean> responseFuture = new CompletableFuture<>();
 
@@ -132,7 +130,7 @@ public class CreatePrivacyGroupHandler implements Handler<RoutingContext> {
           .post(recipientURL.getPort(), recipientURL.getHost(), "/pushPrivacyGroup")
           .putHeader("Content-Type", "application/cbor")
           .handler(response -> response.bodyHandler(responseBody -> {
-            log.info("{} with URL {} responded with {}", pKey, recipientURL.toString(), response.statusCode());
+            log.info("URL {} responded with {}", recipientURL.toString(), response.statusCode());
             if (response.statusCode() != 200 || !privacyGroupId.equals(responseBody.toString())) {
               responseFuture.completeExceptionally(new OrionException(OrionErrorCode.NODE_PROPAGATING_TO_ALL_PEERS));
             } else {
