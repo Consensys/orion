@@ -33,10 +33,7 @@ public class AcceptanceTestBase {
     final int expectedKeyEndpoints = nodeList.size();
 
     for (final OrionNode node : nodeList) {
-      Awaitility.waitAtMost(timeoutSeconds, TimeUnit.SECONDS).until(() -> {
-        System.out.println("COUNT: " + node.peerCount() + "   EXPECTED: " + expectedKeyEndpoints);
-        return node.peerCount() == expectedKeyEndpoints;
-      });
+      Awaitility.waitAtMost(timeoutSeconds, TimeUnit.SECONDS).until(() -> node.peerCount() == expectedKeyEndpoints);
     }
   }
 
