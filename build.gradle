@@ -160,7 +160,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
   from javadoc.destinationDir
 }
 
-task acceptanceTest(type: Test) {
+task acceptanceTest(type: Test, dependsOn: installDist) {
   description = 'Runs the acceptance tests'
   group = 'verification'
   useJUnitPlatform()

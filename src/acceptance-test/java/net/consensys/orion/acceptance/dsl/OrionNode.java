@@ -67,12 +67,32 @@ public class OrionNode {
     return publicKeys.size();
   }
 
-  public String sendData(final byte[] data, final Box.PublicKey sender, final PublicKey... recipients)
+  public String sendDataLegacy(final byte[] data, final Box.PublicKey sender, final Box.PublicKey... recipients)
       throws IOException {
 
-    final JsonObject responseJson = createSendRequest(data, sender, recipients);
+    final JsonObject responseJson = createSendRequestLegacy(data, sender, recipients);
 
     return responseJson.getString("key");
+  }
+
+  public String sendDataPrivacyGroup(final byte[] data, final Box.PublicKey sender, final String privacyGroupId)
+      throws IOException {
+
+    final JsonObject responseJson = createSendRequestPrivacyGroup(data, sender, privacyGroupId);
+
+    return responseJson.getString("key");
+  }
+
+  public String createPrivacyGroup(
+      final Box.PublicKey sender,
+      final String name,
+      final String description,
+      final Box.PublicKey... members) throws IOException {
+
+    final JsonObject responseJson = createPrivacyGroupRequest(sender, name, description, members);
+
+    return responseJson.getString("privacyGroupId");
+
   }
 
   public byte[] extractDataItem(final String dataKey, final Box.PublicKey identity) throws IOException {
@@ -105,8 +125,10 @@ public class OrionNode {
     return new JsonObject(response.body().string());
   }
 
-  private JsonObject createSendRequest(final byte[] payload, final Box.PublicKey sender, final PublicKey... recipients)
-      throws IOException {
+  private JsonObject createSendRequestLegacy(
+      final byte[] payload,
+      final Box.PublicKey sender,
+      final PublicKey... recipients) throws IOException {
     final List<PublicKey> to = Lists.newArrayList(recipients);
     final Map<String, Object> map = new HashMap<>();
     map.put("payload", payload);
@@ -117,6 +139,46 @@ public class OrionNode {
     final RequestBody requestBody =
         RequestBody.create(MediaType.parse(HttpContentType.JSON.toString()), jsonToSend.encode());
     final Request request = new Request.Builder().url(clientUrl() + "/send").post(requestBody).build();
+    final Response response = httpClient.newCall(request).execute();
+
+    return new JsonObject(response.body().string());
+  }
+
+  private JsonObject createSendRequestPrivacyGroup(
+      final byte[] payload,
+      final Box.PublicKey sender,
+      final String privacyGroupId) throws IOException {
+    final Map<String, Object> map = new HashMap<>();
+    map.put("payload", payload);
+    map.put("from", Base64.encodeBytes(sender.bytesArray()));
+    map.put("privacyGroupId", privacyGroupId);
+
+    final JsonObject jsonToSend = new JsonObject(map);
+    final RequestBody requestBody =
+        RequestBody.create(MediaType.parse(HttpContentType.JSON.toString()), jsonToSend.encode());
+    final Request request = new Request.Builder().url(clientUrl() + "/send").post(requestBody).build();
+    final Response response = httpClient.newCall(request).execute();
+
+    return new JsonObject(response.body().string());
+  }
+
+
+  private JsonObject createPrivacyGroupRequest(
+      final Box.PublicKey sender,
+      final String name,
+      final String description,
+      final PublicKey... members) throws IOException {
+    final List<PublicKey> to = Lists.newArrayList(members);
+    final Map<String, Object> map = new HashMap<>();
+    map.put("name", name);
+    map.put("description", description);
+    map.put("from", Base64.encodeBytes(sender.bytesArray()));
+    map.put("addresses", to.stream().map(t -> Base64.encodeBytes(t.bytesArray())).toArray());
+
+    final JsonObject jsonToSend = new JsonObject(map);
+    final RequestBody requestBody =
+        RequestBody.create(MediaType.parse(HttpContentType.JSON.toString()), jsonToSend.encode());
+    final Request request = new Request.Builder().url(clientUrl() + "/createPrivacyGroup").post(requestBody).build();
     final Response response = httpClient.newCall(request).execute();
 
     return new JsonObject(response.body().string());
