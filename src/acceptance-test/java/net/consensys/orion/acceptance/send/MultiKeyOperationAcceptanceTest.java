@@ -14,6 +14,7 @@ package net.consensys.orion.acceptance.send;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import net.consensys.orion.acceptance.dsl.AcceptanceTestBase;
 import net.consensys.orion.acceptance.dsl.OrionNode;
@@ -164,5 +165,19 @@ public class MultiKeyOperationAcceptanceTest extends AcceptanceTestBase {
     assertThat(dataInReceivingNode).isEqualTo(payload);
     dataInReceivingNode = secondNode.extractDataItem(key, recipientKey4);
     assertThat(dataInReceivingNode).isEqualTo(payload);
+  }
+
+  @Test
+  public void unknownRecipientKeyReturnsError() throws IOException {
+
+    final OrionNode bootnode = orionFactory().create("node_1", 10);
+
+    final Box.PublicKey recipientKey1 = bootnode.getPublicKey(1);
+    final Box.PublicKey recipientKey2 = Box.PublicKey.fromBytes(
+        new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+
+    assertThatThrownBy(() -> bootnode.createPrivacyGroup(recipientKey1, "", "", recipientKey1, recipientKey2))
+        .isInstanceOf(RuntimeException.class)
+        .hasMessageContaining("NodeMissingPeerUrl");
   }
 }

@@ -51,7 +51,6 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
 
   @Test
   void expectedPrivacyGroupId() throws Exception {
-    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
 
     final String[] toEncrypt =
@@ -84,7 +83,6 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
 
   @Test
   void oddNumberOfRecipientsPrivacyGroupId() throws IOException {
-    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     final Box.PublicKey recipientKey1 = memoryKeyStore.generateKeyPair();
     final Box.PublicKey recipientKey2 = memoryKeyStore.generateKeyPair();
     final Box.PublicKey recipientKey3 = memoryKeyStore.generateKeyPair();
@@ -130,7 +128,6 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
 
   @Test
   void RepeatedRecipientsPrivacyGroupId() throws IOException {
-    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
 
     final String[] toEncrypt = new String[] {
@@ -166,7 +163,6 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
 
   @Test
   void ErrorIfCreateDoesntContainSelf() throws IOException {
-    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
 
     final String[] toEncrypt = new String[] {encodeBytes(recipientKey.bytesArray())};
@@ -198,7 +194,6 @@ public class CreatePrivacyGroupHandlerTest extends HandlerTest {
 
   @Test
   void expectedPrivacyGroupIdWithoutOptionalParameters() throws Exception {
-    final Box.PublicKey senderKey = memoryKeyStore.generateKeyPair();
     final Box.PublicKey recipientKey = memoryKeyStore.generateKeyPair();
 
     final String[] toEncrypt =

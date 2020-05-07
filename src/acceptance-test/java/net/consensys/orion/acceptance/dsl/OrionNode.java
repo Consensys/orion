@@ -91,6 +91,10 @@ public class OrionNode {
 
     final JsonObject responseJson = createPrivacyGroupRequest(sender, name, description, members);
 
+    if (responseJson.getString("error") != null) {
+      throw new RuntimeException(responseJson.getString("error"));
+    }
+
     return responseJson.getString("privacyGroupId");
 
   }
