@@ -4,9 +4,18 @@
 
 From v1.4, Orion requires Java 11. Orion on Java 8 is no longer supported. 
 
+## 1.5.2 
+
+### Bug fixes 
+
+* Filter the list of URIs when [creating a privacy group](https://github.com/PegaSysEng/orion/pull/369).
+
+Resolves `NodePropagatingToAllPeers` error that was occuring when creating privacy groups with a 
+PostgreSQL database.  
+
 ## 1.5.1 
 
-## Additions and Improvements 
+### Additions and Improvements 
 
 * Added option to move Orion peer table to persistent storage to support [high availability configurations](https://docs.orion.pegasys.tech/en/latest/HowTo/High-Availability/) [\#332](https://github.com/PegaSysEng/orion/pull/332)
 * Added [environment variables](https://docs.orion.pegasys.tech/en/latest/Reference/Configuration-File/) to support Orion deployment [\#332](https://github.com/PegaSysEng/orion/pull/332)
