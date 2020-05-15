@@ -4,6 +4,10 @@
 
 From v1.4, Orion requires Java 11. Orion on Java 8 is no longer supported. 
 
+## Upcoming 1.6 release 
+
+The [1.6 release](docs/1_6_Upgrade.md) is scheduled for early July. 
+
 ## 1.5.2 
 
 ### Bug fixes 
