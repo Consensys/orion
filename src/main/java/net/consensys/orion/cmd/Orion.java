@@ -191,6 +191,9 @@ public class Orion {
     clientRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
         new SendHandler(distributePayloadManager));
 
+    /*
+      /sendraw was deprecated in 1.6
+     */
     clientRouter
         .post("/sendraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
@@ -201,6 +204,9 @@ public class Orion {
         new ReceiveHandler(enclave, storage, JSON));
     clientRouter.post("/receive").produces(ORION.httpHeaderValue).consumes(ORION.httpHeaderValue).handler(
         new ReceiveHandler(enclave, storage, ORION));
+    /*
+      /receiveraw was deprecated in 1.6
+     */
     clientRouter
         .post("/receiveraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
