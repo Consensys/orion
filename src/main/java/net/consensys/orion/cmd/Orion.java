@@ -543,9 +543,12 @@ public class Orion {
           "An error occurred while writing the " + label + " TLS certificate files: " + e.getMessage(),
           e);
     }
+
     if (!Files.exists(tlsCert)) {
       throw new OrionStartException("Missing " + label + " TLS certificate file \"" + tlsCert + "\"");
-    } else if (!Files.exists(tlsKey)) {
+    }
+
+    if (!Files.exists(tlsKey)) {
       throw new OrionStartException("Missing " + label + " TLS key file \"" + tlsKey + "\"");
     }
   }
