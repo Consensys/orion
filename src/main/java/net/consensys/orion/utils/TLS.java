@@ -15,8 +15,6 @@ package net.consensys.orion.utils;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.createDirectories;
 
-import net.consensys.orion.config.Config;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -32,6 +30,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.bouncycastle.asn1.x500.X500Name;
@@ -69,14 +68,14 @@ public final class TLS {
    *
    * @param key The key path.
    * @param certificate The certificate path.
-   * @param config Orion configuration.
+   * @param nodeUrl optional nodeURL to be added as common name (CN).
    * @return {@code true} if a self-signed certificate was created.
    * @throws IOException If an IO error occurs creating the certificate.
    */
   public static boolean createSelfSignedCertificateIfMissing(
       final Path key,
       final Path certificate,
-      final Config config) throws IOException {
+      final Optional<URL> nodeUrl) throws IOException {
     if (Files.exists(certificate) || Files.exists(key)) {
       return false;
     }
@@ -88,7 +87,7 @@ public final class TLS {
     final Path certFile = Files.createTempFile(certificate.getParent(), "client-cert", ".tmp");
 
     try {
-      createSelfSignedCertificate(new Date(), keyFile, certFile, config);
+      createSelfSignedCertificate(new Date(), keyFile, certFile, nodeUrl);
     } catch (final CertificateException | NoSuchAlgorithmException | OperatorCreationException e) {
       throw new RuntimeException("Could not generate certificate: " + e.getMessage(), e);
     }
@@ -102,7 +101,7 @@ public final class TLS {
       final Date now,
       final Path key,
       final Path certificate,
-      final Config config) throws NoSuchAlgorithmException,
+      final Optional<URL> nodeUrl) throws NoSuchAlgorithmException,
       IOException,
       OperatorCreationException,
       CertificateException {
@@ -116,7 +115,7 @@ public final class TLS {
     cal.add(Calendar.YEAR, 1);
     final Date yearFromNow = cal.getTime();
 
-    final String cn = buildCNProperty(config);
+    final String cn = buildCNProperty(nodeUrl);
     final X500Name dn = new X500Name("CN=" + cn);
 
     final X509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
@@ -143,14 +142,8 @@ public final class TLS {
     }
   }
 
-  private static String buildCNProperty(final Config config) {
-    final String cn;
-    if (config.nodeUrl().isPresent()) {
-      final URL url = config.nodeUrl().get();
-      cn = url.getHost() + ":" + url.getPort();
-    } else {
-      cn = UUID.randomUUID().toString() + ".com";
-    }
-    return cn;
+  private static String buildCNProperty(final Optional<URL> nodeUrl) {
+    return nodeUrl.map(url -> url.getHost() + ":" + url.getPort()).orElseGet(
+        () -> UUID.randomUUID().toString() + ".com");
   }
 }
