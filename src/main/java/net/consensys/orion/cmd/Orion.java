@@ -406,6 +406,7 @@ public class Orion {
       createAndVerifyTLSCert(tlsClientKey, tlsClientCert, nodeUrl, "client");
     }
 
+    // verify Client-to-Orion server TLS certificate and key
     if ("strict".equals(config.clientConnectionTls())) {
       final Path tlsServerCert = config.clientConnectionTlsServerCert();
       final Path tlsServerKey = config.clientConnectionTlsServerKey();
