@@ -398,12 +398,12 @@ public class Orion {
       final Path tlsServerKey = config.tlsServerKey();
       final Optional<URL> nodeUrl = config.nodeUrl();
 
-      createAndVerifyTLSCert(tlsServerKey, tlsServerCert, nodeUrl, "server");
+      createSelfSignedCertificateIfMissingAndValidate(tlsServerKey, tlsServerCert, nodeUrl, "server");
 
       // verify client TLS cert and key
       final Path tlsClientCert = config.tlsClientCert();
       final Path tlsClientKey = config.tlsClientKey();
-      createAndVerifyTLSCert(tlsClientKey, tlsClientCert, nodeUrl, "client");
+      createSelfSignedCertificateIfMissingAndValidate(tlsClientKey, tlsClientCert, nodeUrl, "client");
     }
 
     // verify Client-to-Orion server TLS certificate and key
@@ -412,7 +412,7 @@ public class Orion {
       final Path tlsServerKey = config.clientConnectionTlsServerKey();
       final Optional<URL> nodeUrl = config.nodeUrl();
 
-      createAndVerifyTLSCert(tlsServerKey, tlsServerCert, nodeUrl, "Client-to-Orion server");
+      createSelfSignedCertificateIfMissingAndValidate(tlsServerKey, tlsServerCert, nodeUrl, "Client-to-Orion server");
     }
 
     // Vertx routers
@@ -532,14 +532,14 @@ public class Orion {
     isRunning.set(true);
   }
 
-  private static void createAndVerifyTLSCert(
+  private static void createSelfSignedCertificateIfMissingAndValidate(
       final Path tlsKey,
       final Path tlsCert,
       final Optional<URL> nodeUrl,
-      final String label) {
+      final String label) throws OrionStartException {
     try {
       TLS.createSelfSignedCertificateIfMissing(tlsKey, tlsCert, nodeUrl);
-    } catch (final IOException e) {
+    } catch (final IOException | RuntimeException e) {
       throw new OrionStartException(
           "An error occurred while writing the " + label + " TLS certificate files: " + e.getMessage(),
           e);

@@ -17,6 +17,8 @@ import static net.consensys.orion.TestUtils.generateAndLoadConfiguration;
 import static net.consensys.orion.TestUtils.writeClientConnectionServerCertToConfig;
 import static net.consensys.orion.TestUtils.writeServerCertToConfig;
 import static org.apache.tuweni.net.tls.TLS.readPemFile;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import net.consensys.orion.cmd.Orion;
 import net.consensys.orion.config.Config;
@@ -28,59 +30,68 @@ import java.security.cert.CertificateFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.net.SelfSignedCertificate;
 import org.apache.tuweni.junit.TempDirectory;
 import org.apache.tuweni.junit.TempDirectoryExtension;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(TempDirectoryExtension.class)
-public class ClintOrionTlsCertificateCreateTest {
+public class ClientOrionTlsCertificateAutoCreateTest {
   private final static Vertx vertx = vertx();
   private Orion orion;
   private Config config;
   private static final String TRUST_MODE = "tofu";
+  private final static String serverCert = "serverCert.pem";
+  private final static String serverKey = "serverKey.key";
   private final static String clientConnectionServerCert = "clientConnectionServerCert.pem";
   private final static String clientConnectionServerKey = "clientConnectionServerKey.key";
 
   @BeforeEach
-  void setUp(@TempDirectory final Path tempDir) throws Exception {
-    final SelfSignedCertificate serverCertificate = SelfSignedCertificate.create("localhost");
+  void setUpConfig(@TempDirectory final Path tempDir) throws Exception {
 
     config = generateAndLoadConfiguration(tempDir, writer -> {
       writer.write("tlsservertrust='" + TRUST_MODE + "'\n");
       writer.write("clientconnectiontls='strict'\n");
       writer.write("clientconnectiontlsservertrust='" + TRUST_MODE + "'\n");
-      writeServerCertToConfig(writer, serverCertificate);
+
+      writeServerCertToConfig(writer, tempDir.resolve(serverCert).toString(), tempDir.resolve(serverKey).toString());
+
       writeClientConnectionServerCertToConfig(
           writer,
           tempDir.resolve(clientConnectionServerCert).toString(),
           tempDir.resolve(clientConnectionServerKey).toString());
     });
-
-    orion = new Orion(vertx);
-    orion.run(config, false);
-  }
-
-  @AfterEach
-  void tearDown() {
-    orion.stop();
-    vertx.close();
   }
 
   @Test
-  void clientConnectionTlsKeyCertificatePairCreated() {
-    Assertions
-        .assertThatCode(() -> new PKCS8EncodedKeySpec(readPemFile(config.clientConnectionTlsServerKey())))
-        .doesNotThrowAnyException();
+  void clientConnectionTlsKeyCertPairCreatedIfNotExist() {
+    final Path privateKeyPath = config.clientConnectionTlsServerKey();
+    final Path certificatePath = config.clientConnectionTlsServerCert();
 
-    Assertions
-        .assertThatCode(
-            () -> CertificateFactory.getInstance("X.509").generateCertificate(
-                new ByteArrayInputStream(Files.readAllBytes(config.clientConnectionTlsServerCert()))))
-        .doesNotThrowAnyException();
+    assertThat(privateKeyPath).doesNotExist();
+    assertThat(certificatePath).doesNotExist();
+
+    try {
+      // start Orion
+      orion = new Orion(vertx);
+      orion.run(config, false);
+
+      // key/certificate created after Orion start and are in valid readable format.
+      assertThat(privateKeyPath).exists();
+      assertThat(certificatePath).exists();
+
+      assertThatCode(() -> new PKCS8EncodedKeySpec(readPemFile(privateKeyPath))).doesNotThrowAnyException();
+
+      assertThatCode(
+          () -> CertificateFactory.getInstance("X.509").generateCertificate(
+              new ByteArrayInputStream(Files.readAllBytes(certificatePath)))).doesNotThrowAnyException();
+    } finally {
+      if (orion != null) {
+        orion.stop();
+      }
+
+      vertx.close();
+    }
   }
 }

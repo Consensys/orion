@@ -22,6 +22,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -64,20 +65,20 @@ public final class TLS {
    * Create a self-signed certificate, if it is not already present.
    *
    * <p>
-   * If both the key or the certificate file are missing, they will be re-created as a self-signed certificate.
+   * If both the key or the certificate file are missing, they will be re-created as a self-signed certificate. If
+   * either of them exists, return.
    *
    * @param key The key path.
    * @param certificate The certificate path.
    * @param nodeUrl optional nodeURL to be added as common name (CN).
-   * @return {@code true} if a self-signed certificate was created.
    * @throws IOException If an IO error occurs creating the certificate.
    */
-  public static boolean createSelfSignedCertificateIfMissing(
+  public static void createSelfSignedCertificateIfMissing(
       final Path key,
       final Path certificate,
       final Optional<URL> nodeUrl) throws IOException {
     if (Files.exists(certificate) || Files.exists(key)) {
-      return false;
+      return;
     }
 
     createDirectories(certificate.getParent());
@@ -88,13 +89,12 @@ public final class TLS {
 
     try {
       createSelfSignedCertificate(new Date(), keyFile, certFile, nodeUrl);
-    } catch (final CertificateException | NoSuchAlgorithmException | OperatorCreationException e) {
+    } catch (final GeneralSecurityException | OperatorCreationException e) {
       throw new RuntimeException("Could not generate certificate: " + e.getMessage(), e);
     }
 
     Files.move(keyFile, key, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
     Files.move(certFile, certificate, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-    return true;
   }
 
   private static void createSelfSignedCertificate(
