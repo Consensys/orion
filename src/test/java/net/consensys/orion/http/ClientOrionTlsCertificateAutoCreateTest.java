@@ -49,7 +49,6 @@ public class ClientOrionTlsCertificateAutoCreateTest {
 
   @BeforeEach
   void setUpConfig(@TempDirectory final Path tempDir) throws Exception {
-
     config = generateAndLoadConfiguration(tempDir, writer -> {
       writer.write("tlsservertrust='" + TRUST_MODE + "'\n");
       writer.write("clientconnectiontls='strict'\n");
