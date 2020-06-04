@@ -15,8 +15,6 @@ package net.consensys.orion.utils;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.createDirectories;
 
-import net.consensys.orion.config.Config;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -24,6 +22,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -32,6 +31,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.bouncycastle.asn1.x500.X500Name;
@@ -65,20 +65,20 @@ public final class TLS {
    * Create a self-signed certificate, if it is not already present.
    *
    * <p>
-   * If both the key or the certificate file are missing, they will be re-created as a self-signed certificate.
+   * If both the key or the certificate file are missing, they will be re-created as a self-signed certificate. If
+   * either of them exists, return.
    *
    * @param key The key path.
    * @param certificate The certificate path.
-   * @param config Orion configuration.
-   * @return {@code true} if a self-signed certificate was created.
+   * @param nodeUrl optional nodeURL to be added as common name (CN).
    * @throws IOException If an IO error occurs creating the certificate.
    */
-  public static boolean createSelfSignedCertificateIfMissing(
+  public static void createSelfSignedCertificateIfMissing(
       final Path key,
       final Path certificate,
-      final Config config) throws IOException {
+      final Optional<URL> nodeUrl) throws IOException {
     if (Files.exists(certificate) || Files.exists(key)) {
-      return false;
+      return;
     }
 
     createDirectories(certificate.getParent());
@@ -88,21 +88,20 @@ public final class TLS {
     final Path certFile = Files.createTempFile(certificate.getParent(), "client-cert", ".tmp");
 
     try {
-      createSelfSignedCertificate(new Date(), keyFile, certFile, config);
-    } catch (final CertificateException | NoSuchAlgorithmException | OperatorCreationException e) {
+      createSelfSignedCertificate(new Date(), keyFile, certFile, nodeUrl);
+    } catch (final GeneralSecurityException | OperatorCreationException e) {
       throw new RuntimeException("Could not generate certificate: " + e.getMessage(), e);
     }
 
     Files.move(keyFile, key, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
     Files.move(certFile, certificate, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-    return true;
   }
 
   private static void createSelfSignedCertificate(
       final Date now,
       final Path key,
       final Path certificate,
-      final Config config) throws NoSuchAlgorithmException,
+      final Optional<URL> nodeUrl) throws NoSuchAlgorithmException,
       IOException,
       OperatorCreationException,
       CertificateException {
@@ -116,7 +115,7 @@ public final class TLS {
     cal.add(Calendar.YEAR, 1);
     final Date yearFromNow = cal.getTime();
 
-    final String cn = buildCNProperty(config);
+    final String cn = buildCNProperty(nodeUrl);
     final X500Name dn = new X500Name("CN=" + cn);
 
     final X509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
@@ -143,14 +142,8 @@ public final class TLS {
     }
   }
 
-  private static String buildCNProperty(final Config config) {
-    final String cn;
-    if (config.nodeUrl().isPresent()) {
-      final URL url = config.nodeUrl().get();
-      cn = url.getHost() + ":" + url.getPort();
-    } else {
-      cn = UUID.randomUUID().toString() + ".com";
-    }
-    return cn;
+  private static String buildCNProperty(final Optional<URL> nodeUrl) {
+    return nodeUrl.map(url -> url.getHost() + ":" + url.getPort()).orElseGet(
+        () -> UUID.randomUUID().toString() + ".com");
   }
 }

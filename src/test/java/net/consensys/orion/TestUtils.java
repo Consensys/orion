@@ -91,8 +91,15 @@ public class TestUtils {
 
   public static void writeServerCertToConfig(final Writer configWriter, final SelfSignedCertificate serverCert)
       throws IOException {
-    configWriter.write("tlsservercert=\"" + serverCert.certificatePath() + "\"\n");
-    configWriter.write("tlsserverkey=\"" + serverCert.privateKeyPath() + "\"\n");
+    writeServerCertToConfig(configWriter, serverCert.certificatePath(), serverCert.privateKeyPath());
+  }
+
+  public static void writeServerCertToConfig(
+      final Writer configWriter,
+      final String certificatePath,
+      final String privateKeyPath) throws IOException {
+    configWriter.write("tlsservercert=\"" + certificatePath + "\"\n");
+    configWriter.write("tlsserverkey=\"" + privateKeyPath + "\"\n");
   }
 
   public static void writeClientCertToConfig(final Writer configWriter, final SelfSignedCertificate serverCert)
@@ -104,8 +111,15 @@ public class TestUtils {
   public static void writeClientConnectionServerCertToConfig(
       final Writer configWriter,
       final SelfSignedCertificate serverCert) throws IOException {
-    configWriter.write("clientconnectiontlsservercert=\"" + serverCert.certificatePath() + "\"\n");
-    configWriter.write("clientconnectiontlsserverkey=\"" + serverCert.privateKeyPath() + "\"\n");
+    writeClientConnectionServerCertToConfig(configWriter, serverCert.certificatePath(), serverCert.privateKeyPath());
+  }
+
+  public static void writeClientConnectionServerCertToConfig(
+      final Writer configWriter,
+      final String certificatePath,
+      final String privateKeyPath) throws IOException {
+    configWriter.write("clientconnectiontlsservercert=\"" + certificatePath + "\"\n");
+    configWriter.write("clientconnectiontlsserverkey=\"" + privateKeyPath + "\"\n");
   }
 
   public static int getFreePort() throws Exception {
