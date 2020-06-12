@@ -23,7 +23,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,21 +38,25 @@ public class HttpErrorHandler implements Handler<RoutingContext> {
     final HttpServerResponse response = failureContext.response().setStatusCode(statusCode);
 
     if (hasError(failureContext)) {
-      final Buffer buffer = errorJson(failureContext.failure(), failureContext.currentRoute());
-
+      final Buffer buffer = errorJson(failureContext);
       response.putHeader(HttpHeaders.CONTENT_TYPE, HttpContentType.JSON.httpHeaderValue).end(buffer);
     } else {
       response.end();
     }
   }
 
-  private Buffer errorJson(final Throwable failure, final Route failureRoute) {
-    final OrionErrorCode orionError = orionError(failure);
+  private Buffer errorJson(final RoutingContext failureContext) {
+    final OrionErrorCode orionError = orionError(failureContext.failure());
     final HttpError httpError = new HttpError(orionError);
     final Buffer buffer = Buffer.buffer(Serializer.serialize(HttpContentType.JSON, httpError));
 
-    log.error(failureRoute.getPath() + " failed " + httpError, failure);
-
+    if (failureContext.statusCode() == 404) {
+      // To reduce noise 404s are only logged as debug. A 404 is returned for the common use case where Besu receives a
+      // private marker transaction for a privacy group that this Orion is not part of.
+      log.debug("Not Found Error: \"" + orionError + "\" Body: \"" + failureContext.getBodyAsString() + "\"");
+    } else {
+      log.error(failureContext.currentRoute().getPath() + " failed " + httpError, failureContext.failure());
+    }
     return buffer;
   }
 
