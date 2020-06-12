@@ -63,12 +63,14 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
@@ -191,6 +193,9 @@ public class Orion {
     clientRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
         new SendHandler(distributePayloadManager));
 
+    /*
+      /sendraw was deprecated in 1.6
+     */
     clientRouter
         .post("/sendraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
@@ -201,6 +206,9 @@ public class Orion {
         new ReceiveHandler(enclave, storage, JSON));
     clientRouter.post("/receive").produces(ORION.httpHeaderValue).consumes(ORION.httpHeaderValue).handler(
         new ReceiveHandler(enclave, storage, ORION));
+    /*
+      /receiveraw was deprecated in 1.6
+     */
     clientRouter
         .post("/receiveraw")
         .produces(APPLICATION_OCTET_STREAM.httpHeaderValue)
@@ -384,40 +392,27 @@ public class Orion {
 
     final Enclave enclave = new SodiumEnclave(keyStore);
 
-    if (!"off".equals(config.tls())) {
+    if ("strict".equals(config.tls())) {
       // verify server TLS cert and key
       final Path tlsServerCert = config.tlsServerCert();
       final Path tlsServerKey = config.tlsServerKey();
+      final Optional<URL> nodeUrl = config.nodeUrl();
 
-      try {
-        TLS.createSelfSignedCertificateIfMissing(tlsServerKey, tlsServerCert, config);
-      } catch (final IOException e) {
-        throw new OrionStartException(
-            "An error occurred while writing the server TLS certificate files: " + e.getMessage(),
-            e);
-      }
-      if (!Files.exists(tlsServerCert)) {
-        throw new OrionStartException("Missing server TLS certificate file \"" + tlsServerCert + "\"");
-      } else if (!Files.exists(tlsServerKey)) {
-        throw new OrionStartException("Missing server TLS key file \"" + tlsServerKey + "\"");
-      }
+      createSelfSignedCertificateIfMissingAndValidate(tlsServerKey, tlsServerCert, nodeUrl, "server");
 
       // verify client TLS cert and key
       final Path tlsClientCert = config.tlsClientCert();
       final Path tlsClientKey = config.tlsClientKey();
+      createSelfSignedCertificateIfMissingAndValidate(tlsClientKey, tlsClientCert, nodeUrl, "client");
+    }
 
-      try {
-        TLS.createSelfSignedCertificateIfMissing(tlsClientKey, tlsClientCert, config);
-      } catch (final IOException e) {
-        throw new OrionStartException(
-            "An error occurred while writing the client TLS certificate files: " + e.getMessage(),
-            e);
-      }
-      if (!Files.exists(tlsClientCert)) {
-        throw new OrionStartException("Missing client TLS certificate file \"" + tlsClientCert + "\"");
-      } else if (!Files.exists(tlsClientKey)) {
-        throw new OrionStartException("Missing client TLS key file \"" + tlsClientKey + "\"");
-      }
+    // verify Client-to-Orion server TLS certificate and key
+    if ("strict".equals(config.clientConnectionTls())) {
+      final Path tlsServerCert = config.clientConnectionTlsServerCert();
+      final Path tlsServerKey = config.clientConnectionTlsServerKey();
+      final Optional<URL> nodeUrl = config.nodeUrl();
+
+      createSelfSignedCertificateIfMissingAndValidate(tlsServerKey, tlsServerCert, nodeUrl, "Client-to-Orion server");
     }
 
     // Vertx routers
@@ -458,8 +453,8 @@ public class Orion {
         .setCompressionSupported(true);
 
     if ("strict".equals(config.tls())) {
-      final Path tlsServerCert = workDir.resolve(config.tlsServerCert());
-      final Path tlsServerKey = workDir.resolve(config.tlsServerKey());
+      final Path tlsServerCert = config.tlsServerCert();
+      final Path tlsServerKey = config.tlsServerKey();
       final PemKeyCertOptions pemKeyCertOptions =
           new PemKeyCertOptions().setKeyPath(tlsServerKey.toString()).setCertPath(tlsServerCert.toString());
 
@@ -483,8 +478,8 @@ public class Orion {
           new HttpServerOptions().setPort(config.clientPort()).setHost(config.clientNetworkInterface());
 
       if ("strict".equals(config.clientConnectionTls())) {
-        final Path tlsServerCert = workDir.resolve(config.clientConnectionTlsServerCert());
-        final Path tlsServerKey = workDir.resolve(config.clientConnectionTlsServerKey());
+        final Path tlsServerCert = config.clientConnectionTlsServerCert();
+        final Path tlsServerKey = config.clientConnectionTlsServerKey();
         final PemKeyCertOptions pemKeyCertOptions =
             new PemKeyCertOptions().setKeyPath(tlsServerKey.toString()).setCertPath(tlsServerCert.toString());
         clientOptions.setSsl(true);
@@ -535,6 +530,28 @@ public class Orion {
     // set shutdown hook
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     isRunning.set(true);
+  }
+
+  private static void createSelfSignedCertificateIfMissingAndValidate(
+      final Path tlsKey,
+      final Path tlsCert,
+      final Optional<URL> nodeUrl,
+      final String label) throws OrionStartException {
+    try {
+      TLS.createSelfSignedCertificateIfMissing(tlsKey, tlsCert, nodeUrl);
+    } catch (final IOException | RuntimeException e) {
+      throw new OrionStartException(
+          "An error occurred while writing the " + label + " TLS certificate files: " + e.getMessage(),
+          e);
+    }
+
+    if (!Files.exists(tlsCert)) {
+      throw new OrionStartException("Missing " + label + " TLS certificate file \"" + tlsCert + "\"");
+    }
+
+    if (!Files.exists(tlsKey)) {
+      throw new OrionStartException("Missing " + label + " TLS key file \"" + tlsKey + "\"");
+    }
   }
 
   private void writePortsToFile(final Config config, final int nodePort, final int clientPort) {

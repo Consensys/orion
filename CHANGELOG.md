@@ -1,18 +1,19 @@
 # Changelog
 
-## Java 11
-
-From v1.4, Orion requires Java 11. Orion on Java 8 is no longer supported. 
-
 ## Upcoming 1.6 release 
 
-The [1.6 release](docs/1_6_Upgrade.md) is scheduled for early July. 
+The [1.6 release](docs/1_6_Upgrade.md) is scheduled for early July.
+
+## 1.6
+
+-  The methods `/sendraw` and `/receiveraw` are now deprecated. We will remove them in the next minor
+version release (expected to be 1.7). 
 
 ## 1.5.2 
 
 ### Bug fixes 
 
-* Filter the list of URIs when [creating a privacy group](https://github.com/PegaSysEng/orion/pull/369).
+- Filter the list of URIs when [creating a privacy group](https://github.com/PegaSysEng/orion/pull/369).
 
 Resolves `NodePropagatingToAllPeers` error that was occuring when creating privacy groups with a 
 PostgreSQL database.  
@@ -21,8 +22,8 @@ PostgreSQL database.
 
 ### Additions and Improvements 
 
-* Added option to move Orion peer table to persistent storage to support [high availability configurations](https://docs.orion.pegasys.tech/en/latest/HowTo/High-Availability/) [\#332](https://github.com/PegaSysEng/orion/pull/332)
-* Added [environment variables](https://docs.orion.pegasys.tech/en/latest/Reference/Configuration-File/) to support Orion deployment [\#332](https://github.com/PegaSysEng/orion/pull/332)
+- Added option to move Orion peer table to persistent storage to support [high availability configurations](https://docs.orion.pegasys.tech/en/latest/HowTo/High-Availability/) [\#332](https://github.com/PegaSysEng/orion/pull/332)
+- Added [environment variables](https://docs.orion.pegasys.tech/en/latest/Reference/Configuration-File/) to support Orion deployment [\#332](https://github.com/PegaSysEng/orion/pull/332)
 
 ## 1.5 
 
@@ -50,7 +51,11 @@ Workaround - Do not use `alwayssendto`.
 
 Workaround - Do not use `alwayssendto`.
 
-## 1.4 
+## 1.4
+
+### Java 11
+
+- From v1.4, Orion requires Java 11. Orion on Java 8 is no longer supported.  
 
 ### Additions and Improvements 
 
