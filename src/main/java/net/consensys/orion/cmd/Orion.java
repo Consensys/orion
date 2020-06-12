@@ -43,6 +43,7 @@ import net.consensys.orion.http.handler.send.SendHandler;
 import net.consensys.orion.http.handler.sendraw.SendRawHandler;
 import net.consensys.orion.http.handler.upcheck.UpcheckHandler;
 import net.consensys.orion.http.server.vertx.HttpErrorHandler;
+import net.consensys.orion.http.server.vertx.OrionLoggerHandler;
 import net.consensys.orion.network.NetworkDiscovery;
 import net.consensys.orion.network.PersistentNetworkNodes;
 import net.consensys.orion.payload.DistributePayloadManager;
@@ -157,7 +158,7 @@ public class Orion {
       final Router clientRouter,
       final Config config) {
 
-    final LoggerHandler loggerHandler = LoggerHandler.create();
+    final LoggerHandler loggerHandler = new OrionLoggerHandler();
 
     //Setup Orion node APIs
     nodeRouter
