@@ -51,7 +51,7 @@ services:
       - ORION_PUBLICKEYS=/var/keys/nodeKey.pub
       - ORION_PRIVATEKEYS=/var/keys/nodeKey.key
       - ORION_PASSWORDS=/var/keys/passwordFile
-      - ORION_WORKDIR=/data
+      - ORION_WORKDIR=/tmp
       - ORION_TLS=off
       - ORION_STORAGE=sql:jdbc:postgresql://postgres:5432/payloaddb
       - ORION_KNOWNNODESSTORAGE=sql:jdbc:postgresql://postgres:5432/knownnodes
