@@ -1,20 +1,27 @@
-FROM openjdk:11.0.2-jre-slim-stretch
 
-COPY orion /opt/orion/
-WORKDIR /opt/orion
+FROM openjdk:11.0.7-jre-slim-buster
 
 # Install libsodium
 RUN set -eux; \
     apt-get update; \
-    apt-get install -y --no-install-recommends curl=7.52.1-5+deb9u10 libsodium18=1.0.11-2; \
+    apt-get install -y --no-install-recommends curl=7.64.0-4+deb10u1 libsodium23=1.0.17-1; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
+
+RUN adduser --disabled-password --gecos "" --home /opt/orion orion && \
+    chown orion:orion /opt/orion
+
+USER orion
+WORKDIR /opt/orion
+
+COPY --chown=orion:orion orion /opt/orion/
 
 # Expose services ports
 # 8080 Node Port, 8888 Client Port
 EXPOSE 8080 8888
 
-ENTRYPOINT ["/opt/orion/bin/orion"]
+ENV PATH="/opt/orion/bin:${PATH}"
+ENTRYPOINT ["orion"]
 
 # Build-time metadata as defined at http://label-schema.org
 ARG BUILD_DATE

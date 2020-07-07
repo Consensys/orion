@@ -1,3 +1,4 @@
+---
 version: '3'
 services:
   nginx:
@@ -11,6 +12,7 @@ services:
     ports:
       - 8080:8080
       - 8888:8888
+
   postgres:
     image: postgres:12
     container_name: postgres
@@ -20,6 +22,7 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
+
   orion_1:
     depends_on:
       - postgres
@@ -28,6 +31,7 @@ services:
     volumes:
       - ./orion.conf:/etc/orion.conf
       - ./keys:/var/keys
+      - orion1-data:/data
     command: /etc/orion.conf
     restart: always
     healthcheck:
@@ -41,6 +45,7 @@ services:
     container_name: orion_2
     volumes:
       - ./keys:/var/keys
+      - orion2-data:/data
     environment:
       - ORION_NODEURL=http://load_balancer:8080/
       - ORION_NODEPORT=8080
@@ -62,3 +67,8 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
+
+volumes:
+  orion1-data:
+
+  orion2-data:

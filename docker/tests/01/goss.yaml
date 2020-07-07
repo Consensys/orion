@@ -2,8 +2,8 @@ file:
   /opt/orion/bin/orion:
     exists: true
     mode: "0755"
-    owner: root
-    group: root
+    owner: orion
+    group: orion
     filetype: file
     contains: []
 port:
