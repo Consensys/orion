@@ -46,8 +46,7 @@ issues and PRs assigned to them.
     - Authoring or reviewing PRs on GitHub
     - Filing or commenting on issues on GitHub
     - Contributing to community discussions (e.g. meetings, Slack, email discussion forums, Stack Overflow)
-- Subscribed to [pantheon-dev@pegasys.tech]
-- Joined [Orion Gitter]
+- Joined [Orion Discord]
 - Have read the [contributor guide]
 - Signed ICLA, as described in [CLA.md]
 
@@ -169,5 +168,5 @@ This document is adapted from the following sources:
 [New contributors]: /CONTRIBUTING.md
 [two-factor authentication]: https://help.github.com/articles/about-two-factor-authentication
 [pantheon-dev@pegasys.tech]: mailto:pantheon-dev@pegasys.tech
-[Orion Gitter]: https://gitter.im/PegaSysEng/orion
+[Orion Discord]: /README.md#chat
 [Orion Documentation]: https://orion.readthedocs.io/

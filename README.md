@@ -1,6 +1,5 @@
 # Orion
 
-[![Gitter chat](https://badges.gitter.im/PegaSysEng/orion.png)](https://gitter.im/PegaSysEng/orion)
 [![CircleCI](https://circleci.com/gh/PegaSysEng/orion.svg?style=svg&circle-token=5f92fd966a971e60e57f53f2257fe5dda0fcf52c)](https://circleci.com/gh/PegaSysEng/orion)
 [![Download](https://api.bintray.com/packages/consensys/binaries/orion/images/download.svg)](https://bintray.com/consensys/binaries/orion/_latestVersion)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/PegasysEng/pantheon/blob/master/LICENSE)
@@ -9,10 +8,13 @@ Orion is a Apache 2.0 licensed, private transaction manager.
 
 ## Issues 
 
-Orion issues are tracked in [Jira](https://pegasys1.atlassian.net/secure/Dashboard.jspa?selectPageId=10116) not GitHub. 
-See our [contribution guidelines](CONTRIBUTING.md) for more detail on searching and creating issues. 
+See our [contribution guidelines](CONTRIBUTING.md) for details on searching and creating issues. 
 
-If you've commented on existing issue and have been waiting for a reply, feel free to ping us on [Gitter].  
+If you've commented on existing issue and have been waiting for a reply, feel free to ping us on [Discord](#chat).  
+
+## Chat 
+
+Come and join us in the Orion channel on Discord - here's an [invite](https://discord.gg/n8m22JK). 
 
 ## Orion Users 
 
@@ -25,6 +27,7 @@ See our [User Documentation].
 * [User Documentation]
 
 ### Development
+
 Instructions for how to get started with developing on the Orion codebase. Please also read the 
 [contribution guidelines](CONTRIBUTING.md) for more detail on how to submit a pull request (PR).
 

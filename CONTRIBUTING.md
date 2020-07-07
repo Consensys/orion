@@ -34,7 +34,7 @@ By participating, you are expected to uphold this code. Please report unacceptab
 > **Note:** Please don't file an issue to ask a question.  You'll get faster results by using the resources below.
 
 * [Orion documentation]
-* [Gitter]
+* [Discord](README.md#chat)
 
 ## How To Contribute
 ### Reporting Bugs
@@ -52,12 +52,11 @@ open a new issue and include a link to the original issue in the body of your ne
 #### Before Submitting A Bug Report
 * **Confirm the problem** is reproducible in the latest version of the software
 * **Check [Orion documentation]**. You might be able to find the cause of the problem and fix things yourself. 
-* **Perform a [cursory search of project issues](https://pegasys1.atlassian.net/browse/PAN-2502?jql=project%20%3D%20PAN)** 
+* **Perform a cursory search of open issues** 
 to see if the problem has already been reported. If it has **and the issue is still open**, add a comment 
 to the existing issue instead of opening a new one.
 
 #### How Do I Submit A (Good) Bug Report?
-Bugs are tracked as [Jira issues](https://pegasys1.atlassian.net/secure/Dashboard.jspa?selectPageId=10000).  
 
 Explain the problem and include additional details to help maintainers reproduce the problem:
 
@@ -111,13 +110,13 @@ When you are creating an enhancement suggestion, please
 #### Before Submitting An Enhancement Suggestion
 
 * **Check the [Orion documentation].** You might be able to find the cause of the problem and fix things yourself. 
-* **Perform a [cursory search of project issues](https://pegasys1.atlassian.net/browse/PAN-2502?jql=project%20%3D%20PAN)** 
+* **Perform a cursory search of open issues** 
 to see if the problem has already been reported. If it has **and the issue is still open**, add a comment 
 to the existing issue instead of opening a new one.
 
 #### How Do I Submit A (Good) Enhancement Suggestion?
 
-Enhancement suggestions are tracked as [Jira issues](https://pegasys1.atlassian.net/secure/Dashboard.jspa?selectPageId=10000).
+Enhancement suggestions are tracked as GitHub issues.
 Provide the following information:
 
 * **Use a clear and descriptive title** for the issue to identify the suggestion.
@@ -133,12 +132,12 @@ Provide the following information:
 * **Specify the name and version of the OS you're using.**
 
 ## Your First Contribution
-Start by looking through the 'good first issue' and 'help wanted' labeled issues on the [Jira dashboard](https://pegasys1.atlassian.net/secure/Dashboard.jspa?selectPageId=10000):
+Start by looking through the 'good first issue' and 'help wanted' labeled issues:
 * [Good First Issue][search-label-good-first-issue] - issues which should only require a few lines of code or documentation, 
 and a test or two.
 * [Help wanted issues][search-label-help-wanted] - issues which are a bit more involved than `good first issue` issues.
 
-When you've identified an issue you'd like to work on, ping us on [Gitter] and we'll assign it to you. 
+When you've identified an issue you'd like to work on, ping us on [Discord](README.md#chat) and we'll assign it to you. 
 
 ### Contribution Workflow
 The codebase and documentation are maintained using the same "*contributor workflow*" where everyone 
@@ -161,18 +160,16 @@ For this reason do not mix any formatting fixes or code moves with actual code c
 another part of the software. Running the `./gradlew clean check test` command locally will help you
 to be confident that your changes will pass CI tests once pushed as a Pull Request.
 1. **Push your changes** to your remote fork (usually labeled as `origin`).
-1. **Create a pull-request** (PR) on the Orion repository. If the PR addresses an existing Jira issue, 
-include the issue number in the PR title in square brackets (for example, `[PAN-2374]`). 
+1. **Create a pull-request** (PR) on the Orion repository.  
 1. **Add labels** to identify the type of your PR. _For example, if your PR is not ready to validate,
 add the "work-in-progress" label. If it fixes a bug, add the "bug" label._
-1. If the PR address an existing Jira issue, comment in the Jira issue with the PR number. 
 1. **Ensure your changes are reviewed**.
 _Select the reviewers you would like to review your PR.
 If you don't know who to choose, simply select the reviewers proposed by GitHub or leave blank._
 1. **Make any required changes** on your contribution from the reviewers feedback.
 _Make the changes, commit to your branch, and push to your remote fork._
 1. **When your PR is validated**, all tests passed and your branch has no conflicts with the target branch,
-you can **"squash and merge"** your PR and you're done. You contributed to Orion! Thanks !
+you can **"squash and merge"** your PR and you're done. You contributed to Orion! Thanks!
 
 ### Architectural Best Practices
 
@@ -240,7 +237,6 @@ These are not strictly enforced during the build, but should be adhered to and c
 | [`needs engineering approval`][search-label-needs-engineering-approval] | Pull requests which need to be approved from a technical person, mainly documentation PRs. |
 
 [private@pegasys.tech]: mailto:private@pegasys.tech
-[Gitter]: https://gitter.im/PegaSysEng/Orion
 [Orion documentation]: https://docs.orion.pegasys.tech/
 [CLA.md]: /CLA.md
 [Code Reviews]: /community/code-reviews.md
