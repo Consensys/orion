@@ -12,17 +12,14 @@
  */
 package net.consensys.orion.cmd;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.BufferedReader;
+import net.consensys.orion.utils.OrionInfo;
+
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
@@ -71,14 +68,11 @@ class OrionArgumentsTest {
   @Test
   void versionArgument() {
     final String[] args = {"-v"};
-
     final OrionArguments arguments = new OrionArguments(outStream, errStream, args);
-    final InputStream versionFile = OrionArguments.class.getResourceAsStream("/version.txt");
-    String version = "(development)";
-    if (versionFile != null) {
-      version = new BufferedReader(new InputStreamReader(versionFile, UTF_8)).lines().collect(Collectors.joining("\n"));
-    }
-    assertEquals(version + System.lineSeparator(), outContent.toString());
+
+    final String expectedVersion = OrionInfo.version();
+
+    assertEquals(expectedVersion + System.lineSeparator(), outContent.toString());
     assertTrue(arguments.argumentExit());
   }
 

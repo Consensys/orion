@@ -329,13 +329,6 @@ group = 'net.consensys'
 jar {
   doFirst {
     delete fileTree(dir:'build/libs', include: '*.jar')
-    delete "$projectDir/src/main/resources/version.txt"
-    delete "$buildDir/resources/main/version.txt"
-
-    new File("$buildDir/resources/main/version.txt").text = """Application-name: $project.name
-Version: $project.version
-"""
-    new File("$buildDir/version").text = """$version"""
   }
   manifest {
     attributes('Implementation-Title': project.name,

@@ -12,17 +12,14 @@
  */
 package net.consensys.orion.cmd;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import net.consensys.orion.utils.OrionInfo;
+
 import java.io.PrintStream;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 class OrionArguments {
+
   private boolean argumentExit = false;
   private boolean clearKnownNodes = false;
 
@@ -93,16 +90,10 @@ class OrionArguments {
   }
 
   private void displayVersion(final PrintStream out, final PrintStream err) {
-    try (final InputStream versionAsStream = OrionArguments.class.getResourceAsStream("/version.txt")) {
-      if (versionAsStream == null) {
-        out.println("(development)");
-      } else {
-        final BufferedReader buffer = new BufferedReader(new InputStreamReader(versionAsStream, UTF_8));
-        final String contents = buffer.lines().collect(Collectors.joining("\n"));
-        out.println(contents);
-      }
-    } catch (final IOException e) {
-      err.println("Read of Version file failed " + e.getMessage());
+    try {
+      out.println(OrionInfo.version());
+    } catch (final Exception e) {
+      err.println("Error reading Orion version " + e.getMessage());
     }
   }
 
