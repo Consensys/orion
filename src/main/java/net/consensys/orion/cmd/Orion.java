@@ -42,6 +42,7 @@ import net.consensys.orion.http.handler.receive.ReceiveHandler;
 import net.consensys.orion.http.handler.send.SendHandler;
 import net.consensys.orion.http.handler.sendraw.SendRawHandler;
 import net.consensys.orion.http.handler.upcheck.UpcheckHandler;
+import net.consensys.orion.http.handler.version.VersionHandler;
 import net.consensys.orion.http.server.vertx.HttpErrorHandler;
 import net.consensys.orion.http.server.vertx.OrionLoggerHandler;
 import net.consensys.orion.network.NetworkDiscovery;
@@ -130,7 +131,6 @@ public class Orion {
   private HttpServer clientHTTPServer;
 
   public static void main(final String[] args) {
-    log.info("starting orion");
     final Orion orion = new Orion();
     try {
       orion.run(System.out, System.err, args);
@@ -190,6 +190,7 @@ public class Orion {
     clientRouter.get("/upcheck").produces(TEXT.httpHeaderValue).handler(new UpcheckHandler());
     clientRouter.get("/peercount").produces(TEXT.httpHeaderValue).handler(
         new PeerCountHandler(() -> networkNodes.nodeURIs().size()));
+    clientRouter.get("/version").produces(TEXT.httpHeaderValue).handler(new VersionHandler());
 
     clientRouter.post("/send").produces(JSON.httpHeaderValue).consumes(JSON.httpHeaderValue).handler(
         new SendHandler(distributePayloadManager));
@@ -332,6 +333,8 @@ public class Orion {
     if (arguments.argumentExit()) {
       return;
     }
+
+    log.info("starting orion");
 
     // load config file
     final Config config = loadConfig(arguments.configFileName().map(Paths::get).orElse(null));
