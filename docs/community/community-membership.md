@@ -11,11 +11,11 @@ this project.
 | Everyone            | none                                         | anybody with a belly button |
 | Member              | everyone who contributes - code or otherwise | Orion GitHub org member     |
 | Approver            | approve accepting contributions              | write permissions on master |
-| Project Manager     | management of the project                    | PegaSys                     |
-| Project Sponsor     | contribute developer resources               | PegaSys                     |
-| Open Source Circle  | OSS support                                  | PegaSys                     |
-| Project Evangelist  | promote the project                          | PegaSys                     |
-| Benevolent Dictator | decision tie-breaker                         | PegaSys                     |
+| Project Manager     | management of the project                    | ConsenSys                     |
+| Project Sponsor     | contribute developer resources               | ConsenSys                     |
+| Open Source Circle  | OSS support                                  | ConsenSys                     |
+| Project Evangelist  | promote the project                          | ConsenSys                     |
+| Benevolent Dictator | decision tie-breaker                         | ConsenSys                     |
 
 ## Everyone
 Any person from the public is able to access the code.  The standard permissions grant the ability to view the code, view open bugs, access the wiki, download binaries, view CI results and comment on pull requests.
@@ -87,7 +87,7 @@ Code approvers are members that have signed an ICLA and have been granted additi
 ## Project Manager
 The Project Manager role provides the user with control over management aspects of the project.  
 
-**Defined by:** PegaSys
+**Defined by:** ConsenSys
 
 ### Requirements
 - Includes all of the requirements of a Member user
@@ -104,7 +104,7 @@ The Project Manager role provides the user with control over management aspects 
 ## Project Sponsor
 The Project Sponsor role provides a user with the ability to contribute additional developer resources to the project.  Project Sponsors must sign the ICLA.
 
-**Defined by:** PegaSys
+**Defined by:** ConsenSys
 
 ### Requirements
 - Signed ICLA, as described in [CLA.md]
@@ -116,7 +116,7 @@ The Project Sponsor role provides a user with the ability to contribute addition
 
 ## Open Source Circle
 The Open Source Circle is a group that provides open source software support to projects.
-**Defined by:** PegaSys
+**Defined by:** ConsenSys
 
 ### Requirements
 - Includes all of the requirements of a Member user
@@ -131,7 +131,7 @@ The Open Source Circle is a group that provides open source software support to 
 
 ## Project Evangelist
 The Project Evangelist role is for those who wish to promote the project to the outside world, but not actively contribute to it.  
-**Defined by:** PegaSys
+**Defined by:** ConsenSys
 
 ### Requirements
 - Includes all of the requirements of a Member user
@@ -167,6 +167,6 @@ This document is adapted from the following sources:
 [contributor guide]: /CONTRIBUTING.md
 [New contributors]: /CONTRIBUTING.md
 [two-factor authentication]: https://help.github.com/articles/about-two-factor-authentication
-[pantheon-dev@pegasys.tech]: mailto:pantheon-dev@pegasys.tech
+[pantheon-dev@ConsenSys.tech]: mailto:pantheon-dev@ConsenSys.tech
 [Orion Discord]: /README.md#chat
 [Orion Documentation]: https://orion.readthedocs.io/
