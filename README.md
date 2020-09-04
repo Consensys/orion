@@ -24,7 +24,7 @@ See our [User Documentation].
 
 * [Contribution Guidelines](CONTRIBUTING.md)
 * [Coding Conventions](CODING-CONVENTIONS.md)
-* [User Documentation]
+* [User Documentation]: https://docs.orion.pegasys.tech/en/stable/
 
 ### Development
 
@@ -40,5 +40,3 @@ Instructions for how to get started with developing on the Orion codebase. Pleas
 ## Running Orion on Docker
 
 * [Running on Docker](docs/development/docker.md)
-
-[User Documentation]: https://docs.orion.pegasys.tech/en/stable/
