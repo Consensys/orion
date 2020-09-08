@@ -1,14 +1,24 @@
 # Changelog
 
-## Upcoming 1.6 release 
+## 1.6
 
-The [1.6 release](docs/1_6_Upgrade.md) is scheduled for early July.
+## Additions and Improvements
 
-## 1.6 Breaking changes
+- The methods `/sendraw` and `/receiveraw` are now deprecated. We will remove them in the next minor
+version release (expected to be 1.7). 
+- Moving to security best practices for docker where we now have a user:group `orion:orion` and will
+no longer use `root` as the container user.  
 
-When upgrading to 1.6, ensure you've taken into account the following breaking changes. 
+## Breaking changes
 
-### Docker users with volume mounts 
+When upgrading to 1.6, ensure you've taken into account the following breaking changes.
+
+### Compatibility with Hyperledger Besu
+
+When upgrading Hyperledger Besu to v1.5, it is required that Orion is upgraded to 
+v1.6. Older versions of Orion will no longer work with Besu v1.5.  
+
+### Docker users with volume mounts
 
 To maintain best security practices, we're changing the `user:group` on the Docker container to `orion`.
 
@@ -25,15 +35,6 @@ a different user outside the image.
 If you’re mounting local folders, it is best to set the user via the Docker `—user` argument. Use the
 UID because the username may not exist inside the docker container. Ensure the directory being mounted
 is owned by that user.
-
-
-## 1.6
-
-- The methods `/sendraw` and `/receiveraw` are now deprecated. We will remove them in the next minor
-version release (expected to be 1.7). 
-- Moving to security best practices for docker where we now have a user:group `orion:orion` and will
-no longer use `root` as the container user.  
-
 
 ## 1.5.2 
 
