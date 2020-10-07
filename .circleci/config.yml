@@ -7,7 +7,10 @@ orbs:
 executors:
   default:  # 2cpu, 4G ram
     docker:
-      - image: circleci/openjdk:11.0.4-jdk-stretch
+      - image: circleci/openjdk:11.0.8-jdk-buster
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_PASSWORD
     resource_class: medium+
     working_directory: ~/project
     environment:
@@ -16,8 +19,14 @@ executors:
 
   with_db:
     docker:
-      - image: circleci/openjdk:11.0.4-jdk-stretch
+      - image: circleci/openjdk:11.0.8-jdk-buster
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_PASSWORD
       - image: postgres:11.4-alpine
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_PASSWORD
         environment:
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
@@ -33,7 +42,7 @@ executors:
 
   machine:
     machine:
-      image: ubuntu-1604:201903-01 #Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-2004:202008-01 #Ubuntu 20.04, docker 19.03, docker-compose 1.27.4
       docker_layer_caching: true
     working_directory: ~/project
 
@@ -46,7 +55,7 @@ commands:
           name: Install Dependencies
           command: |
             sudo apt-get update
-            sudo apt-get install -y libsodium18 libsodium-dev apt-transport-https
+            sudo apt-get install -y libsodium23 libsodium-dev apt-transport-https
       - restore_cache:
           name: Restore cached gradle dependencies
           keys:
@@ -192,15 +201,6 @@ jobs:
     executor: machine
     steps:
       - prepare
-      - run:
-          name: Install Packages - Java 11
-          command: |
-            sudo rm  /etc/apt/sources.list.d/google-chrome.list*
-            sudo rm  /etc/apt/sources.list.d/heroku.list*
-            sudo add-apt-repository -y ppa:openjdk-r/ppa
-            sudo apt update
-            sudo apt install -y openjdk-11-jdk
-            sudo update-java-alternatives -s java-1.11.0-openjdk-amd64
       - run:
           name: hadoLint
           command: |
