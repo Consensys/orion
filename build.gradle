@@ -389,7 +389,7 @@ tasks.register("dockerDistUntar") {
 task distDocker(type: Exec) {
   dependsOn dockerDistUntar
   def dockerBuildVersion = project.hasProperty('release.releaseVersion') ? project.property('release.releaseVersion') : "${rootProject.version}"
-  def imageName = "pegasyseng/orion"
+  def imageName = "quorumengineering/orion"
   def image = project.hasProperty('release.releaseVersion') ? "${imageName}:" + project.property('release.releaseVersion') : "${imageName}:${project.version}"
   def dockerBuildDir = "build/docker-orion/"
   workingDir "${dockerBuildDir}"
@@ -408,7 +408,7 @@ task distDocker(type: Exec) {
 task testDocker(type: Exec) {
   dependsOn distDocker
   def dockerReportsDir = "docker/reports/"
-  def imageName = "pegasyseng/orion"
+  def imageName = "quorumengineering/orion"
   def image = project.hasProperty('release.releaseVersion') ? "${imageName}:" + project.property('release.releaseVersion') : "${imageName}:${project.version}"
   workingDir "docker"
 
@@ -423,7 +423,7 @@ task testDocker(type: Exec) {
 task testDockerHA(type: Exec) {
   dependsOn distDocker
   def dockerReportsDir = "docker/reports/"
-  def imageName = "pegasyseng/orion"
+  def imageName = "quorumengineering/orion"
   def image = project.hasProperty('release.releaseVersion') ? "${imageName}:" + project.property('release.releaseVersion') : "${imageName}:${project.version}"
   workingDir "docker"
 
@@ -438,9 +438,14 @@ task testDockerHA(type: Exec) {
 task dockerUpload(type: Exec) {
   dependsOn distDocker
   def dockerBuildVersion = project.hasProperty('release.releaseVersion') ? project.property('release.releaseVersion') : "${rootProject.version}"
-  def imageName = "pegasyseng/orion"
+  def imageName = "quorumengineering/orion"
   def image = "${imageName}:${dockerBuildVersion}"
   def cmd = "docker push '${image}'"
+
+  def psImageName = "pegasyseng/orion"
+  def psImage = "${psImageName}:${dockerBuildVersion}"
+  cmd += " && docker tag '${image}' '${psImage}' && docker push '${psImage}'"
+
   def additionalTags = []
 
   if (project.hasProperty('branch') && project.property('branch') == 'master') {
@@ -453,6 +458,7 @@ task dockerUpload(type: Exec) {
   }
 
   additionalTags.each { tag -> cmd += " && docker tag '${image}' '${imageName}:${tag.trim()}' && docker push '${imageName}:${tag.trim()}'" }
+  additionalTags.each { tag -> cmd += " && docker tag '${image}' '${psImageName}:${tag.trim()}' && docker push '${psImageName}:${tag.trim()}'" }
   executable "sh"
   args "-c", cmd
 }
