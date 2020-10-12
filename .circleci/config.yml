@@ -9,8 +9,8 @@ executors:
     docker:
       - image: circleci/openjdk:11.0.8-jdk-buster
         auth:
-          username: $DOCKER_USER
-          password: $DOCKER_PASSWORD
+          username: $DOCKER_USER_RO
+          password: $DOCKER_PASSWORD_RO
     resource_class: medium+
     working_directory: ~/project
     environment:
@@ -21,12 +21,12 @@ executors:
     docker:
       - image: circleci/openjdk:11.0.8-jdk-buster
         auth:
-          username: $DOCKER_USER
-          password: $DOCKER_PASSWORD
+          username: $DOCKER_USER_RO
+          password: $DOCKER_PASSWORD_RO
       - image: postgres:11.4-alpine
         auth:
-          username: $DOCKER_USER
-          password: $DOCKER_PASSWORD
+          username: $DOCKER_USER_RO
+          password: $DOCKER_PASSWORD_RO
         environment:
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
@@ -251,17 +251,27 @@ workflows:
   version: 2
   pipeline:
     jobs:
-      - build
-      - javaDoc
+      - build:
+          context:
+            - dockerhub-quorumengineering-ro
+      - javaDoc:
+          context:
+            - dockerhub-quorumengineering-ro      
       - test:
           requires:
             - build
+          context:
+            - dockerhub-quorumengineering-ro            
       - acceptanceTest:
           requires:
             - build
+          context:
+            - dockerhub-quorumengineering-ro            
       - buildDocker:
           requires:
             - build
+          context:
+            - dockerhub-quorumengineering-ro            
       - upload-distribution:
           filters:
             branches:
@@ -272,6 +282,9 @@ workflows:
             - build
             - test
             - acceptanceTest
+          context:
+            - dockerhub-quorumengineering-ro
+            - quorum-gradle       
       - publishDocker:
           filters:
             branches:
@@ -282,3 +295,5 @@ workflows:
             - buildDocker
             - test
             - acceptanceTest
+          context:
+            - dockerhub-quorumengineering-rw 
