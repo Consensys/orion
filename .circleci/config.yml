@@ -283,7 +283,8 @@ workflows:
             - test
             - acceptanceTest
           context:
-            - dockerhub-quorumengineering-ro            
+            - dockerhub-quorumengineering-ro
+            - quorum-gradle       
       - publishDocker:
           filters:
             branches:
