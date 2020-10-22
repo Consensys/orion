@@ -242,7 +242,7 @@ jobs:
       - run:
           name: Publish Docker
           command: |
-            docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWORD}"
+            docker login --username "${DOCKER_USER_RW}" --password "${DOCKER_PASSWORD_RW}"
             ./gradlew --no-daemon --parallel "-Pbranch=${CIRCLE_BRANCH}" dockerUpload
       - notify
             
