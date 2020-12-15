@@ -244,13 +244,13 @@ repositories {
 }
 
 dependencies {
-  compile 'org.apache.tuweni:tuweni-bytes'
-  compile 'org.apache.tuweni:tuweni-config'
-  compile 'org.apache.tuweni:tuweni-crypto'
-  compile 'org.apache.tuweni:tuweni-io'
-  compile 'org.apache.tuweni:tuweni-kv'
-  compile 'org.apache.tuweni:tuweni-net'
-  compile 'org.apache.tuweni:tuweni-rlp'
+  compile 'org.apache.tuweni:bytes'
+  compile 'org.apache.tuweni:config'
+  compile 'org.apache.tuweni:crypto'
+  compile 'org.apache.tuweni:io'
+  compile 'org.apache.tuweni:kv'
+  compile 'org.apache.tuweni:net'
+  compile 'org.apache.tuweni:rlp'
 
   // vertx
   compile 'io.vertx:vertx-core'
