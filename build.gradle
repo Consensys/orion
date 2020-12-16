@@ -249,7 +249,6 @@ dependencies {
   compile 'org.apache.tuweni:config'
   compile 'org.apache.tuweni:crypto'
   compile 'org.apache.tuweni:io'
-  compile 'org.apache.tuweni:junit'
   compile 'org.apache.tuweni:kv'
   compile 'org.apache.tuweni:net'
   compile 'org.apache.tuweni:rlp'
@@ -295,7 +294,7 @@ dependencies {
   compile('com.oracle.ojdbc:ojdbc10')
 
   // testing
-  testCompile 'org.apache.tuweni:tuweni-junit'
+  testCompile 'org.apache.tuweni:junit'
   testCompile 'com.h2database:h2'
   testCompile 'org.junit.jupiter:junit-jupiter-api'
   testCompile 'org.junit.jupiter:junit-jupiter-params'
