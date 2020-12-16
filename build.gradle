@@ -249,6 +249,7 @@ dependencies {
   compile 'org.apache.tuweni:config'
   compile 'org.apache.tuweni:crypto'
   compile 'org.apache.tuweni:io'
+  compile 'org.apache.tuweni:junit'
   compile 'org.apache.tuweni:kv'
   compile 'org.apache.tuweni:net'
   compile 'org.apache.tuweni:rlp'
