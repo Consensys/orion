@@ -253,6 +253,7 @@ dependencies {
   compile 'org.apache.tuweni:kv'
   compile 'org.apache.tuweni:net'
   compile 'org.apache.tuweni:rlp'
+  compile 'com.google.code.findbugs:jsr305'
 
   // vertx
   compile 'io.vertx:vertx-core'
