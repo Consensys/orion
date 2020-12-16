@@ -245,6 +245,7 @@ repositories {
 
 dependencies {
   compile 'org.apache.tuweni:bytes'
+  compile 'org.apache.tuweni:concurrent'
   compile 'org.apache.tuweni:config'
   compile 'org.apache.tuweni:crypto'
   compile 'org.apache.tuweni:io'

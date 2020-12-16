@@ -49,6 +49,7 @@ dependencyManagement {
     dependency 'javax.xml.bind:jaxb-api:2.3.0'
 
     dependency 'org.apache.tuweni:bytes:1.2.0'
+    dependency 'org.apache.tuweni:concurrent:1.2.0'
     dependency 'org.apache.tuweni:config:1.2.0'
     dependency 'org.apache.tuweni:crypto:1.2.0'
     dependency 'org.apache.tuweni:io:1.2.0'
