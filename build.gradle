@@ -246,10 +246,10 @@ repositories {
 dependencies {
   implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core'
   implementation 'org.antlr:antlr4:4.9'
-  //  implementation 'com.google.guava:guava:29.0-jre'
 
   compile 'org.apache.tuweni:bytes'
   compile 'org.apache.tuweni:concurrent'
+  compile 'org.apache.tuweni:concurrent-coroutines'
   compile 'org.apache.tuweni:config'
   compile 'org.apache.tuweni:crypto'
   compile 'org.apache.tuweni:io'
@@ -257,7 +257,6 @@ dependencies {
   compile 'org.apache.tuweni:net'
   compile 'org.apache.tuweni:rlp'
   compile 'org.apache.tuweni:toml'
-  compile 'com.google.code.findbugs:jsr305'
 
   // vertx
   compile 'io.vertx:vertx-core'
