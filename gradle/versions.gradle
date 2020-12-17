@@ -59,6 +59,7 @@ dependencyManagement {
       entry 'kv'
       entry 'net'
       entry 'rlp'
+      entry 'toml'
     }
 
     dependency 'org.apache.logging.log4j:log4j-api:2.11.2'
@@ -73,6 +74,8 @@ dependencyManagement {
     dependency 'org.bouncycastle:bcprov-jdk15on:1.64'
 
     dependency 'org.fusesource.leveldbjni:leveldbjni-all:1.8'
+
+    dependency 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2'
 
     dependency 'org.junit.jupiter:junit-jupiter-api:5.5.2'
     dependency 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
