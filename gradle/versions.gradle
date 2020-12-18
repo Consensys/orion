@@ -19,7 +19,7 @@ dependencyManagement {
     dependency 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.10.0'
     dependency 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.10.0'
 
-    dependency 'com.github.jnr:jnr-ffi:2.1.8'
+    dependency 'com.github.jnr:jnr-ffi:2.2.0'
 
     dependency 'com.google.errorprone:error_prone_core:2.3.3'
 
