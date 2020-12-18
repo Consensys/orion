@@ -244,13 +244,19 @@ repositories {
 }
 
 dependencies {
-  compile 'org.apache.tuweni:tuweni-bytes'
-  compile 'org.apache.tuweni:tuweni-config'
-  compile 'org.apache.tuweni:tuweni-crypto'
-  compile 'org.apache.tuweni:tuweni-io'
-  compile 'org.apache.tuweni:tuweni-kv'
-  compile 'org.apache.tuweni:tuweni-net'
-  compile 'org.apache.tuweni:tuweni-rlp'
+  implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core'
+  implementation 'org.antlr:antlr4-runtime'
+
+  compile 'org.apache.tuweni:bytes'
+  compile 'org.apache.tuweni:concurrent'
+  compile 'org.apache.tuweni:concurrent-coroutines'
+  compile 'org.apache.tuweni:config'
+  compile 'org.apache.tuweni:crypto'
+  compile 'org.apache.tuweni:io'
+  compile 'org.apache.tuweni:kv'
+  compile 'org.apache.tuweni:net'
+  compile 'org.apache.tuweni:rlp'
+  compile 'org.apache.tuweni:toml'
 
   // vertx
   compile 'io.vertx:vertx-core'
@@ -292,7 +298,7 @@ dependencies {
   compile('com.oracle.ojdbc:ojdbc10')
 
   // testing
-  testCompile 'org.apache.tuweni:tuweni-junit'
+  testCompile 'org.apache.tuweni:junit'
   testCompile 'com.h2database:h2'
   testCompile 'org.junit.jupiter:junit-jupiter-api'
   testCompile 'org.junit.jupiter:junit-jupiter-params'
