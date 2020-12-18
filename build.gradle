@@ -245,7 +245,7 @@ repositories {
 
 dependencies {
   implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core'
-  implementation 'org.antlr:antlr4:4.9'
+  implementation 'org.antlr:antlr4-runtime'
 
   compile 'org.apache.tuweni:bytes'
   compile 'org.apache.tuweni:concurrent'
