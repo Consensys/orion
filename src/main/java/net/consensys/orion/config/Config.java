@@ -71,14 +71,15 @@ public class Config {
   }
 
   @VisibleForTesting
-  public static Config load(final InputStream is, Map<String, String> env) throws IOException {
+  public static Config load(final InputStream is, final Map<String, String> env) throws IOException {
     return load(Configuration.fromToml(is, SCHEMA), env);
   }
 
-  private static Config load(final Configuration configuration, Map<String, String> env) {
+  private static Config load(final Configuration configuration, final Map<String, String> env) {
     final List<ConfigurationError> errors = configuration.errors();
     if (!errors.isEmpty()) {
-      String errorString = errors.stream().limit(5).map(ConfigurationError::toString).collect(Collectors.joining("\n"));
+      String errorString =
+          errors.stream().limit(5).map(ConfigurationError::getMessage).collect(Collectors.joining("\n"));
       if (errors.size() > 5) {
         errorString += "\n...";
       }
