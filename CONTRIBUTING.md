@@ -237,7 +237,7 @@ These are not strictly enforced during the build, but should be adhered to and c
 | [`needs engineering approval`][search-label-needs-engineering-approval] | Pull requests which need to be approved from a technical person, mainly documentation PRs. |
 
 [private-quorum@consensys.net]: mailto:private-quorum@consensys.net
-[Orion documentation]: https://docs.orion.pegasys.tech/
+[Orion documentation]: https://docs.orion.consensys.net/
 [CLA.md]: /CLA.md
 [Code Reviews]: /community/code-reviews.md
 [MkDocs]: https://www.mkdocs.org/

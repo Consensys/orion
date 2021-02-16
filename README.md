@@ -24,7 +24,7 @@ See our [User Documentation].
 
 * [Contribution Guidelines](CONTRIBUTING.md)
 * [Coding Conventions](CODING-CONVENTIONS.md)
-* [User Documentation]: https://docs.orion.consensys.net/en/latest/
+* [User Documentation](https://docs.orion.consensys.net/en/latest/)
 
 ### Development
 
