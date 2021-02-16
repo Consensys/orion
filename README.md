@@ -1,6 +1,6 @@
 # Orion
 
-[![CircleCI](https://circleci.com/gh/PegaSysEng/orion.svg?style=svg&circle-token=5f92fd966a971e60e57f53f2257fe5dda0fcf52c)](https://circleci.com/gh/PegaSysEng/orion)
+[![CircleCI](https://circleci.com/gh/ConsenSys/orion.svg?style=svg&circle-token=5f92fd966a971e60e57f53f2257fe5dda0fcf52c)](https://circleci.com/gh/ConsenSys/orion)
 [![Download](https://api.bintray.com/packages/consensys/binaries/orion/images/download.svg)](https://bintray.com/consensys/binaries/orion/_latestVersion)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/PegasysEng/pantheon/blob/master/LICENSE)
 
@@ -24,7 +24,7 @@ See our [User Documentation].
 
 * [Contribution Guidelines](CONTRIBUTING.md)
 * [Coding Conventions](CODING-CONVENTIONS.md)
-* [User Documentation]: https://docs.orion.consensys.net/en/latest/
+* [User Documentation](https://docs.orion.consensys.net/en/latest/)
 
 ### Development
 

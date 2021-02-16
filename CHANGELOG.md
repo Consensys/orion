@@ -49,14 +49,14 @@ PostgreSQL database.
 
 ### Additions and Improvements 
 
-- Added option to move Orion peer table to persistent storage to support [high availability configurations](https://docs.orion.pegasys.tech/en/latest/HowTo/High-Availability/) [\#332](https://github.com/PegaSysEng/orion/pull/332)
-- Added [environment variables](https://docs.orion.pegasys.tech/en/latest/Reference/Configuration-File/) to support Orion deployment [\#332](https://github.com/PegaSysEng/orion/pull/332)
+- Added option to move Orion peer table to persistent storage to support [high availability configurations](https://docs.orion.consensys.net/en/latest/HowTo/High-Availability/) [\#332](https://github.com/PegaSysEng/orion/pull/332)
+- Added [environment variables](https://docs.orion.consensys.net/en/latest/Reference/Configuration-File/) to support Orion deployment [\#332](https://github.com/PegaSysEng/orion/pull/332)
 
 ## 1.5 
 
 ### Additions and Improvements 
 
-* [TLS support to secure Orion to Orion, and Orion to Hyperledger Besu communication](https://docs.orion.pegasys.tech/en/latest/Concepts/TLS-Communication/). 
+* [TLS support to secure Orion to Orion, and Orion to Hyperledger Besu communication](https://docs.orion.consensys.net/en/latest/Concepts/TLS-Communication/). 
 
 ### Known Bugs 
 
@@ -89,8 +89,8 @@ Workaround - Do not use `alwayssendto`.
 - Added Oracle DB support [\#284](https://github.com/PegaSysEng/orion/pull/284) 
 - Added PostgreSQL DB support [\#276](https://github.com/PegaSysEng/orion/pull/276)
 - Documentation updates include: 
-  - Added content on configuring [Oracle](https://docs.orion.pegasys.tech/en/latest/Configuring-Orion/Using-Oracle/) and [PostgreSQL](https://docs.orion.pegasys.tech/en/latest/Configuring-Orion/Using-PostgreSQL/) databases
-  - Added content on generating [certificates using OpenSSL](https://docs.orion.pegasys.tech/en/latest/Configuring-Orion/TLS/#generating-certificates-using-openssl)
+  - Added content on configuring [Oracle](https://docs.orion.consensys.net/en/latest/Configuring-Orion/Using-Oracle/) and [PostgreSQL](https://docs.orion.consensys.net/en/latest/Configuring-Orion/Using-PostgreSQL/) databases
+  - Added content on generating [certificates using OpenSSL](https://docs.orion.consensys.net/en/latest/Configuring-Orion/TLS/#generating-certificates-using-openssl)
 
 ### Technical Improvements 
 
@@ -113,9 +113,9 @@ Stability improvements and bug fixes
 ### Additions and Improvements 
 
 - Documentation updates include: 
-  - Added content on [privacy groups](https://docs.orion.pegasys.tech/en/latest/Using-Orion/Privacy-Groups/)
-  - Added [TLS content](https://docs.orion.pegasys.tech/en/latest/Configuring-Orion/TLS/)
-  - Updated [Client API](https://docs.orion.pegasys.tech/en/latest/Reference/API-Methods/) reference to include privacy group methods
+  - Added content on [privacy groups](https://docs.orion.consensys.net/en/latest/Using-Orion/Privacy-Groups/)
+  - Added [TLS content](https://docs.orion.consensys.net/en/latest/Configuring-Orion/TLS/)
+  - Updated [Client API](https://docs.orion.consensys.net/en/latest/Reference/API-Methods/) reference to include privacy group methods
   
 ### Technical Improvements 
 
