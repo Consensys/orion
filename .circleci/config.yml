@@ -313,7 +313,7 @@ workflows:
             - acceptanceTest
           context:
             - dockerhub-quorumengineering-ro
-            - quorum-gradle
+            - cloudsmith-protocols
       - publishDocker:
           filters:
             branches:
