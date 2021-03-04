@@ -60,6 +60,9 @@ def buildAliases = ['dev': [
     'acceptanceTest'
   ]]
 
+def cloudsmithUser = project.hasProperty('cloudsmithUser') ? project.property('cloudsmithUser') : System.getenv('CLOUDSMITH_USER')
+def cloudsmithKey = project.hasProperty('cloudsmithApiKey') ? project.property('cloudsmithApiKey') : System.getenv('CLOUDSMITH_API_KEY')
+
 def expandedTaskList = []
 gradle.startParameter.taskNames.each {
   expandedTaskList << (buildAliases[it] ? buildAliases[it] : it)
@@ -519,6 +522,16 @@ run {
 // Publishing & release
 
 publishing {
+  repositories {
+    maven {
+      name = "cloudsmith"
+      url = "https://api-g.cloudsmith.io/maven/consensys/orion/"
+      credentials {
+        username = cloudsmithUser
+        password = cloudsmithKey
+      }
+    }
+  }
   publications {
     mavenArtifact(MavenPublication) {
       from components.java
@@ -547,6 +560,15 @@ publishing {
 task deploy() {}
 deploy.dependsOn bintrayUpload
 
+task cloudsmithUpload {
+  dependsOn([distTar, distZip])
+  doLast {
+    exec {
+      executable project.file("scripts/cloudsmith-upload.sh")
+      args rootProject.version, distTar.archiveFile.get(), distZip.archiveFile.get()
+    }
+  }
+}
 bintray {
   user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
   key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_KEY')

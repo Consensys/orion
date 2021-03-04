@@ -1,5 +1,10 @@
 # Changelog
 
+## Upcoming Breaking Changes
+
+- Binary downloads will be transitioned from Bintray to Cloudsmith.  Please ensure you use links in the documentation or release notes.
+  Ansible users should ensure they have the latest version of the ansible role.
+ 
 ## 1.6
 
 ## Additions and Improvements
