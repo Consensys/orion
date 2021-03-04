@@ -235,7 +235,7 @@ jobs:
       - notify
 
   publish-cloudsmith:
-    executor: small_executor
+    executor: default
     steps:
       - prepare
       - run:
