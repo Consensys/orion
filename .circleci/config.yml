@@ -302,6 +302,11 @@ workflows:
             - dockerhub-quorumengineering-ro
             - quorum-gradle
       - publish-cloudsmith:
+          filters:
+            branches:
+              only:
+                - master
+                - /^release-.*/
           requires:
             - build
             - test
