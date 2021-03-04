@@ -308,12 +308,9 @@ workflows:
                 - master
                 - /^release-.*/
           requires:
-            - unitTests
-            - integrationTests
-            - acceptanceTests
-            - referenceTests
-            - docker
-            - extractAPISpec
+            - build
+            - test
+            - acceptanceTest
           context:
             - dockerhub-quorumengineering-ro
             - quorum-gradle
