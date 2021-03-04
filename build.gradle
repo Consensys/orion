@@ -523,14 +523,10 @@ run {
 
 publishing {
   repositories {
-    maven {
-      name = "cloudsmith"
-      url = "https://api-g.cloudsmith.io/maven/consensys/orion/"
-      credentials {
-        username = cloudsmithUser
-        password = cloudsmithKey
-      }
-    }
+          maven {
+          name = "tempRepo"
+          url = "file://tmp/tmpRepo"
+        }
   }
   publications {
     mavenArtifact(MavenPublication) {
