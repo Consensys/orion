@@ -525,7 +525,7 @@ publishing {
   repositories {
     maven {
       name = "cloudsmith"
-      url = "https://cloudsmith.io/~consensys/repos/maven/"
+      url = "https://api-g.cloudsmith.io/maven/consensys/maven/"
       credentials {
         username = cloudsmithUser
         password = cloudsmithKey
