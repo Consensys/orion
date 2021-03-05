@@ -555,9 +555,6 @@ publishing {
   }
 }
 
-task deploy() {}
-deploy.dependsOn bintrayUpload
-
 task cloudsmithUpload {
   dependsOn([distTar, distZip])
   doLast {
