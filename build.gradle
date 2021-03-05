@@ -27,11 +27,14 @@ buildscript {
 
 plugins {
   id "com.diffplug.gradle.spotless" version "3.10.0"
-  id 'com.github.ben-manes.versions' version '0.20.0'
+  id 'com.github.ben-manes.versions' version '0.28.0'
   id "com.github.hierynomus.license" version "0.14.0"
   id 'net.ltgt.errorprone' version '0.8'
   id 'io.spring.dependency-management' version '1.0.6.RELEASE'
+  id 'org.ajoberstar.grgit' version '4.0.2'
 }
+rootProject.version = calculatePublishVersion()
+def specificVersion = calculateVersion()
 
 apply plugin: 'java-library'
 apply plugin: "scala"
@@ -67,6 +70,42 @@ gradle.startParameter.taskNames.each {
 }
 gradle.startParameter.taskNames = expandedTaskList.flatten()
 
+
+// Calculate the version that this build would be published under (if it is published)
+// If this exact commit is tagged, use the tag
+// If this is on a release-* branch, use the most recent tag appended with +develop (e.g. 0.1.1-RC1+develop)
+// Otherwise, use develop
+def calculatePublishVersion() {
+  if (!grgit) {
+    return 'UNKNOWN'
+  }
+  def specificVersion = calculateVersion()
+  def isReleaseBranch = grgit.branch.current().name.startsWith('release-')
+  if (specificVersion.contains('+')) {
+    return isReleaseBranch ? "${specificVersion.substring(0, specificVersion.indexOf('+'))}+develop" : "develop"
+  }
+  return specificVersion
+}
+// Calculate the version that orion --version will report (among other places)
+// If this exact commit is tagged, use the tag
+// Otherwise use git describe --tags and replace the - after the tag with a +
+def calculateVersion() {
+  if (!grgit) {
+    return 'UNKNOWN'
+  }
+  String version = grgit.describe(tags: true)
+  if (version == null) {
+    return "UNKNOWN+g${grgit.head().abbreviatedId}"
+  }
+  def versionPattern = ~/^(?<lastVersion>.*)-(?<devVersion>[0-9]+-g[a-z0-9]+)$/
+  def matcher = version =~ versionPattern
+  if (matcher.find()) {
+    return "${matcher.group("lastVersion")}+${matcher.group("devVersion")}"
+  }
+  return version
+}
+
+task printVersion() { doFirst { print "Specific version: ${specificVersion}  Publish version: ${project.version}\n" } }
 
 /////
 // Source formatting
@@ -461,7 +500,7 @@ task dockerUpload(type: Exec) {
 
   if (!(dockerBuildVersion ==~ /.*-SNAPSHOT/)) {
     additionalTags.add('latest')
-    additionalTags.add(dockerBuildVersion.split(/\./)[0..1].join('.'))
+    additionalTags.add(dockerBuildVersion)
   }
 
   additionalTags.each { tag -> cmd += " && docker tag '${image}' '${imageName}:${tag.trim()}' && docker push '${imageName}:${tag.trim()}'" }
@@ -563,4 +602,7 @@ task cloudsmithUpload {
       args rootProject.version, distTar.archiveFile.get(), distZip.archiveFile.get()
     }
   }
+
+
+
 }
