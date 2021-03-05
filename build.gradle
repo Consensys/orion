@@ -525,7 +525,7 @@ publishing {
   repositories {
     maven {
       name = "cloudsmith"
-      url = "https://api-g.cloudsmith.io/maven/consensys/orion/"
+      url = "https://api-g.cloudsmith.io/maven/consensys/maven/"
       credentials {
         username = cloudsmithUser
         password = cloudsmithKey
@@ -542,8 +542,8 @@ publishing {
           resolveStrategy = Closure.DELEGATE_FIRST
           name 'Orion'
           description 'A java implementation of a Enterprise Ethereum Private Transaction Manager.'
-          url 'https://github.com/pegasyseng/orion'
-          scm { url 'https://github.com/pegasyseng/orion' }
+          url 'https://github.com/consensys/orion'
+          scm { url 'https://github.com/consensys/orion' }
           licenses {
             license {
               name 'The Apache Software License, Version 2.0'
