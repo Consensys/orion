@@ -29,7 +29,6 @@ plugins {
   id "com.diffplug.gradle.spotless" version "3.10.0"
   id 'com.github.ben-manes.versions' version '0.20.0'
   id "com.github.hierynomus.license" version "0.14.0"
-  id "com.jfrog.bintray" version "1.8.4"
   id 'net.ltgt.errorprone' version '0.8'
   id 'io.spring.dependency-management' version '1.0.6.RELEASE'
 }
@@ -43,7 +42,6 @@ apply plugin: 'maven-publish'
 apply plugin: 'io.spring.dependency-management'
 apply from: "gradle/check-licenses.gradle"
 apply from: "gradle/versions.gradle"
-apply plugin: 'com.jfrog.bintray'
 apply plugin: 'openjpa'
 
 //////
@@ -243,7 +241,7 @@ openjpa {
 repositories {
   jcenter()
   maven { url "https://repo1.maven.org/maven2/" }
-  maven { url "https://consensys.bintray.com/consensys" }
+  maven { url "https://artifacts.consensys.net/public/maven/maven/" }
 }
 
 dependencies {
@@ -567,20 +565,5 @@ task cloudsmithUpload {
       executable project.file("scripts/cloudsmith-upload.sh")
       args rootProject.version, distTar.archiveFile.get(), distZip.archiveFile.get()
     }
-  }
-}
-bintray {
-  user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
-  key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_KEY')
-  publications = ['mavenArtifact']
-  override = true
-  publish = true
-  pkg {
-    repo = "pegasys-repo"
-    name = "orion"
-    userOrg = "consensys"
-    licenses = ["Apache-2.0"]
-    vcsUrl = "https://github.com/pegasyseng/orion"
-    version { name = project.version }
   }
 }
