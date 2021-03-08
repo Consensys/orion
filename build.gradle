@@ -76,8 +76,6 @@ gradle.startParameter.taskNames = expandedTaskList.flatten()
 // If this is on a release-* branch, use the most recent tag appended with +develop (e.g. 0.1.1-RC1+develop)
 // Otherwise, use develop
 def calculatePublishVersion() {
-  print "starting with rootprojectversion: ${rootProject.version}"
-  print "starting with projectversion: ${project.version}"
   if (!grgit) {
     return 'UNKNOWN'
   }
@@ -88,7 +86,6 @@ def calculatePublishVersion() {
   }
   return specificVersion
 }
-// Calculate the version that orion --version will report (among other places)
 // If this exact commit is tagged, use the tag
 // Otherwise use git describe --tags and replace the - after the tag with a +
 def calculateVersion() {
@@ -581,7 +578,7 @@ publishing {
         asNode().children().last() + {
           resolveStrategy = Closure.DELEGATE_FIRST
           name 'Orion'
-          description 'A java implementation of a Enterprise Ethereum Private Transaction Manager.'
+          description 'A java implementation of an Enterprise Ethereum Private Transaction Manager.'
           url 'https://github.com/consensys/orion'
           scm { url 'https://github.com/consensys/orion' }
           licenses {
@@ -605,7 +602,4 @@ task cloudsmithUpload {
       args rootProject.version, distTar.archiveFile.get(), distZip.archiveFile.get()
     }
   }
-
-
-
 }
