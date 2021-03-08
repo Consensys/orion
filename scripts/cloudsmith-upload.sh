@@ -6,7 +6,7 @@ TAR_DIST=${2:?Must specify path to tar distribution}
 ZIP_DIST=${3:?Must specify path to zip distribution}
 
 REPUBLISH=""
-if [[ $ORION_VERSION == *"SNAPSHOT"* ]]; then
+if [[ $ORION_VERSION == *"develop"* ]]; then
   REPUBLISH="--republish"
 fi
 
