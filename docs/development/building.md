@@ -2,12 +2,12 @@
 
 ## Pre-requisites
 
-[libsodium](https://docs.orion.pegasys.tech/en/latest/HowTo/Dependencies/)
+[libsodium](https://docs.orion.consensys.net/en/latest/HowTo/Dependencies/)
 
 ## Check Out Source Code
 
 ```
-git clone git@github.com:PegaSysEng/orion.git
+git clone git@github.com:ConsenSys/orion.git
 ```
 
 ## Build From Source
