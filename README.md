@@ -4,13 +4,13 @@
 [![Download](https://api.bintray.com/packages/consensys/binaries/orion/images/download.svg)](https://bintray.com/consensys/binaries/orion/_latestVersion)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/PegasysEng/pantheon/blob/master/LICENSE)
 
-Orion is a Apache 2.0 licensed, private transaction manager.
+Orion is an Apache 2.0 licensed, private transaction manager.
 
 ## Issues 
 
 See our [contribution guidelines](CONTRIBUTING.md) for details on searching and creating issues. 
 
-If you've commented on existing issue and have been waiting for a reply, feel free to ping us on [Discord](#chat).  
+If you've commented on existing issue and have been waiting for a reply, feel free to ping us on [Discord](https://discord.gg/n8m22JK).  
 
 ## Chat 
 
@@ -18,7 +18,7 @@ Come and join us in the Orion channel on Discord - here's an [invite](https://di
 
 ## Orion Users 
 
-See our [User Documentation]. 
+See our [User Documentation](https://docs.orion.consensys.net/en/latest/). 
 
 ## Orion Developers
 
