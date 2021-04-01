@@ -9,9 +9,7 @@ To start the container, one needs to provide a volume with a set of keys and a c
 **`orion.conf` configuration file:**
 ```
 nodeurl = "http://127.0.0.1:8080/"
-nodeport = 8080
 clienturl = "http://127.0.0.1:8888/"
-clientport = 8888
 workdir = "/data"
 publickeys = ["orion.pub"]
 privatekeys = ["orion.key"]
