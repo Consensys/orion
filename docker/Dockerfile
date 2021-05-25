@@ -4,7 +4,7 @@ FROM openjdk:11.0.7-jre-slim-buster
 # Install libsodium
 RUN set -eux; \
     apt-get update; \
-    apt-get install -y --no-install-recommends curl=7.64.0-4+deb10u1 libsodium23=1.0.17-1; \
+    apt-get install -y --no-install-recommends curl=7.64.0-4+deb10u2 libsodium23=1.0.17-1; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 
