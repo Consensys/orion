@@ -1,18 +1,25 @@
 # Changelog
 
-## Upcoming Breaking Changes
+## Project Deprecation
+Now that all primary Orion functionality has been merged into Tessera, Orion is being deprecated.  
+We encourage all users with active projects to use the provided migration instructions, 
+documented [here](https://docs.orion.consensys.net/en/latest/Tutorials/Migrating-from-Orion-to-Tessera/). 
 
-- Binary downloads will be transitioned from Bintray to Cloudsmith.  Please ensure you use links in the documentation or release notes.
-  Ansible users should ensure they have the latest version of the ansible role.
- 
+We will continue to support Orion users until 30th November 2021. If you have any questions or 
+concerns, please reach out to the ConsenSys protocol engineering team in the 
+[#orion channel on Discord](https://discord.gg/hYpHRjK) or by [email](mailto:quorum@consensys.net).
+
 ## 1.6
 
-## Additions and Improvements
+### Additions and Improvements
 
 - The methods `/sendraw` and `/receiveraw` are now deprecated. We will remove them in the next minor
 version release (expected to be 1.7). 
 - Moving to security best practices for docker where we now have a user:group `orion:orion` and will
 no longer use `root` as the container user.  
+- Binary downloads have transitioned from Bintray to Cloudsmith.  Please ensure you use links in the 
+  documentation or release notes.
+  Ansible users should ensure they have the latest version of the ansible role.
 
 ## Breaking changes
 
@@ -47,7 +54,7 @@ is owned by that user.
 
 - Filter the list of URIs when [creating a privacy group](https://github.com/PegaSysEng/orion/pull/369).
 
-Resolves `NodePropagatingToAllPeers` error that was occuring when creating privacy groups with a 
+Resolves `NodePropagatingToAllPeers` error that was occurring when creating privacy groups with a 
 PostgreSQL database.  
 
 ## 1.5.1 
