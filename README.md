@@ -15,7 +15,6 @@ We will continue to support Orion users until 30th November 2021. If you have an
 concerns, please reach out to the ConsenSys protocol engineering team in the
 [#orion channel on Discord](https://discord.gg/hYpHRjK) or by [email](mailto:quorum@consensys.net).
 
-We will continue to support Orion users until 30th November 2021. If you have any questions or concerns, please reach out to the ConsenSys protocol engineering team in the #orion channel on Discord or by email.
 ## Issues 
 
 See our [contribution guidelines](CONTRIBUTING.md) for details on searching and creating issues. 
