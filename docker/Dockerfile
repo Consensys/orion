@@ -8,6 +8,8 @@ RUN set -eux; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 
+# add Orion user
+# hadolint ignore=DL3059
 RUN adduser --disabled-password --gecos "" --home /opt/orion orion && \
     chown orion:orion /opt/orion
 
