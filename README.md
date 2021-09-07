@@ -5,7 +5,7 @@
 
 Orion is an Apache 2.0 licensed, private transaction manager.
 
-## Project Deprecation
+## ⚠️ Project Deprecation ⚠️
 Now that all primary Orion functionality has been merged into Tessera, Orion is being deprecated.  
 We encourage all users with active projects to use the provided migration instructions,
 documented [here](https://docs.orion.consensys.net/en/latest/Tutorials/Migrating-from-Orion-to-Tessera/).
